@@ -52,52 +52,58 @@ require_once("data/sesiones.php");
           </tr>
           <tr>
             <th align='left'><font class='negra'>Producto:</font></th>
-            <td align='center'><input type='text' id='producto' name='producto' maxlength='35' size='9' onkeyup='showHint(this.value)'></td>
+            <td align='center'><input type='text' id='producto' name='producto' class='agrandar' maxlength='35' size='9' onkeyup='showHint(this.value)'></td>
           </tr>  
           <tr>
             <th align='left'><font class='negra'>Fabricante:</font></th>
             <td align='center'>
-              <select id="tipo" name="fabricante" style="width:100%">
+              <select id="fabricante" name="fabricante" style="width:100%">
                 <option value='No Ingresado' selected='yes'>---Seleccionar---</option>
-                <option value='gpc'>GPC</option>
-                <option value='intelcav'>Intelcav</option>
+                <option value='GPC'>GPC</option>
+                <option value='Intelcav'>Intelcav</option>
+                <option value='Valid'>Valid</option>
               </select>
             </td>
           </tr>
           <tr>
             <th align='left'><font class='negra'>Cantidad:</font></th>
-            <td align='center'><input type='text' id='cantidad' name='cantidad' maxlength='35' size='9'></td>
+            <td align='center'><input type='text' id='cantidad' name='cantidad' class='agrandar' maxlength='35' size='9'></td>
           </tr>
           <tr>
             <th align='left'><font class='negra'>Repetir Cantidad:</font></th>
-            <td align='center'><input type='text' id='cantidad2' name='cantidad2' maxlength='35' size='9'></td>
+            <td align='center'><input type='text' id='cantidad2' name='cantidad2' class='agrandar' maxlength='35' size='9'></td>
+          </tr>
+          <tr>
+            <th align='left'><font class='negra'>Comentarios:</font></th>
+            <td align='center'><input type='textarea' id='comentarios' name='comentarios' class='agrandar' maxlength='35' size='9'></td>
           </tr>
           <th colspan="2">CONTROL</th>
           <tr>
             <th align='left'><font class='negra'>Control Bóveda:</font></th>
             <td>
               <select id="usuarioBoveda" name="usuarioBoveda" style="width:100%">  
+                <option value='ninguno' selected='yes'>---Seleccionar---</option>
               <?php
-              
                 foreach($datosBoveda as $dato)
                   {
-                  echo "<option value='".$dato['iduser']."'>".$dato['apellido'].", ".$dato['nombre']."</option>";
+                  echo "<option value='".$dato['iduser']."' name='".$dato['nombre']." ".$dato['apellido']."'>".$dato['apellido'].", ".$dato['nombre']."</option>";
                 }
               ?>
-              </select>  
+              </select>
             </td>
           </tr>
           <tr>
             <th align='left'><font class='negra'>Control Grabaciones:</font></th>
             <td>
               <select id='usuarioGrabaciones' name='usuarioGrabaciones' style='width: 100%'>
+                <option value='ninguno' selected='yes'>---Seleccionar---</option>
               <?php
                 foreach($datosGrabaciones as $dato)
                   {
-                  echo "<option value='".$dato['iduser']."'>".$dato['apellido'].", ".$dato['nombre']."</option>";
+                  echo "<option value='".$dato['iduser']."' name='".$dato['nombre']." ".$dato['apellido']."'>".$dato['apellido'].", ".$dato['nombre']."</option>";
                 }
               ?>
-              </select> 
+              </select>
             </td>
           </tr>
           <tr>

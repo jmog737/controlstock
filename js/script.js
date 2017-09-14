@@ -3,7 +3,7 @@
 ///  \brief Archivo que contiene todas las funciones de Javascript.
 ///  \author Juan Martín Ortega
 ///  \version 1.0
-///  \date Marzo 2017
+///  \date Setiembre 2017
 */
 
 /***********************************************************************************************************************
@@ -18,7 +18,7 @@ function verificarSesion() {
         var myObj = JSON.parse(this.responseText);
         var user = myObj.user;
         var timestamp = myObj.timestamp;
-        $("#estadoSesion").val(user);
+        $("#usuarioSesion").val(user);
         $("#timestampSesion").val(timestamp);
     }
   };
@@ -159,8 +159,8 @@ function showHint(str) {
     return;
   } else {
     var url = "data/selectQuery.php";
-    var query = "select idprod, entidad, nombre_plastico, bin from productos where nombre_plastico like '"+str+"%' order by nombre_plastico asc";
-    
+    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, bin, stock, alarma from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') order by productos.nombre_plastico asc";
+    //alert(query);
     $.getJSON(url, {query: ""+query+""}).done(function(request) {
       var sugerencias = request.resultado;
       var totalSugerencias = request.rows;
@@ -176,7 +176,12 @@ function showHint(str) {
           if (bin === null) {
             bin = 'SIN BIN';
           }
-          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+bin+'">(' + sugerencias[i]["entidad"]+') '+sugerencias[i]["nombre_plastico"] + ' -- ' +bin+' --</option>';
+          
+          var codigo_emsa = sugerencias[i]["codigo_emsa"];
+          if ((codigo_emsa === null) || (codigo_emsa === " ")) {
+            codigo_emsa = 'SIN CODIGO AÚN';
+          }
+          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+bin+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+'>(' + sugerencias[i]["entidad"]+') '+sugerencias[i]["nombre_plastico"] + ' (' +bin+') --'+ codigo_emsa +'--</option>';
         }
         mostrar += '</select>';
       }
@@ -194,11 +199,11 @@ function showHint(str) {
 */
 
 
+
 /***********************************************************************************************************************
 /// ************************************************ FUNCIONES MOVIMIENTOS *********************************************
 ************************************************************************************************************************
 */
-
 
 /**
  * \brief Función que valida los datos pasados para el movimiento.
@@ -210,6 +215,8 @@ function validarMovimiento()
   var cantidad = document.getElementById("cantidad").value;
   var cantidad2 = document.getElementById("cantidad2").value;
   var fecha = document.getElementById("fecha").value;
+  var usuarioBoveda = document.getElementById("usuarioBoveda").value;
+  var usuarioGrabaciones = document.getElementById("usuarioGrabaciones").value;
   
   if (fecha === "") {
     alert('Se debe seleccionar la Fecha');
@@ -217,7 +224,7 @@ function validarMovimiento()
     seguir = false;
   }
   else {
-    if ($("#hint").find('option:selected').val() === "NADA")
+    if (($("#hint").find('option:selected').val() === "NADA") || ($("#producto").val() === ''))
       {
       alert('Debe seleccionar el nombre del plástico.');
       document.getElementById("hint").focus();
@@ -256,8 +263,26 @@ function validarMovimiento()
             seguir = false;
           } 
           else
-            { 
-            seguir = true;
+            {
+            if (usuarioBoveda === "ninguno")
+              {
+              alert('Se debe seleccionar al representante del sector Bóveda. Por favor verifique!.');
+              document.getElementById("usuarioBoveda").focus();
+              seguir = false;
+            } 
+            else
+              {
+              if (usuarioGrabaciones === "ninguno")
+                {
+                alert('Se debe seleccionar al representante del sector Grabaciones. Por favor verifique!.');
+                document.getElementById("usuarioGrabaciones").focus();
+                seguir = false;
+              } 
+              else
+                {
+                  seguir = true;
+              }// usuarioGrabaciones
+            }// usuarioBoveda  
           }// cantidad != cantidad2
         }// cantidad 2
       }// cantidad
@@ -271,6 +296,7 @@ function validarMovimiento()
 /// ********************************************* FIN FUNCIONES MOVIMIENTOS ********************************************
 ************************************************************************************************************************
 **/
+
 
 
 /***********************************************************************************************************************
@@ -288,6 +314,8 @@ function validarImportacion()
   var cantidad = document.getElementById("cantidad").value;
   var cantidad2 = document.getElementById("cantidad2").value;
   var fecha = document.getElementById("fecha").value;
+  var usuarioBoveda = document.getElementById("usuarioBoveda").value;
+  var usuarioGrabaciones = document.getElementById("usuarioGrabaciones").value;
   
   if (fecha === "") {
     alert('Se debe seleccionar la Fecha');
@@ -303,8 +331,7 @@ function validarImportacion()
       seguir = false;
     }
     else
-      {
-        
+      {  
       var cant = validarEntero(document.getElementById("cantidad").value);
 
       if ((cantidad <= 0) || (cantidad === "null") || !cant)
@@ -317,7 +344,6 @@ function validarImportacion()
       else
         {
         var cant2 = validarEntero(document.getElementById("cantidad2").value);  
-
         if ((cantidad2 <= 0) || (cantidad2 === "null") || !cant2)
           {
           alert('La repetición de la cantidad de tarjetas debe ser un entero mayor o igual a 1.');
@@ -337,7 +363,25 @@ function validarImportacion()
           } 
           else
             {
-            seguir = true;
+            if (usuarioBoveda === "ninguno")
+              {
+              alert('Se debe seleccionar al representante del sector Bóveda. Por favor verifique!.');
+              document.getElementById("usuarioBoveda").focus();
+              seguir = false;
+            } 
+            else
+              {
+              if (usuarioGrabaciones === "ninguno")
+                {
+                alert('Se debe seleccionar al representante del sector Grabaciones. Por favor verifique!.');
+                document.getElementById("usuarioGrabaciones").focus();
+                seguir = false;
+              } 
+              else
+                {
+                seguir = true;
+              }// usuarioGrabaciones
+            }// usuarioBoveda
           }// cantidad != cantidad2
         }// cantidad 2
       }// cantidad
@@ -352,6 +396,7 @@ function validarImportacion()
 /// ******************************************** FIN FUNCIONES IMPORTACIONES *******************************************
 ************************************************************************************************************************
 **/
+
 
 
 /***********************************************************************************************************************
@@ -613,6 +658,8 @@ function validarBusqueda() {
   
 }
 
+
+
 /***********************************************************************************************************************
 /// ********************************************** FIN FUNCIONES BÚSQUEDAS *********************************************
 ************************************************************************************************************************
@@ -655,7 +702,8 @@ function todo () {
 */
 
 ///Disparar funcion al cambiar el elemento elegido en el select con las sugerencias para los productos.
-///Por ahora simplemente cambia el color de fondo para resaltarlo.
+///Cambia el color de fondo para resaltarlo, carga un snapshot del plástico si está disponible, y muestra
+///el stock actual.
 $(document).on("change", "#hint", function (){
   var nombreFoto = 'images/snapshots/';
   var bin = $(this).find('option:selected').attr("name");
@@ -663,32 +711,119 @@ $(document).on("change", "#hint", function (){
   $(this).css('background-color', '#ffffff');
   
   $("#snapshot").remove();
+  $("#stock").remove();
   
   if (bin !== "NADA"){
     var mostrar = '<img id="snapshot" name="hint" src="'+nombreFoto+'" alt="No se cargó la foto aún." height="100" width="300"></img>';
+    mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><b>Stock actual: <b><font class="resaltado" style="font-size:1.6em">'+$("#hint").find('option:selected').attr("stock")+'</font></p>';
     $(this).css('background-color', '#efe473');
   }
   
   $("#hint").after(mostrar);
 });
 
-///Disparar funcion al hacer clic en el link del usuario.
+///Disparar funcion al hacer clic en el botón para agregar el movimiento.
 $(document).on("click", "#agregarMovimiento", function (){
   //$(this).css('background-color', '#efe473');
   var seguir = true;
   seguir = validarMovimiento();
   if (seguir) {
     var fecha = $("#fecha").val();
-    var producto = $("#hint").val();
+    var temp = fecha.split('-');
+    var fechaMostrar = temp[2]+"/"+temp[1]+"/"+temp[0];
+    var idProd = $("#hint").val();
     var nombreProducto = $("#hint").find('option:selected').text( );
-    var tipo = $("#tipo").val()
-    var cantidad = $("#cantidad").val();
+    var stockActual = parseInt($("#hint").find('option:selected').attr("stock"), 10);
+    var alarma = parseInt($("#hint").find('option:selected').attr("alarma"), 10);
+    var tipo = $("#tipo").val();
+    var cantidad = parseInt($("#cantidad").val(), 10);
+    var comentarios = $("#comentarios").val();
     var idUserBoveda = $("#usuarioBoveda").val();
     var userBoveda = $("#usuarioBoveda").find('option:selected').attr("name");
     var idUserGrabaciones = $("#usuarioGrabaciones").val();
     var userGrabaciones = $("#usuarioGrabaciones").find('option:selected').attr("name");
-    alert("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fecha+"\nProducto: "+nombreProducto+"\nTipo: "+tipo+"\nCantidad: "+cantidad+"\nControl Bóveda: "+userBoveda+"\nControl Grabaciones: "+userGrabaciones);
+    var confirmar = confirm("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fechaMostrar+"\nProducto: "+nombreProducto+"\nTipo: "+tipo+"\nCantidad: "+cantidad+"\nControl Bóveda: "+userBoveda+"\nControl Grabaciones: "+userGrabaciones+"\nComentarios: "+comentarios);
+    var tempDate = new Date();
+    var hora = tempDate.getHours()+":"+tempDate.getMinutes();
+    
+    var nuevoStock = stockActual - cantidad;
+    
+    var avisarAlarma = false;
+    var avisarInsuficiente = false;
+    
+    /// Si el nuevoStock es menor a 0, siginifica que no hay stock suficiente. Se alerta y se descuenta sólo la cantidad disponible.
+    if (nuevoStock <0) {
+      cantidad = stockActual;
+      avisarInsuficiente = true;
+      nuevoStock = 0;
+    }
+    else {
+      if (nuevoStock < alarma) {
+        avisarAlarma = true;
+      }
+    }
+    
+    if (confirmar) {
+      var url = "data/updateQuery.php";
+      var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+idUserBoveda+", "+idUserGrabaciones+", '"+comentarios+"')";
+      //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
+       
+      $.getJSON(url, {query: ""+query+""}).done(function(request) {
+        var resultado = request["resultado"];
+        if (resultado === "OK") {
+          var url = "data/updateQuery.php";
+          var query = "update productos set stock="+nuevoStock+" where idprod="+idProd;
+                    
+          $.getJSON(url, {query: ""+query+""}).done(function(request) {
+            var resultado = request["resultado"];
+            if (resultado === "OK") {  
+              if (avisarAlarma) {
+                alert('El stock quedó por debajo del límite definido!. Stock actual: ' + nuevoStock);
+                location.reload();
+              }
+              else {
+                if (avisarInsuficiente) {
+                  alert('Stock insuficiente!. Se descuenta sólo la cantidad existente. Stock 0!!.');
+                  location.reload();
+                }
+                else {
+                  alert('Registro agregado correctamente!. Stock actual: '+nuevoStock);
+                  location.reload();
+                }
+              }
+            }
+            else {
+              alert('Hubo un error. Por favor verifique.');
+            }
+          });
+        }
+        else {
+          alert('Hubo un error. Por favor verifique.');
+        }
+      });
+    }
+    else {
+      alert('no hacer el insert');
+    }
   }
+});
+
+///Disparar funcion cuando algún elemento de la clase agrandar reciba el foco.
+///Se usa para resaltar el elemento seleccionado.
+$(document).on("focus", ".agrandar", function (){
+  $(this).css("font-size", 28);
+  $(this).css("background-color", "#e7f128");
+  $(this).css("font-weight", "bolder");
+  $(this).css("color", "red");
+});
+
+///Disparar funcion cuando algún elemento de la clase agrandar pierda el foco.
+///Se usa para volver al estado "normal" el elemento que dejó de estar seleccionado.
+$(document).on("blur", ".agrandar", function (){
+  $(this).css("font-size", "inherit");
+  $(this).css("background-color", "#ffffff");
+  $(this).css("font-weight", "inherit");
+  $(this).css("color", "inherit");
 });
 
 /*******************************************************************************************************************************
@@ -701,13 +836,60 @@ $(document).on("click", "#agregarMovimiento", function (){
 ******************************************************************************************************************************
 */
 
-///Disparar funcion al hacer clic en el link del usuario.
+///Disparar funcion al hacer clic en el botón para agregar la importación.
 $(document).on("click", "#agregarImportacion", function (){
   //$(this).css('background-color', '#efe473');
   var seguir = true;
   seguir = validarImportacion();
   if (seguir) {
-    alert('validada');
+    var fecha = $("#fecha").val();
+    var temp = fecha.split('-');
+    var fechaMostrar = temp[2]+"/"+temp[1]+"/"+temp[0];
+    var idProd = $("#hint").val();
+    var nombreProducto = $("#hint").find('option:selected').text( );
+    var stockActual = parseInt($("#hint").find('option:selected').attr("stock"), 10);
+    //var alarma = parseInt($("#hint").find('option:selected').attr("alarma"), 10);
+    var fabricante = $("#fabricante").val();
+    var cantidad = parseInt($("#cantidad").val(), 10);
+    var comentarios = $("#comentarios").val();
+    var idUserBoveda = $("#usuarioBoveda").val();
+    var userBoveda = $("#usuarioBoveda").find('option:selected').attr("name");
+    var idUserGrabaciones = $("#usuarioGrabaciones").val();
+    var userGrabaciones = $("#usuarioGrabaciones").find('option:selected').attr("name");
+    var confirmar = confirm("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fechaMostrar+"\nProducto: "+nombreProducto+"\nFabricante: "+fabricante+"\nCantidad: "+cantidad+"\nControl Bóveda: "+userBoveda+"\nControl Grabaciones: "+userGrabaciones+"\nComentarios: "+comentarios);
+     
+    var nuevoStock = stockActual + cantidad;
+    
+    if (confirmar) {
+      var url = "data/updateQuery.php";
+      var query = "insert into importaciones (producto, fecha, fabricante, cantidad, controlImpor1, controlImpor2, comentarios) values ("+idProd+", '"+fecha+"', '"+fabricante+"', "+cantidad+", "+idUserBoveda+", "+idUserGrabaciones+", '"+comentarios+"')";
+      //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
+      
+      $.getJSON(url, {query: ""+query+""}).done(function(request) {
+        var resultado = request["resultado"];
+        if (resultado === "OK") {
+          var url = "data/updateQuery.php";
+          var query = "update productos set stock="+nuevoStock+" where idprod="+idProd;
+                    
+          $.getJSON(url, {query: ""+query+""}).done(function(request) {
+            var resultado = request["resultado"];
+            if (resultado === "OK") {  
+              alert('Registro agregado correctamente!. Stock actual: '+nuevoStock);
+              location.reload();
+            }
+            else {
+              alert('Hubo un error. Por favor verifique.');
+            }
+          });
+        }
+        else {
+          alert('Hubo un error. Por favor verifique.');
+        }
+      });
+    }
+    else {
+      alert('no hacer el insert');
+    }
   }
 });
 
@@ -973,633 +1155,283 @@ $(document).on("click", "#agregarUsuario", function(){
 ***************************************************************************************************************************
 */
 
+function chequearId(id) {
+  alert(id);
+  alert(this["producto"]);
+}
+
+
 $(document).on("click", "#realizarBusqueda", function () {
   var timestamp = Math.round(Date.now() / 1000);
       
   if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-    window.location.href = "http://localhost/testKMS/index.php";
+    window.location.href = "http://localhost/consultastock/index.php";
   }
   else {
     verificarSesion();
     var radio = $('input:radio[name=criterio]:checked').val();
     var inicio = document.getElementById("inicio").value;
     var fin = document.getElementById("fin").value;
-    var motivo = document.getElementById("motivo").value;
-    var codigo = document.getElementById("codigo").value;
-    var nombreHsm = document.getElementById("nombreHsm").value;
-    var nombreSlot = document.getElementById("nombreSlot").value;
-    var nombreUsuario = document.getElementById("nombreUsuario").value;
-    var empresa = document.getElementById("empresa").value;
-    var nombreLlave = document.getElementById("nombreLlave").value;
-    var ownerLlave = document.getElementById("ownerLlave").value;
-    var versionLlave = document.getElementById("versionLlave").value;
-    var nombreCert = document.getElementById("nombreCert").value;
-    var ownerCert = document.getElementById("ownerCert").value;
-    var versionCert = document.getElementById("versionCert").value;
-    //alert('radio: '+radio+'\nmotivo: '+motivo+'\ninicio: '+inicio+'\nfin: '+fin+'\ncódigo: '+codigo+'\nnombre HSM: '+nombreHsm+'\nnombre Slot: '+nombreSlot+'\nUsuario: '+nombreUsuario+'\nempresa: '+empresa+'\nLlave: '+nombreLlave+'\nownerLlave: '+ownerLlave+'\nversion llave: '+versionLlave+'\nCert: '+nombreCert+'\nowner Cert: '+ownerCert+'\nversion Cert: '+versionCert);
-    var query = '';
+    var entidad = document.getElementById("entidad").value;
+    var idProd = $("#hint").val();
+    var nombreProducto = $("#hint").find('option:selected').text( );
+    var tipo = document.getElementById("tipo").value;
+    var idUser = $("#usuario").val();
+    var nombreUsuario = $("#usuario").find('option:selected').text( );
+    var radioFecha = $('input:radio[name=criterioFecha]:checked').val();
+    var mes = $("#mes").val();
+    var año = $("#año").val();
+    var rangoFecha = null;
+    //alert('radio: '+radio+'\nentidad: '+entidad+'\ninicio: '+inicio+'\nfin: '+fin+'\nproducto: '+nombreProducto +'('+idProd+')'+'\ntipo: '+tipo+'\nusuario: '+nombreUsuario +' ('+idUser+')'+'\ncriterio Fecha: '+radioFecha+'\nmes: '+mes+'\naño: '+año);
+    
+    var query = 'select productos.idProd, productos.entidad, productos.nombre_plastico, productos.bin, productos.stock from productos ';
+    var mensajeFecha = '';
     var consulta = '';
     var tipoConsulta = '';
     var campos;
     var largos;
     var x;
+    
     var validado = true;
+    
     switch (radio) {
-      case 'motivo':  if (motivo === '') {
-                        alert('Debe ingresar el motivo a consultar para este tipo de búsqueda. Por favor verifique!.');
-                        validado = false;
-                        return false;
-                      }
+      case 'entidad': if (entidad !== 'todos') {
+                        query += "where entidad='"+entidad+"'";
+                        tipoConsulta = 'de '+entidad;
+                      } 
                       else {
-                        query = "select idactividades, DATE_FORMAT(fecha, '%d/%m/%Y') as fecha, motivo from actividades where motivo like '%"+motivo+"%'";
-                        consulta = "select DATE_FORMAT(fecha, '%d/%m/%Y') as fecha, motivo from actividades where motivo like '%"+motivo+"%'";
-                        campos = "Id-Fecha-Motivo";
-                        largos = "1-1.5-3.5";
-                        x = 55;
-                        tipoConsulta = "Listado de las actividades que tienen como motivo: "+motivo;
+                        tipoConsulta = 'de todas las entidades';
                       }
                       break;
-      case 'fecha': if ((inicio === '') && (fin === '')) {
-                      alert('Debe seleccionar al menos una de las dos fechas. Por favor verifique!.');
-                      validado = false;
-                      return false;
-                    }
-                    else {
-                      if (inicio === '') {
-                        inicio = $("#inicio" ).attr("min");
-                      }
-                      if (fin === '') {
-                        var temp = new Date();
-                        var dia = temp.getDate();
-                        var mes = temp.getMonth()+1;
-                        if (dia < 10) {
-                          dia = '0'+dia;
-                        }                     
-                        if (mes < 10) {
-                          mes = '0'+mes;
-                        }
-                        fin = temp.getFullYear()+'-'+mes+'-'+dia;
-                      }
-                      //alert("inicio: "+inicio+"\nfin: "+fin);
-                      if (inicio>fin) {
-                        alert('Error. La fecha inicial NO puede ser mayor que la fecha final. Por favor verifique.');
-                        validado = false;
-                        return false;
-                      }
-                      else {
-                        query = "select idactividades, DATE_FORMAT(fecha, '%d/%m/%Y') as fecha, motivo from actividades where fecha>='"+inicio+"' and fecha<='"+fin+"' order by fecha";
-                      }
-                      consulta = "select DATE_FORMAT(fecha, '%d/%m/%Y') as fecha, motivo from actividades where fecha>='"+inicio+"' and fecha<='"+fin+"' order by fecha";
-                      campos = "Id-Fecha-Motivo";
-                      largos = "1-1.5-3.5";
-                      x = 55;
-                      var inicioMostrar = inicio.split('-').reverse().join('/');
-                      var finMostrar = fin.split('-').reverse().join('/');
-                      tipoConsulta = "Listado de las actividades entre las fechas: "+inicioMostrar+" y "+finMostrar;
-                    }
-                    break;
-      case 'codigo':  if (codigo === '') {
-                        alert('Debe ingresar el código a consultar para este tipo de búsqueda. Por favor verifique!.');
-                        validado = false;
-                        return false;
-                      }
-                      else {
-                        query = "select idreferencias, codigo, detalles from referencias where codigo like '%"+codigo+"%'";
-                        consulta = "select codigo, detalles from referencias where codigo like '%"+codigo+"%'";
-                        campos = "Id-Código-Detalles";
-                        largos = "1-2-4";
-                        x = 45;
-                        tipoConsulta = "Listado de las referencias que tienen como parte del código: "+codigo;
-                      }
-                      break;
-      case 'slot':  if ((nombreHsm === 'ninguno') && (nombreSlot === '')) {
-                      alert('Debe seleccionar uno de los HSMs y/o un nombre para este tipo de consultas. Por favor verifique.');
-                      validado = false;
-                      return false;
-                    }
-                    else {
-                      var hsmMostrar = '';
-                      switch (nombreHsm) {
-                        case "1": hsmMostrar = "Producción";
-                                break;
-                        case "2": hsmMostrar = "Back Up";
-                                break;
-                        case "3": hsmMostrar = "Test";
-                                break;
-                        default: break;
-                      }
-                      if (nombreSlot === '') {
-                        query = "select idslots, slots.nombre, slots.estado, hsm.nombre as hsm from slots inner join hsm on slots.hsm=hsm.idhsm where hsm.idhsm='"+nombreHsm+"'";
-                        consulta = "select slots.nombre, hsm.nombre as hsm, slots.estado from slots inner join hsm on slots.hsm=hsm.idhsm where hsm.idhsm='"+nombreHsm+"'";
-                        tipoConsulta = "Listado de los slots en el HSM de "+hsmMostrar;
-                      }
-                      else {
-                        if (nombreHsm === 'ninguno') {
-                          query = "select idslots, slots.nombre, slots.estado, hsm.nombre as hsm from slots inner join hsm on slots.hsm=hsm.idhsm where slots.nombre like '%"+nombreSlot+"%'";
-                          consulta = "select slots.nombre, hsm.nombre as hsm, slots.estado from slots inner join hsm on slots.hsm=hsm.idhsm where slots.nombre like '%"+nombreSlot+"%'";
-                          tipoConsulta = "Listado de los slots cuyo nombre contiene: "+nombreSlot;
+      case 'producto':  if ((idProd === 'NADA') || (nombreProducto === '')){
+                          alert('Debe seleccionar un producto. Por favor verifique.');
+                          document.getElementById("producto").focus();
+                          validado = false;
+                          return false;
                         }
                         else {
-                          query = "select idslots, slots.nombre, slots.estado, hsm.nombre as hsm from slots inner join hsm on slots.hsm=hsm.idhsm where slots.nombre like '%"+nombreSlot+"%' and hsm.idhsm='"+nombreHsm+"'";
-                          consulta = "select slots.nombre, hsm.nombre as hsm, slots.estado from slots inner join hsm on slots.hsm=hsm.idhsm where slots.nombre like '%"+nombreSlot+"%' and hsm.idhsm='"+nombreHsm+"'";
-                          tipoConsulta = "Listado de los slots en el HSM de "+hsmMostrar+" y cuyo nombre contiene: "+nombreSlot;
+                          query += "where idProd="+idProd;
                         }
-                      }
-                    campos = "Id-Nombre-HSM-Estado";
-                    largos = "1-2-2-1";
-                    x = 56;
-                    }
-                    break;
-      case 'usuario': if ((nombreUsuario === '') && (empresa === '')){
-                        alert('Debe seleccionar al menos el nombre del usuario y/o su empresa para este tipo de consulta. Por favor verifique.');
-                        validado = false;
-                        return false;
-                      }
-                      else {
-                        if (nombreUsuario === '') {
-                          query = "select idusuarios, nombre, apellido, empresa, estado from usuarios where empresa like '%"+empresa+"%' order by empresa, apellido";
-                          consulta = "select apellido, nombre, empresa, estado from usuarios where empresa like '%"+empresa+"%' order by empresa, apellido";
-                          tipoConsulta = "Listado de los usuarios cuya empresa contiene: "+empresa;
-                        }
-                        else {
-                          if (empresa === '') {
-                            query = "select idusuarios, nombre, apellido, empresa, estado from usuarios where nombre like '%"+nombreUsuario+"%' or apellido like '%"+nombreUsuario+"%' order by empresa, apellido";
-                            consulta = "select apellido, nombre, empresa, estado from usuarios where nombre like '%"+nombreUsuario+"%' or apellido like '%"+nombreUsuario+"%' order by empresa, apellido";
-                            tipoConsulta = "Listado de los usuarios cuyos nombres y/o apellidos contienen: "+nombreUsuario;
-                          }
-                          else {
-                            query = "select idusuarios, nombre, apellido, empresa, estado from usuarios where empresa like '%"+empresa+"%' and (nombre like '%"+nombreUsuario+"%' or apellido like '%"+nombreUsuario+"%') order by empresa, apellido";
-                            consulta = "select apellido, nombre, empresa, estado from usuarios where empresa like '%"+empresa+"%' and (nombre like '%"+nombreUsuario+"%' or apellido like '%"+nombreUsuario+"%') order by empresa, apellido";
-                            tipoConsulta = "Listado de los usuarios cuya empresa contiene: "+empresa+" y cuyos nombres y/o apellidos contienen: "+nombreUsuario;
-                          }
-                        }
-                        campos = "Id-Apellido-Nombre-Empresa-Estado";
-                        largos = "1-1.5-1.5-1-2";
-                        x = 45;
-                      }
-                      break;
-      case 'llave': if ((ownerLlave === '') && (nombreLlave === '') && (versionLlave === '')) {
-                      alert('Debe seleccionar al menos alguna de las tres opciones (nombre, owner o versión) para este tipo de consulta. Por favor verifique.');
-                      validado = false;
-                      return false;
-                    }
-                    else {
-                      query = "select idkeys, llaves.nombre, llaves.owner, llaves.version, llaves.estado, llaves.kcv, tareas.referencia, slots.nombre as slot, hsm.nombre as hsm from llaves inner join tareas on tareas.idtareas=llaves.tarea inner join referencias on referencias.idreferencias=tareas.referencia inner join slots on slots.idslots=referencias.slot inner join hsm on hsm.idhsm=slots.hsm where ";
-                      consulta = "select llaves.nombre, llaves.owner, llaves.version, llaves.kcv, slots.nombre as slot, hsm.nombre as hsm, llaves.estado from llaves inner join tareas on tareas.idtareas=llaves.tarea inner join referencias on referencias.idreferencias=tareas.referencia inner join slots on slots.idslots=referencias.slot inner join hsm on hsm.idhsm=slots.hsm where ";
-                      if (nombreLlave !== '') {
-                        query += "llaves.nombre like '%"+nombreLlave+"%' ";
-                        consulta += "llaves.nombre like '%"+nombreLlave+"%' ";
-                        tipoConsulta = "Listado de todas las llaves cuyos nombres contienen: "+nombreLlave;
-                      }
-                      if (ownerLlave !== '') {
-                        if (nombreLlave !== '') {
-                          query += "and llaves.owner like '%"+ownerLlave+"%' ";
-                          consulta += "and llaves.owner like '%"+ownerLlave+"%' ";
-                          tipoConsulta += ", y cuyos owners contienen: "+ownerLlave;
-
-                        }
-                        else {
-                          query += "llaves.owner like '%"+ownerLlave+"%' ";
-                          consulta += "llaves.owner like '%"+ownerLlave+"%' ";
-                          tipoConsulta = "Listado de todas las llaves cuyos owners contienen: "+ownerLlave;
-                        }
-                      }
-                      if (versionLlave !== '') {
-                        if ((ownerLlave !== '') || (nombreLlave !== '')) {
-                          query += "and llaves.version like '%"+versionLlave+"%' ";
-                          consulta += "and llaves.version like '%"+versionLlave+"%' ";
-                          tipoConsulta += ", y cuyas versiones contienen: "+versionLlave;
-                        }
-                        else {
-                          query += "llaves.version like '%"+versionLlave+"%' ";
-                          consulta += "llaves.version like '%"+versionLlave+"%' ";
-                          tipoConsulta = "Listado de todas las llaves cuyas versiones contienen: "+versionLlave;
-                        }
-                      }
-                      query += "order by hsm.nombre desc, slots.nombre, llaves.owner, llaves.nombre, llaves.version";
-                      consulta += "order by hsm.nombre desc, slots.nombre, llaves.owner, llaves.nombre, llaves.version";
-                      campos = "Id-Nombre-Owner-Versión-KCV-Slot-HSM-Estado";
-                      largos = "1-1.6-1.2-1-1-1.5-1.5-1";
-                      x = 18;
-                    }
-                    break;
-      case 'cert':  if ((ownerCert === '') && (nombreCert === '') && (versionCert === '')) {
-                      alert('Debe seleccionar al menos alguna de las tres opciones (nombre, owner o versión) para este tipo de consulta. Por favor verifique.');
-                      validado = false;
-                      return false;
-                    }
-                    else {
-                      query = "select idcertificados, certificados.nombre, certificados.owner, certificados.version, certificados.estado, certificados.bandera, DATE_FORMAT(certificados.vencimiento, '%d/%m/%Y') as vencimiento, tareas.referencia, slots.nombre as slot, hsm.nombre as hsm from certificados inner join tareas on tareas.idtareas=certificados.tarea inner join referencias on referencias.idreferencias=tareas.referencia inner join slots on slots.idslots=referencias.slot inner join hsm on hsm.idhsm=slots.hsm where ";
-                      consulta = "select certificados.nombre, certificados.owner, certificados.version, certificados.bandera, DATE_FORMAT(certificados.vencimiento, '%d/%m/%Y') as vencimiento, slots.nombre as slot, hsm.nombre as hsm, certificados.estado from certificados inner join tareas on tareas.idtareas=certificados.tarea inner join referencias on referencias.idreferencias=tareas.referencia inner join slots on slots.idslots=referencias.slot inner join hsm on hsm.idhsm=slots.hsm where ";
-                      if (nombreCert !== '') {
-                        query += "certificados.nombre like '%"+nombreCert+"%' ";
-                        consulta += "certificados.nombre like '%"+nombreCert+"%' ";
-                        tipoConsulta = "Listado de todos los certificados cuyos nombres contienen: "+nombreCert;
-                      }
-                      if (ownerCert !== '') {
-                        if (nombreCert !== '') {
-                          query += "and certificados.owner like '%"+ownerCert+"%' ";
-                          consulta += "and certificados.owner like '%"+ownerCert+"%' ";
-                          tipoConsulta += ", y cuyos owners contienen: "+ownerCert;
-                        }
-                        else {
-                          query += "certificados.owner like '%"+ownerCert+"%' ";
-                          consulta += "certificados.owner like '%"+ownerCert+"%' ";
-                          tipoConsulta = "Listado de todos los certificados cuyos owners contienen: "+ownerCert;
-                        }
-                      }
-                      if (versionCert !== '') {
-                        if ((ownerCert !== '') || (nombreCert !== '')) {
-                          query += "and certificados.version like '%"+versionCert+"%' ";
-                          consulta += "and certificados.version like '%"+versionCert+"%' ";
-                          tipoConsulta += ", y cuyas versiones contienen: "+versionCert;
-                        }
-                        else {
-                          query += "certificados.version like '%"+versionCert+"%' ";
-                          consulta += "certificados.version like '%"+versionCert+"%' ";
-                          tipoConsulta = "Listado de todos los certificados cuyas versiones contienen: "+versionCert;
-                        }
-                      }
-                      query += "order by hsm.nombre desc, slots.nombre, certificados.nombre, certificados.owner, certificados.version";
-                      consulta += "order by hsm.nombre desc, slots.nombre, certificados.nombre, certificados.owner, certificados.version";
-                      campos = "Id-Nombre-Owner-Versión-Bandera-Vencimiento-Slot-HSM-Estado";
-                      largos = "0.6-1.6-1.3-1-1-1.4-1.5-1.4-1";
-                      x = 8;
-                    }
-                    break;
+                        tipoConsulta = 'del producto '+nombreProducto;
+                        break;
       default: break;
     }
-    if (validado) {
+    
+    if (validado) 
+      {
+      if (radioFecha === 'intervalo') {
+        ///Comienzo la validación de las fechas:  
+        if ((inicio === '') && (fin === '')) 
+          {
+          alert('Debe seleccionar al menos una de las dos fechas. Por favor verifique!.');
+          document.getElementById("inicio").focus();
+          validado = false;
+          return false;
+        }
+        else 
+          {
+          if (inicio === '') 
+            {
+            inicio = $("#inicio" ).attr("min");
+            }
+          if (fin === '') 
+            {
+            var temp = new Date();
+            var dia = temp.getDate();
+            var mes = temp.getMonth()+1;
+            if (dia < 10) 
+              {
+              dia = '0'+dia;
+            }                     
+            if (mes < 10) 
+              {
+              mes = '0'+mes;
+            }
+            fin = temp.getFullYear()+'-'+mes+'-'+dia;
+          }
+          //alert("inicio: "+inicio+"\nfin: "+fin);
+          if (inicio>fin) 
+            {
+            alert('Error. La fecha inicial NO puede ser mayor que la fecha final. Por favor verifique.');
+            validado = false;
+            return false;
+          }
+          else 
+            {
+            validado = true;
+            var inicioTemp = inicio.split('-');
+            var inicioMostrar = inicioTemp[2]+"/"+inicioTemp[1]+"/"+inicioTemp[0];
+            var finTemp = fin.split('-');
+            var finMostrar = finTemp[2]+"/"+finTemp[1]+"/"+finTemp[0];
+            rangoFecha = "(fecha >='"+inicio+"') and (fecha<='"+fin+"')";
+            mensajeFecha = "entre las fechas: "+inicioMostrar+" y "+finMostrar;
+          }
+        } /// FIN validación de las fechas.
+      }  
+      else {
+        if (mes === 'todos') {
+          inicio = año+"-01-01";
+          fin = año+"-12-31";
+          mensajeFecha = "del año "+año;
+        }
+        else {
+          inicio = año+"-"+mes+"-01";
+          var mesSiguiente = parseInt(mes, 10) + 1;
+          fin = año+"-"+mesSiguiente+"-01";
+          var mesMostrar = '';
+          switch (mes) {
+            case '01': mesMostrar = "Enero";
+                       break;
+            case '02': mesMostrar = "Febrero";
+                       break;
+            case '03': mesMostrar = "Marzo";
+                       break;
+            case '04': mesMostrar = "Abril";
+                       break;
+            case '05': mesMostrar = "Mayo";
+                       break;
+            case '06': mesMostrar = "Junio";
+                       break;
+            case '07': mesMostrar = "Julio";
+                       break;
+            case '08': mesMostrar = "Agosto";
+                       break;
+            case '09': mesMostrar = "Setiembre";
+                       break;
+            case '10': mesMostrar = "Octubre";
+                       break;
+            case '11': mesMostrar = "Noviembre";
+                       break;
+            case '12': mesMostrar = "Diciembre";
+                       break;
+            default: break;         
+          }
+          mensajeFecha = "del mes de "+mesMostrar+" de "+año;
+        }
+        validado = true;
+        rangoFecha = "(fecha >='"+inicio+"') and (fecha<='"+fin+"')";
+      }
+
+      //alert('radio: '+radio+'\nentidad: '+entidad+'\ninicio: '+inicio+'\nfin: '+fin+'\nproducto: '+nombreProducto +'('+idProd+')'+'\ntipo: '+tipo+'\nusuario: '+nombreUsuario +' ('+idUser+')');
+      //alert(query);
+      var mensajeConsulta = "<h3>Consulta de los movimientos "+tipoConsulta+" "+mensajeFecha+"</h3>";
+      //alert(mensajeConsulta);
+      
       var url = "data/selectQuery.php";
       $.getJSON(url, {query: ""+query+""}).done(function(request){
-        var datos = request.resultado;
-        var total = request.rows;
-        if (total >= 1) {
-          var divs = "<div id='fila' class='row'>\n\
-                        <div id='criterios' class='col-md-5 col-sm-12'></div>\n\
-                        <div id='resultado' class='col-md-7 col-sm-12'></div>\n\
-                      </div>";
-          var tituloCriterios = '<h2>Criterios</h2>';
-          var tablaCriterios = '<table id="parametros" name="parametros" class="tabla2">';
-          var tr1 = '<tr>\n\
-                       <th colspan="5" class="tituloTabla">ACTIVIDADES</th>\n\
-                     </tr>';
-          tr1 += '<tr>\n\
-                      <td><input type="radio" name="criterio" value="motivo" checked="checked"></td>\n\
-                      <td>Motivo:</td><td colspan="3"><input type="text" name="motivo" id="motivo"></td>\n\
-                    </tr>';
-          tr1 += '<tr>\n\
-                    <td><input type="radio" name="criterio" value="fecha"></td>\n\
-                    <td>Entre:</td><td><input type="date" name="inicio" id="inicio" style="width:100%; text-align: center" min="2016-07-01"></td>\n\
-                    <td>y:</td><td><input type="date" name="fin" id="fin" style="width:100%; text-align: center" min="2016-10-01"></td>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <th colspan="5">REFERENCIAS</th>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <td><input type="radio" name="criterio" value="codigo"></td>\n\
-                    <td>Código:</td>\n\
-                    <td colspan="3"><input type="text" name="codigo" id="codigo"></td>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <th colspan="5">SLOTS</th>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <td rowspan="2"><input type="radio" name="criterio" value="slot"></td>\n\
-                    <td>HSM:</td>\n\
-                    <td colspan="3">\n\
-                      <select id="nombreHsm" name="nombreHsm" style="width:100%">\n\
-                        <option value="ninguno" selected="yes">---SELECCIONAR---</option>\n\
-                        <option value="1">Producción</option>\n\
-                        <option value="2">Back Up</option>\n\
-                        <option value="3">Test</option>\n\
-                      </select>\n\
-                    </td>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <td>Nombre:</td>\n\
-                    <td colspan="3"><input type="text" name="nombreSlot" id="nombreSlot"></td>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <th colspan="5">USUARIOS</th>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <td rowspan="2"><input type="radio" name="criterio" value="usuario"></td>\n\
-                    <td>Nombre:</td><td colspan="3"><input type="text" name="nombreUsuario" id="nombreUsuario"></td>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <td>Empresa:</td>\n\
-                    <td colspan="3"><input type="text" name="empresa" id="empresa"></td>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <th colspan="5">LLAVES</th>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <td rowspan="3"><input type="radio" name="criterio" value="llave"></td>\n\
-                    <td>Nombre:</td>\n\
-                    <td colspan="3"><input type="text" name="nombreLlave" id="nombreLlave"></td>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <td>Owner:</td>\n\
-                    <td colspan="3"><input type="text" name="ownerLlave" id="ownerLlave"></td>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <td>Versión:</td>\n\
-                    <td colspan="3"><input type="text" name="versionLlave" id="versionLlave"></td>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <th colspan="5">CERTIFICADOS</th>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <td rowspan="3"><input type="radio" name="criterio" value="cert"></td>\n\
-                    <td>Nombre:</td>\n\
-                    <td colspan="3"><input type="text" name="nombreCert" id="nombreCert"></td>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <td>Owner:</td>\n\
-                    <td colspan="3"><input type="text" name="ownerCert" id="ownerCert"></td>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <td>Versión:</td>\n\
-                    <td colspan="3"><input type="text" name="versionCert" id="versionCert"></td>\n\
-                  </tr>';
-          tr1 += '<tr>\n\
-                    <td colspan="5" class="pieTabla"><input type="button" class="btn-success" name="consultar" id="realizarBusqueda" value="Consultar"></td>\n\
-                  </tr>';
-          tr1 += '</table>';
-          tablaCriterios += tr1;
-          var cargarCriterios = '';
-          cargarCriterios += tituloCriterios;
-          cargarCriterios += tablaCriterios;
-
-          var cargar = '';
-          var encabezado = '<h2>Total de registros: '+total+'</h2>';
-          var subencabezado = '';
-
-          var tabla = '<form name="resultadoBusqueda" id="resultadoBusqueda" action="exportar.php" method="post" class="exportarForm">\n\
-                        <table id="resultado" name="resultado" class="tabla2">';
-          var tr = '';
-
-          switch(radio) {
-            case 'motivo':tr += '<tr><th colspan="3" class="tituloTabla">RESULTADO</th></tr>';
-                          tr +='<tr>\n\
-                                  <th>Id</th>\n\
-                                  <th>Fecha</th>\n\
-                                  <th>Motivo</th>\n\
-                                </tr>';
-                          subencabezado = '<h3>(Búsqueda de actividades según motivo)</h3>';
-                          for(var index in datos) {
-                            var registro = datos[index];
-                            var item = parseInt(index, 10) + 1;
-                            //alert("id: "+registro["idactividades"]+"\nfecha: "+registro["fecha"]+"\nmotivo: "+registro["motivo"]);
-                            tr += '<tr>';
-                            if (index == (total - 1)) {
-                              tr += '<td>';
-                            }
-                            else {
-                              tr += '<td>';
-                            }
-                            tr += item+'</td>\n\
-                                  <td><a href="#titulo" class="detailActivity" id="'+registro.idactividades+'" >'+registro["fecha"]+'</a></td>';
-                            if (index == (total - 1)) {
-                              tr += '<td>';
-                            }
-                            else {
-                              tr += '<td>';
-                            }
-                            tr += registro["motivo"]+'</td>\n\
-                                 </tr>';
-                          }
-                          break;
-            case 'fecha': tr += '<tr><th colspan="3" class="tituloTabla">RESULTADO</th></tr>';
-                          tr += '<tr>\n\
-                                  <th>Id</th>\n\
-                                  <th>Fecha</th>\n\
-                                  <th>Motivo</th>\n\
-                                </tr>';
-                          subencabezado = '<h3>(Búsqueda de actividades según fechas)</h3>';
-                          for(var index in datos) {
-                            var registro = datos[index];
-                            var item = parseInt(index, 10) + 1;
-                            //alert("id: "+registro["idactividades"]+"\nfecha: "+registro["fecha"]+"\nmotivo: "+registro["motivo"]);
-                            tr += '<tr>';
-                            if (index == (total - 1)) {
-                              tr += '<td>';
-                            }
-                            else {
-                              tr += '<td>';
-                            }
-                            tr +=    item+'</td>\n\
-                                     <td><a href="#titulo" class="detailActivity" id="'+registro.idactividades+'" >'+registro["fecha"]+'</a></td>';
-                            if (index == (total - 1)) {
-                              tr += '<td>';
-                            }
-                            else {
-                              tr += '<td>';
-                            }
-                            tr += registro["motivo"]+'</td>\n\
-                                   </tr>';
-                          }
-                          break;
-            case 'codigo':tr += '<tr><th colspan="3" class="tituloTabla">RESULTADO</th></tr>';
-                          tr += '<tr>\n\
-                                   <th>Id</th>\n\
-                                   <th>Código</th>\n\
-                                   <th>Detalles</th>\n\
-                                 </tr>';
-                          subencabezado = '<h3>(Búsqueda de referencias según códigos)</h3>';
-                          for(var index in datos) {
-                            var registro = datos[index];
-                            var item = parseInt(index, 10) + 1;
-                            //alert("id: "+registro["idactividades"]+"\nfecha: "+registro["fecha"]+"\nmotivo: "+registro["motivo"]);
-                            tr += '<tr>';
-                            if (index == (total - 1)) {
-                              tr += '<td>';
-                            }
-                            else {
-                              tr += '<td>';
-                            }
-                            tr += item+'</td>\n\
-                                  <td><a href="referencia.php?idreferencia='+registro.idreferencias+'">'+registro["codigo"]+'</a></td>';
-                            if (index == (total - 1)) {
-                              tr += '<td>';
-                            }
-                            else {
-                              tr += '<td>';
-                            }
-                            tr += registro["detalles"]+'</td>\n\
-                                   </tr>';
-                          } 
-                          break;
-            case 'slot':tr += '<tr><th colspan="4" class="tituloTabla">RESULTADO</th></tr>';
-                        tr +='<tr>\n\
-                                <th>Id</th>\n\
-                                <th>Nombre</th>\n\
-                                <th>HSM</th>\n\
-                                <th>Estado</th>\n\
-                              </tr>';
-                        subencabezado = '<h3>(Búsqueda de slots)</h3>';
-                        for(var index in datos) {
-                          var registro = datos[index];
-                          var item = parseInt(index, 10) + 1;
-                          //alert("id: "+registro["idactividades"]+"\nfecha: "+registro["fecha"]+"\nmotivo: "+registro["motivo"]);
-                          tr += '<tr>';
-                          if (index == (total - 1)) {
-                            tr += '<td>';
-                          }
-                          else {
-                            tr += '<td>';
-                          }
-                          tr += item+'</td>\n\
-                                <td><a href="#" id="'+registro["idslots"]+'" name="'+registro["nombre"]+'" class="detailSlot">'+registro["nombre"]+'</a></td>\n\
-                                <td>'+registro["hsm"]+'</td>';
-                          if (index == (total - 1)) {
-                            tr += '<td>';
-                          }
-                          else {
-                            tr += '<td>';
-                          }
-                          tr += registro["estado"]+'</td>\n\
-                                </tr>';
-                        }  
-                        break;
-            case 'usuario': tr += '<tr><th colspan="5" class="tituloTabla">RESULTADO</th></tr>';
-                            tr +='<tr>\n\
-                                    <th>Id</th>\n\
-                                    <th>Apellido</th>\n\
-                                    <th>Nombre</th>\n\
-                                    <th>Empresa</th>\n\
-                                    <th>Estado</th>\n\
-                                  </tr>';
-                            subencabezado = '<h3>(Búsqueda de usuarios)</h3>';
-                            for(var index in datos) {
-                              var registro = datos[index];
-                              var item = parseInt(index, 10) + 1;
-                              tr += '<tr>';
-                              if (index == (total - 1)) {
-                                tr += '<td>';
-                              }
-                              else {
-                                tr += '<td>';
-                              }
-                              tr += item+'</td>\n\
-                                    <td><a href="#" id="'+registro["idusuarios"]+'" class="detailUser">'+registro["apellido"]+'</a></td>\n\
-                                    <td><a href="#" id="'+registro["idusuarios"]+'" class="detailUser">'+registro["nombre"]+'</a></td>\n\
-                                    <td>'+registro["empresa"]+'</td>';
-                              if (index == (total - 1)) {
-                                tr += '<td>';
-                              }
-                              else {
-                                tr += '<td>';
-                              }
-                              tr += registro["estado"]+'</td>\n\
-                                    </tr>';
-                            }
-                          break;
-            case 'llave': tr += '<tr><th colspan="8" class="tituloTabla">RESULTADO</th></tr>';
-                          tr +='<tr>\n\
-                                  <th>Id</th>\n\
-                                  <th>Nombre</th>\n\
-                                  <th>Owner</th>\n\
-                                  <th>Version</th>\n\
-                                  <th>KCV</th>\n\
-                                  <th>HSM</th>\n\
-                                  <th>Slot</th>\n\
-                                  <th>Estado</th>\n\
-                                </tr>';
-                          subencabezado = '<h3>(Búsqueda de llaves)</h3>';
-                          for(var index in datos) {
-                            var registro = datos[index];
-                            var item = parseInt(index, 10) + 1;
-                            tr += '<tr>';
-                            if (index == (total - 1)) {
-                              tr += '<td>';
-                            }
-                            else {
-                              tr += '<td>';
-                            }
-                            tr += item+'</td>\n\
-                                  <td style="text-align: left"><a href="llave.php?idkey='+registro["idkeys"]+'&ref='+registro["referencia"]+'" id="'+registro["idkeys"]+'" class="detailObject">'+registro["nombre"]+'</a></td>\n\
-                                  <td>'+registro["owner"]+'</td>\n\
-                                  <td>'+registro["version"]+'</td>\n\
-                                  <td>'+registro["kcv"]+'</td>\n\
-                                  <td>'+registro["hsm"]+'</td>\n\
-                                  <td>'+registro["slot"]+'</td>';
-                            if (index == (total - 1)) {
-                              tr += '<td>';
-                            }
-                            else {
-                              tr += '<td>';
-                            }
-                            tr += registro["estado"]+'</td>\n\
-                                  </tr>';
-                          }
-                          break;
-            case 'cert':tr += '<tr><th colspan="9" class="tituloTabla">RESULTADO</th></tr>';
-                        tr +='<tr>\n\
-                                <th>Id</th>\n\
-                                <th>Nombre</th>\n\
-                                <th>Owner</th>\n\
-                                <th>Version</th>\n\
-                                <th>Bandera</th>\n\
-                                <th>Vencimiento</th>\n\
-                                <th>HSM</th>\n\
-                                <th>Slot</th>\n\
-                                <th>Estado</th>\n\
-                              </tr>';
-                        subencabezado = '<h3>(Búsqueda de certificados)</h3>';
-                        for(var index in datos) {
-                          var registro = datos[index];
-                          var item = parseInt(index, 10) + 1;
-                          //var temp = registro["vencimiento"].split("-");
-                          //var fecha = temp[2]+"/"+temp[1]+"/"+temp[0];
-                          tr += '<tr>';
-                          if (index == (total - 1)) {
-                            tr += '<td>';
-                          }
-                          else {
-                            tr += '<td>';
-                          }
-                          tr += item+'</td>\n\
-                                <td nowrap style="text-align: left"><a href="certificado.php?idkey='+registro["idcertificados"]+'&ref='+registro["referencia"]+'" id="'+registro["idcertificados"]+'" class="detailObject">'+registro["nombre"]+'</a></td>\n\
-                                <td>'+registro["owner"]+'</td>\n\
-                                <td>'+registro["version"]+'</td>\n\
-                                <td>'+registro["bandera"]+'</td>\n\
-                                <td>'+registro["vencimiento"]+'</td>\n\
-                                <td>'+registro["hsm"]+'</td>\n\
-                                <td>'+registro["slot"]+'</td>';
-                          if (index == (total - 1)) {
-                            tr += '<td>';
-                          }
-                          else {
-                            tr += '<td>';
-                          }
-                          tr += registro["estado"]+'</td>\n\
-                                </tr>';
-                        }  
-                        break;
-            default: break;
-          }
-          tr += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+consulta+'"></td>\n\
-                    <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                    <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
-                    <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+tipoConsulta+'"></td>\n\
-                    <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td></tr>';
-          tr += '<tr>\n\
-                  <td colspan="9" class="pieTabla">\n\
-                    <input type="button" id="6" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
-                  </td>\n\
-                </tr>';
-          tr += '</table></form>';
-          tabla += tr;
-          cargar += encabezado;
-          cargar += subencabezado;
-          cargar += tabla;
+        var productos = request.resultado;
+        var totalProductos = request.rows;
+             
+        if (totalProductos >= 1) 
+          {
+          var mostrar = "<h2>Resultado de la búsqueda</h2>";
+          mostrar += mensajeConsulta;
+          mostrar += "<h3>Total productos: <font class='naranja'>"+totalProductos+"</font></h3>";
+          
           $("#main-content").empty();
-          $("#main-content").append(divs);
-          $("#criterios").html(cargarCriterios);
-          $("#resultado").html(cargar);
+          var query = "select fecha, hora, producto, tipo, cantidad, comentarios from movimientos where "+rangoFecha;
+          if (totalProductos === 1) {
+            query += " and producto = "+productos[0]["idProd"];
+          }
+          else 
+            {
+            query += " and (";
+            var k = 0;
+            for (k = 0; k<totalProductos-1; k++) {
+              query += " (producto = "+productos[k]["idProd"]+") or";
+            }
+            query += " (producto = "+productos[k]["idProd"]+")) order by producto asc";
+          }
+          
+          if (tipo !== 'todos') {
+            query += " and tipo='"+tipo+"'";
+          }
+          
+          if (idUser !== 'todos') {
+            query += " and (control1="+idUser+" or control2="+idUser+")";
+          }
+
+          $.getJSON(url, {query: ""+query+""}).done(function(request){
+            var movimientos = request.resultado;
+            var movimientosProducto = request.rows;
+            //alert("Total Productos: "+totalProductos+"\nTotal Movimientos: "+movimientosProducto);              
+              for (var i in productos) {
+                var produ = productos[i]["idProd"];
+                var nombre = productos[i]['nombre_plastico'];
+                var bin = productos[i]['bin'];
+                var stock = productos[i]['stock'];
+                if ((bin === 'SIN BIN')||(bin === null)) {
+                  bin = 'No ingresado o no tiene';
+                }
+                var indice = parseInt(i, 10) + 1;
+                var tabla = '<table name="producto" class="tabla2">\n\
+                              <tr>\n\
+                                <th colspan="5" class="tituloTabla">Datos del producto '+indice+'</th>\n\
+                              </tr>\n\
+                              <tr>\n\
+                                <th>Producto:</th>\n\
+                                <td colspan="4" class="fondoNaranja negrita">'+nombre+'</td>\n\
+                              </tr>\n\
+                              <tr>\n\
+                                <th>Entidad:</th>\n\
+                                <td colspan="4">'+productos[i]['entidad']+'</td>\n\
+                              </tr>\n\
+                              <tr>\n\
+                                <th>Bin:</th>\n\
+                                <td colspan="4">'+bin+'</td>\n\
+                              </tr>\n\
+                              <tr>\n\
+                                <th>Stock:</th>\n\
+                                <td colspan="4" class="resaltado">'+stock+'</td>\n\
+                              </tr>';
+                
+                tabla += '<th colspan="5">MOVIMIENTOS</th>';
+                if (movimientosProducto >= 1) {
+                  var existe = false;
+                  for (var j in movimientos) {
+                    var prod = movimientos[j]["producto"];
+                    if (prod === produ) {
+                      if (existe === false) {
+                        tabla += '<tr>\n\
+                                  <th>Fecha</th>\n\
+                                  <th>Hora</th>\n\
+                                  <th>Tipo</th>\n\
+                                  <th>Cantidad</th>\n\
+                                  <th>Comentarios</th>\n\
+                              </tr>';
+                        existe = true;
+                      }
+                      var fecha = movimientos[j]["fecha"];
+                      var hora = movimientos[j]["hora"];
+                      var tipo = movimientos[j]["tipo"];
+                      var cantidad = movimientos[j]["cantidad"];
+                      var comentario = movimientos[j]["comentarios"];
+                      if ((comentario === "undefined")||(comentario === null)) {
+                        comentario = "";
+                      }
+                      //alert("Fecha: "+fecha+"\nHora: "+hora+"\nTipo: "+tipo+"\nCantidad: "+cantidad+"\nComentario: "+comentario);
+                      tabla += '<tr><td>'+fecha+'</td><td>'+hora+'</td><td>'+tipo+'</td><td>'+cantidad+'</td><td>'+comentario+'</td></tr>';
+                    }
+                  }
+                  if (existe === false) {
+                    tabla += "<tr><td colspan='5'>No existen movimientos</td></tr>";
+                    tabla += "<tr><th colspan='5' class='pieTabla'>FIN PRODUCTO</th></tr>";
+                  }
+                  else {
+                    tabla += "<tr><th colspan='5' class='pieTabla'>FIN PRODUCTO</th></tr>";
+                  }
+                }
+                else {
+                  tabla += "<tr><td colspan='5'>No existen movimientos</td></tr>";
+                  tabla += "<tr><th colspan='5' class='pieTabla'>FIN PRODUCTO</th></tr>";
+                }
+                tabla += '</table><br>';
+                mostrar += tabla;
+                  //$("#main-content").empty();
+                
+              }
+              $("#main-content").append(mostrar);
+          });    
         }
         else {
           alert("NO existen registros que coincidan con los criterios de búsqueda establecidos. Por favor verifique.");
@@ -1608,7 +1440,7 @@ $(document).on("click", "#realizarBusqueda", function () {
     }
     else {
       alert('NO validado');//Igualmente no llega a esta etapa dado que al no ser válida retorna falso y sale.
-    }
+    }  
   }
 });
 

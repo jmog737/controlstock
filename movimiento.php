@@ -52,7 +52,7 @@ require_once("data/sesiones.php");
           </tr>
           <tr>
             <th align='left'><font class='negra'>Producto:</font></th>
-            <td align='center'><input type='text' id='producto' name='producto' size='9' onkeyup='showHint(this.value)'></td>
+            <td align='center'><input type='text' id='producto' name='producto' class='agrandar' size='9' onkeyup='showHint(this.value)'></td>
           </tr>  
           <tr>
             <th align='left'><font class='negra'>Tipo:</font></th>
@@ -65,19 +65,23 @@ require_once("data/sesiones.php");
           </tr>
           <tr>
             <th align='left'><font class='negra'>Cantidad:</font></th>
-            <td align='center'><input type='text' id='cantidad' name='cantidad' maxlength='35' size='9'></td>
+            <td align='center'><input type='text' id='cantidad' name='cantidad' class='agrandar' maxlength='35' size='9'></td>
           </tr>
           <tr>
             <th align='left'><font class='negra'>Repetir Cantidad:</font></th>
-            <td align='center'><input type='text' id='cantidad2' name='cantidad2' maxlength='35' size='9'></td>
+            <td align='center'><input type='text' id='cantidad2' name='cantidad2' class='agrandar' maxlength='35' size='9'></td>
+          </tr>
+          <tr>
+            <th align='left'><font class='negra'>Comentarios:</font></th>
+            <td align='center'><input type='textarea' id='comentarios' name='comentarios' class='agrandar' maxlength='35' size='9'></td>
           </tr>
           <th colspan="2">CONTROL</th>
           <tr>
             <th align='left'><font class='negra'>Control Bóveda:</font></th>
             <td>
-              <select id="usuarioBoveda" name="usuarioBoveda" style="width:100%">  
+              <select id="usuarioBoveda" name="usuarioBoveda" style="width:100%">
+                <option value='ninguno' selected='yes'>---Seleccionar---</option>
               <?php
-              
                 foreach($datosBoveda as $dato)
                   {
                   echo "<option value='".$dato['iduser']."' name='".$dato['nombre']." ".$dato['apellido']."'>".$dato['apellido'].", ".$dato['nombre']."</option>";
@@ -90,6 +94,7 @@ require_once("data/sesiones.php");
             <th align='left'><font class='negra'>Control Grabaciones:</font></th>
             <td>
               <select id='usuarioGrabaciones' name='usuarioGrabaciones' style='width: 100%'>
+                <option value='ninguno' selected='yes'>---Seleccionar---</option>
               <?php
                 foreach($datosGrabaciones as $dato)
                   {

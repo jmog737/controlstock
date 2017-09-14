@@ -293,6 +293,18 @@ a.detailObject:focus, a.detailObject:hover {
 .naranja {
   color: #ecb127;
 }
+
+.fondoNaranja {
+  background-color: #ecb127;
+}
+
+.fondoVerde {
+  background-color: #276731;
+}
+
+.negrita {
+  font-weight: bolder;
+}
 /************************* END HOME PAGE *************************************/
 
 

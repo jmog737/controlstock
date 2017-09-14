@@ -54,7 +54,7 @@
     </div><!-- .container -->
   </nav><!-- #header-nav -->
   <script>verificarSesion();</script>
-  <p><input id="estadoSesion" name="estadoSesion" type="text" value="" style="color: black; display: none">
+  <p><input id="usuarioSesion" name="usuarioSesion" type="text" value="" style="color: black; display: none">
     <input id="timestampSesion" name="timestampSesion" type="text" value="" style="color: black; display: none">
     <input id="duracionSesion" name="duracionSesion" type="text" value="<?php echo DURACION?>" style="color: black; display: none">
   </p>

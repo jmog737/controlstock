@@ -8,7 +8,7 @@ require_once("data/sesiones.php");
 *  @brief Formulario para ejecutar consultas.
 *  @author Juan Martín Ortega
 *  @version 1.0
-*  @date Junio 2017
+*  @date Setiembre 2017
 *
 *******************************************************/
 ?>
@@ -19,107 +19,133 @@ require_once("data/sesiones.php");
   <body>
     <?php require_once('header.php');
     if (isset($_SESSION['user_id'])) 
-            {
+      {
+      //Conexión con la base de datos:
+      $dbc = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
+      $consultarProductos = "select idprod, nombre_plastico as nombre from productos order by nombre_plastico asc";
+      $result = consultarBD($consultarProductos, $dbc);
+
+      $productos = array();
+      while (($fila = $result->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+        $productos[] = $fila;
+      }
+      
+      $consultarEntidades = "select distinct entidad from productos order by entidad asc, nombre_plastico asc";
+      $result1 = consultarBD($consultarEntidades, $dbc);
+
+      $entidades = array();
+      while (($fila = $result1->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+        $entidades[] = $fila['entidad'];
+      }
+      
+      $consultarUsuarios = "select iduser, apellido, nombre from usuarios order by sector asc, apellido asc, nombre asc";
+      $result2 = consultarBD($consultarUsuarios, $dbc);
+
+      $usuarios = array();
+      while (($fila = $result2->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+        $usuarios[] = $fila;
+      }
+      
     ?>
     <div id='main-content' class='container-fluid'>
-      <h2 id="titulo" class="encabezado">CONSULTAS</h2>
+      <h2 id="titulo" class="encabezado">BÚSQUEDAS</h2>
       <h3>Seleccione el tipo de consulta a ejecutar.</h3>
+      
       <div id='fila' class='row'>
         <div id='criterios' class='col-md-12 col-sm-12'>
           <table id="parametros" name="parametros" class="tabla2">
             <tr>
-              <th colspan="5" class="tituloTabla">ACTIVIDADES</th>
+              <th colspan="5" class="tituloTabla">CONSULTAS</th>
             </tr>
             <tr>
-              <td>
-                <input type="radio" name="criterio" value="motivo" checked="checked">
+              <td class="fondoVerde">
+                <input type="radio" name="criterio" value="entidad" checked="checked">
               </td>
-              <td>Motivo:</td>
-              <td colspan="3"><input type="text" name="motivo" id="motivo"></td>
+              <th>Entidad:</th>
+              <td colspan="3">
+                <select name='entidad' id='entidad' style='width: 100%'>
+                  <option value='todos' selected="yes">---TODOS---</option>
+                  <?php
+                    foreach($entidades as $dato)
+                      {
+                      echo "<option value='".$dato."'>".$dato."</option>";
+                    }
+                  ?>
+                </select>
+              </td>
             </tr>
             <tr>
-              <td>
-                <input type="radio" name="criterio" value="fecha">
+              <td class="fondoVerde">
+                <input type="radio" name="criterio" value="producto">
               </td>
-              <td>Entre:</td>
+              <th>Producto:</th>
+              <td align='center' colspan="3"><input type='text' id='producto' name='producto' class='agrandar' size='9' onkeyup='showHint(this.value)'></td>
+            </tr>
+            <tr>
+              <td class="fondoNaranja">
+                <input type="radio" name="criterioFecha" value="intervalo">
+              </td>
+              <th>Entre:</th>
               <td><input type="date" name="inicio" id="inicio" style="width:100%; text-align: center" min="2016-07-01"></td>
               <td>y:</td>
               <td><input type="date" name="fin" id="fin" style="width:100%; text-align: center" min="2016-10-01"></td>
             </tr>
             <tr>
-              <th colspan="5">REFERENCIAS</th>
-            </tr>
-            <tr>
-              <td>
-                <input type="radio" name="criterio" value="codigo">
+              <td class="fondoNaranja">
+                <input type="radio" name="criterioFecha" value="mes" checked="checked">
               </td>
-              <td>Código:</td>
-              <td colspan="3">
-                <input type="text" name="codigo" id="codigo">
-              </td>  
-            </tr>
+              <th>Mes:</th>
+              <td>
+                <select id="mes" name="mes" style="width:100%">
+                  <option value="todos" selected="yes">--Seleccionar--</option>
+                  <option value="01">Enero</option>
+                  <option value="02">Febrero</option>
+                  <option value="03">Marzo</option>
+                  <option value="04">Abril</option>
+                  <option value="05">Mayo</option>
+                  <option value="06">Junio</option>
+                  <option value="07">Julio</option>
+                  <option value="08">Agosto</option>
+                  <option value="09">Setiembre</option>
+                  <option value="10">Octubre</option>
+                  <option value="11">Noviembre</option>
+                  <option value="12">Diciembre</option>
+                </select>
+              </td>
+              <th>Año:</th>
+              <td>
+                <select id="año" name="año" style="width:100%">
+                  <option value="2017" selected="yes">2017</option>
+                  <option value="2018">2018</option>
+                </select>
+              </td>
+            </tr>  
             <tr>
-              <th colspan="5">SLOTS</th>
-            </tr>
-            <tr>
-              <td rowspan="2"><input type="radio" name="criterio" value="slot"></td>
-              <td>HSM:</td>
-              <td colspan="3">
-                <select id="nombreHsm" name="nombreHsm" style="width:100%">
-                  <option value="ninguno" selected="yes">---SELECCIONAR---</option>
-                  <option value="1">Producción</option>
-                  <option value="2">Back Up</option>
-                  <option value="3">Test</option>
+              <th>
+                Tipo:
+              </th>
+              <td>
+                <select id="tipo" name="tipo" style="width:100%">
+                  <option value="todos" selected="yes">---TODOS---</option>
+                  <option value="retiro">Retiro</option>
+                  <option value="importacion">Importaci&oacute;n</option>
+                  <option value="devolucion">Devoluci&oacute;n</option>
                 </select>
               </td>
             </tr>
             <tr>
-              <td>Nombre:</td>
-              <td colspan="3"><input type="text" name="nombreSlot" id="nombreSlot"></td>
-            </tr>
-            <tr>
-              <th colspan="5">USUARIOS</th>
-            </tr>
-            <tr>
-              <td rowspan="2"><input type="radio" name="criterio" value="usuario"></td>
-              <td>Nombre:</td>
-              <td colspan="3"><input type="text" name="nombreUsuario" id="nombreUsuario"></td>
-            </tr>
-            <tr>
-              <td>Empresa:</td>
-              <td colspan="3"><input type="text" name="empresa" id="empresa"></td>
-            </tr>
-            <tr>
-              <th colspan="5">LLAVES</th>
-            </tr>
-            <tr>
-              <td rowspan="3"><input type="radio" name="criterio" value="llave"></td>
-              <td>Nombre:</td>
-              <td colspan="3"><input type="text" name="nombreLlave" id="nombreLlave"></td>
-            </tr>
-            <tr>
-              <td>Owner:</td>
-              <td colspan="3"><input type="text" name="ownerLlave" id="ownerLlave"></td>
-            </tr>
-            <tr>
-              <td>Versión:</td>
-              <td colspan="3"><input type="text" name="versionLlave" id="versionLlave"></td>
-            </tr>
-            <tr>
-              <th colspan="5">CERTIFICADOS</th>
-            </tr>
-            <tr>
-              <td rowspan="3"><input type="radio" name="criterio" value="cert"></td>
-              <td>Nombre:</td>
-              <td colspan="3"><input type="text" name="nombreCert" id="nombreCert"></td>
-            </tr>
-            <tr>
-              <td>Owner:</td>
-              <td colspan="3"><input type="text" name="ownerCert" id="ownerCert"></td>
-            </tr>
-            <tr>
-              <td>Versión:</td>
-              <td colspan="3"><input type="text" name="versionCert" id="versionCert"></td>
+              <th>Usuario:</th>
+              <td colspan="3">
+                <select name='usuario' id='usuario' style='width: 100%'>
+                  <option value='todos'>---TODOS---</option>
+                  <?php
+                    foreach($usuarios as $dato)
+                      {
+                      echo "<option value='".$dato['iduser']."'>".$dato['apellido'].", ".$dato['nombre']."</option>";
+                    }
+                  ?>
+                </select>
+              </td>
             </tr>
             <tr>
               <td colspan="5" class="pieTabla">
@@ -138,7 +164,7 @@ require_once("data/sesiones.php");
     
     <script> 
       alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-      window.location.href = "http://localhost/testKMS/index.php";
+      window.location.href = "http://localhost/controlstock/index.php";
     </script>  
     <?php
     }        
