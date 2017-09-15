@@ -1182,11 +1182,9 @@ $(document).on("click", "#realizarBusqueda", function () {
     var mes = $("#mes").val();
     var año = $("#año").val();
     var rangoFecha = null;
-    //alert('radio: '+radio+'\nentidad: '+entidad+'\ninicio: '+inicio+'\nfin: '+fin+'\nproducto: '+nombreProducto +'('+idProd+')'+'\ntipo: '+tipo+'\nusuario: '+nombreUsuario +' ('+idUser+')'+'\ncriterio Fecha: '+radioFecha+'\nmes: '+mes+'\naño: '+año);
     
-    var query = 'select productos.idProd, productos.entidad, productos.nombre_plastico, productos.bin, productos.stock from productos ';
+    var query = 'select productos.idProd, productos.entidad, productos.nombre_plastico, productos.bin, productos.stock, movimientos.fecha, movimientos.hora, movimientos.tipo, movimientos.cantidad, movimientos.control1 as user1, movimientos.control2 as user2, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto ';
     var mensajeFecha = '';
-    var consulta = '';
     var tipoConsulta = '';
     var campos;
     var largos;
@@ -1219,6 +1217,7 @@ $(document).on("click", "#realizarBusqueda", function () {
     
     if (validado) 
       {
+        
       if (radioFecha === 'intervalo') {
         ///Comienzo la validación de las fechas:  
         if ((inicio === '') && (fin === '')) 
@@ -1312,135 +1311,116 @@ $(document).on("click", "#realizarBusqueda", function () {
         rangoFecha = "(fecha >='"+inicio+"') and (fecha<='"+fin+"')";
       }
 
-      //alert('radio: '+radio+'\nentidad: '+entidad+'\ninicio: '+inicio+'\nfin: '+fin+'\nproducto: '+nombreProducto +'('+idProd+')'+'\ntipo: '+tipo+'\nusuario: '+nombreUsuario +' ('+idUser+')');
-      //alert(query);
-      var mensajeConsulta = "<h3>Consulta de los movimientos "+tipoConsulta+" "+mensajeFecha+"</h3>";
-      //alert(mensajeConsulta);
-      
-      var url = "data/selectQuery.php";
-      $.getJSON(url, {query: ""+query+""}).done(function(request){
-        var productos = request.resultado;
-        var totalProductos = request.rows;
-             
-        if (totalProductos >= 1) 
-          {
-          var mostrar = "<h2>Resultado de la búsqueda</h2>";
-          mostrar += mensajeConsulta;
-          mostrar += "<h3>Total productos: <font class='naranja'>"+totalProductos+"</font></h3>";
-          
-          $("#main-content").empty();
-          var query = "select fecha, hora, producto, tipo, cantidad, comentarios from movimientos where "+rangoFecha;
-          if (totalProductos === 1) {
-            query += " and producto = "+productos[0]["idProd"];
-          }
-          else 
-            {
-            query += " and (";
-            var k = 0;
-            for (k = 0; k<totalProductos-1; k++) {
-              query += " (producto = "+productos[k]["idProd"]+") or";
-            }
-            query += " (producto = "+productos[k]["idProd"]+")) order by producto asc";
-          }
-          
-          if (tipo !== 'todos') {
-            query += " and tipo='"+tipo+"'";
-          }
-          
-          if (idUser !== 'todos') {
-            query += " and (control1="+idUser+" or control2="+idUser+")";
-          }
+      var mensajeTipo = '';
+      if (tipo !== 'todos') {
+        query += " and tipo='"+tipo+"'";
+        mensajeTipo = "del tipo "+tipo;
+      }
+      else {
+        mensajeTipo = "de todos los tipos";
+      };
 
-          $.getJSON(url, {query: ""+query+""}).done(function(request){
-            var movimientos = request.resultado;
-            var movimientosProducto = request.rows;
-            //alert("Total Productos: "+totalProductos+"\nTotal Movimientos: "+movimientosProducto);              
-              for (var i in productos) {
-                var produ = productos[i]["idProd"];
-                var nombre = productos[i]['nombre_plastico'];
-                var bin = productos[i]['bin'];
-                var stock = productos[i]['stock'];
-                if ((bin === 'SIN BIN')||(bin === null)) {
-                  bin = 'No ingresado o no tiene';
-                }
-                var indice = parseInt(i, 10) + 1;
-                var tabla = '<table name="producto" class="tabla2">\n\
-                              <tr>\n\
-                                <th colspan="5" class="tituloTabla">Datos del producto '+indice+'</th>\n\
-                              </tr>\n\
-                              <tr>\n\
-                                <th>Producto:</th>\n\
-                                <td colspan="4" class="fondoNaranja negrita">'+nombre+'</td>\n\
-                              </tr>\n\
-                              <tr>\n\
-                                <th>Entidad:</th>\n\
-                                <td colspan="4">'+productos[i]['entidad']+'</td>\n\
-                              </tr>\n\
-                              <tr>\n\
-                                <th>Bin:</th>\n\
-                                <td colspan="4">'+bin+'</td>\n\
-                              </tr>\n\
-                              <tr>\n\
-                                <th>Stock:</th>\n\
-                                <td colspan="4" class="resaltado">'+stock+'</td>\n\
-                              </tr>';
-                
-                tabla += '<th colspan="5">MOVIMIENTOS</th>';
-                if (movimientosProducto >= 1) {
-                  var existe = false;
-                  for (var j in movimientos) {
-                    var prod = movimientos[j]["producto"];
-                    if (prod === produ) {
-                      if (existe === false) {
-                        tabla += '<tr>\n\
-                                  <th>Fecha</th>\n\
-                                  <th>Hora</th>\n\
-                                  <th>Tipo</th>\n\
-                                  <th>Cantidad</th>\n\
-                                  <th>Comentarios</th>\n\
-                              </tr>';
-                        existe = true;
-                      }
-                      var fecha = movimientos[j]["fecha"];
-                      var hora = movimientos[j]["hora"];
-                      var tipo = movimientos[j]["tipo"];
-                      var cantidad = movimientos[j]["cantidad"];
-                      var comentario = movimientos[j]["comentarios"];
-                      if ((comentario === "undefined")||(comentario === null)) {
-                        comentario = "";
-                      }
-                      //alert("Fecha: "+fecha+"\nHora: "+hora+"\nTipo: "+tipo+"\nCantidad: "+cantidad+"\nComentario: "+comentario);
-                      tabla += '<tr><td>'+fecha+'</td><td>'+hora+'</td><td>'+tipo+'</td><td>'+cantidad+'</td><td>'+comentario+'</td></tr>';
-                    }
-                  }
-                  if (existe === false) {
-                    tabla += "<tr><td colspan='5'>No existen movimientos</td></tr>";
-                    tabla += "<tr><th colspan='5' class='pieTabla'>FIN PRODUCTO</th></tr>";
-                  }
-                  else {
-                    tabla += "<tr><th colspan='5' class='pieTabla'>FIN PRODUCTO</th></tr>";
-                  }
-                }
-                else {
-                  tabla += "<tr><td colspan='5'>No existen movimientos</td></tr>";
-                  tabla += "<tr><th colspan='5' class='pieTabla'>FIN PRODUCTO</th></tr>";
-                }
-                tabla += '</table><br>';
-                mostrar += tabla;
-                  //$("#main-content").empty();
-                
-              }
-              $("#main-content").append(mostrar);
-          });    
-        }
+      var mensajeUsuario = '';
+      if (idUser !== 'todos') {
+        query += " and (control1="+idUser+" or control2="+idUser+")";
+        mensajeUsuario = " en los que está involucrado el usuario "+nombreUsuario;
+      }
+      
+      query += " order by entidad asc, producto asc, fecha asc";
+      //alert (query);
+      
+      var mensajeConsulta = "<h3>Consulta de los movimientos "+mensajeTipo +" "+tipoConsulta+" "+mensajeFecha+mensajeUsuario+"</h3>";
+      var mostrar = "<h2>Resultado de la búsqueda</h2>";
+      mostrar += mensajeConsulta;
+
+      var url = "data/selectQuery.php";
+      alert(query);
+      $.getJSON(url, {query: ""+query+""}).done(function(request){
+        var datos = request.resultado;
+        var totalDatos = request.rows;
+        
+        if (totalDatos >= 1) 
+          {
+          $("#main-content").empty();  
+          var tabla = '';
+          tabla += '<table name="producto" class="tabla2">\n\
+                  <tr>\n\
+                    <th colspan="12" class="tituloTabla">Resultado de la consulta</th>\n\
+                  </tr>';
+          tabla += '<tr>\n\
+                        <th>Item</th>\n\
+                        <th>Entidad</th>\n\
+                        <th>Nombre</th>\n\
+                        <th>BIN</th>\n\
+                        <th>Stock Actual</th>\n\
+                        <th>Fecha</th>\n\
+                        <th>Hora</th>\n\
+                        <th>Tipo</th>\n\
+                        <th>Cantidad</th>\n\
+                        <th>Comentario</th>\n\
+                        <th>Usuario1</th>\n\
+                        <th>Usuario2</th>\n\
+                      </tr>';
+          var indice = 1;
+          for (var i in datos) { 
+            var produ = datos[i]["idProd"];
+            var entidad = datos[i]["entidad"];
+            var nombre = datos[i]['nombre_plastico'];
+            var bin = datos[i]['bin'];
+            var stock = datos[i]['stock'];
+            var user1 = datos[i]['user1'];
+            var user2 = datos[i]['user2'];
+            if ((bin === 'SIN BIN')||(bin === null)) {
+              bin = 'N/D o N/C';
+            }
+            var fecha = datos[i]["fecha"];
+            var fechaTemp = fecha.split('-');
+            var fechaMostrar = fechaTemp[2]+"/"+fechaTemp[1]+"/"+fechaTemp[0];
+            var hora = datos[i]["hora"];
+            var horaTemp = hora.split(':');
+            var horaMostrar = horaTemp[0]+":"+horaTemp[1];
+            var tipo = datos[i]["tipo"];
+            var cantidad = datos[i]["cantidad"];
+            var comentario = datos[i]["comentarios"];
+            if ((comentario === "undefined")||(comentario === null)) {
+              comentario = "";
+            }
+            
+
+            tabla += '<tr>\n\
+                        <td>'+indice+'</td>\n\
+                        <td>'+entidad+'</td>\n\
+                        <td>'+nombre+'</td>\n\
+                        <td>'+bin+'</td>\n\
+                        <td>'+stock+'</td>\n\
+                        <td>'+fechaMostrar+'</td>\n\
+                        <td>'+horaMostrar+'</td>\n\
+                        <td>'+tipo+'</td>\n\
+                        <td>'+cantidad+'</td>\n\
+                        <td>'+comentario+'</td>\n\
+                        <td>'+user1+'</td>\n\
+                        <td>'+user2+'</td>\n\
+                      </tr>';
+            indice++;
+          }/// FIN del FOR de datos
+          tabla += '<tr><th colspan="12" class="pieTabla">FIN</th></tr>';
+          tabla += '</table>';
+        }/// FIN del if de totalDatos>1  
         else {
           alert("NO existen registros que coincidan con los criterios de búsqueda establecidos. Por favor verifique.");
-        }
-      });
-    }
+          return false;
+        }                     
+        
+        mostrar += "<h3>Total de movimientos afectados: <font class='naranja'>"+totalDatos+"</font></h3>";
+        mostrar += tabla;
+        var volver = '<br><a href="#" name="volver" id="volverBusqueda" onclick="location.reload()">Volver</a>';
+        mostrar += volver;
+        $("#main-content").append(mostrar);
+      });    
+    }/// Fin del IF de validado
     else {
-      alert('NO validado');//Igualmente no llega a esta etapa dado que al no ser válida retorna falso y sale.
-    }  
+      alert('NO validado');//Igualmente no llega a esta etapa dado que al no ser válida retorna falso y sale.    
+    } 
   }
 });
 
