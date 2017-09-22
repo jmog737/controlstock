@@ -52,14 +52,14 @@ require_once("data/sesiones.php");
           </tr>
           <tr>
             <th align='left'><font class='negra'>Producto:</font></th>
-            <td align='center'><input type='text' id='producto' name='producto' class='agrandar' size='9' onkeyup='showHint(this.value)'></td>
+            <td align='center'><input type='text' id='producto' name='producto' class='agrandar' size='9' onkeyup='showHint(this.value, "#producto")'></td>
           </tr>  
           <tr>
             <th align='left'><font class='negra'>Tipo:</font></th>
             <td align='center'>
               <select id="tipo" name="tipo" style="width:100%">
-                <option value='retiro' selected='yes'>Retiro</option>
-                <option value='devolucion'>Devolución</option>
+                <option value='Retiro' selected='yes'>Retiro</option>
+                <option value='Devoluci&oacute;n'>Devolución</option>
               </select>
             </td>
           </tr>
@@ -84,7 +84,7 @@ require_once("data/sesiones.php");
               <?php
                 foreach($datosBoveda as $dato)
                   {
-                  echo "<option value='".$dato['iduser']."' name='".$dato['nombre']." ".$dato['apellido']."'>".$dato['apellido'].", ".$dato['nombre']."</option>";
+                  echo "<option value='".$dato['iduser']."' name='".$dato['nombre']." ".$dato['apellido']."'>".$dato['nombre']." ".$dato['apellido']."</option>";
                 }
               ?>
               </select> 
@@ -98,7 +98,7 @@ require_once("data/sesiones.php");
               <?php
                 foreach($datosGrabaciones as $dato)
                   {
-                  echo "<option value='".$dato['iduser']."' name='".$dato['nombre']." ".$dato['apellido']."'>".$dato['apellido'].", ".$dato['nombre']."</option>";
+                  echo "<option value='".$dato['iduser']."' name='".$dato['nombre']." ".$dato['apellido']."'>".$dato['nombre']." ".$dato['apellido']."</option>";
                 }
               ?>
               </select>

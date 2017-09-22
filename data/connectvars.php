@@ -28,5 +28,5 @@ define('DB_NAME', 'controlstock');
 /**
   \param DURACION Constante que indica el tiempo de sesión permitido sin actividad.
 */
-define('DURACION', 600);
+define('DURACION', 1200);
 ?>

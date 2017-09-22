@@ -52,7 +52,7 @@ require_once("data/sesiones.php");
           </tr>
           <tr>
             <th align='left'><font class='negra'>Producto:</font></th>
-            <td align='center'><input type='text' id='producto' name='producto' class='agrandar' maxlength='35' size='9' onkeyup='showHint(this.value)'></td>
+            <td align='center'><input type='text' id='producto' name='producto' class='agrandar' maxlength='35' size='9' onkeyup='showHint(this.value, "#producto")'></td>
           </tr>  
           <tr>
             <th align='left'><font class='negra'>Fabricante:</font></th>
@@ -86,7 +86,7 @@ require_once("data/sesiones.php");
               <?php
                 foreach($datosBoveda as $dato)
                   {
-                  echo "<option value='".$dato['iduser']."' name='".$dato['nombre']." ".$dato['apellido']."'>".$dato['apellido'].", ".$dato['nombre']."</option>";
+                  echo "<option value='".$dato['iduser']."' name='".$dato['nombre']." ".$dato['apellido']."'>".$dato['nombre']." ".$dato['apellido']."</option>";
                 }
               ?>
               </select>
@@ -100,7 +100,7 @@ require_once("data/sesiones.php");
               <?php
                 foreach($datosGrabaciones as $dato)
                   {
-                  echo "<option value='".$dato['iduser']."' name='".$dato['nombre']." ".$dato['apellido']."'>".$dato['apellido'].", ".$dato['nombre']."</option>";
+                  echo "<option value='".$dato['iduser']."' name='".$dato['nombre']." ".$dato['apellido']."'>".$dato['nombre']." ".$dato['apellido']."</option>";
                 }
               ?>
               </select>

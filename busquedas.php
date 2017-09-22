@@ -55,15 +55,15 @@ require_once("data/sesiones.php");
         <div id='criterios' class='col-md-12 col-sm-12'>
           <table id="parametros" name="parametros" class="tabla2">
             <tr>
-              <th colspan="5" class="tituloTabla">CONSULTAS</th>
+              <th colspan="5" class="tituloTabla">STOCK</th>
             </tr>
             <tr>
               <td class="fondoVerde">
-                <input type="radio" name="criterio" value="entidad" checked="checked">
+                <input type="radio" name="criterio" value="entidadStock" checked="checked">
               </td>
               <th>Entidad:</th>
               <td colspan="3">
-                <select name='entidad' id='entidad' style='width: 100%'>
+                <select name='entidad' id='entidadStock' style='width: 100%'>
                   <option value='todos' selected="yes">---TODOS---</option>
                   <?php
                     foreach($entidades as $dato)
@@ -76,10 +76,43 @@ require_once("data/sesiones.php");
             </tr>
             <tr>
               <td class="fondoVerde">
-                <input type="radio" name="criterio" value="producto">
+                <input type="radio" name="criterio" value="productoStock">
               </td>
               <th>Producto:</th>
-              <td align='center' colspan="3"><input type='text' id='producto' name='producto' class='agrandar' size='9' onkeyup='showHint(this.value)'></td>
+              <td align='center' colspan="3"><input type='text' id='productoStock' name='producto' class='agrandar' size='9' onkeyup='showHint(this.value, "#productoStock")'></td>
+            </tr>
+            <tr>
+              <td class="fondoVerde">
+                <input type="radio" name="criterio" value="totalStock">
+              </td>
+              <td colspan="4" class="negrita" style="text-align: left">Total de plásticos en bóveda</td>
+            </tr>
+            <tr>
+              <th colspan="5">MOVIMIENTOS</th>
+            </tr>
+            <tr>
+              <td class="fondoVerde">
+                <input type="radio" name="criterio" value="entidadMovimiento">
+              </td>
+              <th>Entidad:</th>
+              <td colspan="3">
+                <select name='entidad' id='entidadMovimiento' style='width: 100%'>
+                  <option value='todos' selected="yes">---TODOS---</option>
+                  <?php
+                    foreach($entidades as $dato)
+                      {
+                      echo "<option value='".$dato."'>".$dato."</option>";
+                    }
+                  ?>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td class="fondoVerde">
+                <input type="radio" name="criterio" value="productoMovimiento">
+              </td>
+              <th>Producto:</th>
+              <td align='center' colspan="3"><input type='text' id='productoMovimiento' name='producto' class='agrandar' size='9' onkeyup='showHint(this.value, "#productoMovimiento")'></td>
             </tr>
             <tr>
               <td class="fondoNaranja">
@@ -148,9 +181,9 @@ require_once("data/sesiones.php");
               </td>
             </tr>
             <tr>
-              <td colspan="5" class="pieTabla">
+              <th colspan="5" class="pieTabla">
                 <input type="button" class="btn-success" name="consultar" id="realizarBusqueda" value="Consultar">
-              </td>
+              </th>
             </tr>
           </table>
         </div>

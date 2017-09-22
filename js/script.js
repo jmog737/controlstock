@@ -151,15 +151,16 @@ function validarEntero(valor)
 /**
  * 
  * @param {String} str String con la cadena de texto a buscar como parte del producto.
+ * @param {String} id String con el id del campo luego del cual se tienen que agregar los datos.
  * \brief Función que muestra las sugerencias de los productos disponibles.
  */
-function showHint(str) {
+function showHint(str, id) {
   if (str.length === 0) { 
     document.getElementById("producto").innerHTML = "";
     return;
   } else {
     var url = "data/selectQuery.php";
-    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, bin, stock, alarma from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') order by productos.nombre_plastico asc";
+    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, bin, snapshot, stock, alarma from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') order by productos.nombre_plastico asc";
     //alert(query);
     $.getJSON(url, {query: ""+query+""}).done(function(request) {
       var sugerencias = request.resultado;
@@ -176,19 +177,22 @@ function showHint(str) {
           if (bin === null) {
             bin = 'SIN BIN';
           }
-          
+          var snapshot = sugerencias[i]["snapshot"];
+          if ((snapshot === null)||(snapshot === '')) {
+            snapshot = 'NADA';
+          }
           var codigo_emsa = sugerencias[i]["codigo_emsa"];
           if ((codigo_emsa === null) || (codigo_emsa === " ")) {
             codigo_emsa = 'SIN CODIGO AÚN';
           }
-          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+bin+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+'>(' + sugerencias[i]["entidad"]+') '+sugerencias[i]["nombre_plastico"] + ' (' +bin+') --'+ codigo_emsa +'--</option>';
+          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+'>(' + sugerencias[i]["entidad"]+') '+sugerencias[i]["nombre_plastico"] + ' (' +bin+') --'+ codigo_emsa +'--</option>';
         }
         mostrar += '</select>';
       }
       else {
         mostrar = '<p name="hint" value="">No se encontraron sugerencias!</p>';
       }
-      $("#producto").after(mostrar);
+      $(id).after(mostrar);
     });
   }
 }
@@ -705,19 +709,18 @@ function todo () {
 ///Cambia el color de fondo para resaltarlo, carga un snapshot del plástico si está disponible, y muestra
 ///el stock actual.
 $(document).on("change", "#hint", function (){
-  var nombreFoto = 'images/snapshots/';
-  var bin = $(this).find('option:selected').attr("name");
-  nombreFoto += bin + ".jpg";
+  var rutaFoto = 'images/snapshots/';
+  var nombreFoto = $(this).find('option:selected').attr("name");
   $(this).css('background-color', '#ffffff');
   
   $("#snapshot").remove();
   $("#stock").remove();
   
-  if (bin !== "NADA"){
-    var mostrar = '<img id="snapshot" name="hint" src="'+nombreFoto+'" alt="No se cargó la foto aún." height="100" width="300"></img>';
+  //if (nombreFoto !== "NADA"){
+    var mostrar = '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
     mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><b>Stock actual: <b><font class="resaltado" style="font-size:1.6em">'+$("#hint").find('option:selected').attr("stock")+'</font></p>';
     $(this).css('background-color', '#efe473');
-  }
+  //}
   
   $("#hint").after(mostrar);
 });
@@ -815,6 +818,7 @@ $(document).on("focus", ".agrandar", function (){
   $(this).css("background-color", "#e7f128");
   $(this).css("font-weight", "bolder");
   $(this).css("color", "red");
+  $(this).parent().prev().prev().children().prop("checked", true);
 });
 
 ///Disparar funcion cuando algún elemento de la clase agrandar pierda el foco.
@@ -856,13 +860,15 @@ $(document).on("click", "#agregarImportacion", function (){
     var userBoveda = $("#usuarioBoveda").find('option:selected').attr("name");
     var idUserGrabaciones = $("#usuarioGrabaciones").val();
     var userGrabaciones = $("#usuarioGrabaciones").find('option:selected').attr("name");
+    var tempDate = new Date();
+    var hora = tempDate.getHours()+":"+tempDate.getMinutes();
     var confirmar = confirm("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fechaMostrar+"\nProducto: "+nombreProducto+"\nFabricante: "+fabricante+"\nCantidad: "+cantidad+"\nControl Bóveda: "+userBoveda+"\nControl Grabaciones: "+userGrabaciones+"\nComentarios: "+comentarios);
      
     var nuevoStock = stockActual + cantidad;
     
     if (confirmar) {
       var url = "data/updateQuery.php";
-      var query = "insert into importaciones (producto, fecha, fabricante, cantidad, controlImpor1, controlImpor2, comentarios) values ("+idProd+", '"+fecha+"', '"+fabricante+"', "+cantidad+", "+idUserBoveda+", "+idUserGrabaciones+", '"+comentarios+"')";
+      var query = "insert into movimientos (producto, fecha, hora, fabricante, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+fabricante+"', 'Importación', "+cantidad+", "+idUserBoveda+", "+idUserGrabaciones+", '"+comentarios+"')";
       //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
       
       $.getJSON(url, {query: ""+query+""}).done(function(request) {
@@ -878,7 +884,7 @@ $(document).on("click", "#agregarImportacion", function (){
               location.reload();
             }
             else {
-              alert('Hubo un error. Por favor verifique.');
+              alert('Hubo un error (update). Por favor verifique.');
             }
           });
         }
@@ -1155,12 +1161,6 @@ $(document).on("click", "#agregarUsuario", function(){
 ***************************************************************************************************************************
 */
 
-function chequearId(id) {
-  alert(id);
-  alert(this["producto"]);
-}
-
-
 $(document).on("click", "#realizarBusqueda", function () {
   var timestamp = Math.round(Date.now() / 1000);
       
@@ -1172,10 +1172,11 @@ $(document).on("click", "#realizarBusqueda", function () {
     var radio = $('input:radio[name=criterio]:checked').val();
     var inicio = document.getElementById("inicio").value;
     var fin = document.getElementById("fin").value;
-    var entidad = document.getElementById("entidad").value;
+    var entidadStock = $("#entidadStock").find('option:selected').val( );
+    var entidadMovimiento = document.getElementById("entidadMovimiento").value;
     var idProd = $("#hint").val();
     var nombreProducto = $("#hint").find('option:selected').text( );
-    var tipo = document.getElementById("tipo").value;
+    var tipo = $("#tipo").find('option:selected').val( );
     var idUser = $("#usuario").val();
     var nombreUsuario = $("#usuario").find('option:selected').text( );
     var radioFecha = $('input:radio[name=criterioFecha]:checked').val();
@@ -1183,41 +1184,93 @@ $(document).on("click", "#realizarBusqueda", function () {
     var año = $("#año").val();
     var rangoFecha = null;
     
-    var query = 'select productos.idProd, productos.entidad, productos.nombre_plastico, productos.bin, productos.stock, movimientos.fecha, movimientos.hora, movimientos.tipo, movimientos.cantidad, movimientos.control1 as user1, movimientos.control2 as user2, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto ';
-    var mensajeFecha = '';
+    var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.snapshot, productos.stock, productos.alarma';
     var tipoConsulta = '';
+    var mensajeFecha = '';
+    var consulta = query;
     var campos;
     var largos;
-    var x;
+    var mostrarCampos = "1-1-1-1-1-1-1-0";;
+    var x = 55;
     
     var validado = true;
+    var validarFecha = false;
+    var validarTipo = false;
+    var validarUser = false;
+    var ordenFecha = false;
+    var rutaFoto = 'images/snapshots/';
     
     switch (radio) {
-      case 'entidad': if (entidad !== 'todos') {
-                        query += "where entidad='"+entidad+"'";
-                        tipoConsulta = 'de '+entidad;
-                      } 
-                      else {
-                        tipoConsulta = 'de todas las entidades';
-                      }
-                      break;
-      case 'producto':  if ((idProd === 'NADA') || (nombreProducto === '')){
-                          alert('Debe seleccionar un producto. Por favor verifique.');
-                          document.getElementById("producto").focus();
-                          validado = false;
-                          return false;
-                        }
-                        else {
-                          query += "where idProd="+idProd;
-                        }
-                        tipoConsulta = 'del producto '+nombreProducto;
-                        break;
+      case 'entidadStock': if (entidadStock !== 'todos') {
+                             query += " from productos where entidad='"+entidadStock+"'";
+                             tipoConsulta = 'del stock de '+entidadStock;
+                           } 
+                           else {
+                             query += ' from productos';
+                             tipoConsulta = 'del stock de todas las entidades';
+                           }
+                           campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Stock";
+                           largos = "0.8-1.2-2.5-0.8-2-1-1";
+                           x = 20;
+                           break;
+      case 'productoStock':  if ((idProd === 'NADA') || (nombreProducto === '')){
+                               alert('Debe seleccionar un producto. Por favor verifique.');
+                               document.getElementById("productoStock").focus();
+                               validado = false;
+                               return false;
+                             }
+                             else {
+                               query += " from productos where idProd="+idProd;
+                             }
+                             tipoConsulta = 'de stock del producto '+nombreProducto;
+                             campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Stock";
+                             largos = "0.8-1.2-2.5-0.8-2-1-1";
+                             x = 40;
+                             break;
+      case 'totalStock':  query = 'select entidad, sum(stock) as subtotal from productos group by entidad';
+                          tipoConsulta = 'del total de plásticos en bóveda';
+                          campos = 'Id-Entidad-Stock';
+                          largos = '1-3.0-1';
+                          x = 65;
+                          break;                    
+      case 'entidadMovimiento': query += ", movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where ";
+                                if (entidadMovimiento !== 'todos') {
+                                  query += "entidad='"+entidadMovimiento+"' and ";
+                                  tipoConsulta = 'de los movimientos de '+entidadMovimiento;
+                                } 
+                                else {
+                                  tipoConsulta = 'de los movimientos de todas las entidades';
+                                }
+                                validarFecha = true;
+                                validarTipo = true;
+                                validarUser = true;
+                                ordenFecha = true;
+                                campos = 'Id-Fecha-Hora-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Tipo-Cantidad-Comentarios';
+                                largos = '1-1.5-1-1.5-2-1-1.5-2-1.5-1-3';
+                                x = 40;
+                                break;                       
+      case 'productoMovimiento':  query += ", movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where ";
+                                  if ((idProd === 'NADA') || (nombreProducto === '')){
+                                    alert('Debe seleccionar un producto. Por favor verifique.');
+                                    document.getElementById("productoMovimiento").focus();
+                                    validado = false;
+                                    return false;
+                                  }
+                                  else {
+                                    query += "idProd="+idProd+' and ';
+                                    validarFecha = true;
+                                    validarTipo = true;
+                                    validarUser = true;
+                                    ordenFecha = true;
+                                  }
+                                  tipoConsulta = 'de los movimientos del producto '+nombreProducto;
+                                  campos = 'Id-Fecha-Hora-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Tipo-Cantidad-Comentarios';
+                                  largos = '1-1.5-1-1.5-2-1-1.5-2-1.5-1-3';
+                                  break;
       default: break;
     }
     
-    if (validado) 
-      {
-        
+    if (validarFecha) {
       if (radioFecha === 'intervalo') {
         ///Comienzo la validación de las fechas:  
         if ((inicio === '') && (fin === '')) 
@@ -1308,33 +1361,54 @@ $(document).on("click", "#realizarBusqueda", function () {
           mensajeFecha = "del mes de "+mesMostrar+" de "+año;
         }
         validado = true;
-        rangoFecha = "(fecha >='"+inicio+"') and (fecha<='"+fin+"')";
+        rangoFecha = "(fecha >='"+inicio+"') and (fecha<'"+fin+"')";
       }
-
-      var mensajeTipo = '';
-      if (tipo !== 'todos') {
-        query += " and tipo='"+tipo+"'";
-        mensajeTipo = "del tipo "+tipo;
+      query += rangoFecha;
+    }
+    
+    
+    if (validado) 
+      {
+      var mensajeTipo = null;  
+      if (validarTipo) {    
+        if (tipo !== 'todos') {
+          query += " and tipo='"+tipo+"'";
+          mensajeTipo = " del tipo "+tipo;
+        }
+        else {
+          mensajeTipo = " de todos los tipos";
+        };
+      }
+      
+      var mensajeUsuario = null;
+      if (validarUser) {
+        if (idUser !== 'todos') {
+          query += " and (control1="+idUser+" or control2="+idUser+")";
+          mensajeUsuario = " en los que está involucrado el usuario "+nombreUsuario;
+        }
+      }
+      
+      if (ordenFecha) {
+        query += " order by fecha desc, hora desc, entidad asc, nombre_plastico asc, idprod";
       }
       else {
-        mensajeTipo = "de todos los tipos";
-      };
-
-      var mensajeUsuario = '';
-      if (idUser !== 'todos') {
-        query += " and (control1="+idUser+" or control2="+idUser+")";
-        mensajeUsuario = " en los que está involucrado el usuario "+nombreUsuario;
+        query += " order by entidad asc, nombre_plastico asc, idprod asc";
       }
       
-      query += " order by entidad asc, producto asc, fecha asc";
-      //alert (query);
-      
-      var mensajeConsulta = "<h3>Consulta de los movimientos "+mensajeTipo +" "+tipoConsulta+" "+mensajeFecha+mensajeUsuario+"</h3>";
+      var mensajeConsulta = "<h3>Consulta "+tipoConsulta;
+      if (mensajeTipo !== null) {
+        mensajeConsulta += " "+mensajeTipo;
+      }
+      mensajeConsulta += " "+mensajeFecha;
+      if (mensajeUsuario !== null) {
+        mensajeConsulta += mensajeUsuario;
+      }
+      mensajeConsulta += "</h3>";
       var mostrar = "<h2>Resultado de la búsqueda</h2>";
       mostrar += mensajeConsulta;
 
       var url = "data/selectQuery.php";
-      alert(query);
+      
       $.getJSON(url, {query: ""+query+""}).done(function(request){
         var datos = request.resultado;
         var totalDatos = request.rows;
@@ -1342,76 +1416,341 @@ $(document).on("click", "#realizarBusqueda", function () {
         if (totalDatos >= 1) 
           {
           $("#main-content").empty();  
-          var tabla = '';
-          tabla += '<table name="producto" class="tabla2">\n\
-                  <tr>\n\
-                    <th colspan="12" class="tituloTabla">Resultado de la consulta</th>\n\
-                  </tr>';
-          tabla += '<tr>\n\
-                        <th>Item</th>\n\
-                        <th>Entidad</th>\n\
-                        <th>Nombre</th>\n\
-                        <th>BIN</th>\n\
-                        <th>Stock Actual</th>\n\
-                        <th>Fecha</th>\n\
-                        <th>Hora</th>\n\
-                        <th>Tipo</th>\n\
-                        <th>Cantidad</th>\n\
-                        <th>Comentario</th>\n\
-                        <th>Usuario1</th>\n\
-                        <th>Usuario2</th>\n\
-                      </tr>';
-          var indice = 1;
-          for (var i in datos) { 
-            var produ = datos[i]["idProd"];
-            var entidad = datos[i]["entidad"];
-            var nombre = datos[i]['nombre_plastico'];
-            var bin = datos[i]['bin'];
-            var stock = datos[i]['stock'];
-            var user1 = datos[i]['user1'];
-            var user2 = datos[i]['user2'];
-            if ((bin === 'SIN BIN')||(bin === null)) {
-              bin = 'N/D o N/C';
-            }
-            var fecha = datos[i]["fecha"];
-            var fechaTemp = fecha.split('-');
-            var fechaMostrar = fechaTemp[2]+"/"+fechaTemp[1]+"/"+fechaTemp[0];
-            var hora = datos[i]["hora"];
-            var horaTemp = hora.split(':');
-            var horaMostrar = horaTemp[0]+":"+horaTemp[1];
-            var tipo = datos[i]["tipo"];
-            var cantidad = datos[i]["cantidad"];
-            var comentario = datos[i]["comentarios"];
-            if ((comentario === "undefined")||(comentario === null)) {
-              comentario = "";
-            }
-            
-
-            tabla += '<tr>\n\
-                        <td>'+indice+'</td>\n\
-                        <td>'+entidad+'</td>\n\
-                        <td>'+nombre+'</td>\n\
-                        <td>'+bin+'</td>\n\
-                        <td>'+stock+'</td>\n\
-                        <td>'+fechaMostrar+'</td>\n\
-                        <td>'+horaMostrar+'</td>\n\
-                        <td>'+tipo+'</td>\n\
-                        <td>'+cantidad+'</td>\n\
-                        <td>'+comentario+'</td>\n\
-                        <td>'+user1+'</td>\n\
-                        <td>'+user2+'</td>\n\
-                      </tr>';
-            indice++;
-          }/// FIN del FOR de datos
-          tabla += '<tr><th colspan="12" class="pieTabla">FIN</th></tr>';
-          tabla += '</table>';
+          var tabla = '<form name="resultadoBusqueda" id="resultadoBusqueda" action="exportar.php" method="post" class="exportarForm">';
+          tabla += '<table name="producto" class="tabla2">';
+          switch(radio) {
+            case 'entidadStock':  tabla += '<tr><th class="tituloTabla" colspan="7">CONSULTA DE STOCK</th></tr>';
+                                  tabla += '<tr>\n\
+                                              <th>Item</th>\n\
+                                              <th>Entidad</th>\n\
+                                              <th>Nombre</th>\n\
+                                              <th>BIN</th>\n\
+                                              <th>Código</th>\n\
+                                              <th>Snapshot</th>\n\
+                                              <th>Stock</th>\n\
+                                           </tr>';
+                                  var indice = 1;
+                                  var total = 0;
+                                  for (var i in datos) { 
+                                    var entidad = datos[i]["entidad"];
+                                    var nombre = datos[i]['nombre_plastico'];
+                                    var bin = datos[i]['bin'];
+                                    var snapshot = datos[i]['snapshot'];
+                                    var codigo_emsa = datos[i]['codigo_emsa'];
+                                    var stock = parseInt(datos[i]['stock'], 10);
+                                    var alarma = parseInt(datos[i]['alarma'], 10);
+                                    var claseResaltado = '';
+                                    if (stock <= alarma) {
+                                      claseResaltado = "alarma";
+                                    }
+                                    else {
+                                      claseResaltado = "resaltado";
+                                    }
+                                    if ((bin === 'SIN BIN')||(bin === null)) 
+                                      {
+                                      bin = 'N/D o N/C';
+                                    }
+                                    tabla += '<tr>\n\
+                                                <td>'+indice+'</td>\n\
+                                                <td style="text-align: left">'+entidad+'</td>\n\
+                                                <td>'+nombre+'</td>\n\
+                                                <td>'+bin+'</td>\n\
+                                                <td>'+codigo_emsa+'</td>\n\
+                                                <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="76" width="120"></img></td>\n\
+                                                <td class="'+claseResaltado+'">'+stock+'</td>\n\
+                                              </tr>';
+                                    indice++;
+                                    total += stock;
+                                  }
+                                  tabla += '<tr><th colspan="6">TOTAL:</th><td class="resaltado1">'+total+'</td></tr>';
+                                  tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                                    <td style="display:none"><input type="text" id="entidad" value="'+entidadStock+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                                  </tr>';
+                                  tabla += '<tr>\n\
+                                              <th class="pieTabla" colspan="7">\n\
+                                                <input type="button" id="1" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
+                                              </th>\n\
+                                            </tr>\n\
+                                          </table>\n\
+                                        </form>';
+                                  break;
+            case 'productoStock': var bin = datos[0]['bin'];
+                                  var produ = datos[0]["idProd"];
+                                  if ((bin === 'SIN BIN')||(bin === null)) 
+                                      {
+                                      bin = 'N/D o N/C';
+                                    }
+                                  var alarma = parseInt(datos[0]['alarma'], 10);
+                                  var stock = parseInt(datos[0]['stock'], 10);
+                                  var snapshot = datos[0]['snapshot'];
+                                  var claseResaltado = '';
+                                  if (stock <= alarma) {
+                                    claseResaltado = "alarma";
+                                  }
+                                  else {
+                                    claseResaltado = "resaltado";
+                                  }  
+                                  tabla += '<tr>\n\
+                                              <th colspan="2" class="tituloTabla">DETALLES</th>\n\
+                                           </tr>';                       
+                                  tabla += '<tr><th>Nombre:</th><td>'+datos[0]['nombre_plastico']+'</td></tr>';
+                                  tabla += '<tr><th>Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
+                                  tabla += '<tr><th>C&oacute;digo:</th><td>'+datos[0]['codigo_emsa']+'</td></tr>';
+                                  tabla += '<tr><th>BIN:</th><td>'+bin+'</td></tr>';
+                                  tabla += '<tr><th>Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
+                                  tabla += '<tr><th>Stock:</th><td class="'+claseResaltado+'">'+stock+'</td></tr>';
+                                  tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                                    <td style="display:none"><input type="text" id="idProd" name="largos" value="'+produ+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+tipoConsulta+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                                  </tr>';
+                                  tabla += '<tr>\n\
+                                              <th class="pieTabla" colspan="2">\n\
+                                                <input type="button" id="2" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
+                                              </th>\n\
+                                            </tr>\n\
+                                          </table>\n\
+                                        </form>';
+                                  break;
+            case 'totalStock':  tabla += '<tr>\n\
+                                            <th colspan="3" class="tituloTabla">DETALLES</th>\n\
+                                          </tr>';
+                                tabla += '<tr>\n\
+                                              <th>Item</th>\n\
+                                              <th>Entidad</th>\n\
+                                              <th>Stock</th>\n\
+                                           </tr>';          
+                                var indice = 1;
+                                var total = 0;
+                                for (var i in datos) { 
+                                  //var produ = datos[i]["idProd"];
+                                  var entidad = datos[i]["entidad"];
+                                  //var nombre = datos[i]['nombre_plastico'];
+                                  var bin = datos[i]['bin'];
+                                  var codigo_emsa = datos[i]['codigo_emsa'];
+                                  var stock = datos[i]['stock'];
+                                  var subtotal = parseInt(datos[i]['subtotal'], 10);
+                                  if ((bin === 'SIN BIN')||(bin === null)) 
+                                    {
+                                    bin = 'N/D o N/C';
+                                  }
+                                  tabla += '<tr>\n\
+                                              <td>'+indice+'</td>\n\
+                                              <td style="text-align: left">'+entidad+'</td>\n\
+                                              <td class="resaltado">'+subtotal+'</td>\n\
+                                            </tr>';
+                                  indice++;  
+                                  total += subtotal;
+                                }
+                                tabla += '<tr><th colspan="2">TOTAL:</th><td class="resaltado1">'+total+'</td></tr>';
+                                tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+tipoConsulta+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                                  </tr>';
+                                tabla += '<tr>\n\
+                                            <th class="pieTabla" colspan="3">\n\
+                                              <input type="button" id="3" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
+                                            </th>\n\
+                                          </tr>\n\
+                                        </table>\n\
+                                      </form>';              
+                                break;
+            case 'entidadMovimiento': tabla += '<tr><th class="tituloTabla" colspan="11">CONSULTA DE MOVIMIENTOS</th></tr>';
+                                      tabla += '<tr>\n\
+                                                  <th>Item</th>\n\
+                                                  <th>Fecha</th>\n\
+                                                  <th>Hora</th>\n\
+                                                  <th>Entidad</th>\n\
+                                                  <th>Nombre</th>\n\
+                                                  <th>BIN</th>\n\
+                                                  <th>Código</th>\n\
+                                                  <th>Snapshot</th>\n\
+                                                  <th>Tipo</th>\n\
+                                                  <th>Cantidad</th>\n\
+                                                  <th>Comentarios</th>\n\
+                                               </tr>';
+                                      var indice = 1;
+                                      for (var i in datos) { 
+                                        //var produ = datos[i]["idProd"];
+                                        var entidad = datos[i]["entidad"];
+                                        var nombre = datos[i]['nombre_plastico'];
+                                        var bin = datos[i]['bin'];
+                                        var codigo_emsa = datos[i]['codigo_emsa'];
+                                        var tipo1 = datos[i]['tipo'];
+                                        var snapshot = datos[i]['snapshot'];
+                                        var fecha = datos[i]['fecha'];
+                                        var fechaTemp = fecha.split('-');
+                                        var fechaMostrar = fechaTemp[2]+"/"+fechaTemp[1]+"/"+fechaTemp[0];
+                                        var hora = datos[i]["hora"];
+                                        var horaTemp = hora.split(':');
+                                        var horaMostrar = horaTemp[0]+":"+horaTemp[1];      
+                                        var cantidad = datos[i]['cantidad'];
+                                        var alarma = parseInt(datos[i]['alarma'], 10);
+                                        var stock = parseInt(datos[i]['stock'], 10);
+                                        var claseResaltado = '';
+                                        if (stock <= alarma) {
+                                          claseResaltado = "alarma";
+                                        }
+                                        else {
+                                          claseResaltado = "resaltado";
+                                        }  
+                                        var comentarios = datos[i]['comentarios'];
+                                        if ((comentarios === "undefined")||(comentarios === null)) {
+                                            comentarios = "";
+                                          }
+                                        if ((bin === 'SIN BIN')||(bin === null)) 
+                                          {
+                                          bin = 'N/D o N/C';
+                                        }
+                                        tabla += '<tr>\n\
+                                                    <td>'+indice+'</td>\n\
+                                                    <td>'+fechaMostrar+'</td>\n\
+                                                    <td>'+horaMostrar+'</td>\n\
+                                                    <td>'+entidad+'</td>\n\
+                                                    <td>'+nombre+'</td>\n\
+                                                    <td>'+bin+'</td>\n\
+                                                    <td>'+codigo_emsa+'</td>\n\
+                                                    <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="75" width="120"></img></td>\n\
+                                                    <td>'+tipo1+'</td>\n\
+                                                    <td class="'+claseResaltado+'">'+cantidad+'</td>\n\
+                                                    <td>'+comentarios+'</td>\n\
+                                                  </tr>';
+                                        indice++;  
+                                        }
+                                      tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="usuario" name="usuario" value="'+idUser+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="criterioFecha" name="criterioFecha" value="'+radioFecha+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="inicio" name="inicio" value="'+inicio+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="fin" name="fin" value="'+fin+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mes" name="mes" value="'+mes+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="año" name="año" value="'+año+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="entidad" value="'+entidadMovimiento+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+tipoConsulta+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                                  </tr>';
+              
+                                      tabla += '<tr>\n\
+                                                  <th class="pieTabla" colspan="11">\n\
+                                                    <input type="button" id="4" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
+                                                  </th>\n\
+                                                </tr>\n\
+                                              </table>\n\
+                                            </form>';  
+                                      break;
+            case 'productoMovimiento':  var bin = datos[0]['bin'];
+                                        var produ = datos[0]['produ'];
+                                        if ((bin === 'SIN BIN')||(bin === null)) 
+                                            {
+                                            bin = 'N/D o N/C';
+                                          }
+                                        var snapshot = datos[0]['snapshot'];  
+                                        tabla += '<tr>\n\
+                                                    <th colspan="2" class="tituloTabla">PRODUCTO</th>\n\
+                                                 </tr>';                       
+                                        tabla += '<tr><th>Nombre:</th><td>'+datos[0]['nombre_plastico']+'</td></tr>';
+                                        tabla += '<tr><th>Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
+                                        tabla += '<tr><th>C&oacute;digo:</th><td>'+datos[0]['codigo_emsa']+'</td></tr>';
+                                        tabla += '<tr><th>BIN:</th><td>'+bin+'</td></tr>';
+                                        tabla += '<tr><th>Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
+                                        tabla += '<tr><th>Stock:</th><td class="resaltado">'+datos[0]['stock']+'</td></tr>';
+                                        tabla += '<tr><th colspan="2" class="pieTabla">FIN</th></tr></table>';
+                                        
+                                        tabla += '<br>';
+                                        tabla += '<table name="movimientos" class="tabla2">';
+                                        tabla += '<tr><th class="tituloTabla" colspan="6">CONSULTA DE MOVIMIENTOS</th></tr>';
+                                        tabla += '<tr>\n\
+                                                    <th>Item</th>\n\
+                                                    <th>Fecha</th>\n\
+                                                    <th>Hora</th>\n\
+                                                    <th>Tipo</th>\n\
+                                                    <th>Cantidad</th>\n\
+                                                    <th>Comentarios</th>\n\
+                                                 </tr>';
+                                        var indice = 1;
+                                        for (var i in datos) { 
+                                          var tipo2 = datos[i]['tipo'];
+                                          var fecha = datos[i]['fecha'];
+                                          var fechaTemp = fecha.split('-');
+                                          var fechaMostrar = fechaTemp[2]+"/"+fechaTemp[1]+"/"+fechaTemp[0];
+                                          var hora = datos[i]["hora"];
+                                          var horaTemp = hora.split(':');
+                                          var horaMostrar = horaTemp[0]+":"+horaTemp[1];
+                                          var cantidad = datos[i]['cantidad'];
+                                          var alarma = parseInt(datos[i]['alarma'], 10);
+                                          var stock = parseInt(datos[i]['stock'], 10);
+                                          var claseResaltado = '';
+                                          if (stock <= alarma) {
+                                            claseResaltado = "alarma";
+                                          }
+                                          else {
+                                            claseResaltado = "resaltado";
+                                          }  
+                                          var comentarios = datos[i]['comentarios'];
+                                          if ((comentarios === "undefined")||(comentarios === null)) {
+                                            comentarios = "";
+                                          }
+                                          tabla += '<tr>\n\
+                                                      <td>'+indice+'</td>\n\
+                                                      <td>'+fechaMostrar+'</td>\n\
+                                                      <td>'+horaMostrar+'</td>\n\
+                                                      <td>'+tipo2+'</td>\n\
+                                                      <td class="'+claseResaltado+'">'+cantidad+'</td>\n\
+                                                      <td>'+comentarios+'</td>\n\
+                                                    </tr>';
+                                          indice++;  
+                                          }
+                                        tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="criterioFecha" name="criterioFecha" value="'+radioFecha+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="inicio" name="inicio" value="'+inicio+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="fin" name="fin" value="'+fin+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mes" name="mes" value="'+mes+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="año" name="año" value="'+año+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="usuario" name="usuario" value="'+idUser+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="idProd" name="largos" value="'+produ+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+tipoConsulta+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                                  </tr>';
+              
+                                        tabla += '<tr>\n\
+                                                    <th class="pieTabla" colspan="6">\n\
+                                                      <input type="button" id="5" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
+                                                    </th>\n\
+                                                  </tr>\n\
+                                                </table>\n\
+                                              </form>';
+                                        break;
+            default: break;
+          }   
         }/// FIN del if de totalDatos>1  
         else {
           alert("NO existen registros que coincidan con los criterios de búsqueda establecidos. Por favor verifique.");
           return false;
         }                     
         
-        mostrar += "<h3>Total de movimientos afectados: <font class='naranja'>"+totalDatos+"</font></h3>";
+        mostrar += "<h3>Total de registros afectados: <font class='naranja'>"+totalDatos+"</font></h3>";
         mostrar += tabla;
         var volver = '<br><a href="#" name="volver" id="volverBusqueda" onclick="location.reload()">Volver</a>';
         mostrar += volver;
@@ -1430,24 +1769,37 @@ $(document).on("click", "#realizarBusqueda", function () {
 $(document).on("click", ".exportar", function (){
   //alert('Está a punto de exportar el listado con las actividades. ¿Desea continuar?.');
   ///Levanto el id que identifica lo que se va a exportar, a saber:
-  /// 1- listado de actividades.
-  /// 2- detalle de una actividad.
-  /// 3- detalle de una referencia.
-  /// 4- detalle de una llave.
-  /// 5- detalle de un certificado.
-  /// 6- resultado de una búsqueda.
-  /// 7- detalle de un usuario.
-  /// 8- detalle de un slot.
+  /// 1- stock por entidad.
+  /// 2- stock por producto.
+  /// 3- stock de plásticos en bóveda.
+  /// 4- movimientos por enttidad.
+  /// 5- movimientos por producto.
   var id = $(this).attr("id");
-  ///recupero el nombre del formulario que hace el llamado (en realidad, el nombre del botón exportar que hace 
-  ///referencia al form:
-  var nombreFormu = $(this).attr("name");
-    
-  var param = "id:"+id+"";
   var x = $("#x").val();
+  var query = $("#query").val();
+  var largos = $("#largos").val();
+  var campos = $("#campos").val();
+  var mostrar = $("#mostrar").val();
+    
+  var param = "id:"+id+"&x:"+x+"&largos:"+largos+"&campos:"+campos+"&query:"+query+"&mostrar:"+mostrar;
+  var criterioFecha = $("#criterioFecha").val();
+  if (criterioFecha === 'intervalo') {
+    var inicio = $("#inicio").val();
+    var fin = $("#fin").val();
+  }
+  else {
+    var mes = $("#mes").val();
+    var año = $("#año").val();
+  }
+  var entidad = $("#entidad").val();
+  var idProd = $("#idProd").val();
+  var tipo = $("#tipo").val();
+  var usuario = $("#usuario").val();
   
-  var enviarMail = confirm('¿Desea enviar por correo electrónico el pdf?');
   var continuar = true;
+  /*
+  var enviarMail = confirm('¿Desea enviar por correo electrónico el pdf?');
+  
   if (enviarMail === true) {
     var dir = prompt('Dirección/es: (SEPARADAS POR COMAS)');
     if (dir === '') {
@@ -1468,55 +1820,36 @@ $(document).on("click", ".exportar", function (){
   else {
     alert('Se optó por no enviar el mail. Se sigue con el guardado en disco y muestra en pantalla.');
   }
-  
+  */
+ 
   ///En base al id, veo si es necesario o no enviar parámetros:
   switch (id) {
-    case "1": param += '&x:55';
-              $("#paramActivity").val(param);
+    case "1": param += '&entidad:'+entidad;
               break;
-    case "2": var actividad = $("#activity").val();
-              param += '&actividad:'+actividad+'&x:55';
-              $("#paramDetail").val(param);
+    case "2": param += '&idProd:'+idProd;
               break;
-    case "3": var idref = $("#idref").val();
-              var idslot = $("#idslot").val();
-              param += '&idref:'+idref+'&idslot:'+idslot;
-              $("#param").val(param);
+    case "3": break;
+    case "4": param += '&entidad:'+entidad+'&tipo:'+tipo+'&usuario:'+usuario;
+              if (criterioFecha === 'intervalo') {
+                param += '&inicio:'+inicio+'&fin:'+fin;
+              }
+              else {
+                param += '&mes:'+mes+'&año:'+año;
+              }
               break;
-    case "4": var idref = $("#idref").val();
-              var idkey = $("#idkey").val();
-              param += '&idref:'+idref+'&idkey:'+idkey;
-              $("#param").val(param);
-              break;
-    case "5": var idref = $("#idref").val();
-              var idcert = $("#idcert").val();
-              param += '&idref:'+idref+'&idcert:'+idcert;
-              $("#param").val(param);
-              break;
-    case "6": var query = $("#query").val();
-              var campos = $("#campos").val();
-              var largos = $("#largos").val();
-              param += '&query:'+query+'&campos:'+campos+'&largos:'+largos+'&x:'+x;
-              $("#param").val(param);
-              break;
-    case "7": var iduser = $("#iduser").val();
-              param += '&iduser:'+iduser;
-              $("#param").val(param);
-              break;
-    case "8": var idslot = $("#idslot").val();
-              param += '&idslot:'+idslot;
-              $("#param").val(param);
+    case "5": param += '&entidad:'+entidad+'&tipo:'+tipo+'&usuario:'+usuario;
+              if (criterioFecha === 'intervalo') {
+                param += '&inicio:'+inicio+'&fin:'+fin;
+              }
+              else {
+                param += '&mes:'+mes+'&año:'+año;
+              }              
               break;
     default: break;
-  } 
-  //alert ($("#param").val());
+  }
+  $("#param").val(param);alert($("#param").val());
   if (continuar) {
-    if (nombreFormu === 'exportarActividades') {
-      $("#listadoActividades").submit();
-    }
-    else {
       $(".exportarForm").submit();
-    }
   }
 });//*** fin del click .exportar ***
 
