@@ -16,8 +16,8 @@ $copiaListados['Juan Martín Ortega'] = "juanortega@emsa.com.uy";
 
 //****************************************************IMPORTANTE:************************************************************************************
 //                                              SETEO DE LAS CARPETAS
-$dir = "D:/PROCESOS/KMS";
-
+$dir = "D:/PROCESOS/PDFS";
+$rutaFotos = "D:/Servidor/disenos/controlstock/images/snapshots";
 //***************************************************************************************************************************************************
 
 class PDF extends PDF_MC_Table
@@ -61,8 +61,8 @@ class PDF extends PDF_MC_Table
     $this->Cell(0, 10, 'Pag. ' . $this->PageNo(), 0, 0, 'C');
     }
 
-  //Tabla tipo listado
-  function agregarTablaListado()
+  //Tabla tipo listado para el stock de una o todas las entidades, o también para el total de plásticos en bóveda:
+  function tablaStockEntidad($total)
     {
     global $totalCampos, $x;
     global $registros, $campos, $largoCampos, $tituloTabla, $tipoConsulta, $mostrar;
@@ -79,7 +79,7 @@ class PDF extends PDF_MC_Table
     $this->SetY(25);
 
     $this->SetX($x);
-    $this->MultiCell($largoCampos[$totalCampos], 7, $tipoConsulta, 0, 'C', 0);
+    $this->MultiCell($largoCampos[$totalCampos], 7, utf8_decode($tipoConsulta), 0, 'C', 0);
     $this->Ln(10);
     
     //************************************** TÍTULO *****************************************************************************************
@@ -87,7 +87,7 @@ class PDF extends PDF_MC_Table
     //Defino color de fondo:
     $this->SetFillColor(153, 255, 102);
     //Escribo el título:
-    $this->Cell($largoCampos[$totalCampos], 7, $tituloTabla, 1, 0, 'C', 1);
+    $this->Cell($largoCampos[$totalCampos], 7, utf8_decode($tituloTabla), 1, 0, 'C', 1);
     $this->Ln();
     //**************************************  FIN TÍTULO ************************************************************************************
     
@@ -100,10 +100,8 @@ class PDF extends PDF_MC_Table
     $this->SetFont('Courier', 'B', 10);
     $j = 0;
     foreach ($campos as $i => $dato) {
-      if ($mostrar[$i]){
       $this->Cell($largoCampos[$j], 6, $campos[$i], 'LRBT', 0, 'C', true);
       $j++;
-      }
       }
       
     $this->Ln();
@@ -111,24 +109,31 @@ class PDF extends PDF_MC_Table
     $this->SetFont('Courier', '', 9);    
     $fill = false;
     foreach ($registros as $i => $dato) {
-      if ($mostrar[$i]) {
-      $this->Row($dato, $fill);
+      $this->EnhancedRow($dato, $mostrar, $fill);
       $this->SetX($x);
       $fill = !$fill;
-      }
     }
+    
+    //Agrego fila final de la tabla con el total de plásticos:
+    $this->SetFont('Courier', 'B', 12);
+    $this->SetFillColor(255, 204, 120);
+    $this->SetTextColor(0);
+    $largoTemp = $largoCampos[$totalCampos] - $largoCampos[$totalCampos-1];
+    $this->Cell($largoTemp, 6, 'TOTAL:', 'LRBT', 0, 'C', true);
+    $this->SetFont('Courier', 'B', 13);
+    $this->SetTextColor(255,0,0);
+    $this->SetFillColor(153, 255, 102);
+    $this->Cell($largoCampos[$totalCampos-1], 6, $total, 'LRBT', 0, 'C', true);
   }
   
-  function detalleUsuario($registro) {
-    $nombre = $registro->nombre;
-    $apellido = $registro->apellido;
-    $empresa = $registro->empresa;
-    $estado = $registro->estado;
-    $obs = $registro->observaciones;
-    $tel = $registro->telefono;
-    $mail = $registro->mail;
+  //Tabla tipo listado con el detalle del producto:
+  function tablaProducto()
+    {
+    global $totalCampos, $x, $h;
+    global $registros, $largoCampos, $tipoConsulta, $c1, $rutaFotos;
     
-    global $c1, $x, $tituloTabla;
+    $cCampo = 1.5*$c1;
+    $cResto = 3.2*$c1;
     
     //Defino color de fondo:
     $this->SetFillColor(255, 156, 233);
@@ -137,16 +142,39 @@ class PDF extends PDF_MC_Table
     //Defino grosor de los bordes:
     $this->SetLineWidth(.3);
     //Defino tipo de letra y tamaño para el Título:
-    $this->SetFont('Courier', 'B', 9);
+    $this->SetFont('Courier', 'B', 12);
     //Establezco las coordenadas del borde de arriba a la izquierda de la tabla:
     $this->SetY(25);
+    
+    $this->SetX(35);
+    $nb = $this->NbLines(140,trim(utf8_decode($tipoConsulta)));
+    $h0=$h*$nb;
+    
+    //Save the current position
+    $x1=$this->GetX();
+    $y=$this->GetY();
+    //Draw the border
+    $this->Rect($x1,$y,140,$h0);
+    //Print the text
+    if ($nb > 1) {
+      $this->MultiCell(140,$h, trim(utf8_decode($tipoConsulta)),'','C', 0);
+      }
+    else {
+      $this->MultiCell(140,$h, trim(utf8_decode($tipoConsulta)),'','C', 0);
+      }  
+      
+    //Put the position to the right of the cell
+    $this->SetXY($x,$y+$h0);
+    
+    //$this->MultiCell($largoCampos[$totalCampos], 7, utf8_decode($tipoConsulta), 0, 'C', 0);
+    $this->Ln(10);
     
     //************************************** TÍTULO *****************************************************************************************
     $this->SetX($x);
     //Defino color de fondo:
     $this->SetFillColor(153, 255, 102);
     //Escribo el título:
-    $this->Cell(5*$c1, 7, $tituloTabla, 1, 0, 'C', 1);
+    $this->Cell($cCampo+$cResto, 7, "DETALLES DEL PRODUCTO", 1, 0, 'C', 1);
     $this->Ln();
     //**************************************  FIN TÍTULO ************************************************************************************
     
@@ -155,52 +183,114 @@ class PDF extends PDF_MC_Table
     $this->SetTextColor(0);
     $this->SetFont('Courier');
     $this->SetX($x);
-
-    $this->SetFont('Courier', 'B', 9);
-    $this->Cell($c1, 7, 'APELLIDO:', 1, 0, 'L', 1);
-    $this->SetFont('Courier'); 
-    $this->Cell(1.5*$c1, 7, utf8_decode($apellido), 1, 0, 'C', 0);
-    $this->SetFont('Courier', 'B', 9);
-    $this->Cell($c1, 7, 'NOMBRE:', 1, 0, 'L', 1);
-    $this->SetFont('Courier'); 
-    $this->Cell(1.5*$c1, 7, utf8_decode($nombre), 1, 0, 'C', 0);
     
+    $nb = $this->NbLines($cResto,trim(utf8_decode($registros[0][2])));
+    $h0=$h*$nb;
+    
+    $this->SetFont('Courier', 'B', 10);
+    $this->Cell($cCampo, $h0, "Nombre:", 'LRBT', 0, 'L', true);
+    $this->SetFont('Courier', '', 9);
+    //Save the current position
+    $x1=$this->GetX();
+    $y=$this->GetY();
+    //Draw the border
+    $this->Rect($x1,$y,$cResto,$h0);
+    //Print the text
+    if ($nb > 1) {
+      $this->MultiCell($cResto,$h, trim(utf8_decode($registros[0][2])),'LRT','C', 0);
+      }
+    else {
+      $this->MultiCell($cResto,$h, trim(utf8_decode($registros[0][2])),1,'C', 0);
+      }  
+      
+    //Put the position to the right of the cell
+    $this->SetXY($x,$y+$h0);
+    
+    $this->SetFont('Courier', 'B', 10);
+    $this->Cell($cCampo, 6, "Entidad:", 'LRBT', 0, 'L', true);
+    $this->SetFont('Courier', '', 9);
+    $this->Cell($cResto, 6, $registros[0][1], 'LRBT', 0, 'C', false);
     $this->Ln();
     $this->SetX($x);
     
-    $this->SetFont('Courier', 'B', 9);
-    $this->Cell($c1, 7, 'EMPRESA:', 1, 0, 'L', 1);
-    $this->SetFont('Courier'); 
-    $this->Cell(1.5*$c1, 7, utf8_decode($empresa), 1, 0, 'C', 0);
-    $this->SetFont('Courier', 'B', 9);
-    $this->Cell($c1, 7, 'ESTADO:', 1, 0, 'L', 1);
-    $this->SetFont('Courier'); 
-    $this->Cell(1.5*$c1, 7, utf8_decode($estado), 1, 0, 'C', 0);
-    
-    $this->Ln();
-    $this->SetX($x);
-    
-    $this->SetFont('Courier', 'B', 9);
-    $this->Cell($c1, 7, 'MAIL:', 1, 0, 'L', 1);
-    $this->SetFont('Courier'); 
-    $this->Cell(4*$c1, 7, utf8_decode($mail), 1, 0, 'C', 0);
-    
-    $this->Ln();
-    $this->SetX($x);
-    
-    $this->SetFont('Courier', 'B', 9);
-    $this->Cell($c1, 7, utf8_decode('TELÉFONO:'), 1, 0, 'L', 1);
-    $this->SetFont('Courier'); 
-    $this->Cell(4*$c1, 7, utf8_decode($tel), 1, 0, 'C', 0);
-    
-    $this->Ln();
-    $this->SetX($x);
-    
-    $this->SetFont('Courier', 'B', 9);
-    $this->Cell(1.6*$c1, 7, utf8_decode('OBSERVACIONES:'), 1, 0, 'L', 1);
-    $this->SetFont('Courier'); 
-    $this->MultiCell(3.4*$c1, 7, utf8_decode($obs), 1, 'C', 0); 
+    $codigo = $registros[0][4];
+    if (($codigo === '')||($codigo === null)) {
+      $codigo = 'No ingresado';
     }
+    $this->SetFont('Courier', 'B', 10);
+    $this->Cell($cCampo, 6, utf8_decode("Código:"), 'LRBT', 0, 'L', true);
+    $this->SetFont('Courier', '', 9);
+    $this->Cell($cResto, 6, $codigo, 'LRBT', 0, 'C', false);
+    $this->Ln();
+    $this->SetX($x);
+    
+    $bin = $registros[0][3];
+    if (($bin === '')||($bin === null)) {
+      $bin = 'N/D o N/C';
+    }
+    $this->SetFont('Courier', 'B', 10);
+    $this->Cell($cCampo, 6, "BIN:", 'LRBT', 0, 'L', true);
+    $this->SetFont('Courier', '', 9);
+    $this->Cell($cResto, 6, $bin, 'LRBT', 0, 'C', false);
+    $this->Ln();
+    $this->SetX($x);
+    
+    $comentarios = trim(utf8_decode($registros[0][8]));
+    if (($comentarios === '')||($comentarios === null)) {
+      $comentarios = '';
+    }
+    $nb = $this->NbLines($cResto,$comentarios);
+    $h0=$h*$nb;
+    
+    $this->SetFont('Courier', 'B', 10);
+    $this->Cell($cCampo, $h0, "Comentarios:", 'LRBT', 0, 'L', true);
+    $this->SetFont('Courier', '', 9);
+    //Save the current position
+    $x1=$this->GetX();
+    $y=$this->GetY();
+    //Draw the border
+    $this->Rect($x1,$y,$cResto,$h0);
+    //Print the text
+    if ($nb > 1) {
+      $this->MultiCell($cResto,$h, $comentarios,'LRT','C', 0);
+      }
+    else {
+      $this->MultiCell($cResto,$h, $comentarios,1,'C', 0);
+      } 
+    //Put the position to the right of the cell
+    $this->SetXY($x,$y+$h0);
+    
+    //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:
+    $alarma = $registros[0][7];
+    $stock = $registros[0][6];
+    
+    $this->SetFont('Courier', 'B', 10);
+    $this->Cell($cCampo, 6, "Stock:", 'LRBT', 0, 'L', true);
+    $this->SetFont('Courier', 'BI', 16);
+    if ($stock < $alarma) {
+      $this->SetFillColor(231, 56, 67);
+      $this->SetTextColor(255);
+    }
+    else {
+      $this->SetFillColor(255, 255, 255);
+    }
+    $this->Cell($cResto, 6, $stock, 'LRBT', 0, 'C', true);
+    $this->Ln();
+    $this->SetX($x);
+    
+    ///Agrego un snapshot de la tarjeta debajo de la tabla (si es que existe!!):
+    $foto = $registros[0][5];
+    if (($foto !== null) && ($foto !== '')) {
+      $rutita = $rutaFotos."/".$foto;
+      $xFoto = $this->GetX();
+      $yFoto = $this->GetY();
+      $this->Ln();
+      $this->Image($rutita, 77, $yfoto, $cResto, 30);
+    }
+    
+    $this->Ln();
+    $this->SetX($x);
+  }
   
 }
   
@@ -290,6 +380,7 @@ function enviarMail($para, $copia, $ocultos, $asunto, $cuerpo, $correo, $adjunto
 //********************************************* Defino tamaño de la celda base: c1, y el número ************************************************
 $pag = 1;
 $c1 = 18;
+$h = 7;
 //******************************************************** FIN tamaños de celdas ***************************************************************
 
 //******************************************************** INICIO Hora y título ****************************************************************
@@ -316,6 +407,8 @@ foreach ($temp1 as $valor) {
                    break;
     case 'idProd': $idslot = $temp2[1];
                    break;
+    case 'nombreProducto': $nombreProducto = $temp2[1];
+                   break;             
     case 'x': $x = $temp2[1];
               break;
     case 'tipo': $tipo = $temp2[1];
@@ -332,12 +425,15 @@ foreach ($temp1 as $valor) {
                    break;
     case 'mails': $mails = $temp2[1];
                   break;
+    case 'tipoConsulta': $tipoConsulta = $temp2[1];
+                         break;            
     case 'mostrar': $mostrar1 = utf8_decode($temp2[1]);
                     $mostrar = preg_split("/-/", $mostrar1);
                     break;
     default: break;                
   }
 }
+// *** FIN RECUPERACIÓN DE PARÁMETROS *******************************
 
 $largoCampos = array();
 $largoTotal = 0;
@@ -347,37 +443,39 @@ foreach ($temp as $valor) {
  $largoTotal += $largo;
 }
 array_push($largoCampos, $largoTotal);
-//var_dump($mostrar);
-//echo "id: ".$id."<br>query: ".$query."<br>largos: ".$largos."<br>campos: ".$campos1."<br>x: ".$x."<br>iduser: ".$iduser."<br>tipo: ".$tipo."<br>inicio: ".$inicio."<br>fin: ".$fin."<br>mes: ".$mes."<br>año: ".$año."<br>FIN<br>";
 
-
-
+//echo "id: ".$id."<br>query: ".$query."<br>largos: ".$largos."<br>campos: ".$campos1."<br>mostrar: ".$mostrar1."<br>x: ".$x."<br>iduser: ".$iduser."<br>tipo: ".$tipo."<br>inicio: ".$inicio."<br>fin: ".$fin."<br>mes: ".$mes."<br>año: ".$año."<br>FIN<br>";
+//echo $query;
 switch ($id) {
-  case "1": //$query = "select DATE_FORMAT(fecha, '%d/%m/%Y') as fecha, motivo from actividades order by fecha desc, idactividades asc";
-            $tituloTabla = utf8_decode("LISTADO DE STOCK");
-            $titulo = "STOCK DE LA ENTIDAD";
+  case "1": $tituloTabla = "LISTADO DE STOCK";
+            $titulo = "STOCK POR ENTIDAD";
             $nombreReporte = "stockEntidad";
             $asunto = "Reporte con el Listado de Stock";
+            $indiceStock = 6;
             break;
-  case "2": $tituloTabla = utf8_decode("STOCK DEL PRODUCTO");
-            $titulo = "PRODUCTO";
+  case "2": $tituloTabla = "STOCK DEL PRODUCTO";
+            $titulo = "STOCK DEL PRODUCTO";
             $nombreReporte = "stockProducto";
             $asunto = "Reporte con el stock del Producto";
+            $indiceStock = 6;
             break;
-  case "3": $tituloTabla = utf8_decode("STOCK TOTAL EN BÓVEDA");
+  case "3": $tituloTabla = "STOCK TOTAL EN BÓVEDA";
             $titulo = "PLÁSTICOS EN BÓVEDA";
             $nombreReporte = "stockBoveda";
             $asunto = "Reporte con el total de plásticos en bóveda";
+            $indiceStock = 2;
             break;
-  case "4": $tituloTabla = utf8_decode("MOVIMIENTOS DE LA ENTIDAD");
+  case "4": $tituloTabla = "MOVIMIENTOS DE LA ENTIDAD";
             $titulo = "MOVIMIENTOS DE LA ENTIDAD";
             $nombreReporte = "movimientosEntidad";
             $asunto = "Reporte con los movimientos de la Entidad";
+            $indiceStock = 10;
             break;
-  case "5": $tituloTabla = utf8_decode("MOVIMIENTOS DEL PRODUCTO");
+  case "5": $tituloTabla = "MOVIMIENTOS DEL PRODUCTO";
             $titulo = "MOVIMIENTOS PRODUCTO";
             $nombreReporte = "movimientosProducto";
             $asunto = "Reporte con los movimientos del Producto";
+            $indiceStock = 10;
             break;       
   default: break;
 }
@@ -387,63 +485,38 @@ $pdfResumen = new PDF();
 //Agrego una página al documento:
 $pdfResumen->AddPage();
 //echo $query;
-
 $totalCampos = sizeof($campos);
+$pdfResumen->SetWidths($largoCampos);
+
 // Conectar con la base de datos
 $con = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 $resultado1 = consultarBD($query, $con);
 
-$pdfResumen->SetWidths($largoCampos);
 $filas = obtenerResultadosArray($resultado1);
 $registros = array();
 $i = 1;
+$total = 0;
 foreach($filas as $fila)
   {
   array_unshift($fila, $i);
   $i++;
+  //Acumulo el total de plásticos ya sea en stock o movidos:
+  $total = $total + $fila[$indiceStock];
   $registros[] = $fila;
 }
-$pdfResumen->agregarTablaListado();    
+switch ($id) {
+  case "1": $pdfResumen->tablaStockEntidad($total);
+            break;
+  case "2": $x = 65;//echo "nombre: ".$nombreProducto;
+            $pdfResumen->tablaProducto();
+            break;
+  case "3": $pdfResumen->tablaStockEntidad($total);
+            break;
+  case "4": break;
+  case "5": break;
+  default: break;
+}    
 
-//else {
-  /*
-  if ($id !== "2") {
-    $filas = obtenerResultados($resultado1);
-    $registro = $filas[1];
-  }  
-  switch ($id) {
-    case "2": $x = 45;
-              $pdfResumen->detalleActividad($datos);
-              $nombreReporte = "detalleActividad";
-              $asunto = "Reporte KM con el detalle de la Actividad";
-              break;
-    case "3": $x = 45;
-              $resultado2 = consultarBD($query1, $con);
-              $registros2 = obtenerResultados($resultado2);
-              $resultado3 = consultarBD($query2, $con);
-              $registros3 = obtenerResultados($resultado3);
-              $resultado4 = consultarBD($query3, $con);
-              $registros4 = obtenerResultados($resultado4);
-              $pdfResumen->detalleReferencia($registro, $registros2, $registros3, $registros4);
-              $nombreReporte = "detalleReferencia";
-              $asunto = "Reporte KM con el detalle de la Referencia";
-              break;
-    case "4": $x = 54;
-              $pdfResumen->detalleLlave($registro);
-              $nombreReporte = "detalleLlave";
-              $asunto = "Reporte KM con el detalle de la llave";
-              break;
-    case "5": $x = 45;
-              $pdfResumen->detalleCertificado($registro);
-              $nombreReporte = "detalleCertificado";
-              $asunto = "Reporte KM con el detalle del Certificado";
-              break;
-    default: break;
-  }
-  */
-//}
-
-//$nombreReporte = "resultado";
 $timestamp = date('Ymd_His');
 $nombreArchivo = $nombreReporte.$timestamp.".pdf";
 $salida = $dir."/".$nombreArchivo;

@@ -35,6 +35,7 @@
             <ul class="dropdown-menu menu hidden-xs">
               <li><a href="movimiento.php">Movimientos</a></li>
               <li><a href="importacion.php">Importaciones</a></li>
+              <li><a href="producto.php">Productos</a></li>
               <li><a href="busquedas.php">Consultas</a></li>
               <li role="separator" class="divider"></li>
               <li><a href="#">Administrar</a></li>
@@ -42,6 +43,7 @@
             
             <li class='visible-xs'><a href="movimiento.php">Movimientos</a></li>
             <li class="visible-xs"><a href="importacion.php">Importaciones</a></li>
+            <li class='visible-xs'><a href="producto.php">Productos</a></li>
             <li role="separator" class="divider visible-xs"></li>
             <li class='visible-xs'><a href="#">Administrar</a></li>
             

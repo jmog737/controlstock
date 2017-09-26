@@ -79,7 +79,7 @@ require_once("data/sesiones.php");
           </tr>
           <th colspan="2">CONTROL</th>
           <tr>
-            <th align='left'><font class='negra'>Control Bóveda:</font></th>
+            <th align='left'><font class='negra'>Control 1:</font></th>
             <td>
               <select id="usuarioBoveda" name="usuarioBoveda" style="width:100%">  
                 <option value='ninguno' selected='yes'>---Seleccionar---</option>
@@ -88,16 +88,24 @@ require_once("data/sesiones.php");
                   {
                   echo "<option value='".$dato['iduser']."' name='".$dato['nombre']." ".$dato['apellido']."'>".$dato['nombre']." ".$dato['apellido']."</option>";
                 }
+                foreach($datosGrabaciones as $dato)
+                  {
+                  echo "<option value='".$dato['iduser']."' name='".$dato['nombre']." ".$dato['apellido']."'>".$dato['nombre']." ".$dato['apellido']."</option>";
+                }
               ?>
               </select>
             </td>
           </tr>
           <tr>
-            <th align='left'><font class='negra'>Control Grabaciones:</font></th>
+            <th align='left'><font class='negra'>Control 2:</font></th>
             <td>
               <select id='usuarioGrabaciones' name='usuarioGrabaciones' style='width: 100%'>
                 <option value='ninguno' selected='yes'>---Seleccionar---</option>
               <?php
+                foreach($datosBoveda as $dato)
+                  {
+                  echo "<option value='".$dato['iduser']."' name='".$dato['nombre']." ".$dato['apellido']."'>".$dato['nombre']." ".$dato['apellido']."</option>";
+                }
                 foreach($datosGrabaciones as $dato)
                   {
                   echo "<option value='".$dato['iduser']."' name='".$dato['nombre']." ".$dato['apellido']."'>".$dato['nombre']." ".$dato['apellido']."</option>";

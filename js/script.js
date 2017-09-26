@@ -160,7 +160,7 @@ function showHint(str, id) {
     return;
   } else {
     var url = "data/selectQuery.php";
-    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, bin, snapshot, stock, alarma from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') order by productos.nombre_plastico asc";
+    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') and estado='activo' order by productos.nombre_plastico asc";
     //alert(query);
     $.getJSON(url, {query: ""+query+""}).done(function(request) {
       var sugerencias = request.resultado;
@@ -174,7 +174,7 @@ function showHint(str, id) {
         mostrar += '<option value="NADA" name="NADA">--Seleccionar--</option>';
         for (var i in sugerencias) {
           var bin = sugerencias[i]["bin"];
-          if (bin === null) {
+          if ((bin === null)||(bin === '')) {
             bin = 'SIN BIN';
           }
           var snapshot = sugerencias[i]["snapshot"];
@@ -182,10 +182,10 @@ function showHint(str, id) {
             snapshot = 'NADA';
           }
           var codigo_emsa = sugerencias[i]["codigo_emsa"];
-          if ((codigo_emsa === null) || (codigo_emsa === " ")) {
+          if ((codigo_emsa === null) || (codigo_emsa === "")) {
             codigo_emsa = 'SIN CODIGO AÚN';
           }
-          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+'>(' + sugerencias[i]["entidad"]+') '+sugerencias[i]["nombre_plastico"] + ' (' +bin+') --'+ codigo_emsa +'--</option>';
+          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+'>(' + sugerencias[i]["entidad"]+') '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
         }
         mostrar += '</select>';
       }
@@ -193,6 +193,58 @@ function showHint(str, id) {
         mostrar = '<p name="hint" value="">No se encontraron sugerencias!</p>';
       }
       $(id).after(mostrar);
+    });
+  }
+}
+
+/**
+ * 
+ * @param {String} str String con la cadena de texto a buscar como parte del producto.
+ * @param {String} id String con el id del campo luego del cual se tienen que agregar los datos.
+ * \brief Función que muestra las sugerencias de los productos disponibles.
+ */
+function showHintProd(str, id) {
+  if (str.length === 0) { 
+    document.getElementById("producto").innerHTML = "";
+    return;
+  } else {
+    $("#editarProducto").attr("disabled", false);
+    $("#eliminarProducto").attr("disabled", false);
+    var url = "data/selectQuery.php";
+    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') and estado='activo' order by productos.nombre_plastico asc";
+    //alert(query);
+    $.getJSON(url, {query: ""+query+""}).done(function(request) {
+      var sugerencias = request.resultado;
+      var totalSugerencias = request.rows;
+      $("[name='hintProd']").remove();
+      
+      var mostrar = '';
+      
+      if (totalSugerencias >= 1) {
+        mostrar = '<select name="hintProd" id="hintProd" style="width: 100%">';
+        mostrar += '<option value="NADA" name="NADA" selected>--Seleccionar--</option>';
+        for (var i in sugerencias) {
+          var bin = sugerencias[i]["bin"];
+          if ((bin === null) || (bin === '') ){
+            bin = 'SIN BIN';
+          }
+          var snapshot = sugerencias[i]["snapshot"];
+          if ((snapshot === null)||(snapshot === '')) {
+            snapshot = 'NADA';
+          }
+          var codigo_emsa = sugerencias[i]["codigo_emsa"];
+          if ((codigo_emsa === null) || (codigo_emsa === "")) {
+            codigo_emsa = 'SIN CODIGO AÚN';
+          }
+          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+'>(' + sugerencias[i]["entidad"]+') '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
+        }
+        mostrar += '</select>';
+      }
+      else {
+        mostrar = '<p name="hintProd" value="">No se encontraron sugerencias!</p>';
+      }
+      $(id).after(mostrar);
+      inhabilitarProducto();
     });
   }
 }
@@ -270,7 +322,7 @@ function validarMovimiento()
             {
             if (usuarioBoveda === "ninguno")
               {
-              alert('Se debe seleccionar al representante del sector Bóveda. Por favor verifique!.');
+              alert('Se debe seleccionar al controlador 1. Por favor verifique!.');
               document.getElementById("usuarioBoveda").focus();
               seguir = false;
             } 
@@ -278,13 +330,20 @@ function validarMovimiento()
               {
               if (usuarioGrabaciones === "ninguno")
                 {
-                alert('Se debe seleccionar al representante del sector Grabaciones. Por favor verifique!.');
+                alert('Se debe seleccionar al controlador 2. Por favor verifique!.');
                 document.getElementById("usuarioGrabaciones").focus();
                 seguir = false;
               } 
               else
                 {
+                if (usuarioGrabaciones === usuarioBoveda) {
+                  alert('NO puede estar el mismo usuario en ambos controles. Por favor verifique!.');
+                  document.getElementById("usuarioGrabaciones").focus();
+                  seguir = false;
+                } 
+                else {  
                   seguir = true;
+                }
               }// usuarioGrabaciones
             }// usuarioBoveda  
           }// cantidad != cantidad2
@@ -369,7 +428,7 @@ function validarImportacion()
             {
             if (usuarioBoveda === "ninguno")
               {
-              alert('Se debe seleccionar al representante del sector Bóveda. Por favor verifique!.');
+              alert('Se debe seleccionar al controlador 1. Por favor verifique!.');
               document.getElementById("usuarioBoveda").focus();
               seguir = false;
             } 
@@ -377,13 +436,20 @@ function validarImportacion()
               {
               if (usuarioGrabaciones === "ninguno")
                 {
-                alert('Se debe seleccionar al representante del sector Grabaciones. Por favor verifique!.');
+                alert('Se debe seleccionar al controlador 2. Por favor verifique!.');
                 document.getElementById("usuarioGrabaciones").focus();
                 seguir = false;
               } 
               else
                 {
-                seguir = true;
+                if (usuarioGrabaciones === usuarioBoveda) {
+                  alert('NO puede estar el mismo usuario en ambos controles. Por favor verifique!.');
+                  document.getElementById("usuarioGrabaciones").focus();
+                  seguir = false;
+                } 
+                else {
+                  seguir = true;
+                }
               }// usuarioGrabaciones
             }// usuarioBoveda
           }// cantidad != cantidad2
@@ -658,14 +724,79 @@ function validarUsuario()
 /// ************************************************* FUNCIONES BÚSQUEDAS **********************************************
 ************************************************************************************************************************
 */
+
 function validarBusqueda() {
   
 }
 
+/***********************************************************************************************************************
+/// *********************************************** FIN FUNCIONES BÚSQUEDAS *********************************************
+************************************************************************************************************************
+**/
 
 
 /***********************************************************************************************************************
-/// ********************************************** FIN FUNCIONES BÚSQUEDAS *********************************************
+/// ************************************************* FUNCIONES PRODUCTOS **********************************************
+************************************************************************************************************************
+*/
+
+function validarProducto() {
+  var entidad = $("#entidad").val();
+  var nombre = $("#nombre").val();
+  
+  if ((entidad === '') || (entidad === null)) {
+    alert('El campo Entidad NO puede estar vacío. Por favor verifique.');
+    $("#entidad").focus();
+    return false;
+  }
+  else {
+    if ((nombre === '') || (nombre === null)) {
+      alert('El Nombre del producto NO puede estar vacío. Por favor verifique.');
+      $("#nombre").focus();
+      return false;
+    }
+    else {
+      return true;
+    }
+  }
+}
+
+/**
+  \brief Función que deshabilita los input del form Producto.
+*/
+function inhabilitarProducto(){
+  document.getElementById("nombre").disabled = true;
+  document.getElementById("entidad").disabled = true;
+  document.getElementById("codigo_origen").disabled = true;
+  document.getElementById("codigo_emsa").disabled = true;
+  document.getElementById("bin").disabled = true;
+  document.getElementById("alarma").disabled = true;
+  document.getElementById("ultimoMovimiento").disabled = true;
+  document.getElementById("comentarios").disabled = true;
+  document.getElementById("stockProducto").disabled = true;
+  document.getElementById("editarProducto").value = "EDITAR";
+  document.getElementById("actualizarProducto").disabled = true;
+}
+
+/**
+  \brief Función que habilita los input del form Producto.
+*/
+function habilitarProducto(){
+  document.getElementById("nombre").disabled = false;
+  document.getElementById("entidad").disabled = false;
+  document.getElementById("codigo_origen").disabled = false;
+  document.getElementById("codigo_emsa").disabled = false;
+  document.getElementById("bin").disabled = false;
+  document.getElementById("alarma").disabled = false;
+  //document.getElementById("ultimoMovimiento").disabled = false;
+  document.getElementById("comentarios").disabled = false;
+  //document.getElementById("stockProducto").disabled = false;
+  document.getElementById("editarProducto").value = "BLOQUEAR";
+  document.getElementById("actualizarProducto").disabled = false;
+}
+
+/***********************************************************************************************************************
+/// ********************************************** FIN FUNCIONES PRODUCTOS *********************************************
 ************************************************************************************************************************
 **/
 
@@ -699,6 +830,25 @@ function todo () {
     }
     default: break;
   }  
+  
+  ///Disparar funcion cuando algún elemento de la clase agrandar reciba el foco.
+///Se usa para resaltar el elemento seleccionado.
+$(document).on("focus", ".agrandar", function (){
+  $(this).css("font-size", 28);
+  $(this).css("background-color", "#e7f128");
+  $(this).css("font-weight", "bolder");
+  $(this).css("color", "red");
+  $(this).parent().prev().prev().children().prop("checked", true);
+});
+
+///Disparar funcion cuando algún elemento de la clase agrandar pierda el foco.
+///Se usa para volver al estado "normal" el elemento que dejó de estar seleccionado.
+$(document).on("blur", ".agrandar", function (){
+  $(this).css("font-size", "inherit");
+  $(this).css("background-color", "#ffffff");
+  $(this).css("font-weight", "inherit");
+  $(this).css("color", "inherit");
+});
   
 /***************************************************************************************************************************
 /// Comienzan las funciones que manejan los eventos relacionados a los MOVIMIENTOS como ser creación, edición y eliminación.
@@ -775,11 +925,11 @@ $(document).on("click", "#agregarMovimiento", function (){
         var resultado = request["resultado"];
         if (resultado === "OK") {
           var url = "data/updateQuery.php";
-          var query = "update productos set stock="+nuevoStock+" where idprod="+idProd;
-                    
+          var query = "update productos set stock="+nuevoStock+", ultimoMovimiento='"+fecha+"' where idprod="+idProd;
+                  
           $.getJSON(url, {query: ""+query+""}).done(function(request) {
             var resultado = request["resultado"];
-            if (resultado === "OK") {  
+            if (resultado === "OK") {
               if (avisarAlarma) {
                 alert('El stock quedó por debajo del límite definido!. Stock actual: ' + nuevoStock);
                 location.reload();
@@ -803,7 +953,7 @@ $(document).on("click", "#agregarMovimiento", function (){
         else {
           alert('Hubo un error. Por favor verifique.');
         }
-      });
+      });  
     }
     else {
       alert('no hacer el insert');
@@ -811,29 +961,314 @@ $(document).on("click", "#agregarMovimiento", function (){
   }
 });
 
-///Disparar funcion cuando algún elemento de la clase agrandar reciba el foco.
-///Se usa para resaltar el elemento seleccionado.
-$(document).on("focus", ".agrandar", function (){
-  $(this).css("font-size", 28);
-  $(this).css("background-color", "#e7f128");
-  $(this).css("font-weight", "bolder");
-  $(this).css("color", "red");
-  $(this).parent().prev().prev().children().prop("checked", true);
-});
-
-///Disparar funcion cuando algún elemento de la clase agrandar pierda el foco.
-///Se usa para volver al estado "normal" el elemento que dejó de estar seleccionado.
-$(document).on("blur", ".agrandar", function (){
-  $(this).css("font-size", "inherit");
-  $(this).css("background-color", "#ffffff");
-  $(this).css("font-weight", "inherit");
-  $(this).css("color", "inherit");
-});
 
 /*******************************************************************************************************************************
 /// ***************************************************** FIN MOVIMIENTOS ******************************************************
 ********************************************************************************************************************************
 */
+
+
+
+
+/*****************************************************************************************************************************
+/// Comienzan las funciones que manejan los eventos relacionados a las PRODUCTOS como ser creación, edición y eliminación.
+******************************************************************************************************************************
+*/
+
+///Disparar funcion al cambiar el elemento elegido en el select con las sugerencias para los productos.
+///Cambia el color de fondo para resaltarlo, carga un snapshot del plástico si está disponible, y muestra
+///el stock actual.
+$(document).on("change", "#hintProd", function (){
+  $("#hintProd").css('background-color', '#ffffff');
+  $("#stockProducto").removeClass('alarma');
+  inhabilitarProducto();
+  var rutaFoto = 'images/snapshots/';
+  var nombreFoto = $(this).find('option:selected').attr("name");
+  var idProd = parseInt($(this).find('option:selected').val(), 10);
+  var mostrar = '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
+  $("#snapshot").remove();
+
+  if ($(this).find('option:selected').val() === 'NADA') {
+    $("#entidad").val('');
+    $("#nombre").val('');
+    $("#codigo_emsa").val('');
+    $("#codigo_origen").val('');
+    $("#stockProducto").val('');
+    $("#comentarios").val('');
+    $("#ultimoMovimiento").val('');
+    $("#bin").val('');
+    $("#alarma").val('');
+  }
+  else {
+    var url = "data/selectQuery.php";
+    var query = 'select idprod, nombre_plastico, entidad, codigo_emsa, bin, codigo_origen, stock, alarma, ultimoMovimiento, comentarios from productos where idprod='+idProd;
+
+    $.getJSON(url, {query: ""+query+""}).done(function(request) {
+      var resultado = request["resultado"];
+      var stock = parseInt(resultado[0]['stock'], 10);
+      var alarma = parseInt(resultado[0]['alarma'], 10);
+      var fecha = resultado[0]['ultimoMovimiento'];
+      var ultimoMovimiento = '';
+      if (fecha !== null) {
+        var temp = fecha.split('-');
+        ultimoMovimiento = temp[2]+"/"+temp[1]+"/"+temp[0];
+      }
+      
+      //mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><b>Stock actual: <b><font class="resaltado" style="font-size:1.6em">'+$("#hintProd").find('option:selected').attr("stock")+'</font></p>';
+      $("#hintProd").css('background-color', '#efe473');
+
+      $("#entidad").val(resultado[0]['entidad']);
+      $("#nombre").val(resultado[0]['nombre_plastico']);
+      $("#codigo_emsa").val(resultado[0]['codigo_emsa']);
+      $("#codigo_origen").val(resultado[0]['codigo_origen']);
+      $("#stockProducto").val(stock);
+      $("#alarma").val(alarma);
+      $("#comentarios").val(resultado[0]['comentarios']);
+      $("#ultimoMovimiento").val(ultimoMovimiento);
+      $("#bin").val(resultado[0]['bin']);   
+      $("#hintProd").after(mostrar);
+      if (stock < alarma) {
+        $("#stockProducto").addClass('alarma');
+      }
+    });
+  }  
+});
+
+$(document).on("click", "#actualizarProducto", function (){
+  var entidad = $("#entidad").val();
+  var nombre = $("#nombre").val();
+  var alarma = $("#alarma").val();
+  var codigo_emsa = $("#codigo_emsa").val();
+  var codigo_origen = $("#codigo_origen").val();
+  var idProducto = $("#hintProd").val();
+  var comentarios = $("#comentarios").val();
+  var bin = $("#bin").val();
+  
+  if ((idProducto === 'NADA')||($("#hintProd").length === 0)) {
+    alert('Se debe seleccionar un producto para poder actualizar. Por favor verifique.');
+    $("#producto").focus();
+  }
+  else {
+    var validar = validarProducto();
+    if (validar) {
+      var entero = validarEntero(alarma);
+      if (entero) {
+        alarma = parseInt(alarma, 10);
+        if (alarma < 0) {
+          alert('El valor para la alarma del producto debe ser un entero mayor o igual a 0. Por favor verifique.');
+          $("#alarma").val('');
+          $("#alarma").focus();
+          return false;
+        }
+      }
+      else {
+        alert('El valor para la alarma del producto debe ser un entero. Por favor verifique.');
+        $("#alarma").val('');
+        $("#alarma").focus();
+        return false;
+      }
+
+      var confirmar = confirm('¿Confirma la modificación del producto con los siguientes datos?\n\nEntidad: '+entidad+'\nNombre: '+nombre+'\nCódigo Emsa: '+codigo_emsa+'\nCódigo Origen: '+codigo_origen+'\nBin: '+bin+'\nAlarma: '+alarma+'\nComentarios: '+comentarios+"\n?");
+      if (confirmar) {
+        var url = "data/updateQuery.php";
+        var query = "update productos set nombre_plastico= '"+nombre+"', entidad = '"+entidad+"', codigo_emsa = '"+codigo_emsa+"', codigo_origen = '"+codigo_origen+"', bin = '"+bin+"', alarma = "+alarma+", comentarios = '"+comentarios+"' where idprod = "+idProducto;
+
+        $.getJSON(url, {query: ""+query+""}).done(function(request) {
+          var resultado = request["resultado"];
+          if (resultado === "OK") {
+            alert('Los datos del producto se actualizaron correctamente!.');
+            //showHintProd($("#producto").val(), "#producto");
+            //$("#hintProd option[value='"+idProducto+"']").attr("selected","selected");
+            /*
+            $("#entidad").val('');
+            $("#nombre").val('');
+            $("#codigo_emsa").val('');
+            $("#codigo_origen").val('');
+            $("#stockProducto").val('');
+            $("#comentarios").val('');
+            $("#alarma").val('');
+            $("#ultimoMovimiento").val('');
+            $("#bin").val('');
+            $("#producto").val('');
+            $("#producto").focus();
+            */
+            inhabilitarProducto();
+          }
+          else {
+            alert('Hubo un problema en la actualización. Por favor verifique.');
+          }
+        });
+    }
+    else {
+      alert('Se optó por no actualizar el producto!.');
+    }
+    }
+  }
+});
+
+$(document).on("click", "#eliminarProducto", function (){
+  var nombre = $("#nombre").val();
+  var idProducto = $("#hintProd").val();
+
+  if ((idProducto === 'NADA')||($("#hintProd").length === 0)) {
+    alert('Se debe seleccionar un producto para poder eliminar. Por favor verifique.');
+    $("#producto").focus();
+  }
+  else {
+    var confirmar = confirm('¿Seguro que desea dar de baja el producto: \n\n'+nombre+"\n?");
+    if (confirmar) {
+      var url = "data/updateQuery.php";
+      var query = "update productos set estado = 'inactivo' where idprod = "+idProducto;
+      
+      $.getJSON(url, {query: ""+query+""}).done(function(request) {
+        var resultado = request["resultado"];
+        if (resultado === "OK") {
+          alert('El producto '+nombre+' se dió de baja correctamente!.');
+          $("#entidad").val('');
+          $("#nombre").val('');
+          $("#codigo_emsa").val('');
+          $("#codigo_origen").val('');
+          $("#stockProducto").val('');
+          $("#comentarios").val('');
+          $("#alarma").val('');
+          $("#ultimoMovimiento").val('');
+          $("#bin").val('');
+          showHintProd(" ", "producto");
+          $("#producto").val('');
+          $("#producto").focus();
+          inhabilitarProducto();
+        }
+        else {
+          alert('Hubo un problema en la eliminación. Por favor verifique.');
+        }
+      });
+    }
+    else {
+      alert('Se optó por NO dar de baja el producto: \n\n'+nombre);
+    }
+  }
+  
+});
+
+$(document).on("click", "#editarProducto", function (){
+  var nombre = $(this).val();
+  if (nombre === 'EDITAR') {
+    habilitarProducto();
+  }
+  else {
+    inhabilitarProducto();
+  }
+});
+
+$(document).on("click", "#agregarProducto", function (){
+  var accion = $("#agregarProducto").val();
+  if (accion === "NUEVO") {
+    $("#agregarProducto").val("AGREGAR");
+    $("#entidad").val('');
+    $("#nombre").val('');
+    $("#codigo_emsa").val('');
+    $("#codigo_origen").val('');
+    $("#stockProducto").val('');
+    $("#comentarios").val('');
+    $("#alarma").val('');
+    $("#ultimoMovimiento").val('');
+    $("#bin").val(''); 
+    $("#producto").val('');
+    $("#producto").attr("disabled", true);
+    $("#hintProd").remove();
+    $("#snapshot").remove();
+    habilitarProducto();
+    $("#stockProducto").attr("disabled", false);
+    $("#editarProducto").attr("disabled", true);
+    $("#actualizarProducto").attr("disabled", true);
+    $("#eliminarProducto").attr("disabled", true);
+    $("#entidad").focus();
+  }
+  else {
+    var validar = validarProducto();
+    if (validar) {
+      var entidad = $("#entidad").val();
+      var nombre = $("#nombre").val();
+      var codigo_emsa = $("#codigo_emsa").val();
+      var codigo_origen = $("#codigo_origen").val();
+      var stock = $("#stockProducto").val();
+      var alarma = $("#alarma").val();
+      var entero = validarEntero(stock);
+      var entero1 = validarEntero(alarma);
+      if (entero) {
+        stock = parseInt($("#stockProducto").val(), 10);
+        if (stock < 0) {
+          alert('El valor del stock debe ser un entero mayor o igual a 0. Por favor verifique.');
+          $("#stockProducto").val('');
+          $("#stockProducto").focus();
+          return false;
+        }
+      }
+      else {
+        alert('El valor para el stock debe ser un entero. Por favor verifique.');
+        $("#stockProducto").val('');
+        $("#stockProducto").focus();
+        return false;
+      }
+      if (entero1) {
+        alarma = parseInt($("#alarma").val(), 10);
+        if (alarma < 0) {
+          alert('El valor para la alarma del producto debe ser un entero mayor o igual a 0. Por favor verifique.');
+          $("#alarma").val('');
+          $("#alarma").focus();
+          return false;
+        }
+      }
+      else {
+        alert('El valor para la alarma del producto debe ser un entero. Por favor verifique.');
+        $("#alarma").val('');
+        $("#alarma").focus();
+        return false;
+      }
+      var comentarios = $("#comentarios").val();
+      var bin = $("#bin").val();
+      
+      var url = "data/updateQuery.php";
+      var query = "insert into productos (entidad, nombre_plastico, codigo_emsa, codigo_origen, stock, bin, comentarios, alarma, estado) values ('"+entidad+"', '"+nombre+"', '"+codigo_emsa+"', '"+codigo_origen+"', "+stock+", '"+bin+"', '"+comentarios+"', "+alarma+", 'activo')";
+      
+      var confirmar = confirm("¿Confirma que desea agregar el producto con los siguientes datos: \n\nEntidad: "+entidad+"\nNombre: "+nombre+"\nCódigo Emsa: "+codigo_emsa+"\nCódigo Origen: "+codigo_origen+"\nBin: "+bin+"\nStock Inicial: "+stock+"\nAlarma: "+alarma+"\nComentarios: "+comentarios+"\n?");
+      if (confirmar) {
+        $.getJSON(url, {query: ""+query+""}).done(function(request){
+          var resultado = request["resultado"];
+          if (resultado === "OK") {
+            alert('El producto se ingresó correctamente!.');
+            inhabilitarProducto();
+            $("#editarProducto").attr("disabled", true);
+            $("#eliminarProducto").attr("disabled", true);
+            $("#agregarProducto").val("NUEVO");
+            $("#producto").attr("disabled", false);
+          }
+          else {
+            alert('Hubo un problema en el ingreso del producto. Por favor verifique.');
+          }
+        });
+      }
+      else {
+        alert('Se optó por no agregar el producto.');
+        $("#entidad").val('');
+        $("#nombre").val('');
+        $("#bin").val(''); 
+        $("#codigo_emsa").val('');
+        $("#codigo_origen").val('');
+        $("#stockProducto").val('');
+        $("#alarma").val('');
+        $("#comentarios").val('');
+      }
+    }   
+  }
+});
+
+/*******************************************************************************************************************************
+/// ***************************************************** FIN PRODUCTOS ******************************************************
+********************************************************************************************************************************
+*/
+
+
 
 /*****************************************************************************************************************************
 /// Comienzan las funciones que manejan los eventos relacionados a las IMPORTACIONES como ser creación, edición y eliminación.
@@ -875,7 +1310,7 @@ $(document).on("click", "#agregarImportacion", function (){
         var resultado = request["resultado"];
         if (resultado === "OK") {
           var url = "data/updateQuery.php";
-          var query = "update productos set stock="+nuevoStock+" where idprod="+idProd;
+          var query = "update productos set stock="+nuevoStock+", ultimoMovimiento='"+fecha+"' where idprod="+idProd;
                     
           $.getJSON(url, {query: ""+query+""}).done(function(request) {
             var resultado = request["resultado"];
@@ -1161,6 +1596,10 @@ $(document).on("click", "#agregarUsuario", function(){
 ***************************************************************************************************************************
 */
 
+$(document).on("change", "[name=entidad]", function (){
+  $(this).parent().prev().prev().children().prop("checked", true);
+});
+
 $(document).on("click", "#realizarBusqueda", function () {
   var timestamp = Math.round(Date.now() / 1000);
       
@@ -1184,13 +1623,12 @@ $(document).on("click", "#realizarBusqueda", function () {
     var año = $("#año").val();
     var rangoFecha = null;
     
-    var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.snapshot, productos.stock, productos.alarma';
+    var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.snapshot, productos.stock, productos.alarma, productos.comentarios as prodcom';
     var tipoConsulta = '';
     var mensajeFecha = '';
-    var consulta = query;
     var campos;
     var largos;
-    var mostrarCampos = "1-1-1-1-1-1-1-0";;
+    var mostrarCampos = "1-1-1-1-1-1-1-0-0";;
     var x = 55;
     
     var validado = true;
@@ -1202,15 +1640,16 @@ $(document).on("click", "#realizarBusqueda", function () {
     
     switch (radio) {
       case 'entidadStock': if (entidadStock !== 'todos') {
-                             query += " from productos where entidad='"+entidadStock+"'";
+                             query += " from productos where entidad='"+entidadStock+"' and estado='activo'";
                              tipoConsulta = 'del stock de '+entidadStock;
                            } 
                            else {
-                             query += ' from productos';
+                             query += " from productos where estado='activo'";
                              tipoConsulta = 'del stock de todas las entidades';
                            }
                            campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Stock";
-                           largos = "0.8-1.2-2.5-0.8-2-1-1";
+                           largos = "0.8-1.2-2.5-0.8-2-1-1.3";
+                           mostrarCampos = "1-1-1-1-1-1-1-0";;
                            x = 20;
                            break;
       case 'productoStock':  if ((idProd === 'NADA') || (nombreProducto === '')){
@@ -1223,17 +1662,19 @@ $(document).on("click", "#realizarBusqueda", function () {
                                query += " from productos where idProd="+idProd;
                              }
                              tipoConsulta = 'de stock del producto '+nombreProducto;
-                             campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Stock";
-                             largos = "0.8-1.2-2.5-0.8-2-1-1";
-                             x = 40;
+                             campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Stock-Comentarios";
+                             largos = "0.8-1.2-2.5-0.8-2-1-1-2";
+                             mostrarCampos = "1-1-1-1-1-1-1-0-1";;
+                             x = 22;
                              break;
-      case 'totalStock':  query = 'select entidad, sum(stock) as subtotal from productos group by entidad';
+      case 'totalStock':  query = "select entidad, sum(stock) as subtotal from productos where estado='activo' group by entidad";
                           tipoConsulta = 'del total de plásticos en bóveda';
                           campos = 'Id-Entidad-Stock';
-                          largos = '1-3.0-1';
-                          x = 65;
+                          largos = '1-3.0-1.5';
+                          mostrarCampos = "1-1-1";
+                          x = 60;
                           break;                    
-      case 'entidadMovimiento': query += ", movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where ";
+      case 'entidadMovimiento': query += ", movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
                                 if (entidadMovimiento !== 'todos') {
                                   query += "entidad='"+entidadMovimiento+"' and ";
                                   tipoConsulta = 'de los movimientos de '+entidadMovimiento;
@@ -1366,7 +1807,6 @@ $(document).on("click", "#realizarBusqueda", function () {
       query += rangoFecha;
     }
     
-    
     if (validado) 
       {
       var mensajeTipo = null;  
@@ -1395,7 +1835,7 @@ $(document).on("click", "#realizarBusqueda", function () {
         query += " order by entidad asc, nombre_plastico asc, idprod asc";
       }
       
-      var mensajeConsulta = "<h3>Consulta "+tipoConsulta;
+      var mensajeConsulta = "Consulta "+tipoConsulta;
       if (mensajeTipo !== null) {
         mensajeConsulta += " "+mensajeTipo;
       }
@@ -1403,12 +1843,11 @@ $(document).on("click", "#realizarBusqueda", function () {
       if (mensajeUsuario !== null) {
         mensajeConsulta += mensajeUsuario;
       }
-      mensajeConsulta += "</h3>";
       var mostrar = "<h2>Resultado de la búsqueda</h2>";
-      mostrar += mensajeConsulta;
+      mostrar += "<h3>"+mensajeConsulta+"</h3>";
 
       var url = "data/selectQuery.php";
-      
+      //alert(query);
       $.getJSON(url, {query: ""+query+""}).done(function(request){
         var datos = request.resultado;
         var totalDatos = request.rows;
@@ -1481,7 +1920,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                         </form>';
                                   break;
             case 'productoStock': var bin = datos[0]['bin'];
-                                  var produ = datos[0]["idProd"];
+                                  //var produ = datos[0]["idProd"];
                                   if ((bin === 'SIN BIN')||(bin === null)) 
                                       {
                                       bin = 'N/D o N/C';
@@ -1489,6 +1928,11 @@ $(document).on("click", "#realizarBusqueda", function () {
                                   var alarma = parseInt(datos[0]['alarma'], 10);
                                   var stock = parseInt(datos[0]['stock'], 10);
                                   var snapshot = datos[0]['snapshot'];
+                                  var prodcom = datos[0]['prodcom'];
+                                  if (prodcom === null) 
+                                      {
+                                      prodcom = '';
+                                    }
                                   var claseResaltado = '';
                                   if (stock <= alarma) {
                                     claseResaltado = "alarma";
@@ -1499,19 +1943,21 @@ $(document).on("click", "#realizarBusqueda", function () {
                                   tabla += '<tr>\n\
                                               <th colspan="2" class="tituloTabla">DETALLES</th>\n\
                                            </tr>';                       
-                                  tabla += '<tr><th>Nombre:</th><td>'+datos[0]['nombre_plastico']+'</td></tr>';
-                                  tabla += '<tr><th>Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
-                                  tabla += '<tr><th>C&oacute;digo:</th><td>'+datos[0]['codigo_emsa']+'</td></tr>';
-                                  tabla += '<tr><th>BIN:</th><td>'+bin+'</td></tr>';
-                                  tabla += '<tr><th>Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
-                                  tabla += '<tr><th>Stock:</th><td class="'+claseResaltado+'">'+stock+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">Nombre:</th><td>'+datos[0]['nombre_plastico']+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">C&oacute;digo:</th><td>'+datos[0]['codigo_emsa']+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">BIN:</th><td>'+bin+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
+                                  tabla += '<tr><th style="text-align:left">Comentarios:</th><td>'+prodcom+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock+'</td></tr>';
                                   tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                    <td style="display:none"><input type="text" id="idProd" name="largos" value="'+produ+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="idProd" name="largos" value="'+idProd+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+tipoConsulta+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                   </tr>';
                                   tabla += '<tr>\n\
@@ -1555,9 +2001,10 @@ $(document).on("click", "#realizarBusqueda", function () {
                                 tabla += '<tr><th colspan="2">TOTAL:</th><td class="resaltado1">'+total+'</td></tr>';
                                 tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+tipoConsulta+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                   </tr>';
                                 tabla += '<tr>\n\
@@ -1637,13 +2084,14 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                     <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="usuario" name="usuario" value="'+idUser+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="criterioFecha" name="criterioFecha" value="'+radioFecha+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="inicio" name="inicio" value="'+inicio+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="fin" name="fin" value="'+fin+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="mes" name="mes" value="'+mes+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="año" name="año" value="'+año+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="entidad" value="'+entidadMovimiento+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+tipoConsulta+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                   </tr>';
               
@@ -1729,8 +2177,8 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                     <td style="display:none"><input type="text" id="mes" name="mes" value="'+mes+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="año" name="año" value="'+año+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="usuario" name="usuario" value="'+idUser+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="idProd" name="largos" value="'+produ+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+tipoConsulta+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="idProd" name="largos" value="'+idProd+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                   </tr>';
               
@@ -1780,8 +2228,10 @@ $(document).on("click", ".exportar", function (){
   var largos = $("#largos").val();
   var campos = $("#campos").val();
   var mostrar = $("#mostrar").val();
+  var tipoConsulta = $("#tipoConsulta").val();
     
-  var param = "id:"+id+"&x:"+x+"&largos:"+largos+"&campos:"+campos+"&query:"+query+"&mostrar:"+mostrar;
+  var param = "id:"+id+"&x:"+x+"&largos:"+largos+"&campos:"+campos+"&query:"+query+"&mostrar:"+mostrar+"&tipoConsulta:"+tipoConsulta;
+  
   var criterioFecha = $("#criterioFecha").val();
   if (criterioFecha === 'intervalo') {
     var inicio = $("#inicio").val();
@@ -1795,8 +2245,8 @@ $(document).on("click", ".exportar", function (){
   var idProd = $("#idProd").val();
   var tipo = $("#tipo").val();
   var usuario = $("#usuario").val();
+  var nombreProducto = $("#nombreProducto").val();
   
-  var continuar = true;
   /*
   var enviarMail = confirm('¿Desea enviar por correo electrónico el pdf?');
   
@@ -1826,7 +2276,7 @@ $(document).on("click", ".exportar", function (){
   switch (id) {
     case "1": param += '&entidad:'+entidad;
               break;
-    case "2": param += '&idProd:'+idProd;
+    case "2": param += '&idProd:'+idProd+'&nombreProducto:'+nombreProducto;
               break;
     case "3": break;
     case "4": param += '&entidad:'+entidad+'&tipo:'+tipo+'&usuario:'+usuario;
@@ -1837,7 +2287,7 @@ $(document).on("click", ".exportar", function (){
                 param += '&mes:'+mes+'&año:'+año;
               }
               break;
-    case "5": param += '&entidad:'+entidad+'&tipo:'+tipo+'&usuario:'+usuario;
+    case "5": param += '&idProd:'+idProd+'&tipo:'+tipo+'&usuario:'+usuario+'&nombreProducto:'+nombreProducto;
               if (criterioFecha === 'intervalo') {
                 param += '&inicio:'+inicio+'&fin:'+fin;
               }
@@ -1847,10 +2297,9 @@ $(document).on("click", ".exportar", function (){
               break;
     default: break;
   }
-  $("#param").val(param);alert($("#param").val());
-  if (continuar) {
-      $(".exportarForm").submit();
-  }
+  $("#param").val(param);
+  //alert($("#param").val());
+  $(".exportarForm").submit();
 });//*** fin del click .exportar ***
 
 /**************************************************************************************************************************
