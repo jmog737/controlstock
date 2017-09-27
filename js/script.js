@@ -1648,7 +1648,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                              tipoConsulta = 'del stock de todas las entidades';
                            }
                            campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Stock";
-                           largos = "0.8-1.2-2.5-0.8-2-1-1.3";
+                           largos = "0.8-1.2-2.5-0.8-2-1-1.5";
                            mostrarCampos = "1-1-1-1-1-1-1-0";;
                            x = 20;
                            break;
@@ -1878,12 +1878,12 @@ $(document).on("click", "#realizarBusqueda", function () {
                                     var codigo_emsa = datos[i]['codigo_emsa'];
                                     var stock = parseInt(datos[i]['stock'], 10);
                                     var alarma = parseInt(datos[i]['alarma'], 10);
-                                    var claseResaltado = '';
+                                    var claseResaltado = "";
                                     if (stock <= alarma) {
                                       claseResaltado = "alarma";
                                     }
                                     else {
-                                      claseResaltado = "resaltado";
+                                      claseResaltado = "resaltado italica";
                                     }
                                     if ((bin === 'SIN BIN')||(bin === null)) 
                                       {
@@ -1896,12 +1896,12 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                 <td>'+bin+'</td>\n\
                                                 <td>'+codigo_emsa+'</td>\n\
                                                 <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="76" width="120"></img></td>\n\
-                                                <td class="'+claseResaltado+'">'+stock+'</td>\n\
+                                                <td class="'+claseResaltado+'" style="text-align: right">'+stock.toLocaleString()+'</td>\n\
                                               </tr>';
                                     indice++;
                                     total += stock;
                                   }
-                                  tabla += '<tr><th colspan="6">TOTAL:</th><td class="resaltado1">'+total+'</td></tr>';
+                                  tabla += '<tr><th colspan="6">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td></tr>';
                                   tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
@@ -1933,12 +1933,12 @@ $(document).on("click", "#realizarBusqueda", function () {
                                       {
                                       prodcom = '';
                                     }
-                                  var claseResaltado = '';
+                                  var claseResaltado = "italica";
                                   if (stock <= alarma) {
                                     claseResaltado = "alarma";
                                   }
                                   else {
-                                    claseResaltado = "resaltado";
+                                    claseResaltado = "resaltado italica";
                                   }  
                                   tabla += '<tr>\n\
                                               <th colspan="2" class="tituloTabla">DETALLES</th>\n\
@@ -1949,7 +1949,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                   tabla += '<tr><th style="text-align:left">BIN:</th><td>'+bin+'</td></tr>';
                                   tabla += '<tr><th style="text-align:left">Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
                                   tabla += '<tr><th style="text-align:left">Comentarios:</th><td>'+prodcom+'</td></tr>';
-                                  tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
                                   tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
@@ -1993,12 +1993,12 @@ $(document).on("click", "#realizarBusqueda", function () {
                                   tabla += '<tr>\n\
                                               <td>'+indice+'</td>\n\
                                               <td style="text-align: left">'+entidad+'</td>\n\
-                                              <td class="resaltado">'+subtotal+'</td>\n\
+                                              <td class="resaltado italica" style="text-align: right">'+subtotal.toLocaleString()+'</td>\n\
                                             </tr>';
                                   indice++;  
                                   total += subtotal;
                                 }
-                                tabla += '<tr><th colspan="2">TOTAL:</th><td class="resaltado1">'+total+'</td></tr>';
+                                tabla += '<tr><th colspan="2">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td></tr>';
                                 tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
@@ -2247,7 +2247,7 @@ $(document).on("click", ".exportar", function (){
   var usuario = $("#usuario").val();
   var nombreProducto = $("#nombreProducto").val();
   
-  /*
+  
   var enviarMail = confirm('¿Desea enviar por correo electrónico el pdf?');
   
   if (enviarMail === true) {
@@ -2270,7 +2270,7 @@ $(document).on("click", ".exportar", function (){
   else {
     alert('Se optó por no enviar el mail. Se sigue con el guardado en disco y muestra en pantalla.');
   }
-  */
+ 
  
   ///En base al id, veo si es necesario o no enviar parámetros:
   switch (id) {
