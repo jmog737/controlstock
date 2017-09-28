@@ -185,7 +185,7 @@ function showHint(str, id) {
           if ((codigo_emsa === null) || (codigo_emsa === "")) {
             codigo_emsa = 'SIN CODIGO AÚN';
           }
-          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+'>(' + sugerencias[i]["entidad"]+') '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
+          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+'>[' + sugerencias[i]["entidad"]+'] '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
         }
         mostrar += '</select>';
       }
@@ -236,7 +236,7 @@ function showHintProd(str, id) {
           if ((codigo_emsa === null) || (codigo_emsa === "")) {
             codigo_emsa = 'SIN CODIGO AÚN';
           }
-          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+'>(' + sugerencias[i]["entidad"]+') '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
+          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+'>[' + sugerencias[i]["entidad"]+'] '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
         }
         mostrar += '</select>';
       }
@@ -1648,8 +1648,8 @@ $(document).on("click", "#realizarBusqueda", function () {
                              tipoConsulta = 'del stock de todas las entidades';
                            }
                            campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Stock";
-                           largos = "0.8-1.2-2.5-0.8-2-1-1.5";
-                           mostrarCampos = "1-1-1-1-1-1-1-0";;
+                           largos = "0.8-1.2-2.5-0.8-2-1-1.6";
+                           mostrarCampos = "1-1-1-1-1-0-1-0";;
                            x = 20;
                            break;
       case 'productoStock':  if ((idProd === 'NADA') || (nombreProducto === '')){
@@ -1686,8 +1686,10 @@ $(document).on("click", "#realizarBusqueda", function () {
                                 validarTipo = true;
                                 validarUser = true;
                                 ordenFecha = true;
-                                campos = 'Id-Fecha-Hora-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Tipo-Cantidad-Comentarios';
-                                largos = '1-1.5-1-1.5-2-1-1.5-2-1.5-1-3';
+                                campos = 'Id-Entidad-Nombre-BIN-Código-Snapshot-Stock-Alarma-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios';
+                                //Orden de la consulta: entidad - nombre - bin - codigo - snapshot - stock - alarma - prodcom - fecha - hora - cantidad - tipo - comentarios
+                                largos = '0.4-1.5-1.8-1-1-1-1-1-1.1-1.5-0.8-1.2-1.4-2';
+                                mostrarCampos = '1-1-1-0-0-0-0-0-0-1-1-1-1-1';
                                 x = 40;
                                 break;                       
       case 'productoMovimiento':  query += ", movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where ";
@@ -1705,8 +1707,10 @@ $(document).on("click", "#realizarBusqueda", function () {
                                     ordenFecha = true;
                                   }
                                   tipoConsulta = 'de los movimientos del producto '+nombreProducto;
-                                  campos = 'Id-Fecha-Hora-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Tipo-Cantidad-Comentarios';
-                                  largos = '1-1.5-1-1.5-2-1-1.5-2-1.5-1-3';
+                                  campos = 'Id-Entidad-Nombre-BIN-Código-Snapshot-Stock-Alarma-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios';
+                                  //Orden de la consulta: entidad - nombre - bin - codigo - snapshot - stock - alarma - prodcom - fecha - hora - cantidad - tipo - comentarios
+                                  largos = '0.4-1.5-1.8-1-1-1-1-1-1.1-1.5-0.8-1.2-1.4-2';
+                                  mostrarCampos = '1-1-1-0-0-0-0-0-0-1-1-1-1-1';
                                   break;
       default: break;
     }
@@ -1813,10 +1817,10 @@ $(document).on("click", "#realizarBusqueda", function () {
       if (validarTipo) {    
         if (tipo !== 'todos') {
           query += " and tipo='"+tipo+"'";
-          mensajeTipo = " del tipo "+tipo;
+          mensajeTipo = "del tipo "+tipo;
         }
         else {
-          mensajeTipo = " de todos los tipos";
+          mensajeTipo = "de todos los tipos";
         };
       }
       
@@ -2170,6 +2174,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                     <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
                                                     <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="criterioFecha" name="criterioFecha" value="'+radioFecha+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="inicio" name="inicio" value="'+inicio+'"></td>\n\
@@ -2298,7 +2303,9 @@ $(document).on("click", ".exportar", function (){
     default: break;
   }
   $("#param").val(param);
+  
   //alert($("#param").val());
+  
   $(".exportarForm").submit();
 });//*** fin del click .exportar ***
 

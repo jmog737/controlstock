@@ -105,12 +105,14 @@ class PDF extends PDF_MC_Table
     $this->SetX($x);
 
     $this->SetFont('Courier', 'B', 10);
-    $j = 0;
     foreach ($campos as $i => $dato) {
-      $this->Cell($largoCampos[$j], 6, $campos[$i], 'LRBT', 0, 'C', true);
-      if ($campos[$i] === 'Stock') $indiceStock = $i;
-      $j++;
+      if ($mostrar[$i]) {
+        $this->Cell($largoCampos[$i], 6, $campos[$i], 'LRBT', 0, 'C', true);
+        if ($campos[$i] === 'Stock') {
+          $indiceStock = $i;
+        }
       }
+    }
       
     $this->Ln();
     $this->SetX($x);
@@ -181,23 +183,465 @@ class PDF extends PDF_MC_Table
       $fill = !$fill;
     }
     
-    //Agrego fila final de la tabla con el total de plásticos:
+    if ($total !== -1) {
+      //Agrego fila final de la tabla con el total de plásticos:
+      $this->SetFont('Courier', 'B', 12);
+      $this->SetFillColor(255, 204, 120);
+      $this->SetTextColor(0);
+      $largoTemp = $largoCampos[$totalCampos] - $largoCampos[$totalCampos-1];
+      $this->Cell($largoTemp, 6, 'TOTAL:', 'LRBT', 0, 'C', true);
+      $this->SetFont('Courier', 'BI', 14);
+      $this->SetTextColor(255,0,0);
+      $this->SetFillColor(153, 255, 102);
+      $this->Cell($largoCampos[$totalCampos-1], 6, number_format($total, 0, ",", "."), 'LRBT', 0, 'R', true);
+    }
+  }
+  
+  function tablaMovimientos() 
+    {
+    global $x,$h, $id, $totalCampos;
+    global $registros, $campos, $largoCampos, $tituloTabla, $tipoConsulta, $nombreProducto, $mostrar;
+
+    $tamTabla = $largoCampos[$totalCampos];
+    $anchoPagina = $this->GetPageWidth();
+    $anchoTipo = 0.8*$anchoPagina;
+    
+    $x = round((($anchoPagina-$tamTabla)/2), 2);
+    $xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
+    
+    //Defino color de fondo:
+    $this->SetFillColor(255, 156, 233);
+    //Defino color para los bordes:
+    $this->SetDrawColor(0, 0, 0);
+    //Defino grosor de los bordes:
+    $this->SetLineWidth(.3);
+    //Defino tipo de letra y tamaño para el Título:
     $this->SetFont('Courier', 'B', 12);
+    //Establezco las coordenadas del borde de arriba a la izquierda de la tabla:
+    $this->SetY(25);
+    
+    if ($id === "4") {
+      $subTitulo = $tipoConsulta;
+    }
+    else {
+      $subTitulo = "Consulta de los movimientos del producto: ".$nombreProducto;
+    }
+    
+    $this->SetX($xTipo);
+    $this->MultiCell($anchoTipo, 7, utf8_decode($subTitulo), 0, 'C', 0);
+    $this->Ln(10);
+    
+    //************************************** TÍTULO *****************************************************************************************
+    $this->SetX($x);
+    //Defino color de fondo:
+    $this->SetFillColor(153, 255, 102);
+    //Escribo el título:
+    $this->Cell($largoCampos[$totalCampos], 7, utf8_decode($tituloTabla), 1, 0, 'C', 1);
+    $this->Ln();
+    //**************************************  FIN TÍTULO ************************************************************************************
+    
+    //Restauro color de fondo y tipo de letra para el contenido:
     $this->SetFillColor(255, 204, 120);
     $this->SetTextColor(0);
-    $largoTemp = $largoCampos[$totalCampos] - $largoCampos[$totalCampos-1];
-    $this->Cell($largoTemp, 6, 'TOTAL:', 'LRBT', 0, 'C', true);
-    $this->SetFont('Courier', 'BI', 13);
-    $this->SetTextColor(255,0,0);
-    $this->SetFillColor(153, 255, 102);
-    $this->Cell($largoCampos[$totalCampos-1], 6, number_format($total, 0, ",", "."), 'LRBT', 0, 'R', true);
+    $this->SetFont('Courier');
+    $this->SetX($x);
+
+    $this->SetFont('Courier', 'B', 10);
+    
+    /// Recupero los índices de cada campo para poder ordenarlos luego:
+    foreach ($campos as $i => $dato) {
+      switch ($dato) {
+        case "Id": $indId = $i;
+                   break;
+        case "Entidad": $indEntidad = $i;
+                        break;
+        case "Nombre": $indNombre = $i;
+                       break;
+        case "Fecha": $indFecha = $i;
+                      break;
+        case "Hora": $indHora = $i;
+                     break;
+        case "Tipo": $indTipo = $i;
+                     break;
+        case "Cantidad":  $indCantidad = $i;
+                          break;
+        case "Comentarios": $indComentarios = $i;
+                            break;
+        case "BIN": $indBin = $i;
+                    break;
+        case "Código":  $indCodigo = $i;
+                        break;
+        case "Snapshot":  $indSnapshot = $i;
+                          break;
+        case "Alarma":  $indAlarma = $i;
+                        break;
+        case "ComentariosProd": $indComProd = $i;
+                                break;         
+      }
+    }
+    
+    /// Imprimo los nombres de cada campo, siempre y cuando, se hayan marcado como visibles:
+    /// Esto hay que hacerlo uno a uno para que queden en el orden requerido que es diferente al de la consulta
+    if ($mostrar[$indId]) {
+      $this->Cell($largoCampos[$indId], 6, $campos[$indId], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indFecha]) {
+      $this->Cell($largoCampos[$indFecha], 6, $campos[$indFecha], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indHora]) {
+      $this->Cell($largoCampos[$indHora], 6, $campos[$indHora], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indEntidad]) {
+      $this->Cell($largoCampos[$indEntidad], 6, $campos[$indEntidad], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indNombre]) {
+      $this->Cell($largoCampos[$indNombre], 6, $campos[$indNombre], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indBin]) {
+      $this->Cell($largoCampos[$indBin], 6, $campos[$indBin], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indCodigo]) {
+      $this->Cell($largoCampos[$indCodigo], 6, $campos[$indCodigo], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indSnapshot]) {
+      $this->Cell($largoCampos[$indSnapshot], 6, $campos[$indSnapshot], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indTipo]) {
+      $this->Cell($largoCampos[$indTipo], 6, $campos[$indTipo], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indCantidad]) {
+      $this->Cell($largoCampos[$indCantidad], 6, $campos[$indCantidad], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indComentarios]) {
+      $this->Cell($largoCampos[$indComentarios], 6, $campos[$indComentarios], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indAlarma]) {
+      $this->Cell($largoCampos[$indAlarma], 6, $campos[$indAlarma], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indComProd]) {
+      $this->Cell($largoCampos[$indComProd], 6, $campos[$indComProd], 'LRBT', 0, 'C', true);
+    }
+    
+    $this->Ln();
+    $this->SetX($x);
+    $this->SetFont('Courier', '', 9);    
+    $fill = false;
+    foreach ($registros as $dato) {
+      
+      ///Calculo la cantidad de líneas requerida para la fila en base al campo más grande.
+      $nb=0;
+      $h0 = 0;
+      for($i=0;$i<count($dato);$i++)
+          $nb=max($nb,$this->NbLines($largoCampos[$i],trim($dato[$i])));
+      //En base a la cantidad de líneas requeridas, calculo el alto de la fila;
+      $h0=$h*$nb;
+      //Issue a page break first if needed
+      $this->CheckPageBreak($h0);
+      
+      $this->setFillColor(220, 223, 232);
+
+      /// Chequeo si se tiene que mostrar el campo Id, y de ser así lo muestro:
+      if ($mostrar[$indId]) 
+        {
+        $w = $largoCampos[$indId];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indId])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0);
+
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indId])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indId])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      
+      /// Chequeo si se tiene que mostrar el campo Fecha, y de ser así lo muestro:
+      if ($mostrar[$indFecha]) 
+        {
+        $w = $largoCampos[$indFecha];
+        $fechaTemp = explode("-", $dato[$indFecha]);
+        $fecha = $fechaTemp[2]."/".$fechaTemp[1]."/".$fechaTemp[0];
+        $nb1 = $this->NbLines($w,$fecha);
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0);
+
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h, $fecha,'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, $fecha,1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      
+      /// Chequeo si se tiene que mostrar el campo Hora, y de ser así lo muestro:
+      if ($mostrar[$indHora]) 
+        {
+        $w = $largoCampos[$indHora];
+        $horaTemp = explode(":", $dato[$indHora]);
+        $hora = $horaTemp[0].":".$horaTemp[1];
+        $nb1 = $this->NbLines($w,$hora);
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0);
+
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h, $hora,'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, $hora,1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      
+      /// Chequeo si se tiene que mostrar el campo Entidad, y de ser así lo muestro:
+      if ($mostrar[$indEntidad]) 
+        {
+        $w = $largoCampos[$indEntidad];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indEntidad])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0);
+
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indEntidad])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indEntidad])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      
+      /// Chequeo si se tiene que mostrar el campo Nombre, y de ser así lo muestro:
+      if ($mostrar[$indNombre]) 
+        {
+        $w = $largoCampos[$indNombre];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indNombre])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0);
+
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indNombre])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indNombre])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      
+      /// Chequeo si se tiene que mostrar el campo Bin, y de ser así lo muestro:
+      if ($mostrar[$indBin]) 
+        {
+        $w = $largoCampos[$indBin];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indBin])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0);
+
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indBin])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indBin])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      
+      /// Chequeo si se tiene que mostrar el campo Codigo, y de ser así lo muestro:
+      if ($mostrar[$indCodigo]) 
+        {
+        $w = $largoCampos[$indCodigo];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indCodigo])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0);
+
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indCodigo])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indCodigo])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      
+      /// Chequeo si se tiene que mostrar el campo Snapshot, y de ser así lo muestro:
+      if ($mostrar[$indSnapshot]) 
+        {
+        $w = $largoCampos[$indSnapshot];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indSnapshot])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0);
+
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indSnapshot])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indSnapshot])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      
+      /// Chequeo si se tiene que mostrar el campo Tipo, y de ser así lo muestro:
+      if ($mostrar[$indTipo]) 
+        {
+        $w = $largoCampos[$indTipo];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indTipo])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0);
+
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indTipo])),'LRT','L', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indTipo])),1,'L', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      
+      /// Chequeo si se tiene que mostrar el campo Cantidad, y de ser así lo muestro:
+      if ($mostrar[$indCantidad]) 
+        {
+        $w = $largoCampos[$indCantidad];
+        $cantidad1 = trim(utf8_decode($dato[$indCantidad]));
+        $cantidad = number_format($cantidad1, 0, ",", ".");
+        $nb1 = $this->NbLines($w,$cantidad);
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0);
+        
+        $this->SetFont('Courier', 'BI', 14);
+        $this->SetTextColor(255,0,0);
+        
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h, $cantidad,'LRT','R', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, $cantidad,1,'R', $fill);
+          } 
+        
+        $this->SetFont('Courier', '', 9);
+        $this->setFillColor(220, 223, 232);
+        $this->SetTextColor(0);  
+          
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      
+      /// Chequeo si se tiene que mostrar el campo Stock, y de ser así lo muestro:
+      if ($mostrar[$indStock]) 
+        {
+        $w = $largoCampos[$indStock];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indStock])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0);
+
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indStock])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indStock])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      
+      /// Chequeo si se tiene que mostrar el campo Comentarios, y de ser así lo muestro:
+      if ($mostrar[$indComentarios]) 
+        {
+        $w = $largoCampos[$indComentarios];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indComentarios])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0);
+
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indComentarios])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indComentarios])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      
+      //Go to the next line
+      $this->Ln($h0);
+      $this->SetX($x);
+      $fill = !$fill;
+    }
   }
   
   //Tabla tipo listado con el detalle del producto:
   function tablaProducto()
     {
     global $h, $c1;
-    global $registros, $tipoConsulta, $rutaFotos, $nombreProducto;
+    global $registros, $codigo, $entidad, $bin, $rutaFotos, $nombreProducto;
     
     $cCampo = 1.5*$c1;
     $cResto = 3.2*$c1;
@@ -222,7 +666,7 @@ class PDF extends PDF_MC_Table
     
     $this->SetX($xTipo);
     //$nb = $this->NbLines($anchoTipo,trim(utf8_decode($tipoConsulta)));
-    $nb = $this->NbLines($anchoTipo,trim(utf8_decode($nombreProducto)));
+    $nb = $this->NbLines($anchoTipo,"Stock del producto: ".$nombreProducto);
     $h0=$h*$nb;
     
     //Save the current position
@@ -232,15 +676,27 @@ class PDF extends PDF_MC_Table
     //Print the text
     if ($nb > 1) {
       //$this->MultiCell($anchoTipo,$h, trim(utf8_decode($tipoConsulta)),0,'C', 0);
-      $this->MultiCell($anchoTipo,$h, $nombreProducto,0,'C', 0);
+      $this->MultiCell($anchoTipo,$h, "Stock del producto: ".$nombreProducto,0,'C', 0);
       }
     else {
       //$this->MultiCell($anchoTipo,$h, trim(utf8_decode($tipoConsulta)),0,'C', 0);
-      $this->MultiCell($anchoTipo,$h, $nombreProducto,0,'C', 0);
+      $this->MultiCell($anchoTipo,$h, "Stock del producto: ".$nombreProducto,0,'C', 0);
       }  
 
     $this->SetXY($x,$y+$h0);
 
+    //$this->Ln();
+    
+    ///Agrego un snapshot de la tarjeta debajo de la tabla (si es que existe!!):
+    $foto = $registros[0][5];
+    if (($foto !== null) && ($foto !== '')) {
+      $rutita = $rutaFotos."/".$foto;
+      $xFoto = $this->GetX();
+      $yFoto = $this->GetY();
+      $this->Ln();
+      $this->Image($rutita, 77, $yfoto, $cResto, 30);
+    }
+    
     $this->Ln(10);
     
     //************************************** TÍTULO *****************************************************************************************
@@ -367,23 +823,9 @@ class PDF extends PDF_MC_Table
     $this->Cell($cResto, 6, number_format($stock, 0, ",", "."), 'LRBT', 0, 'C', true);
     $this->Ln();
     $this->SetX($x);
-    
-    ///Agrego un snapshot de la tarjeta debajo de la tabla (si es que existe!!):
-    $foto = $registros[0][5];
-    if (($foto !== null) && ($foto !== '')) {
-      $rutita = $rutaFotos."/".$foto;
-      $xFoto = $this->GetX();
-      $yFoto = $this->GetY();
-      $this->Ln();
-      $this->Image($rutita, 77, $yfoto, $cResto, 30);
-    }
-    
-    $this->Ln();
-    $this->SetX($x);
   }
   
 }
-  
   
 function enviarMail($para, $copia, $ocultos, $asunto, $cuerpo, $correo, $adjunto, $path)
     {
@@ -413,7 +855,7 @@ function enviarMail($para, $copia, $ocultos, $asunto, $cuerpo, $correo, $adjunto
         //Datos del usuario del correo:
         $mail->Username   = $usuario; // SMTP account username
         $mail->Password   = $pwd;        // SMTP account password
-
+        
         //Direcciones del remitente y a quien responder:
         $mail->SetFrom($deMail, $deNombre);
         $mail->AddReplyTo($responderMail, $responderNombre);
@@ -441,9 +883,12 @@ function enviarMail($para, $copia, $ocultos, $asunto, $cuerpo, $correo, $adjunto
                 $mail->AddBCC($dir, $ind);
                 }
             }
-
+        // Activo condificacción utf-8
+        //$mail->CharSet = 'UTF-8';
+        $asunto = "=?ISO-8859-1?B?".$asunto."=?=";
         //Datos del mail a enviar:
-        $mail->Subject = $asunto;
+        $mail->Subject = $asunto;echo $mail->Subject."<br>";
+        
         $mail->AltBody = 'Para ver este mensaje por favor use un cliente de correo con compatibilidad con HTML!'; // optional - MsgHTML will create an alternate automatically
         $mail->MsgHTML($cuerpo);
         
@@ -499,8 +944,12 @@ foreach ($temp1 as $valor) {
                    break;
     case 'nombreProducto':  $nombreProducto1 = $temp2[1];
                             $sep = explode("{", $nombreProducto1);
-                            $tempo = explode(")", $sep[0]);
+                            $tempo = explode("]", $sep[0]);
+                            $tempo1 = explode("}", $sep[1]);
                             $nombreProducto = trim($tempo[1]);
+                            $entidad = trim($tempo[0], '[ ');
+                            $bin = trim($tempo1[0]);
+                            $codigo = trim($tempo1[1], '- ');
                    break;             
     case 'x': $x = $temp2[1];
               break;
@@ -517,6 +966,7 @@ foreach ($temp1 as $valor) {
     case 'idUser': $iduser = $temp2[1];
                    break;
     case 'mails': $mails = $temp2[1];
+                  //$mails = preg_split("/,/", $mails1);
                   break;
     case 'tipoConsulta': $tipoConsulta = $temp2[1];
                          break;            
@@ -530,15 +980,19 @@ foreach ($temp1 as $valor) {
 
 $largoCampos = array();
 $largoTotal = 0;
+$i = 0;
 foreach ($temp as $valor) {
- $largo = $c1*$valor;
- array_push($largoCampos, $largo);
- $largoTotal += $largo;
+  $largo = $c1*$valor;
+  array_push($largoCampos, $largo);
+  if ($mostrar[$i]) {
+    $largoTotal += $largo;
+  }
+  $i++;
 }
 array_push($largoCampos, $largoTotal);
-
+//echo "largos: ".sizeof($largoCampos)."<br>campos: ".sizeof($campos)."<br>mostrar: ".sizeof($mostrar)."<br>largototal: ".$largoCampos[sizeof($campos)];
 //echo "id: ".$id."<br>query: ".$query."<br>largos: ".$largos."<br>campos: ".$campos1."<br>mostrar: ".$mostrar1."<br>x: ".$x."<br>iduser: ".$iduser."<br>tipo: ".$tipo."<br>inicio: ".$inicio."<br>fin: ".$fin."<br>mes: ".$mes."<br>año: ".$año."<br>FIN<br>";
-//echo $query;
+
 switch ($id) {
   case "1": $tituloTabla = "LISTADO DE STOCK";
             $titulo = "STOCK POR ENTIDAD";
@@ -558,14 +1012,21 @@ switch ($id) {
             $asunto = "Reporte con el total de plásticos en bóveda";
             $indiceStock = 2;
             break;
-  case "4": $tituloTabla = "MOVIMIENTOS DE LA ENTIDAD";
-            $titulo = "MOVIMIENTOS DE LA ENTIDAD";
+  case "4": $tituloTabla = "MOVIMIENTOS DE LA/S ENTIDAD/ES";
+            $titulo = "MOVIMIENTOS POR ENTIDAD";
             $nombreReporte = "movimientosEntidad";
             $asunto = "Reporte con los movimientos de la Entidad";
             $indiceStock = 10;
+            if (isset($inicio)) {
+              $inicioTemp = explode("-", $inicio);
+              $inicioMostrar = $inicioTemp[2]."/".$inicioTemp[1]."/".$inicioTemp[0];
+              $finTemp = explode("-", $fin);
+              $finMostrar = $finTemp[2]."/".$finTemp[1]."/".$finTemp[0];
+              $tipoConsulta = $tipoConsulta." ".$inicioMostrar." y ".$finMostrar;
+            }
             break;
   case "5": $tituloTabla = "MOVIMIENTOS DEL PRODUCTO";
-            $titulo = "MOVIMIENTOS PRODUCTO";
+            $titulo = "MOVIMIENTOS POR PRODUCTO";
             $nombreReporte = "movimientosProducto";
             $asunto = "Reporte con los movimientos del Producto";
             $indiceStock = 10;
@@ -600,13 +1061,15 @@ foreach($filas as $fila)
 switch ($id) {
   case "1": $pdfResumen->tablaStockEntidad($total);
             break;
-  case "2": $x = 5;//echo "nombre: ".$nombreProducto;
+  case "2": 
             $pdfResumen->tablaProducto();
             break;
   case "3": $pdfResumen->tablaStockEntidad($total);
             break;
-  case "4": break;
-  case "5": break;
+  case "4": $pdfResumen->tablaMovimientos();
+            break;
+  case "5": $pdfResumen->tablaMovimientos();
+            break;
   default: break;
 }    
 
@@ -616,7 +1079,7 @@ $salida = $dir."/".$nombreArchivo;
 
 ///Guardo el archivo en el disco, y además lo muestro en pantalla:
 $pdfResumen->Output($salida, 'F');
-$pdfResumen->Output($salida, 'I');
+//$pdfResumen->Output($salida, 'I');
 
 if (isset($mails)){
   $destinatarios = explode(",", $mails);
@@ -625,7 +1088,7 @@ if (isset($mails)){
   }
   $asunto = $asunto." (MAIL DE TEST!!!)";
   $cuerpo = utf8_decode("<html><body><h4>Se adjunta el reporte generado del stock</h4></body></html>");
-  enviarMail($para, '', '', $asunto, $cuerpo, "REPORTE", $nombreArchivo, $salida);
+  $respuesta = enviarMail($para, '', '', $asunto, $cuerpo, "REPORTE", $nombreArchivo, $salida);echo $respuesta;
 }
 
 
