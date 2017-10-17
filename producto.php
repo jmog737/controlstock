@@ -31,7 +31,7 @@ require_once("data/sesiones.php");
             <th align='left'><font class='negra'>Buscar:</font></th>
             <td align='center' style="max-width: 250px" colspan="2"><input type='text' id='producto' name='producto' class='agrandar' size='9' onkeyup='showHintProd(this.value, "#producto")'></td>
           </tr>
-          <th colspan="3">DATOS DEL PRODUCTO</th>
+          <th colspan="3" class="centrado">DATOS DEL PRODUCTO</th>
           <tr>
             <th align='left'><font class='negra'>Entidad:</font></th>
             <td align='center' colspan="2"><input type="text" name="entidad" id="entidad" class="agrandar" style="width:100%; text-align: center"></td>

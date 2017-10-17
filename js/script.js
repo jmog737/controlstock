@@ -812,22 +812,28 @@ function todo () {
   var urlActual = jQuery(location).attr('pathname');
   ///Según en que url esté, es lo que se carga:
   switch (urlActual) {
-    case "/testKMS/index.php": 
-      {
-      
-      //setTimeout(cargarActividades('#main-content', false, false, false),1000);
-      break;
-    }
-    case "/testKMS/usuario.php": 
-      {
-      cargarUsuarios("#main-content", 0);
-      break;
-    }
-    case "/testKMS/busquedas.php": 
-      {
-      
-      break;
-    }
+    case "/controlstock/movimiento.php": 
+                                        {
+                                        //var temp = urlActual.split("?");
+                                        //var temp1 = temp[1].split("=");
+                                        //var hint1 = temp1[1];
+                                        //alert(hint1);
+                                        break;
+                                      }
+    case "/controlstock/index.php": 
+                                    {
+                                    //setTimeout(cargarActividades('#main-content', false, false, false),1000);
+                                    break;
+                                    }
+    case "/controlstock/usuario.php": 
+                                      {
+                                      cargarUsuarios("#main-content", 0);
+                                      break;
+                                    }
+    case "/controlstock/busquedas.php": 
+                                        {
+                                        break;
+                                      }
     default: break;
   }  
   
@@ -885,6 +891,7 @@ $(document).on("click", "#agregarMovimiento", function (){
     var temp = fecha.split('-');
     var fechaMostrar = temp[2]+"/"+temp[1]+"/"+temp[0];
     var idProd = $("#hint").val();
+    var busqueda = $("#producto").val();
     var nombreProducto = $("#hint").find('option:selected').text( );
     var stockActual = parseInt($("#hint").find('option:selected').attr("stock"), 10);
     var alarma = parseInt($("#hint").find('option:selected').attr("alarma"), 10);
@@ -895,11 +902,15 @@ $(document).on("click", "#agregarMovimiento", function (){
     var userBoveda = $("#usuarioBoveda").find('option:selected').attr("name");
     var idUserGrabaciones = $("#usuarioGrabaciones").val();
     var userGrabaciones = $("#usuarioGrabaciones").find('option:selected').attr("name");
-    var confirmar = confirm("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fechaMostrar+"\nProducto: "+nombreProducto+"\nTipo: "+tipo+"\nCantidad: "+cantidad+"\nControl Bóveda: "+userBoveda+"\nControl Grabaciones: "+userGrabaciones+"\nComentarios: "+comentarios);
+    var confirmar = confirm("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fechaMostrar+"\nProducto: "+nombreProducto+"\nTipo: "+tipo+"\nCantidad: "+cantidad+"\nControl 1: "+userBoveda+"\nControl 2: "+userGrabaciones+"\nComentarios: "+comentarios);
     var tempDate = new Date();
     var hora = tempDate.getHours()+":"+tempDate.getMinutes();
     
-    var nuevoStock = stockActual - cantidad;
+    var nuevoStock = stockActual; 
+    
+    if (tipo !== 'Devolución') {
+      nuevoStock = stockActual - cantidad;
+    }
     
     var avisarAlarma = false;
     var avisarInsuficiente = false;
@@ -920,28 +931,30 @@ $(document).on("click", "#agregarMovimiento", function (){
       var url = "data/updateQuery.php";
       var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+idUserBoveda+", "+idUserGrabaciones+", '"+comentarios+"')";
       //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
-       
+      
       $.getJSON(url, {query: ""+query+""}).done(function(request) {
         var resultado = request["resultado"];
         if (resultado === "OK") {
           var url = "data/updateQuery.php";
           var query = "update productos set stock="+nuevoStock+", ultimoMovimiento='"+fecha+"' where idprod="+idProd;
-                  
+          
           $.getJSON(url, {query: ""+query+""}).done(function(request) {
             var resultado = request["resultado"];
             if (resultado === "OK") {
               if (avisarAlarma) {
                 alert('El stock quedó por debajo del límite definido!. Stock actual: ' + nuevoStock);
-                location.reload();
+                //location.reload();
+                window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda;
               }
               else {
                 if (avisarInsuficiente) {
                   alert('Stock insuficiente!. Se descuenta sólo la cantidad existente. Stock 0!!.');
-                  location.reload();
+                  window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda;
                 }
                 else {
                   alert('Registro agregado correctamente!. Stock actual: '+nuevoStock);
-                  location.reload();
+                  //location.reload();
+                  window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda;
                 }
               }
             }
@@ -1600,6 +1613,22 @@ $(document).on("change", "[name=entidad]", function (){
   $(this).parent().prev().prev().children().prop("checked", true);
 });
 
+$(document).on("change", "#mes", function (){
+  $(this).parent().prev().prev().children().prop("checked", true);
+});
+
+$(document).on("change", "#año", function (){
+  $(this).parent().prev().prev().prev().prev().children().prop("checked", true);
+});
+
+$(document).on("change", "#inicio", function (){
+  $(this).parent().prev().prev().children().prop("checked", true);
+});
+
+$(document).on("change", "#fin", function (){
+  $(this).parent().prev().prev().prev().prev().children().prop("checked", true);
+});
+
 $(document).on("click", "#realizarBusqueda", function () {
   var timestamp = Math.round(Date.now() / 1000);
       
@@ -1615,6 +1644,15 @@ $(document).on("click", "#realizarBusqueda", function () {
     var entidadMovimiento = document.getElementById("entidadMovimiento").value;
     var idProd = $("#hint").val();
     var nombreProducto = $("#hint").find('option:selected').text( );
+    
+    if ((nombreProducto !== "undefined") && (nombreProducto !== '')) {
+      ///Separo en partes el nombreProducto que contiene [entidad] nombreProducto {BIN} --codigo--
+      var tempo = nombreProducto.split("]");
+      var tempo1 = tempo[1];
+      var tempo2 = tempo1.split("{");
+      var nombreSolo = tempo2[0].trim();
+    }
+    
     var tipo = $("#tipo").find('option:selected').val( );
     var idUser = $("#usuario").val();
     var nombreUsuario = $("#usuario").find('option:selected').text( );
@@ -1661,7 +1699,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                              else {
                                query += " from productos where idProd="+idProd;
                              }
-                             tipoConsulta = 'de stock del producto '+nombreProducto;
+                             tipoConsulta = 'de stock del producto '+nombreSolo;
                              campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Stock-Comentarios";
                              largos = "0.8-1.2-2.5-0.8-2-1-1-2";
                              mostrarCampos = "1-1-1-1-1-1-1-0-1";;
@@ -1670,7 +1708,7 @@ $(document).on("click", "#realizarBusqueda", function () {
       case 'totalStock':  query = "select entidad, sum(stock) as subtotal from productos where estado='activo' group by entidad";
                           tipoConsulta = 'del total de plásticos en bóveda';
                           campos = 'Id-Entidad-Stock';
-                          largos = '1-3.0-1.5';
+                          largos = '1-3.0-1.8';
                           mostrarCampos = "1-1-1";
                           x = 60;
                           break;                    
@@ -1706,7 +1744,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                     validarUser = true;
                                     ordenFecha = true;
                                   }
-                                  tipoConsulta = 'de los movimientos del producto '+nombreProducto;
+                                  tipoConsulta = 'de los movimientos del producto '+nombreSolo;
                                   campos = 'Id-Entidad-Nombre-BIN-Código-Snapshot-Stock-Alarma-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios';
                                   //Orden de la consulta: entidad - nombre - bin - codigo - snapshot - stock - alarma - prodcom - fecha - hora - cantidad - tipo - comentarios
                                   largos = '0.4-1.5-1.8-1-1-1-1-1-1.1-1.5-0.8-1.2-1.4-2';
@@ -1815,7 +1853,7 @@ $(document).on("click", "#realizarBusqueda", function () {
       {
       var mensajeTipo = null;  
       if (validarTipo) {    
-        if (tipo !== 'todos') {
+        if (tipo !== 'Todos') {
           query += " and tipo='"+tipo+"'";
           mensajeTipo = "del tipo "+tipo;
         }
@@ -1905,20 +1943,22 @@ $(document).on("click", "#realizarBusqueda", function () {
                                     indice++;
                                     total += stock;
                                   }
-                                  tabla += '<tr><th colspan="6">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td></tr>';
+                                  tabla += '<tr><th colspan="6" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td></tr>';
+                                  
                                   tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
                                                     <td style="display:none"><input type="text" id="entidad" value="'+entidadStock+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                   </tr>';
                                   tabla += '<tr>\n\
-                                              <th class="pieTabla" colspan="7">\n\
+                                              <td class="pieTabla" colspan="7">\n\
                                                 <input type="button" id="1" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
-                                              </th>\n\
+                                              </td>\n\
                                             </tr>\n\
                                           </table>\n\
                                         </form>';
@@ -1965,9 +2005,9 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                   </tr>';
                                   tabla += '<tr>\n\
-                                              <th class="pieTabla" colspan="2">\n\
+                                              <td class="pieTabla" colspan="2">\n\
                                                 <input type="button" id="2" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
-                                              </th>\n\
+                                              </td>\n\
                                             </tr>\n\
                                           </table>\n\
                                         </form>';
@@ -2002,7 +2042,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                   indice++;  
                                   total += subtotal;
                                 }
-                                tabla += '<tr><th colspan="2">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td></tr>';
+                                tabla += '<tr><th colspan="2" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td></tr>';
                                 tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
@@ -2012,9 +2052,9 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                   </tr>';
                                 tabla += '<tr>\n\
-                                            <th class="pieTabla" colspan="3">\n\
+                                            <td class="pieTabla" colspan="3">\n\
                                               <input type="button" id="3" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
-                                            </th>\n\
+                                            </td>\n\
                                           </tr>\n\
                                         </table>\n\
                                       </form>';              
@@ -2100,9 +2140,9 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                   </tr>';
               
                                       tabla += '<tr>\n\
-                                                  <th class="pieTabla" colspan="11">\n\
+                                                  <td class="pieTabla" colspan="11">\n\
                                                     <input type="button" id="4" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
-                                                  </th>\n\
+                                                  </td>\n\
                                                 </tr>\n\
                                               </table>\n\
                                             </form>';  
@@ -2123,7 +2163,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                         tabla += '<tr><th>BIN:</th><td>'+bin+'</td></tr>';
                                         tabla += '<tr><th>Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
                                         tabla += '<tr><th>Stock:</th><td class="resaltado">'+datos[0]['stock']+'</td></tr>';
-                                        tabla += '<tr><th colspan="2" class="pieTabla">FIN</th></tr></table>';
+                                        tabla += '<tr><th colspan="2" class="pieTabla centrado">FIN</th></tr></table>';
                                         
                                         tabla += '<br>';
                                         tabla += '<table name="movimientos" class="tabla2">';
@@ -2188,9 +2228,9 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                   </tr>';
               
                                         tabla += '<tr>\n\
-                                                    <th class="pieTabla" colspan="6">\n\
+                                                    <td class="pieTabla" colspan="6">\n\
                                                       <input type="button" id="5" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
-                                                    </th>\n\
+                                                    </td>\n\
                                                   </tr>\n\
                                                 </table>\n\
                                               </form>';
@@ -2279,7 +2319,7 @@ $(document).on("click", ".exportar", function (){
  
   ///En base al id, veo si es necesario o no enviar parámetros:
   switch (id) {
-    case "1": param += '&entidad:'+entidad;
+    case "1": param += '&entidad:'+entidad+'&nombreProducto:'+nombreProducto;
               break;
     case "2": param += '&idProd:'+idProd+'&nombreProducto:'+nombreProducto;
               break;

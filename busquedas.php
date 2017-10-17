@@ -88,7 +88,7 @@ require_once("data/sesiones.php");
               <td colspan="4" class="negrita" style="text-align: left">Total de plásticos en bóveda</td>
             </tr>
             <tr>
-              <th colspan="5">MOVIMIENTOS</th>
+              <th colspan="5" class="centrado">MOVIMIENTOS</th>
             </tr>
             <tr>
               <td class="fondoVerde">
@@ -150,6 +150,9 @@ require_once("data/sesiones.php");
                 <select id="año" name="año" style="width:100%">
                   <option value="2017" selected="yes">2017</option>
                   <option value="2018">2018</option>
+                  <option value="2019">2019</option>
+                  <option value="2020">2020</option>
+                  <option value="2021">2021</option>
                 </select>
               </td>
             </tr>  
@@ -159,10 +162,12 @@ require_once("data/sesiones.php");
               </th>
               <td>
                 <select id="tipo" name="tipo" style="width:100%">
-                  <option value="todos" selected="yes">---TODOS---</option>
-                  <option value="retiro">Retiro</option>
-                  <option value="importacion">Importaci&oacute;n</option>
-                  <option value="devolucion">Devoluci&oacute;n</option>
+                  <option value="Todos" selected="yes">---TODOS---</option>
+                  <option value='Retiro' selected='yes'>Retiro</option>
+                  <option value="Importaci&oacute;n">Importaci&oacute;n</option>
+                  <option value='Renovaci&oacute;n'>Reno</option>
+                  <option value='Devoluci&oacute;n'>Devoluci&oacute;n</option>
+                  <option value='Destrucci&oacute;n'>Destrucci&oacute;n</option>
                 </select>
               </td>
             </tr>
@@ -174,16 +179,16 @@ require_once("data/sesiones.php");
                   <?php
                     foreach($usuarios as $dato)
                       {
-                      echo "<option value='".$dato['iduser']."'>".$dato['apellido'].", ".$dato['nombre']."</option>";
+                      echo "<option value='".$dato['iduser']."'>".$dato['nombre']." ".$dato['apellido']."</option>";
                     }
                   ?>
                 </select>
               </td>
             </tr>
             <tr>
-              <th colspan="5" class="pieTabla">
-                <input type="button" class="btn-success" name="consultar" id="realizarBusqueda" value="Consultar">
-              </th>
+              <td colspan="5" class="pieTabla">
+                <input type="button" class="btn-success" name="consultar" id="realizarBusqueda" value="Consultar" align='center'>
+              </td>
             </tr>
           </table>
         </div>

@@ -39,7 +39,10 @@ require_once("data/sesiones.php");
       while (($fila = $result1->fetch_array(MYSQLI_ASSOC)) != NULL) { 
         $datosGrabaciones[] = $fila;
       }
+      //$hint1 = $_GET["h"];
+    
     ?>
+    
     
     <div id='main-content' class='container-fluid'>
       <h2 id="titulo" class="encabezado">INGRESO DE MOVIMIENTOS</h2>
@@ -47,7 +50,7 @@ require_once("data/sesiones.php");
         <table class='tabla2' name='movimiento'> 
           <th colspan="2" class="tituloTabla">MOVIMIENTO</th>
           <tr>
-            <th align='left'><font class='negra'>Fecha:</font></th>
+            <th><font class='negra'>Fecha:</font></th>
             <td align='center'><input type="date" name="fecha" id="fecha" style="width:100%; text-align: center" min="2017-09-01" value="<?php echo date("Y-m-d");?>"></td>
           </tr>
           <tr>
@@ -59,7 +62,9 @@ require_once("data/sesiones.php");
             <td align='center'>
               <select id="tipo" name="tipo" style="width:100%">
                 <option value='Retiro' selected='yes'>Retiro</option>
-                <option value='Devoluci&oacute;n'>Devolución</option>
+                <option value='Renovaci&oacute;n'>Reno</option>
+                <option value='Devoluci&oacute;n'>Devoluci&oacute;n</option>
+                <option value='Destrucci&oacute;n'>Destrucci&oacute;n</option>
               </select>
             </td>
           </tr>
@@ -75,7 +80,7 @@ require_once("data/sesiones.php");
             <th align='left'><font class='negra'>Comentarios:</font></th>
             <td align='center'><input type='textarea' id='comentarios' name='comentarios' class='agrandar' maxlength='35' size='9'></td>
           </tr>
-          <th colspan="2">CONTROL</th>
+          <th colspan="2" class="centrado">CONTROL</th>
           <tr>
             <th align='left'><font class='negra'>Control 1:</font></th>
             <td>

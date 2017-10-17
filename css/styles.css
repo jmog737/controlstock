@@ -175,6 +175,7 @@ a.detailObject:focus, a.detailObject:hover {
 /* TABLAS */
 .tituloTabla {
   border-radius: 25px 25px 0 0;
+  text-align: center;
 }
 .pieTabla {
   border-radius: 0 0 25px 25px;
@@ -235,7 +236,6 @@ a.detailObject:focus, a.detailObject:hover {
 }
 .tabla2 th {
   background-color: #0066cc;
-  text-align: center;
   color: #ffff00;
   border: #c0c0c0 1px solid;
   margin: 0px;
@@ -329,6 +329,9 @@ a.detailObject:focus, a.detailObject:hover {
   font-size: 1.4em;
   font-style: italic;
   color: white;
+}
+.centrado {
+  text-align: center;
 }
 /************************* END HOME PAGE *************************************/
 
