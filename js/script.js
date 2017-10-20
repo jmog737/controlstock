@@ -249,6 +249,35 @@ function showHintProd(str, id) {
   }
 }
 
+function cambiarHint(id){
+  //alert(id);
+  var rutaFoto = 'images/snapshots/';
+  
+  $('#hint option[value="177"]').attr("selected",true);
+  $("#hint").val(id);
+  alert('despues de setear');
+/*
+  var nombreFoto = $("#hint option[value="+ id +"]").attr("name");
+  $("#hint").css('background-color', '#ffffff');
+  
+  $("#snapshot").remove();
+  $("#stock").remove();
+  
+  var mostrar = '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
+  mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><b>Stock actual: <b><font class="resaltado" style="font-size:1.6em">'+$("#hint option[value="+ id +"]").attr("stock")+'</font></p>';
+  $(this).css('background-color', '#efe473');
+  
+  $("#hint").after(mostrar);*/
+}
+
+function onMovLoad(){alert('en onmov');
+  if ($("#hint").val() !== 'NADA') {
+  showHint($("#producto").val(), "#producto");
+  var valor = $('#idPasado').val();alert('valor: '+valor);
+  setTimeout(cambiarHint(valor),5000);
+  }
+}
+
 /***********************************************************************************************************************
 /// ********************************************** FIN FUNCIONES GENÉRICAS *********************************************
 ************************************************************************************************************************
@@ -812,14 +841,15 @@ function todo () {
   var urlActual = jQuery(location).attr('pathname');
   ///Según en que url esté, es lo que se carga:
   switch (urlActual) {
-    case "/controlstock/movimiento.php": 
-                                        {
-                                        //var temp = urlActual.split("?");
-                                        //var temp1 = temp[1].split("=");
-                                        //var hint1 = temp1[1];
-                                        //alert(hint1);
-                                        break;
-                                      }
+    case "/controlstock/movimiento.php": {
+                                          alert('dom listo');
+                                          if ($("#idPasado") !== null) {
+                                            $('#hint option[value="177"]').attr("selected","selected");
+                                            //$("#hint").val(id);
+                                            alert('despues de setear');
+                                          }
+                                          break;
+                                        }
     case "/controlstock/index.php": 
                                     {
                                     //setTimeout(cargarActividades('#main-content', false, false, false),1000);
@@ -840,7 +870,7 @@ function todo () {
   ///Disparar funcion cuando algún elemento de la clase agrandar reciba el foco.
 ///Se usa para resaltar el elemento seleccionado.
 $(document).on("focus", ".agrandar", function (){
-  $(this).css("font-size", 28);
+  $(this).css("font-size", 60);
   $(this).css("background-color", "#e7f128");
   $(this).css("font-weight", "bolder");
   $(this).css("color", "red");
@@ -864,7 +894,7 @@ $(document).on("blur", ".agrandar", function (){
 ///Disparar funcion al cambiar el elemento elegido en el select con las sugerencias para los productos.
 ///Cambia el color de fondo para resaltarlo, carga un snapshot del plástico si está disponible, y muestra
 ///el stock actual.
-$(document).on("change", "#hint", function (){
+$(document).on("change", "#hint", function (){alert('en onchange');
   var rutaFoto = 'images/snapshots/';
   var nombreFoto = $(this).find('option:selected').attr("name");
   $(this).css('background-color', '#ffffff');
@@ -872,14 +902,12 @@ $(document).on("change", "#hint", function (){
   $("#snapshot").remove();
   $("#stock").remove();
   
-  //if (nombreFoto !== "NADA"){
-    var mostrar = '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
-    mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><b>Stock actual: <b><font class="resaltado" style="font-size:1.6em">'+$("#hint").find('option:selected').attr("stock")+'</font></p>';
-    $(this).css('background-color', '#efe473');
-  //}
+  var mostrar = '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
+  mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><b>Stock actual: <b><font class="resaltado" style="font-size:1.6em">'+$("#hint").find('option:selected').attr("stock")+'</font></p>';
+  $(this).css('background-color', '#efe473');
   
   $("#hint").after(mostrar);
-});
+  });
 
 ///Disparar funcion al hacer clic en el botón para agregar el movimiento.
 $(document).on("click", "#agregarMovimiento", function (){
@@ -902,11 +930,13 @@ $(document).on("click", "#agregarMovimiento", function (){
     var userBoveda = $("#usuarioBoveda").find('option:selected').attr("name");
     var idUserGrabaciones = $("#usuarioGrabaciones").val();
     var userGrabaciones = $("#usuarioGrabaciones").find('option:selected').attr("name");
-    var confirmar = confirm("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fechaMostrar+"\nProducto: "+nombreProducto+"\nTipo: "+tipo+"\nCantidad: "+cantidad+"\nControl 1: "+userBoveda+"\nControl 2: "+userGrabaciones+"\nComentarios: "+comentarios);
     var tempDate = new Date();
     var hora = tempDate.getHours()+":"+tempDate.getMinutes();
+    var nuevoStock = stockActual;
     
-    var nuevoStock = stockActual; 
+    /// Elimino el pop up de confirmación a pedido de Diego: 
+    /// Esto elimina también la necesidad de chequear la variable confirmar en el if más abajo
+    //var confirmar = confirm("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fechaMostrar+"\nProducto: "+nombreProducto+"\nTipo: "+tipo+"\nCantidad: "+cantidad+"\nControl 1: "+userBoveda+"\nControl 2: "+userGrabaciones+"\nComentarios: "+comentarios);
     
     if (tipo !== 'Devolución') {
       nuevoStock = stockActual - cantidad;
@@ -927,7 +957,7 @@ $(document).on("click", "#agregarMovimiento", function (){
       }
     }
     
-    if (confirmar) {
+    //if (confirmar) {
       var url = "data/updateQuery.php";
       var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+idUserBoveda+", "+idUserGrabaciones+", '"+comentarios+"')";
       //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
@@ -944,19 +974,20 @@ $(document).on("click", "#agregarMovimiento", function (){
               if (avisarAlarma) {
                 alert('El stock quedó por debajo del límite definido!. Stock actual: ' + nuevoStock);
                 //location.reload();
-                window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda;
+                //window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda;
               }
               else {
                 if (avisarInsuficiente) {
                   alert('Stock insuficiente!. Se descuenta sólo la cantidad existente. Stock 0!!.');
-                  window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda;
+                  //window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda;
                 }
                 else {
                   alert('Registro agregado correctamente!. Stock actual: '+nuevoStock);
                   //location.reload();
-                  window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda;
+                  //window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda;
                 }
               }
+              window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda+"&id="+idProd;
             }
             else {
               alert('Hubo un error. Por favor verifique.');
@@ -967,10 +998,10 @@ $(document).on("click", "#agregarMovimiento", function (){
           alert('Hubo un error. Por favor verifique.');
         }
       });  
-    }
+    /*}
     else {
       alert('no hacer el insert');
-    }
+    }*/
   }
 });
 

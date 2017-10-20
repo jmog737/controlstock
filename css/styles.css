@@ -230,7 +230,7 @@ a.detailObject:focus, a.detailObject:hover {
   text-align: center;
   color: #000;
   border-collapse: separate;
-  max-width: 90%;
+  max-width: 80%;
   margin: 0 auto;
   border-radius: 25px;
 }

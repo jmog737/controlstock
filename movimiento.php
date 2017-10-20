@@ -39,8 +39,10 @@ require_once("data/sesiones.php");
       while (($fila = $result1->fetch_array(MYSQLI_ASSOC)) != NULL) { 
         $datosGrabaciones[] = $fila;
       }
-      //$hint1 = $_GET["h"];
-    
+      
+      $valorPasado = $_GET["h"];
+      $idPasado = $_GET["id"];
+      
     ?>
     
     
@@ -55,7 +57,7 @@ require_once("data/sesiones.php");
           </tr>
           <tr>
             <th align='left'><font class='negra'>Producto:</font></th>
-            <td align='center'><input type='text' id='producto' name='producto' class='agrandar' size='9' onkeyup='showHint(this.value, "#producto")'></td>
+            <td align='center'><input type='text' id='producto' name='producto' class='agrandar' size='9' onkeyup='showHint(this.value, "#producto")' value="<?php echo $valorPasado ?>"></td>
           </tr>  
           <tr>
             <th align='left'><font class='negra'>Tipo:</font></th>
@@ -121,11 +123,15 @@ require_once("data/sesiones.php");
             
           </tr>
           <tr>
-            <td colspan="2" class="pieTabla"><input type="button" value="AGREGAR" id="agregarMovimiento" name="agregarMovimiento" class='btn-success' align='center'/></td>
+            <td colspan="2" class="pieTabla"><input type="button" value="ACEPTAR" id="agregarMovimiento" name="agregarMovimiento" class='btn-success' align='center'/></td>
+            <td style="display:none"><input type="text" id="idPasado" name="idPasado" value="<?php echo $idPasado ?>"></td>
           </tr>
         </table>
       </form> 
     </div>
+    <script type="text/javascript">
+      //window.onready= onMovLoad();
+    </script>
     <?php 
             }
     else {

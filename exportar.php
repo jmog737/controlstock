@@ -179,7 +179,7 @@ class PDF extends PDF_MC_Table
             $alarma = $dato[$i+1];
             $stock = $dato[$i];
             $datito = number_format($stock, 0, ",", ".");
-            $a = 'R';
+            $a = 'C';
             $fillActual = $fill;
             $this->SetFont('Courier', 'BI', 12);
             if ($stock < $alarma) {
@@ -232,7 +232,7 @@ class PDF extends PDF_MC_Table
       $this->SetFont('Courier', 'BI', 14);
       $this->SetTextColor(255,0,0);
       $this->SetFillColor(153, 255, 102);
-      $this->Cell($largoCampos[$totalCampos-1], 6, number_format($total, 0, ",", "."), 'LRBT', 0, 'R', true);
+      $this->Cell($largoCampos[$totalCampos-1], 6, number_format($total, 0, ",", "."), 'LRBT', 0, 'C', true);
     }
   }
   
