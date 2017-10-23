@@ -152,9 +152,10 @@ function validarEntero(valor)
  * 
  * @param {String} str String con la cadena de texto a buscar como parte del producto.
  * @param {String} id String con el id del campo luego del cual se tienen que agregar los datos.
+ * @param {String} seleccionado String que indica, si es que es disitinto de nulo, el producto seleccionado.
  * \brief Función que muestra las sugerencias de los productos disponibles.
  */
-function showHint(str, id) {
+function showHint(str, id, seleccionado) {
   if (str.length === 0) { 
     document.getElementById("producto").innerHTML = "";
     return;
@@ -170,7 +171,7 @@ function showHint(str, id) {
       var mostrar = '';
       
       if (totalSugerencias >= 1) {
-        mostrar = '<select name="hint" id="hint" style="width: 100%">';
+        mostrar = '<select name="hint" id="hint" class="hint">';
         mostrar += '<option value="NADA" name="NADA">--Seleccionar--</option>';
         for (var i in sugerencias) {
           var bin = sugerencias[i]["bin"];
@@ -185,7 +186,11 @@ function showHint(str, id) {
           if ((codigo_emsa === null) || (codigo_emsa === "")) {
             codigo_emsa = 'SIN CODIGO AÚN';
           }
-          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+'>[' + sugerencias[i]["entidad"]+'] '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
+          var sel = "";
+          if (parseInt(sugerencias[i]["idprod"], 10) === parseInt(seleccionado, 10)) {
+            sel = 'selected="yes"';
+          }
+          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+' '+sel+ '>[' + sugerencias[i]["entidad"]+'] '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
         }
         mostrar += '</select>';
       }
@@ -193,6 +198,7 @@ function showHint(str, id) {
         mostrar = '<p name="hint" value="">No se encontraron sugerencias!</p>';
       }
       $(id).after(mostrar);
+      $("#hint").focusin();
     });
   }
 }
@@ -268,14 +274,6 @@ function cambiarHint(id){
   $(this).css('background-color', '#efe473');
   
   $("#hint").after(mostrar);*/
-}
-
-function onMovLoad(){alert('en onmov');
-  if ($("#hint").val() !== 'NADA') {
-  showHint($("#producto").val(), "#producto");
-  var valor = $('#idPasado').val();alert('valor: '+valor);
-  setTimeout(cambiarHint(valor),5000);
-  }
 }
 
 /***********************************************************************************************************************
@@ -382,6 +380,112 @@ function validarMovimiento()
   }
   if (seguir) return true;
   else return false;
+}
+
+function cargarMovimiento(selector, hint, prod){
+  var url = "data/selectQuery.php";
+  var query = "select iduser, apellido, nombre from usuarios where (estado='activo' and (sector='Bóveda' or sector='Grabaciones')) order by nombre asc, apellido asc";
+  
+  /// Recupero fecha actual para pre setear en el campo Fecha:
+  var actual = new Date();
+  var dia = actual.getDate();
+  var mes = parseInt(actual.getMonth(), 10);
+  mes = mes +1;
+  if (mes < 10) {
+    mes = "0"+mes;
+  }
+  var año = actual.getFullYear();
+  var hoy = año+"-"+mes+"-"+dia;
+  
+  $.getJSON(url, {query: ""+query+""}).done(function(request) {
+    var usuarios = request.resultado;
+    var total = request.rows;
+    if (total >= 1) {
+      
+      var titulo = '<h2 id="titulo" class="encabezado">INGRESO DE MOVIMIENTOS</h2>';
+      var formu = '<form method="post" action="movimiento.php">';
+      var tabla = '<table class="tabla2" name="movimiento">';
+      var tr = '<th colspan="2" class="tituloTabla">MOVIMIENTO</th>';
+      tr += '<tr>\n\
+              <th><font class="negra">Fecha:</font></th>\n\
+              <td align="center"><input type="date" name="fecha" id="fecha" style="width:100%; text-align: center" min="2017-09-01" value="'+hoy+'"></td>\n\
+            </tr>';
+      tr += '<tr>\n\
+              <th align="left"><font class="negra">Producto:</font></th>\n\
+              <td align="center">\n\
+                <input type="text" id="producto" name="producto" size="9" onkeyup=\'showHint(this.value, "#producto", "")\' value="'+hint+'">\n\
+              </td>\n\
+            </tr>';
+      tr += '<tr>\n\
+              <th align="left"><font class="negra">Tipo:</font></th>\n\
+              <td align="center">\n\
+                <select id="tipo" name="tipo" style="width:100%">\n\
+                  <option value="Retiro" selected="yes">Retiro</option>\n\
+                  <option value="Renovaci&oacute;n">Reno</option>\n\
+                  <option value="Devoluci&oacute;n">Devoluci&oacute;n</option>\n\
+                  <option value="Destrucci&oacute;n">Destrucci&oacute;n</option>\n\
+                </select>\n\
+              </td>\n\
+            </tr>';
+      tr += '<tr>\n\
+              <th align="left"><font class="negra">Cantidad:</font></th>\n\
+              <td align="center"><input type="text" id="cantidad" name="cantidad" class="agrandar" maxlength="35" size="9"></td>\n\
+            </tr>';
+      tr += '<tr>\n\
+              <th align="left"><font class="negra">Repetir Cantidad:</font></th>\n\
+              <td align="center"><input type="text" id="cantidad2" name="cantidad2" class="agrandar" maxlength="35" size="9"></td>\n\
+            </tr>';
+      tr += '<tr>\n\
+              <th align="left"><font class="negra">Comentarios:</font></th>\n\
+              <td align="center"><input type="textarea" id="comentarios" name="comentarios" class="agrandar" maxlength="35" size="9"></td>\n\
+            </tr>';
+      tr += '<th colspan="2" class="centrado">CONTROL</th>';
+      tr += '<tr>\n\
+              <th align="left"><font class="negra">Control 1:</font></th>\n\
+              <td>\n\
+                <select id="usuarioBoveda" name="usuarioBoveda" style="width:100%">\n\
+                  <option value="ninguno" selected="yes">---Seleccionar---</option>';
+      for (var index in usuarios) 
+        {
+        tr += '<option value="'+usuarios[index]["iduser"]+'" name="'+usuarios[index]["nombre"]+' '+usuarios[index]['apellido']+'">'+usuarios[index]['nombre']+' '+usuarios[index]['apellido']+'</option>';
+      }
+      tr += '</select>\n\
+            </td>\n\
+          </tr>';
+      tr += '<tr>\n\
+              <th align="left"><font class="negra">Control 2:</font></th>\n\
+              <td>\n\
+                <select id="usuarioGrabaciones" name="usuarioGrabaciones" style="width: 100%">\n\
+                  <option value="ninguno" selected="yes">---Seleccionar---</option>';
+      for (var index in usuarios) 
+        {
+        tr += '<option value="'+usuarios[index]["iduser"]+'" name="'+usuarios[index]["nombre"]+' '+usuarios[index]['apellido']+'">'+usuarios[index]['nombre']+' '+usuarios[index]['apellido']+'</option>';
+      }
+      tr += '</select>\n\
+            </td>\n\
+          </tr>';
+      tr += '<tr>\n\
+              <td colspan="2" class="pieTabla">\n\
+                <input type="button" value="ACEPTAR" id="agregarMovimiento" name="agregarMovimiento" class="btn-success" align="center"/>\n\
+              </td>\n\
+              <td style="display:none">\n\
+                <input type="text" id="idPasado" name="idPasado" value="<?php echo $idPasado ?>">\n\
+              </td>\n\
+            </tr>';
+      tabla += tr;
+      tabla += '</table>';
+      formu += titulo;
+      formu += tabla;
+      formu += '</form>';
+      $(selector).html(formu);
+      if (prod !== -1) {//alert('en el if:'+prod);
+        showHint(hint, "#producto", prod);
+      }
+      else {
+        showHint(hint, "#producto", "");
+      }
+    }
+  });    
 }
 
 /***********************************************************************************************************************
@@ -839,17 +943,23 @@ Además, en la función también están los handlers para los distintos eventos 
 function todo () {
   ///Levanto la url actual: 
   var urlActual = jQuery(location).attr('pathname');
+  var parametros = jQuery(location).attr('search');
   ///Según en que url esté, es lo que se carga:
   switch (urlActual) {
-    case "/controlstock/movimiento.php": {
-                                          alert('dom listo');
-                                          if ($("#idPasado") !== null) {
-                                            $('#hint option[value="177"]').attr("selected","selected");
-                                            //$("#hint").val(id);
-                                            alert('despues de setear');
-                                          }
-                                          break;
+    case "/controlstock/movimiento.php":
+                                        if (parametros) {
+                                          var temp = parametros.split('?');
+                                          var temp1 = temp[1].split('&');
+                                          var temp2 = temp1[0].split('=');
+                                          var temp3 = temp1[1].split('=');
+                                          var h = temp2[1];
+                                          var idprod = parseInt(temp3[1], 10);
+                                          cargarMovimiento("#main-content", h, idprod);                                          
                                         }
+                                        else {
+                                          cargarMovimiento("#main-content", "", -1);
+                                        }
+                                        break;    
     case "/controlstock/index.php": 
                                     {
                                     //setTimeout(cargarActividades('#main-content', false, false, false),1000);
@@ -870,7 +980,7 @@ function todo () {
   ///Disparar funcion cuando algún elemento de la clase agrandar reciba el foco.
 ///Se usa para resaltar el elemento seleccionado.
 $(document).on("focus", ".agrandar", function (){
-  $(this).css("font-size", 60);
+  //$(this).css("font-size", 20);
   $(this).css("background-color", "#e7f128");
   $(this).css("font-weight", "bolder");
   $(this).css("color", "red");
@@ -894,16 +1004,19 @@ $(document).on("blur", ".agrandar", function (){
 ///Disparar funcion al cambiar el elemento elegido en el select con las sugerencias para los productos.
 ///Cambia el color de fondo para resaltarlo, carga un snapshot del plástico si está disponible, y muestra
 ///el stock actual.
-$(document).on("change", "#hint", function (){alert('en onchange');
+$(document).on("change focusin", "#hint", function (){
   var rutaFoto = 'images/snapshots/';
   var nombreFoto = $(this).find('option:selected').attr("name");
   $(this).css('background-color', '#ffffff');
   
   $("#snapshot").remove();
   $("#stock").remove();
-  
+  var stock = $("#hint").find('option:selected').attr("stock");
+  if ((stock === 'undefined') || ($(this).find('option:selected').val() === 'NADA')) {
+    stock = '';
+  }
   var mostrar = '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
-  mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><b>Stock actual: <b><font class="resaltado" style="font-size:1.6em">'+$("#hint").find('option:selected').attr("stock")+'</font></p>';
+  mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><b>Stock actual: <b><font class="resaltado" style="font-size:1.6em">'+stock+'</font></p>';
   $(this).css('background-color', '#efe473');
   
   $("#hint").after(mostrar);
@@ -916,20 +1029,20 @@ $(document).on("click", "#agregarMovimiento", function (){
   seguir = validarMovimiento();
   if (seguir) {
     var fecha = $("#fecha").val();
-    var temp = fecha.split('-');
-    var fechaMostrar = temp[2]+"/"+temp[1]+"/"+temp[0];
+    //var temp = fecha.split('-');
+    //var fechaMostrar = temp[2]+"/"+temp[1]+"/"+temp[0];
     var idProd = $("#hint").val();
     var busqueda = $("#producto").val();
-    var nombreProducto = $("#hint").find('option:selected').text( );
+    //var nombreProducto = $("#hint").find('option:selected').text( );
     var stockActual = parseInt($("#hint").find('option:selected').attr("stock"), 10);
     var alarma = parseInt($("#hint").find('option:selected').attr("alarma"), 10);
     var tipo = $("#tipo").val();
     var cantidad = parseInt($("#cantidad").val(), 10);
     var comentarios = $("#comentarios").val();
     var idUserBoveda = $("#usuarioBoveda").val();
-    var userBoveda = $("#usuarioBoveda").find('option:selected').attr("name");
+    //var userBoveda = $("#usuarioBoveda").find('option:selected').attr("name");
     var idUserGrabaciones = $("#usuarioGrabaciones").val();
-    var userGrabaciones = $("#usuarioGrabaciones").find('option:selected').attr("name");
+    //var userGrabaciones = $("#usuarioGrabaciones").find('option:selected').attr("name");
     var tempDate = new Date();
     var hora = tempDate.getHours()+":"+tempDate.getMinutes();
     var nuevoStock = stockActual;
@@ -938,6 +1051,7 @@ $(document).on("click", "#agregarMovimiento", function (){
     /// Esto elimina también la necesidad de chequear la variable confirmar en el if más abajo
     //var confirmar = confirm("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fechaMostrar+"\nProducto: "+nombreProducto+"\nTipo: "+tipo+"\nCantidad: "+cantidad+"\nControl 1: "+userBoveda+"\nControl 2: "+userGrabaciones+"\nComentarios: "+comentarios);
     
+    /// Si el movimiento NO es una devolución, calculo el nuevo stock. De serlo, NO se quita de stock pues las tarjetas se reponen.
     if (tipo !== 'Devolución') {
       nuevoStock = stockActual - cantidad;
     }
@@ -958,12 +1072,14 @@ $(document).on("click", "#agregarMovimiento", function (){
     }
     
     //if (confirmar) {
+      /// Agrego el movimiento según los datos pasados:
       var url = "data/updateQuery.php";
       var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+idUserBoveda+", "+idUserGrabaciones+", '"+comentarios+"')";
       //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
       
       $.getJSON(url, {query: ""+query+""}).done(function(request) {
         var resultado = request["resultado"];
+        /// Si el agregado es exitoso, actualizo el stock y la fecha de la última modificación en la tabla Productos:
         if (resultado === "OK") {
           var url = "data/updateQuery.php";
           var query = "update productos set stock="+nuevoStock+", ultimoMovimiento='"+fecha+"' where idprod="+idProd;
@@ -972,17 +1088,17 @@ $(document).on("click", "#agregarMovimiento", function (){
             var resultado = request["resultado"];
             if (resultado === "OK") {
               if (avisarAlarma) {
-                alert('El stock quedó por debajo del límite definido!. Stock actual: ' + nuevoStock);
+                alert('El stock quedó por debajo del límite definido!. \n\nStock actual: ' + nuevoStock);
                 //location.reload();
                 //window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda;
               }
               else {
                 if (avisarInsuficiente) {
-                  alert('Stock insuficiente!. Se descuenta sólo la cantidad existente. Stock 0!!.');
+                  alert('Stock insuficiente!. \nSe descuenta sólo la cantidad existente. \n\nStock 0!!.');
                   //window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda;
                 }
                 else {
-                  alert('Registro agregado correctamente!. Stock actual: '+nuevoStock);
+                  alert('Registro agregado correctamente!. \n\nStock actual: '+nuevoStock);
                   //location.reload();
                   //window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda;
                 }
@@ -1177,7 +1293,7 @@ $(document).on("click", "#eliminarProducto", function (){
           $("#alarma").val('');
           $("#ultimoMovimiento").val('');
           $("#bin").val('');
-          showHintProd(" ", "producto");
+          showHintProd(" ", "producto", "");
           $("#producto").val('');
           $("#producto").focus();
           inhabilitarProducto();
@@ -1693,6 +1809,7 @@ $(document).on("click", "#realizarBusqueda", function () {
     var rangoFecha = null;
     
     var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.snapshot, productos.stock, productos.alarma, productos.comentarios as prodcom';
+    var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock';
     var tipoConsulta = '';
     var mensajeFecha = '';
     var campos;
@@ -1710,10 +1827,12 @@ $(document).on("click", "#realizarBusqueda", function () {
     switch (radio) {
       case 'entidadStock': if (entidadStock !== 'todos') {
                              query += " from productos where entidad='"+entidadStock+"' and estado='activo'";
+                             consultaCSV += " from productos where entidad='"+entidadStock+"' and estado='activo'";
                              tipoConsulta = 'del stock de '+entidadStock;
                            } 
                            else {
                              query += " from productos where estado='activo'";
+                             consultaCSV += " from productos where estado='activo'";
                              tipoConsulta = 'del stock de todas las entidades';
                            }
                            campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Stock";
@@ -1729,6 +1848,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                              }
                              else {
                                query += " from productos where idProd="+idProd;
+                               consultaCSV += " from productos where idProd="+idProd;
                              }
                              tipoConsulta = 'de stock del producto '+nombreSolo;
                              campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Stock-Comentarios";
@@ -1737,6 +1857,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                              x = 22;
                              break;
       case 'totalStock':  query = "select entidad, sum(stock) as subtotal from productos where estado='activo' group by entidad";
+                          consultaCSV = "select entidad as Entidad, sum(stock) as Subtotal from productos where estado='activo' group by entidad";
                           tipoConsulta = 'del total de plásticos en bóveda';
                           campos = 'Id-Entidad-Stock';
                           largos = '1-3.0-1.8';
@@ -1744,8 +1865,10 @@ $(document).on("click", "#realizarBusqueda", function () {
                           x = 60;
                           break;                    
       case 'entidadMovimiento': query += ", movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
+                                consultaCSV += ", movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
                                 if (entidadMovimiento !== 'todos') {
                                   query += "entidad='"+entidadMovimiento+"' and ";
+                                  consultaCSV += "entidad='"+entidadMovimiento+"' and ";
                                   tipoConsulta = 'de los movimientos de '+entidadMovimiento;
                                 } 
                                 else {
@@ -1762,6 +1885,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                 x = 40;
                                 break;                       
       case 'productoMovimiento':  query += ", movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where ";
+                                  consultaCSV += ", movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where ";
                                   if ((idProd === 'NADA') || (nombreProducto === '')){
                                     alert('Debe seleccionar un producto. Por favor verifique.');
                                     document.getElementById("productoMovimiento").focus();
@@ -1770,6 +1894,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                   }
                                   else {
                                     query += "idProd="+idProd+' and ';
+                                    consultaCSV += "idProd="+idProd+' and ';
                                     validarFecha = true;
                                     validarTipo = true;
                                     validarUser = true;
@@ -1878,6 +2003,7 @@ $(document).on("click", "#realizarBusqueda", function () {
         rangoFecha = "(fecha >='"+inicio+"') and (fecha<'"+fin+"')";
       }
       query += rangoFecha;
+      consultaCSV += rangoFecha;
     }
     
     if (validado) 
@@ -1886,6 +2012,7 @@ $(document).on("click", "#realizarBusqueda", function () {
       if (validarTipo) {    
         if (tipo !== 'Todos') {
           query += " and tipo='"+tipo+"'";
+          consultaCSV += " and tipo='"+tipo+"'";
           mensajeTipo = "del tipo "+tipo;
         }
         else {
@@ -1897,17 +2024,20 @@ $(document).on("click", "#realizarBusqueda", function () {
       if (validarUser) {
         if (idUser !== 'todos') {
           query += " and (control1="+idUser+" or control2="+idUser+")";
+          consultaCSV += " and (control1="+idUser+" or control2="+idUser+")";
           mensajeUsuario = " en los que está involucrado el usuario "+nombreUsuario;
         }
       }
       
       if (ordenFecha) {
         query += " order by fecha desc, hora desc, entidad asc, nombre_plastico asc, idprod";
+        consultaCSV += " order by fecha desc, hora desc, entidad asc, nombre_plastico asc, idprod";
       }
       else {
         query += " order by entidad asc, nombre_plastico asc, idprod asc";
+        consultaCSV += " order by entidad asc, nombre_plastico asc, idprod asc";
       }
-      
+      //consultaCSV += ")";
       var mensajeConsulta = "Consulta "+tipoConsulta;
       if (mensajeTipo !== null) {
         mensajeConsulta += " "+mensajeTipo;
@@ -1920,7 +2050,7 @@ $(document).on("click", "#realizarBusqueda", function () {
       mostrar += "<h3>"+mensajeConsulta+"</h3>";
 
       var url = "data/selectQuery.php";
-      //alert(query);
+      //alert(consultaCSV);
       $.getJSON(url, {query: ""+query+""}).done(function(request){
         var datos = request.resultado;
         var totalDatos = request.rows;
@@ -1977,6 +2107,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                   tabla += '<tr><th colspan="6" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td></tr>';
                                   
                                   tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
@@ -2026,6 +2157,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                   tabla += '<tr><th style="text-align:left">Comentarios:</th><td>'+prodcom+'</td></tr>';
                                   tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
                                   tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
@@ -2075,6 +2207,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                 }
                                 tabla += '<tr><th colspan="2" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td></tr>';
                                 tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
+                                              <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
@@ -2153,6 +2286,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                         indice++;  
                                         }
                                       tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
@@ -2241,6 +2375,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                           indice++;  
                                           }
                                         tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
@@ -2301,12 +2436,13 @@ $(document).on("click", ".exportar", function (){
   var id = $(this).attr("id");
   var x = $("#x").val();
   var query = $("#query").val();
+  var consultaCSV = $("#consultaCSV").val();
   var largos = $("#largos").val();
   var campos = $("#campos").val();
   var mostrar = $("#mostrar").val();
   var tipoConsulta = $("#tipoConsulta").val();
     
-  var param = "id:"+id+"&x:"+x+"&largos:"+largos+"&campos:"+campos+"&query:"+query+"&mostrar:"+mostrar+"&tipoConsulta:"+tipoConsulta;
+  var param = "id:"+id+"&x:"+x+"&largos:"+largos+"&campos:"+campos+"&query:"+query+"&consultaCSV:"+consultaCSV+"&mostrar:"+mostrar+"&tipoConsulta:"+tipoConsulta;
   
   var criterioFecha = $("#criterioFecha").val();
   if (criterioFecha === 'intervalo') {

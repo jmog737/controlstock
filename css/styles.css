@@ -200,7 +200,7 @@ a.detailObject:focus, a.detailObject:hover {
   color: #000;
   border-collapse: separate;
   margin: 0 auto;
-  max-width: 70%;
+  max-width: 80%;
 }
 .tabla1 th {
   background-color: #0066cc;
@@ -230,7 +230,7 @@ a.detailObject:focus, a.detailObject:hover {
   text-align: center;
   color: #000;
   border-collapse: separate;
-  max-width: 80%;
+  max-width: 50%;
   margin: 0 auto;
   border-radius: 25px;
 }
@@ -246,6 +246,7 @@ a.detailObject:focus, a.detailObject:hover {
   border: #c0c0c0 1px solid;
   border-collapse: separate;
   padding: 0px;
+  
 }
 .tabla2 td {
   border: #c0c0c0 1px solid;
@@ -262,6 +263,14 @@ a.detailObject:focus, a.detailObject:hover {
   padding: 0px;
 }
 .tabla2 td input[type="textarea"] {
+  line-height: normal;
+  width: 100%;
+  border: #c0c0c0 1px solid;
+  border-collapse: separate;
+  text-align: center;
+  padding: 0px;
+}
+.tabla2 td select {
   line-height: normal;
   width: 100%;
   border: #c0c0c0 1px solid;
@@ -332,6 +341,14 @@ a.detailObject:focus, a.detailObject:hover {
 }
 .centrado {
   text-align: center;
+}
+.hint {
+  
+  width: 100%;
+}
+.hint option {
+  
+  width: 100%;
 }
 /************************* END HOME PAGE *************************************/
 

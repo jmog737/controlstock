@@ -29,7 +29,7 @@ require_once("data/sesiones.php");
           <th colspan="3" class="tituloTabla">PRODUCTOS</th>
           <tr>
             <th align='left'><font class='negra'>Buscar:</font></th>
-            <td align='center' style="max-width: 250px" colspan="2"><input type='text' id='producto' name='producto' class='agrandar' size='9' onkeyup='showHintProd(this.value, "#producto")'></td>
+            <td align='center' style="max-width: 250px" colspan="2"><input type='text' id='producto' name='producto' class='agrandar' size='9' onkeyup='showHintProd(this.value, "#producto"), ""'></td>
           </tr>
           <th colspan="3" class="centrado">DATOS DEL PRODUCTO</th>
           <tr>

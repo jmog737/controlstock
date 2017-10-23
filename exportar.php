@@ -1024,6 +1024,8 @@ foreach ($temp1 as $valor) {
                break;
     case 'query': $query = $temp2[1];
                   break;
+    case 'consultaCSV': $consultaCSV = $temp2[1];
+                  break;            
     case 'largos': $largos = $temp2[1];
                    $temp = explode('-', $largos);
                    break;
@@ -1096,24 +1098,28 @@ switch ($id) {
             $titulo = "STOCK POR ENTIDAD";
             $nombreReporte = "stockEntidad";
             $asunto = "Reporte con el Listado de Stock";
+            $nombreCampos = "(select 'Entidad', 'Nombre', 'BIN', 'Stock')";
             $indiceStock = 6;
             break;
   case "2": $tituloTabla = "STOCK DEL PRODUCTO";
             $titulo = "STOCK DEL PRODUCTO";
             $nombreReporte = "stockProducto";
             $asunto = "Reporte con el stock del Producto";
+            $nombreCampos = "(select 'Entidad', 'Nombre', 'BIN', 'Stock')";
             $indiceStock = 6;
             break;
   case "3": $tituloTabla = "STOCK TOTAL EN BÓVEDA";
             $titulo = "PLÁSTICOS EN BÓVEDA";
             $nombreReporte = "stockBoveda";
             $asunto = "Reporte con el total de tarjetas en stock";
+            $nombreCampos = "(select 'Entidad', 'Stock')";
             $indiceStock = 2;
             break;
   case "4": $tituloTabla = "MOVIMIENTOS DE LA/S ENTIDAD/ES";
             $titulo = "MOVIMIENTOS POR ENTIDAD";
             $nombreReporte = "movimientosEntidad";
             $asunto = "Reporte con los movimientos de la Entidad";
+            $nombreCampos = "(select 'Fecha', 'Hora', 'Entidad', 'Nombre', 'BIN', 'Stock', 'Tipo', 'Cantidad', 'Comentarios')";
             $indiceStock = 10;
             if (isset($inicio)) {
               $inicioTemp = explode("-", $inicio);
@@ -1176,8 +1182,13 @@ $salida = $dir."/".$nombreArchivo;
 
 ///Guardo el archivo en el disco, y además lo muestro en pantalla:
 $pdfResumen->Output($salida, 'F');
-$pdfResumen->Output($salida, 'I');
+//$pdfResumen->Output($salida, 'I');
 
+$nombreCSV = $nombreReporte.$timestamp."_CSV.csv";
+$dirCSV = $dir."/".$nombreCSV;
+$exportarCSV = $nombreCampos." union all (".$consultaCSV." into outfile '".$dirCSV."' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\r\n')";
+$resultado2 = consultarBD($exportarCSV, $con);
+//echo $exportarCSV;
 if (isset($mails)){
   $destinatarios = explode(",", $mails);
   foreach ($destinatarios as $valor){
