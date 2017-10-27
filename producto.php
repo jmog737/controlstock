@@ -22,7 +22,9 @@ require_once("data/sesiones.php");
       {
     ?>
     
-    <div id='main-content' class='container-fluid'>
+    <div id="main-content" class="container-fluid">
+      
+      
       <h2 id="titulo" class="encabezado">PRODUCTOS</h2>
       <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
         <table class='tabla2' name='producto'>
@@ -57,8 +59,12 @@ require_once("data/sesiones.php");
             <td align='center' colspan="2"><input type='text' id='stockProducto' name='stockProducto' class="agrandar" maxlength='35' size='9'></td>
           </tr>
           <tr>
-            <th align='left'><font class='negra'>Alarma:</font></th>
-            <td align='center' colspan="2"><input type='text' id='alarma' name='alarma' class="agrandar" maxlength='35' size='9'></td>
+            <th align='left'><font class='negra'>Alarma1:</font></th>
+            <td align='center' colspan="2"><input type='text' id='alarma1' name='alarma1' class="agrandar" maxlength='35' size='9'></td>
+          </tr>
+          <tr>
+            <th align='left'><font class='negra'>Alarma2:</font></th>
+            <td align='center' colspan="2"><input type='text' id='alarma2' name='alarma2' class="agrandar" maxlength='35' size='9'></td>
           </tr>
           <tr>
             <th align='left'><font class='negra'>Último Movimiento:</font></th>
@@ -79,8 +85,9 @@ require_once("data/sesiones.php");
         </table>
       </form> 
     </div>
+    
     <?php 
-            }
+    }
     else {
     ?>
       <script> 
@@ -91,7 +98,7 @@ require_once("data/sesiones.php");
     }        
     ?>  
       
-    <?php require('footer.php');?>
+    <?php //require('footer.php');?>
   </body>
   
 </html>

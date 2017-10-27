@@ -152,9 +152,49 @@ class PDF extends PDF_MC_Table
     $fill = false;
     foreach ($registros as $dato) {  
       //Calculate the height of the row
+      /*
       $nb=0;
-      for($i=0;$i<count($dato);$i++)
-          $nb=max($nb,$this->NbLines($largoCampos[$i],trim($dato[$i])));
+      for($i=1;$i<count($dato);$i++) {
+        $nb1 = 0;
+        if ($mostrar[$i]){
+          $tam = $this->GetStringWidth(trim(utf8_decode($dato[$i])));
+          if ($tam < $largoCampos[$i]) {
+            $w = $tam;
+          }
+          else {
+            $w = $largoCampos[$i];
+          }
+          //$nb=max($nb,$this->NbLines($largoCampos[$i],trim($dato[$i])));
+          $nb1 = $this->NbLines(1.1*$w,trim(utf8_decode($dato[$i])));
+          if ($nb1 > $nb) {
+            $nb = $nb1;
+          }
+        }
+        //echo "dato: $dato[$i]<br>tam: $tam<br>largoCampos: $largoCampos[$i]<br>mostrar: $mostrar[$i]<br>w: $w<br>nb1: $nb1<br>nb: $nb<br><br>";
+      }*/
+      $nb=0;
+      $h0 = 0;
+      for($i=0;$i<count($dato);$i++) {
+        $dat = '';
+        $tamDat = 0;
+        $tamReal = 0;
+        $this->SetFont('Courier');
+        $tamReal = $this->GetStringWidth("Banco del pepe");
+        $dat = trim(utf8_decode($dato[$i]));//echo "<br>dato: $dat<br>";
+        $tamDat = $this->GetStringWidth($dat);
+        
+        $w1 = $largoCampos[$i];
+        if ($mostrar[$i]){
+          //$nb=max($nb,$this->NbLines($largoCampos[$i],));
+          $nb0 = $this->NbLines($w1, $dat);
+          if ($nb0 > $nb) {
+            $nb = $nb0;
+          }
+        }
+       echo "dato: $dat<br>tamDato: $tamDat<br>real: $tamReal<br>mostrar: $mostrar[$i]<br>largo: $w1<br>nb0: $nb0<br>nb: $nb<br>-----<br>";
+      }
+      
+      //echo $nb."<br>";
       $h0=$h*$nb;
       //Issue a page break first if needed
       $this->CheckPageBreak($h0);
@@ -166,7 +206,8 @@ class PDF extends PDF_MC_Table
         if ($mostrar[$i]) {
           
           $w = $largoCampos[$i];
-          $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$i])));
+          $datito = trim(utf8_decode($dato[$i]));
+          $nb1 = $this->NbLines($w, $datito);
 
           //Save the current position
           $x1=$this->GetX();
@@ -176,16 +217,28 @@ class PDF extends PDF_MC_Table
           
           if ($i === $indiceStock) {
             //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:
-            $alarma = $dato[$i+1];
+            $alarma1 = $dato[$i+1];
+            $alarma2 = $dato[$i+2];
             $stock = $dato[$i];
             $datito = number_format($stock, 0, ",", ".");
             $a = 'C';
             $fillActual = $fill;
-            $this->SetFont('Courier', 'BI', 12);
-            if ($stock < $alarma) {
-              $this->SetFillColor(231, 56, 67);
-              $this->SetTextColor(255);
+            $this->SetFont('Courier', 'BI', 12);            
+            if (($stock < $alarma1) && ($stock > $alarma2)){
+              $this->SetFillColor(255, 255, 51);
+              $this->SetTextColor(0);
               $fill = 1;
+            }
+            else {
+              if ($stock < $alarma2){
+                $this->SetFillColor(231, 56, 67);
+                $this->SetTextColor(255);
+                $fill = 1;
+              }
+              else {
+                $this->SetFillColor(113, 236, 113);
+                $fill = 1;
+              }
             }
           }
           else {
@@ -196,7 +249,7 @@ class PDF extends PDF_MC_Table
               {
               $a = 'C';
             }
-            $datito = utf8_decode($dato[$i]);
+            //$datito = utf8_decode($dato[$i]);
             
             $this->SetFont('Courier', '', 9);
             $this->setFillColor(220, 223, 232);
@@ -220,6 +273,7 @@ class PDF extends PDF_MC_Table
       $this->SetX($x);
       $fill = $fillActual;
       $fill = !$fill;
+      echo "<br>*******************************************<br>";
     }
     
     if ($total !== -1) {
@@ -236,20 +290,14 @@ class PDF extends PDF_MC_Table
     }
   }
   
-  function tablaMovimientos() 
+  function tablaMovimientos($tablaProducto) 
     {
-    global $x,$h, $id, $totalCampos;
-    global $registros, $campos, $largoCampos, $tituloTabla, $tipoConsulta, $nombreProducto, $mostrar;
+    global $h, $x, $totalCampos, $c1;
+    global $registros, $campos, $largoCampos, $rutaFotos, $tituloTabla, $tipoConsulta, $codigo, $mostrar;
 
-    $tamTabla = $largoCampos[$totalCampos];
     $anchoPagina = $this->GetPageWidth();
     $anchoTipo = 0.8*$anchoPagina;
-    
-    $x = round((($anchoPagina-$tamTabla)/2), 2);
-    $xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
-    
-    $tamNombre = $this->GetStringWidth($nombreProducto); 
-    
+
     //Defino color de fondo:
     $this->SetFillColor(255, 156, 233);
     //Defino color para los bordes:
@@ -258,51 +306,202 @@ class PDF extends PDF_MC_Table
     $this->SetLineWidth(.3);
     //Defino tipo de letra y tamaño para el Título:
     $this->SetFont('Courier', 'B', 12);
-    //Establezco las coordenadas del borde de arriba a la izquierda de la tabla:
+    //Defino el color para el texto:
+    $this->SetTextColor(0);
+    
+    $subTitulo = utf8_decode($tipoConsulta);
+    $tam1 = $this->GetStringWidth($subTitulo);
+    $xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
     $this->SetY(25);
-    //echo $tipoConsulta;
-    if ($id === "4") {//echo $tipoConsulta;
-      $subTitulo = utf8_decode($tipoConsulta);
-      $tam1 = $this->GetStringWidth($tipoConsulta);
-    }
-    else {
-      $subTitulo = utf8_decode("Consulta de los movimientos del producto: ".$nombreProducto);
-      $tam1 = $this->GetStringWidth("Consulta de los movimientos del producto:");
-    }
-    
     $this->SetX($xTipo);
-
-    if ($id === "4") {
-      $nb = $this->NbLines($anchoTipo,$subTitulo);
-      $h0=$h*$nb;
-      if ($nb > 1) {
-        $this->MultiCell($anchoTipo,$h, $subTitulo,0, 'C', 0);
-      }
-      else {
-        $this->MultiCell($anchoTipo,$h0, $subTitulo,0,'C', 0);
-      }
+    
+    $nb = $this->NbLines($anchoTipo,$subTitulo);
+    $h0=$h*$nb;
+    if ($nb > 1) {
+      $this->MultiCell($anchoTipo,$h, $subTitulo,1, 'C', 0);
     }
     else {
-      $nb = $this->NbLines($anchoTipo,$subTitulo);
-      $h0=$h*$nb;
-      if ($nb > 1) {
-        $this->Cell($tam1,$h, "Consulta de los movimientos del producto:",0, 0, 'R', 0);
-        $this->SetTextColor(255, 0, 0);
-        $this->Cell($tamNombre,$h, $nombreProducto,0, 0,'L', 0);
-        $this->SetTextColor(0);
-      }
-      else {
-        $this->Cell($tam1,$h0, "Consulta de los movimientos del producto:",0, 0,'R', 0);
-        $this->SetTextColor(255, 0, 0);
-        $this->Cell($tamNombre,$h0, $nombreProducto,0, 0,'L', 0);
-        $this->SetTextColor(0);
-      }
+      $this->MultiCell($anchoTipo,$h0, $subTitulo,1,'C', 0);
     }
-    
-    
-
     $this->Ln(10);
     
+    //************************************************************** INICIO TABLA PRODUCTO ****************************************************
+    if ($tablaProducto) {
+      $cCampo = 1.5*$c1;
+      $cResto = 4*$c1;
+      $cFoto = 3.4*$c1;
+      $nombre = trim(utf8_decode($registros[0][2]));
+      $entidad = trim(utf8_decode($registros[0][1]));
+      $tamEntidad = $this->GetStringWidth($entidad);
+      $tamNombre = $this->GetStringWidth($nombre);
+      //$tamCodigo = $this->GetStringWidth($codigo);
+      if ((($tamNombre) || ($tamEntidad)) < $cResto) {
+        $cResto = 1.52*$tamNombre;
+      }
+      
+      $tamTabla = $cCampo + $cResto;
+
+      $x = ($anchoPagina-$tamTabla)/2;
+      $xTipo = ($anchoPagina - $anchoTipo)/2;
+
+      //Defino color de fondo:
+      $this->SetFillColor(255, 156, 233);
+      //Defino color para los bordes:
+      $this->SetDrawColor(0, 0, 0);
+      //Defino grosor de los bordes:
+      $this->SetLineWidth(.3);
+      //Defino tipo de letra y tamaño para el Título:
+      $this->SetFont('Courier', 'B', 12);
+
+      ///Agrego un snapshot de la tarjeta debajo de la tabla (si es que existe!!):
+      $foto = $registros[0][5];
+      if (($foto !== null) && ($foto !== '')) {
+        $rutita = $rutaFotos."/".$foto;
+        $xFoto = $this->GetX();
+        $yFoto = $this->GetY();
+        $this->Image($rutita, 77, $yfoto, $cFoto, 30);
+        $this->Ln();
+      }
+      
+      //************************************** TÍTULO *****************************************************************************************
+      $this->SetX($x);
+      //Defino color de fondo:
+      $this->SetFillColor(153, 255, 102);
+      //Escribo el título:
+      $this->Cell($tamTabla, 7, "DETALLES DEL PRODUCTO", 1, 0, 'C', 1);
+      $this->Ln();
+      //**************************************  FIN TÍTULO ************************************************************************************
+
+      //Restauro color de fondo y tipo de letra para el contenido:
+      $this->SetFillColor(255, 204, 120);
+      $this->SetTextColor(0);
+      $this->SetFont('Courier');
+      $this->SetX($x);
+
+      $nb1 = $this->NbLines($cResto,$nombre);
+      $h0=$h*$nb1;
+
+      $this->SetFont('Courier', 'B', 10);
+      $this->Cell($cCampo, $h0, "Nombre:", 'LRBT', 0, 'L', true);
+      $this->SetFont('Courier', '', 9);
+      //Save the current position
+      $x1=$this->GetX();
+      $y=$this->GetY();
+      //Draw the border
+      $this->Rect($x1,$y,$cResto,$h0);
+      //Print the text
+      if ($nb > 1) {
+        $this->MultiCell($cResto,$h, $nombre,'LRT','C', 0);
+        }
+      else {
+        $this->MultiCell($cResto,$h0, $nombre,1,'C', 0);
+        }  
+
+      //Put the position to the right of the cell
+      $this->SetXY($x,$y+$h0);
+
+
+      $nb = $this->NbLines($cResto, $entidad);
+      $h0=$h*$nb;
+
+      $this->SetFont('Courier', 'B', 10);
+      $this->Cell($cCampo, $h0, "Entidad:", 'LRBT', 0, 'L', true);
+      $this->SetFont('Courier', '', 9);
+      //Save the current position
+      $x1=$this->GetX();
+      $y=$this->GetY();
+      //Draw the border
+      $this->Rect($x1,$y,$cResto,$h0);
+      //Print the text
+      if ($nb > 1) {
+        $this->MultiCell($cResto,$h, trim(utf8_decode($registros[0][1])),'LRT','C', 0);
+        }
+      else {
+        $this->MultiCell($cResto,$h, trim(utf8_decode($registros[0][1])),1,'C', 0);
+        }  
+
+      //Put the position to the right of the cell
+      $this->SetXY($x,$y+$h0);
+
+      if (($codigo === '')||($codigo === null)) {
+        $codigo = 'No ingresado';
+      }
+      $this->SetFont('Courier', 'B', 10);
+      $this->Cell($cCampo, 6, utf8_decode("Código:"), 'LRBT', 0, 'L', true);
+      $this->SetFont('Courier', '', 9);
+      $this->Cell($cResto, 6, $codigo, 'LRBT', 0, 'C', false);
+      $this->Ln();
+      $this->SetX($x);
+
+      $bin = $registros[0][3];
+      if (($bin === '')||($bin === null)) {
+        $bin = 'N/D o N/C';
+      }
+      $this->SetFont('Courier', 'B', 10);
+      $this->Cell($cCampo, 6, "BIN:", 'LRBT', 0, 'L', true);
+      $this->SetFont('Courier', '', 9);
+      $this->Cell($cResto, 6, $bin, 'LRBT', 0, 'C', false);
+      $this->Ln();
+      $this->SetX($x);
+
+      $comentarios = trim(utf8_decode($registros[0][8]));
+      if (($comentarios === '')||($comentarios === null)) {
+        $comentarios = '';
+      }
+      $nb = $this->NbLines($cResto,$comentarios);
+      $h0=$h*$nb;
+
+      $this->SetFont('Courier', 'B', 10);
+      $this->Cell($cCampo, $h0, "Comentarios:", 'LRBT', 0, 'L', true);
+      $this->SetFont('Courier', '', 9);
+      //Save the current position
+      $x1=$this->GetX();
+      $y=$this->GetY();
+      //Draw the border
+      $this->Rect($x1,$y,$cResto,$h0);
+      //Print the text
+      if ($nb > 1) {
+        $this->MultiCell($cResto,$h, $comentarios,'LRT','C', 0);
+        }
+      else {
+        $this->MultiCell($cResto,$h, $comentarios,1,'C', 0);
+        } 
+      //Put the position to the right of the cell
+      $this->SetXY($x,$y+$h0);
+
+      //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:
+      $alarma = $registros[0][7];
+      $stock = $registros[0][6];
+
+      $this->SetFont('Courier', 'B', 10);
+      $this->Cell($cCampo, 6, "Stock:", 'LRBT', 0, 'L', true);
+      $this->SetFont('Courier', 'BI', 16);
+      if ($stock < $alarma) {
+        $this->SetFillColor(231, 56, 67);
+        $this->SetTextColor(255);
+      }
+      else {
+        $this->SetFillColor(255, 255, 255);
+      }
+      $this->Cell($cResto, 6, number_format($stock, 0, ",", "."), 'LRBT', 0, 'C', true);
+      $this->Ln(15);
+      $this->SetX($x);
+    }
+    //**************************************************************** FIN TABLA PRODUCTO ******************************************************
+    
+    //*********************************** Comienza generación de la tabla con los movimientos: *************************************************
+    $tamTabla = $largoCampos[$totalCampos];
+    //$tamNombre = $this->GetStringWidth($nombreProducto); 
+    $x = round((($anchoPagina-$tamTabla)/2), 2);
+  
+    //Defino color para los bordes:
+    $this->SetDrawColor(0, 0, 0);
+    //Defino grosor de los bordes:
+    $this->SetLineWidth(.3);
+    //Defino tipo de letra y tamaño para el Título:
+    $this->SetFont('Courier', 'B', 12);
+    //Defino color para el texto:
+    $this->SetTextColor(0);  
     //************************************** TÍTULO *****************************************************************************************
     $this->SetX($x);
     //Defino color de fondo:
@@ -719,9 +918,11 @@ class PDF extends PDF_MC_Table
     $cResto = 4*$c1;
     $cFoto = 3.4*$c1;
     $nombre = trim(utf8_decode($registros[0][2]));
+    $entidad = trim(utf8_decode($registros[0][1]));
+    $tamEntidad = $this->GetStringWidth($entidad);
     $tamNombre = $this->GetStringWidth($nombre);
     $tamCodigo = $this->GetStringWidth($codigo);
-    if ($tamCodigo < $cResto) {
+    if ((($tamNombre) || ($tamEntidad)) < $cResto) {
       $cResto = 1.52*$tamCodigo;
     }
     
@@ -826,7 +1027,7 @@ class PDF extends PDF_MC_Table
     $this->SetXY($x,$y+$h0);
     
     
-    $nb = $this->NbLines($cResto,trim(utf8_decode($registros[0][1])));
+    $nb = $this->NbLines($cResto, $entidad);
     $h0=$h*$nb;
     
     $this->SetFont('Courier', 'B', 10);
@@ -895,19 +1096,28 @@ class PDF extends PDF_MC_Table
     $this->SetXY($x,$y+$h0);
     
     //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:
-    $alarma = $registros[0][7];
+    $alarma1 = $registros[0][7];
+    $alarma2 = $registros[0][8];
     $stock = $registros[0][6];
     
     $this->SetFont('Courier', 'B', 10);
     $this->Cell($cCampo, 6, "Stock:", 'LRBT', 0, 'L', true);
     $this->SetFont('Courier', 'BI', 16);
-    if ($stock < $alarma) {
-      $this->SetFillColor(231, 56, 67);
-      $this->SetTextColor(255);
+    if (($stock < $alarma1) && ($stock > $alarma2)){
+      $this->SetFillColor(255, 255, 51);
+      $this->SetTextColor(0);
     }
     else {
-      $this->SetFillColor(255, 255, 255);
+      if ($stock < $alarma2){
+        $this->SetFillColor(231, 56, 67);
+        $this->SetTextColor(255);
+      }
+      else {
+        $this->SetFillColor(113, 236, 113);
+      }
     }
+    
+    
     $this->Cell($cResto, 6, number_format($stock, 0, ",", "."), 'LRBT', 0, 'C', true);
     $this->Ln();
     $this->SetX($x);
@@ -1035,13 +1245,14 @@ foreach ($temp1 as $valor) {
     case 'idProd': $idslot = $temp2[1];
                    break;
     case 'nombreProducto':  $nombreProducto1 = $temp2[1];
-                            $sep = explode("{", $nombreProducto1);
-                            $tempo = explode("]", $sep[0]);
-                            $tempo1 = explode("}", $sep[1]);
-                            $nombreProducto = trim($tempo[1]);
-                            $entidad1 = trim($tempo[0], '[ ');
-                            $bin = trim($tempo1[0]);
-                            $codigo = trim($tempo1[1], '- ');
+                            $sep = explode("[", $nombreProducto1);
+                            $entidad0 = trim($sep[1]);
+                            $nom2 = $temp2[2];
+                            $tempo = explode("]", $nom2);
+                            $codigo = trim($tempo[0]);
+                            $entidad1 = explode("-", $tempo[1]);
+                            $nombreProducto = trim($entidad1[3]);
+                            //echo "nombre: $nombreProducto<br>entidad: $entidad0<br>codigo: $codigo<br>";
                    break; 
     case 'entidad': $entidad = $temp2[1];
                     if ($entidad === 'todos') {
@@ -1119,7 +1330,7 @@ switch ($id) {
             $titulo = "MOVIMIENTOS POR ENTIDAD";
             $nombreReporte = "movimientosEntidad";
             $asunto = "Reporte con los movimientos de la Entidad";
-            $nombreCampos = "(select 'Fecha', 'Hora', 'Entidad', 'Nombre', 'BIN', 'Stock', 'Tipo', 'Cantidad', 'Comentarios')";
+            $nombreCampos = "(select 'Fecha', 'Hora', 'Entidad', 'Nombre', 'BIN', 'Tipo', 'Cantidad', 'Comentarios')";
             $indiceStock = 10;
             if (isset($inicio)) {
               $inicioTemp = explode("-", $inicio);
@@ -1145,7 +1356,7 @@ $pdfResumen->AddPage();
 //echo $query;
 $totalCampos = sizeof($campos);
 $pdfResumen->SetWidths($largoCampos);
-
+//echo $query;
 // Conectar con la base de datos
 $con = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 $resultado1 = consultarBD($query, $con);
@@ -1169,9 +1380,9 @@ switch ($id) {
             break;
   case "3": $pdfResumen->tablaStockEntidad($total, true);
             break;
-  case "4": $pdfResumen->tablaMovimientos();
+  case "4": $pdfResumen->tablaMovimientos(false);
             break;
-  case "5": $pdfResumen->tablaMovimientos();
+  case "5": $pdfResumen->tablaMovimientos(true);
             break;
   default: break;
 }    
@@ -1182,13 +1393,18 @@ $salida = $dir."/".$nombreArchivo;
 
 ///Guardo el archivo en el disco, y además lo muestro en pantalla:
 $pdfResumen->Output($salida, 'F');
-//$pdfResumen->Output($salida, 'I');
+$pdfResumen->Output($salida, 'I');
 
+/*
+/// Exportación de la consulta a CSV:
 $nombreCSV = $nombreReporte.$timestamp."_CSV.csv";
 $dirCSV = $dir."/".$nombreCSV;
 $exportarCSV = $nombreCampos." union all (".$consultaCSV." into outfile '".$dirCSV."' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\r\n')";
 $resultado2 = consultarBD($exportarCSV, $con);
 //echo $exportarCSV;
+*/
+
+/// Envío de mails:
 if (isset($mails)){
   $destinatarios = explode(",", $mails);
   foreach ($destinatarios as $valor){

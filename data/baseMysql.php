@@ -22,6 +22,11 @@ function crearConexion($servidor, $usuario, $pass, $base)
       {
       die('Error de conexión (' . $mysqli->connect_errno.') '.$mysqli->connect_error);
       }
+  /* cambiar el conjunto de caracteres a utf8 */
+  if (!$mysqli->set_charset("utf8")) {
+      printf("Error cargando el conjunto de caracteres utf8: %s\n", $mysqli->error);
+      exit();
+  }   
   return $mysqli;
   }
 

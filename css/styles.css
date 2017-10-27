@@ -230,9 +230,9 @@ a.detailObject:focus, a.detailObject:hover {
   text-align: center;
   color: #000;
   border-collapse: separate;
-  max-width: 50%;
   margin: 0 auto;
   border-radius: 25px;
+  max-width: 50%;
 }
 .tabla2 th {
   background-color: #0066cc;
@@ -240,18 +240,17 @@ a.detailObject:focus, a.detailObject:hover {
   border: #c0c0c0 1px solid;
   margin: 0px;
   line-height:none;
-  
+  max-width: 100%;
 }
 .tabla2 tr {
   border: #c0c0c0 1px solid;
   border-collapse: separate;
   padding: 0px;
-  
 }
 .tabla2 td {
   border: #c0c0c0 1px solid;
   border-collapse: separate;
-  padding: 0px;
+  padding: 3px;
   /*font-size: 0.9em;*/
 }
 .tabla2 td input[type="text"] {
@@ -273,6 +272,7 @@ a.detailObject:focus, a.detailObject:hover {
 .tabla2 td select {
   line-height: normal;
   width: 100%;
+  max-width: 100%;
   border: #c0c0c0 1px solid;
   border-collapse: separate;
   text-align: center;
@@ -322,6 +322,7 @@ a.detailObject:focus, a.detailObject:hover {
 .resaltado {
   background-color:#ffff00;
   background-color: #a3a59d;
+  background-color: #9bf79b;
   font-weight: bolder;
   font-size: 1.2em;
   color: red;
@@ -332,7 +333,14 @@ a.detailObject:focus, a.detailObject:hover {
   font-size: 1.6em;
   color: #1400af;
 }
-.alarma {
+.alarma1 {
+  background-color:#ffff33;
+  font-weight: bolder;
+  font-size: 1.4em;
+  font-style: italic;
+  color: black;
+}
+.alarma2 {
   background-color:#c12929;
   font-weight: bolder;
   font-size: 1.4em;
@@ -343,12 +351,14 @@ a.detailObject:focus, a.detailObject:hover {
   text-align: center;
 }
 .hint {
-  
-  width: 100%;
+  max-width: 100%;
+  position: relative;
+  min-width: 100px;
+  overflow:auto
 }
 .hint option {
+ 
   
-  width: 100%;
 }
 /************************* END HOME PAGE *************************************/
 
