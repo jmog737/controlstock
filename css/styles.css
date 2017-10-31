@@ -241,6 +241,7 @@ a.detailObject:focus, a.detailObject:hover {
   margin: 0px;
   line-height:none;
   max-width: 100%;
+  text-align: center;
 }
 .tabla2 tr {
   border: #c0c0c0 1px solid;

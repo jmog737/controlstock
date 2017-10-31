@@ -58,6 +58,7 @@ class PDF extends PDF_MC_Table
     global $pag;
     $this->SetY(-10);
     $this->SetFont('Arial', 'I', 8);
+    $this->SetTextColor(0);
     $this->Cell(0, 10, 'Pag. ' . $this->PageNo(), 0, 0, 'C');
     }
 
@@ -149,55 +150,27 @@ class PDF extends PDF_MC_Table
     $this->Ln();
     $this->SetX($x);
     $this->SetFont('Courier', '', 9);    
-    $fill = false;
+    $fill = true;
     foreach ($registros as $dato) {  
       //Calculate the height of the row
-      /*
-      $nb=0;
-      for($i=1;$i<count($dato);$i++) {
-        $nb1 = 0;
-        if ($mostrar[$i]){
-          $tam = $this->GetStringWidth(trim(utf8_decode($dato[$i])));
-          if ($tam < $largoCampos[$i]) {
-            $w = $tam;
-          }
-          else {
-            $w = $largoCampos[$i];
-          }
-          //$nb=max($nb,$this->NbLines($largoCampos[$i],trim($dato[$i])));
-          $nb1 = $this->NbLines(1.1*$w,trim(utf8_decode($dato[$i])));
-          if ($nb1 > $nb) {
-            $nb = $nb1;
-          }
-        }
-        //echo "dato: $dato[$i]<br>tam: $tam<br>largoCampos: $largoCampos[$i]<br>mostrar: $mostrar[$i]<br>w: $w<br>nb1: $nb1<br>nb: $nb<br><br>";
-      }*/
       $nb=0;
       $h0 = 0;
       for($i=0;$i<count($dato);$i++) {
         $dat = '';
         $tamDat = 0;
-        $tamReal = 0;
-        $this->SetFont('Courier');
-        $tamReal = $this->GetStringWidth("Banco del pepe");
-        $dat = trim(utf8_decode($dato[$i]));//echo "<br>dato: $dat<br>";
+        $this->SetFont('Courier', '', 9);
+        $dat = trim(utf8_decode($dato[$i]));
         $tamDat = $this->GetStringWidth($dat);
-        
         $w1 = $largoCampos[$i];
         if ($mostrar[$i]){
-          //$nb=max($nb,$this->NbLines($largoCampos[$i],));
-          $nb0 = $this->NbLines($w1, $dat);
-          if ($nb0 > $nb) {
-            $nb = $nb0;
-          }
+          $nb=max($nb,$this->NbLines($w1,$dat));
         }
-       echo "dato: $dat<br>tamDato: $tamDat<br>real: $tamReal<br>mostrar: $mostrar[$i]<br>largo: $w1<br>nb0: $nb0<br>nb: $nb<br>-----<br>";
       }
-      
-      //echo $nb."<br>";
       $h0=$h*$nb;
+      
       //Issue a page break first if needed
       $this->CheckPageBreak($h0);
+      
       $this->setFillColor(220, 223, 232);
 
       //Draw the cells of the row
@@ -212,8 +185,15 @@ class PDF extends PDF_MC_Table
           //Save the current position
           $x1=$this->GetX();
           $y=$this->GetY();
+          
+          if ($fill) {
+            $f = 'F';
+          }
+          else {
+            $f = '';
+          }
           //Draw the border
-          $this->Rect($x1,$y,$w,$h0);
+          $this->Rect($x1,$y,$w,$h0, $f);
           
           if ($i === $indiceStock) {
             //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:
@@ -225,17 +205,20 @@ class PDF extends PDF_MC_Table
             $fillActual = $fill;
             $this->SetFont('Courier', 'BI', 12);            
             if (($stock < $alarma1) && ($stock > $alarma2)){
+              /// seteo color alarma de Advertencia (amarilla):
               $this->SetFillColor(255, 255, 51);
               $this->SetTextColor(0);
               $fill = 1;
             }
             else {
               if ($stock < $alarma2){
+                /// seteo color de alarma Crítica (roja):
                 $this->SetFillColor(231, 56, 67);
                 $this->SetTextColor(255);
                 $fill = 1;
               }
               else {
+                /// seteo color de stock regular (verde):
                 $this->SetFillColor(113, 236, 113);
                 $fill = 1;
               }
@@ -255,10 +238,10 @@ class PDF extends PDF_MC_Table
             $this->setFillColor(220, 223, 232);
             $this->SetTextColor(0);
           }
-          
+          $h1 = $h0/$nb1;
           //Print the text
           if ($nb1 > 1) {
-            $this->MultiCell($w,$h, $datito,'LRT',$a, $fill);
+            $this->MultiCell($w,$h1, $datito,1,$a, $fill);
             }
           else {
             $this->MultiCell($w,$h0, $datito,1,$a, $fill);
@@ -273,7 +256,6 @@ class PDF extends PDF_MC_Table
       $this->SetX($x);
       $fill = $fillActual;
       $fill = !$fill;
-      echo "<br>*******************************************<br>";
     }
     
     if ($total !== -1) {
@@ -354,7 +336,7 @@ class PDF extends PDF_MC_Table
       $this->SetFont('Courier', 'B', 12);
 
       ///Agrego un snapshot de la tarjeta debajo de la tabla (si es que existe!!):
-      $foto = $registros[0][5];
+      $foto = $registros[0][6];
       if (($foto !== null) && ($foto !== '')) {
         $rutita = $rutaFotos."/".$foto;
         $xFoto = $this->GetX();
@@ -444,7 +426,18 @@ class PDF extends PDF_MC_Table
       $this->Ln();
       $this->SetX($x);
 
-      $comentarios = trim(utf8_decode($registros[0][8]));
+      $contacto = $registros[0][5];
+      if (($contacto === '')||($contacto === null)) {
+        $contacto = '';
+      }
+      $this->SetFont('Courier', 'B', 10);
+      $this->Cell($cCampo, 6, "Contacto:", 'LRBT', 0, 'L', true);
+      $this->SetFont('Courier', '', 9);
+      $this->Cell($cResto, 6, $contacto, 'LRBT', 0, 'C', false);
+      $this->Ln();
+      $this->SetX($x);      
+      
+      $comentarios = trim(utf8_decode($registros[0][10]));
       if (($comentarios === '')||($comentarios === null)) {
         $comentarios = '';
       }
@@ -470,19 +463,27 @@ class PDF extends PDF_MC_Table
       $this->SetXY($x,$y+$h0);
 
       //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:
-      $alarma = $registros[0][7];
-      $stock = $registros[0][6];
+      $alarma1 = $registros[0][8];
+      $alarma2 = $registros[0][9];
+      $stock = $registros[0][7];
 
       $this->SetFont('Courier', 'B', 10);
       $this->Cell($cCampo, 6, "Stock:", 'LRBT', 0, 'L', true);
       $this->SetFont('Courier', 'BI', 16);
-      if ($stock < $alarma) {
-        $this->SetFillColor(231, 56, 67);
-        $this->SetTextColor(255);
+      if (($stock < $alarma1) && ($stock > $alarma2)){
+        $this->SetFillColor(255, 255, 51);
+        $this->SetTextColor(0);
       }
       else {
-        $this->SetFillColor(255, 255, 255);
+        if ($stock < $alarma2){
+          $this->SetFillColor(231, 56, 67);
+          $this->SetTextColor(255);
+        }
+        else {
+          $this->SetFillColor(113, 236, 113);
+        }
       }
+
       $this->Cell($cResto, 6, number_format($stock, 0, ",", "."), 'LRBT', 0, 'C', true);
       $this->Ln(15);
       $this->SetX($x);
@@ -542,12 +543,15 @@ class PDF extends PDF_MC_Table
                     break;
         case "Código":  $indCodigo = $i;
                         break;
+        case "Contacto":  $indContacto = $i;
+                        break;              
         case "Snapshot":  $indSnapshot = $i;
                           break;
         case "Alarma":  $indAlarma = $i;
                         break;
         case "ComentariosProd": $indComProd = $i;
-                                break;         
+                                break;  
+        default: break;
       }
     }
     
@@ -574,6 +578,9 @@ class PDF extends PDF_MC_Table
     if ($mostrar[$indCodigo]) {
       $this->Cell($largoCampos[$indCodigo], 6, $campos[$indCodigo], 'LRBT', 0, 'C', true);
     }
+    if ($mostrar[$indContacto]) {
+      $this->Cell($largoCampos[$indContacto], 6, $campos[$indContacto], 'LRBT', 0, 'C', true);
+    }
     if ($mostrar[$indSnapshot]) {
       $this->Cell($largoCampos[$indSnapshot], 6, $campos[$indSnapshot], 'LRBT', 0, 'C', true);
     }
@@ -599,11 +606,22 @@ class PDF extends PDF_MC_Table
     $fill = false;
     foreach ($registros as $dato) {
       
-      ///Calculo la cantidad de líneas requerida para la fila en base al campo más grande.
+      //Calculate the height of the row
       $nb=0;
       $h0 = 0;
-      for($i=0;$i<count($dato);$i++)
-          $nb=max($nb,$this->NbLines($largoCampos[$i],trim($dato[$i])));
+      for($i=0;$i<count($dato);$i++) {
+        $dat = '';
+        $tamDat = 0;
+        $this->SetFont('Courier', '', 9);
+        $dat = trim(utf8_decode($dato[$i]));
+        $tamDat = $this->GetStringWidth($dat);
+        //echo "dato: $dat<br>tam: $tamDat<br>largoCampo: $largoCampos[$i]<br>mostrar: $mostrar[$i]<br>**********<br>";
+        $w1 = $largoCampos[$i];
+        if ($mostrar[$i]){
+          $nb=max($nb,$this->NbLines($w1,$dat));
+        }
+      }
+      //echo "nb: $nb<br>-------<br>";
       //En base a la cantidad de líneas requeridas, calculo el alto de la fila;
       $h0=$h*$nb;
       //Issue a page break first if needed
@@ -620,12 +638,19 @@ class PDF extends PDF_MC_Table
         //Save the current position
         $x1=$this->GetX();
         $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
         //Draw the border
-        $this->Rect($x1,$y,$w,$h0);
-
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indId])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indId])),'LRT','C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indId])),1,'C', $fill);
@@ -645,12 +670,19 @@ class PDF extends PDF_MC_Table
         //Save the current position
         $x1=$this->GetX();
         $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
         //Draw the border
-        $this->Rect($x1,$y,$w,$h0);
-
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h, $fecha,'LRT','C', $fill);
+          $this->MultiCell($w,$h1, $fecha,'LRT','C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, $fecha,1,'C', $fill);
@@ -663,19 +695,25 @@ class PDF extends PDF_MC_Table
       if ($mostrar[$indHora]) 
         {
         $w = $largoCampos[$indHora];
-        $horaTemp = explode(":", $dato[$indHora]);
-        $hora = $horaTemp[0].":".$horaTemp[1];
+        $hora = $dato[$indHora];
         $nb1 = $this->NbLines($w,$hora);
 
         //Save the current position
         $x1=$this->GetX();
         $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
         //Draw the border
-        $this->Rect($x1,$y,$w,$h0);
-
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h, $hora,'LRT','C', $fill);
+          $this->MultiCell($w,$h1, $hora,'LRT','C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, $hora,1,'C', $fill);
@@ -693,12 +731,19 @@ class PDF extends PDF_MC_Table
         //Save the current position
         $x1=$this->GetX();
         $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
         //Draw the border
-        $this->Rect($x1,$y,$w,$h0);
-
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indEntidad])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indEntidad])),1,'C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indEntidad])),1,'C', $fill);
@@ -716,12 +761,19 @@ class PDF extends PDF_MC_Table
         //Save the current position
         $x1=$this->GetX();
         $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
         //Draw the border
-        $this->Rect($x1,$y,$w,$h0);
-
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indNombre])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indNombre])),1,'C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indNombre])),1,'C', $fill);
@@ -739,12 +791,19 @@ class PDF extends PDF_MC_Table
         //Save the current position
         $x1=$this->GetX();
         $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
         //Draw the border
-        $this->Rect($x1,$y,$w,$h0);
-
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indBin])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indBin])),'LRT','C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indBin])),1,'C', $fill);
@@ -762,15 +821,52 @@ class PDF extends PDF_MC_Table
         //Save the current position
         $x1=$this->GetX();
         $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
         //Draw the border
-        $this->Rect($x1,$y,$w,$h0);
-
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indCodigo])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indCodigo])),'LRT','C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indCodigo])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      
+      /// Chequeo si se tiene que mostrar el campo Codigo, y de ser así lo muestro:
+      if ($mostrar[$indContacto]) 
+        {
+        $w = $largoCampos[$indContacto];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indContacto])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indContacto])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indContacto])),1,'C', $fill);
           }  
         //Put the position to the right of the cell
         $this->SetXY($x1+$w,$y);
@@ -785,12 +881,19 @@ class PDF extends PDF_MC_Table
         //Save the current position
         $x1=$this->GetX();
         $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
         //Draw the border
-        $this->Rect($x1,$y,$w,$h0);
-
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indSnapshot])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indSnapshot])),'LRT','C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indSnapshot])),1,'C', $fill);
@@ -808,12 +911,19 @@ class PDF extends PDF_MC_Table
         //Save the current position
         $x1=$this->GetX();
         $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
         //Draw the border
-        $this->Rect($x1,$y,$w,$h0);
-
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indTipo])),'LRT','L', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indTipo])),'LRT','L', $fill);
           }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indTipo])),1,'L', $fill);
@@ -833,15 +943,22 @@ class PDF extends PDF_MC_Table
         //Save the current position
         $x1=$this->GetX();
         $y=$this->GetY();
-        //Draw the border
-        $this->Rect($x1,$y,$w,$h0);
         
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
         $this->SetFont('Courier', 'BI', 14);
         $this->SetTextColor(255,0,0);
         
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h, $cantidad,'LRT','R', $fill);
+          $this->MultiCell($w,$h1, $cantidad,'LRT','R', $fill);
           }
         else {
           $this->MultiCell($w,$h0, $cantidad,1,'R', $fill);
@@ -864,12 +981,19 @@ class PDF extends PDF_MC_Table
         //Save the current position
         $x1=$this->GetX();
         $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
         //Draw the border
-        $this->Rect($x1,$y,$w,$h0);
-
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indStock])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indStock])),'LRT','C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indStock])),1,'C', $fill);
@@ -887,12 +1011,19 @@ class PDF extends PDF_MC_Table
         //Save the current position
         $x1=$this->GetX();
         $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
         //Draw the border
-        $this->Rect($x1,$y,$w,$h0);
-
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h, trim(utf8_decode($dato[$indComentarios])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indComentarios])),1,'C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indComentarios])),1,'C', $fill);
@@ -978,7 +1109,7 @@ class PDF extends PDF_MC_Table
     //$this->Ln();
     
     ///Agrego un snapshot de la tarjeta debajo de la tabla (si es que existe!!):
-    $foto = $registros[0][5];
+    $foto = $registros[0][6];
     if (($foto !== null) && ($foto !== '')) {
       $rutita = $rutaFotos."/".$foto;
       $xFoto = $this->GetX();
@@ -1070,7 +1201,18 @@ class PDF extends PDF_MC_Table
     $this->Ln();
     $this->SetX($x);
     
-    $comentarios = trim(utf8_decode($registros[0][8]));
+    $contacto = $registros[0][5];
+    if (($contacto === '')||($contacto === null)) {
+      $contacto = '';
+    }
+    $this->SetFont('Courier', 'B', 10);
+    $this->Cell($cCampo, 6, "Contacto:", 'LRBT', 0, 'L', true);
+    $this->SetFont('Courier', '', 9);
+    $this->Cell($cResto, 6, $contacto, 'LRBT', 0, 'C', false);
+    $this->Ln();
+    $this->SetX($x);  
+    
+    $comentarios = trim(utf8_decode($registros[0][10]));
     if (($comentarios === '')||($comentarios === null)) {
       $comentarios = '';
     }
@@ -1096,9 +1238,9 @@ class PDF extends PDF_MC_Table
     $this->SetXY($x,$y+$h0);
     
     //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:
-    $alarma1 = $registros[0][7];
-    $alarma2 = $registros[0][8];
-    $stock = $registros[0][6];
+    $alarma1 = $registros[0][8];
+    $alarma2 = $registros[0][9];
+    $stock = $registros[0][7];
     
     $this->SetFont('Courier', 'B', 10);
     $this->Cell($cCampo, 6, "Stock:", 'LRBT', 0, 'L', true);
@@ -1233,9 +1375,15 @@ foreach ($temp1 as $valor) {
     case 'id': $id = $temp2[1];
                break;
     case 'query': $query = $temp2[1];
+                  if (isset($temp2[2])) {
+                    $query = $query.':'.$temp2[2];
+                  }  
                   break;
     case 'consultaCSV': $consultaCSV = $temp2[1];
-                  break;            
+                        if (isset($temp2[2])) {
+                          $consultaCSV = $consultaCSV.':'.$temp2[2];
+                        } 
+                        break;            
     case 'largos': $largos = $temp2[1];
                    $temp = explode('-', $largos);
                    break;
@@ -1252,7 +1400,6 @@ foreach ($temp1 as $valor) {
                             $codigo = trim($tempo[0]);
                             $entidad1 = explode("-", $tempo[1]);
                             $nombreProducto = trim($entidad1[3]);
-                            //echo "nombre: $nombreProducto<br>entidad: $entidad0<br>codigo: $codigo<br>";
                    break; 
     case 'entidad': $entidad = $temp2[1];
                     if ($entidad === 'todos') {
@@ -1308,16 +1455,16 @@ switch ($id) {
   case "1": $tituloTabla = "LISTADO DE STOCK";
             $titulo = "STOCK POR ENTIDAD";
             $nombreReporte = "stockEntidad";
-            $asunto = "Reporte con el Listado de Stock";
+            $asunto = "Reporte con el Stock de la Entidad";
             $nombreCampos = "(select 'Entidad', 'Nombre', 'BIN', 'Stock')";
-            $indiceStock = 6;
+            $indiceStock = 7;
             break;
   case "2": $tituloTabla = "STOCK DEL PRODUCTO";
             $titulo = "STOCK DEL PRODUCTO";
             $nombreReporte = "stockProducto";
             $asunto = "Reporte con el stock del Producto";
             $nombreCampos = "(select 'Entidad', 'Nombre', 'BIN', 'Stock')";
-            $indiceStock = 6;
+            $indiceStock = 7;
             break;
   case "3": $tituloTabla = "STOCK TOTAL EN BÓVEDA";
             $titulo = "PLÁSTICOS EN BÓVEDA";
@@ -1331,7 +1478,7 @@ switch ($id) {
             $nombreReporte = "movimientosEntidad";
             $asunto = "Reporte con los movimientos de la Entidad";
             $nombreCampos = "(select 'Fecha', 'Hora', 'Entidad', 'Nombre', 'BIN', 'Tipo', 'Cantidad', 'Comentarios')";
-            $indiceStock = 10;
+            $indiceStock = 11;
             if (isset($inicio)) {
               $inicioTemp = explode("-", $inicio);
               $inicioMostrar = $inicioTemp[2]."/".$inicioTemp[1]."/".$inicioTemp[0];
@@ -1344,7 +1491,7 @@ switch ($id) {
             $titulo = "MOVIMIENTOS POR PRODUCTO";
             $nombreReporte = "movimientosProducto";
             $asunto = "Reporte con los movimientos del Producto";
-            $indiceStock = 10;
+            $indiceStock = 11;
             break;       
   default: break;
 }
@@ -1353,10 +1500,10 @@ switch ($id) {
 $pdfResumen = new PDF();
 //Agrego una página al documento:
 $pdfResumen->AddPage();
-//echo $query;
+//$pdfResumen->SetAutoPageBreak(true, 18);
 $totalCampos = sizeof($campos);
 $pdfResumen->SetWidths($largoCampos);
-//echo $query;
+//echo $query."<br>".$consultaCSV."<br>******<br>";
 // Conectar con la base de datos
 $con = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 $resultado1 = consultarBD($query, $con);

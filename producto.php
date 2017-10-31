@@ -51,6 +51,10 @@ require_once("data/sesiones.php");
             <td align='center' colspan="2"><input type="text" name="codigo_origen" id="codigo_origen" class="agrandar" maxlength='35' style="width:100%; text-align: center"></td>
           </tr>
           <tr>
+            <th align='left'><font class='negra'>Contacto:</font></th>
+            <td align='center' colspan="2"><input type="text" name="contacto" id="contacto" class="agrandar" maxlength='35' style="width:100%; text-align: center"></td>
+          </tr>
+          <tr>
             <th align='left'><font class='negra'>BIN:</font></th>
             <td align='center' colspan="2"><input type="text" name="bin" id="bin" class="agrandar" maxlength='35' style="width:100%; text-align: center"></td>
           </tr>
@@ -98,7 +102,7 @@ require_once("data/sesiones.php");
     }        
     ?>  
       
-    <?php //require('footer.php');?>
+    <?php require('footer.php');?>
   </body>
   
 </html>

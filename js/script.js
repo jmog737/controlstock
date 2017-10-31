@@ -961,6 +961,7 @@ function inhabilitarProducto(){
   document.getElementById("entidad").disabled = true;
   document.getElementById("codigo_origen").disabled = true;
   document.getElementById("codigo_emsa").disabled = true;
+  document.getElementById("contacto").disabled = true;
   document.getElementById("bin").disabled = true;
   document.getElementById("alarma1").disabled = true;
   document.getElementById("alarma2").disabled = true;
@@ -979,6 +980,7 @@ function habilitarProducto(){
   document.getElementById("entidad").disabled = false;
   document.getElementById("codigo_origen").disabled = false;
   document.getElementById("codigo_emsa").disabled = false;
+  document.getElementById("contacto").disabled = false;
   document.getElementById("bin").disabled = false;
   document.getElementById("alarma1").disabled = false;
   document.getElementById("alarma2").disabled = false;
@@ -1236,6 +1238,7 @@ $(document).on("change focusin", "#hintProd", function (){
     $("#nombre").val('');
     $("#codigo_emsa").val('');
     $("#codigo_origen").val('');
+    $("#contacto").val('');
     $("#stockProducto").val('');
     $("#comentarios").val('');
     $("#ultimoMovimiento").val('');
@@ -1245,7 +1248,7 @@ $(document).on("change focusin", "#hintProd", function (){
   }
   else {
     var url = "data/selectQuery.php";
-    var query = 'select idprod, nombre_plastico, entidad, codigo_emsa, bin, codigo_origen, stock, alarma1, alarma2, ultimoMovimiento, comentarios from productos where idprod='+idProd;
+    var query = 'select idprod, nombre_plastico, entidad, codigo_emsa, bin, codigo_origen, contacto, stock, alarma1, alarma2, ultimoMovimiento, comentarios from productos where idprod='+idProd;
 
     $.getJSON(url, {query: ""+query+""}).done(function(request) {
       var resultado = request["resultado"];
@@ -1267,6 +1270,7 @@ $(document).on("change focusin", "#hintProd", function (){
       $("#nombre").val(resultado[0]['nombre_plastico']);
       $("#codigo_emsa").val(resultado[0]['codigo_emsa']);
       $("#codigo_origen").val(resultado[0]['codigo_origen']);
+      $("#contacto").val(resultado[0]['contacto']);
       $("#stockProducto").val(stock);
       $("#alarma1").val(alarma1);
       $("#alarma2").val(alarma2);
@@ -1297,6 +1301,7 @@ $(document).on("click", "#actualizarProducto", function (){
   var alarma1 = $("#alarma1").val();
   var alarma2 = $("#alarma2").val();
   var codigo_emsa = $("#codigo_emsa").val();
+  var contacto = $("#contacto").val();
   var codigo_origen = $("#codigo_origen").val();
   var idProducto = $("#hintProd").val();
   var comentarios = $("#comentarios").val();
@@ -1343,10 +1348,10 @@ $(document).on("click", "#actualizarProducto", function (){
         return false;
       }
       
-      var confirmar = confirm('¿Confirma la modificación del producto con los siguientes datos?\n\nEntidad: '+entidad+'\nNombre: '+nombre+'\nCódigo Emsa: '+codigo_emsa+'\nCódigo Origen: '+codigo_origen+'\nBin: '+bin+'\nAlarma1: '+alarma1+'\nAlarma2: '+alarma2+'\nComentarios: '+comentarios+"\n?");
+      var confirmar = confirm('¿Confirma la modificación del producto con los siguientes datos?\n\nEntidad: '+entidad+'\nNombre: '+nombre+'\nCódigo Emsa: '+codigo_emsa+'\nCódigo Origen: '+codigo_origen+'\nContacto: '+contacto+'\nBin: '+bin+'\nAlarma1: '+alarma1+'\nAlarma2: '+alarma2+'\nComentarios: '+comentarios+"\n?");
       if (confirmar) {
         var url = "data/updateQuery.php";
-        var query = "update productos set nombre_plastico= '"+nombre+"', entidad = '"+entidad+"', codigo_emsa = '"+codigo_emsa+"', codigo_origen = '"+codigo_origen+"', bin = '"+bin+"', alarma1 = "+alarma1+", alarma2 = "+alarma2+", comentarios = '"+comentarios+"' where idprod = "+idProducto;
+        var query = "update productos set nombre_plastico= '"+nombre+"', entidad = '"+entidad+"', codigo_emsa = '"+codigo_emsa+"', codigo_origen = '"+codigo_origen+"', contacto = '"+contacto+"', bin = '"+bin+"', alarma1 = "+alarma1+", alarma2 = "+alarma2+", comentarios = '"+comentarios+"' where idprod = "+idProducto;
         //alert(query);
         $.getJSON(url, {query: ""+query+""}).done(function(request) {
           var resultado = request["resultado"];
@@ -1459,6 +1464,7 @@ $(document).on("click", "#agregarProducto", function (){
     $("#nombre").val('');
     $("#codigo_emsa").val('');
     $("#codigo_origen").val('');
+    $("#contacto").val('');
     $("#stockProducto").val('');
     $("#comentarios").val('');
     $("#alarma1").val('');
@@ -1483,6 +1489,7 @@ $(document).on("click", "#agregarProducto", function (){
       var nombre = $("#nombre").val();
       var codigo_emsa = $("#codigo_emsa").val();
       var codigo_origen = $("#codigo_origen").val();
+      var contacto = $("#contacto").val();
       var stock = $("#stockProducto").val();
       var alarma1 = $("#alarma1").val();
       var alarma2 = $("#alarma2").val();
@@ -1542,9 +1549,9 @@ $(document).on("click", "#agregarProducto", function (){
       var bin = $("#bin").val();
       
       var url = "data/updateQuery.php";
-      var query = "insert into productos (entidad, nombre_plastico, codigo_emsa, codigo_origen, stock, bin, comentarios, alarma1, alarma2, estado) values ('"+entidad+"', '"+nombre+"', '"+codigo_emsa+"', '"+codigo_origen+"', "+stock+", '"+bin+"', '"+comentarios+"', "+alarma1+", "+alarma2+", 'activo')";
+      var query = "insert into productos (entidad, nombre_plastico, codigo_emsa, codigo_origen, contacto, stock, bin, comentarios, alarma1, alarma2, estado) values ('"+entidad+"', '"+nombre+"', '"+codigo_emsa+"', '"+codigo_origen+"', '"+contacto+"', "+stock+", '"+bin+"', '"+comentarios+"', "+alarma1+", "+alarma2+", 'activo')";
       
-      var confirmar = confirm("¿Confirma que desea agregar el producto con los siguientes datos: \n\nEntidad: "+entidad+"\nNombre: "+nombre+"\nCódigo Emsa: "+codigo_emsa+"\nCódigo Origen: "+codigo_origen+"\nBin: "+bin+"\nStock Inicial: "+stock+"\nAlarma1: "+alarma1+"\nAlarma2: "+alarma2+"\nComentarios: "+comentarios+"\n?");
+      var confirmar = confirm("¿Confirma que desea agregar el producto con los siguientes datos: \n\nEntidad: "+entidad+"\nNombre: "+nombre+"\nCódigo Emsa: "+codigo_emsa+"\nCódigo Origen: "+codigo_origen+"\nContacto: "+contacto+"\nBin: "+bin+"\nStock Inicial: "+stock+"\nAlarma1: "+alarma1+"\nAlarma2: "+alarma2+"\nComentarios: "+comentarios+"\n?");
       if (confirmar) {
         $.getJSON(url, {query: ""+query+""}).done(function(request){
           var resultado = request["resultado"];
@@ -1568,6 +1575,7 @@ $(document).on("click", "#agregarProducto", function (){
         $("#bin").val(''); 
         $("#codigo_emsa").val('');
         $("#codigo_origen").val('');
+        $("#contacto").val('');
         $("#stockProducto").val('');
         $("#alarma").val('');
         $("#comentarios").val('');
@@ -1960,7 +1968,7 @@ $(document).on("click", "#realizarBusqueda", function () {
     var año = $("#año").val();
     var rangoFecha = null;
     
-    var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.snapshot, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+    var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
     var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock';
     var tipoConsulta = '';
     var mensajeFecha = '';
@@ -1987,9 +1995,9 @@ $(document).on("click", "#realizarBusqueda", function () {
                              consultaCSV += " from productos where estado='activo'";
                              tipoConsulta = 'del stock de todas las entidades';
                            }
-                           campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Stock";
-                           largos = "0.8-1.2-2.5-0.8-2-1-1.6";
-                           mostrarCampos = "1-1-1-1-1-0-1-0-0-0";;
+                           campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-Stock";
+                           largos = "0.8-1.2-2.5-0.8-2-1-1-1.6";
+                           mostrarCampos = "1-1-1-1-1-0-0-1-0-0-0";
                            x = 20;
                            break;
       case 'productoStock':  if ((idProd === 'NADA') || (nombreProducto === '')){
@@ -2003,9 +2011,9 @@ $(document).on("click", "#realizarBusqueda", function () {
                                consultaCSV += " from productos where idProd="+idProd;
                              }
                              tipoConsulta = 'de stock del producto '+nombreSolo;
-                             campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Snapshot-Stock-Comentarios";
-                             largos = "0.8-1.2-2.5-0.8-2-1-1-2";
-                             mostrarCampos = "1-1-1-1-1-1-1-0-1";;
+                             campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-Stock-Comentarios";
+                             largos = "0.8-1.2-2.5-0.8-2-2.5-1-1-2";
+                             mostrarCampos = "1-1-1-1-1-1-1-1-0-0-1";;
                              x = 22;
                              break;
       case 'totalStock':  query = "select entidad, sum(stock) as subtotal from productos where estado='activo' group by entidad";
@@ -2016,8 +2024,8 @@ $(document).on("click", "#realizarBusqueda", function () {
                           mostrarCampos = "1-1-1";
                           x = 60;
                           break;                    
-      case 'entidadMovimiento': query += ", movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
-                                consultaCSV = "select movimientos.fecha, movimientos.hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
+      case 'entidadMovimiento': query += ", movimientos.fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
+                                consultaCSV = "select movimientos.fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
                                 if (entidadMovimiento !== 'todos') {
                                   query += "entidad='"+entidadMovimiento+"' and ";
                                   consultaCSV += "entidad='"+entidadMovimiento+"' and ";
@@ -2030,14 +2038,14 @@ $(document).on("click", "#realizarBusqueda", function () {
                                 validarTipo = true;
                                 validarUser = true;
                                 ordenFecha = true;
-                                campos = 'Id-Entidad-Nombre-BIN-Código-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios';
-                                //Orden de la consulta: entidad - nombre - bin - codigo - snapshot - stock - alarma - prodcom - fecha - hora - cantidad - tipo - comentarios
-                                largos = '0.4-1.5-1.8-1-1-1-1-1-1-1.1-1.5-0.8-1.2-1.4-2';
-                                mostrarCampos = '1-1-1-0-0-0-0-0-0-0-1-1-1-1-1';
+                                campos = 'Id-Entidad-Nombre-BIN-Código-Contacto-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios';
+                                //Orden de la consulta: entidad - nombre - bin - codigo - contacto - snapshot - stock - alarma1 - alarma2 - prodcom - fecha - hora - cantidad - tipo - comentarios
+                                largos = '0.6-1.6-1.9-1-1-1-1-1-1-1-1.1-1.5-0.8-1.2-1.4-2';
+                                mostrarCampos = '1-1-1-0-0-0-0-0-0-0-0-1-1-1-1-1';
                                 x = 40;
                                 break;                       
-      case 'productoMovimiento':  query += ", movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where ";
-                                  consultaCSV = "select movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, productos.entidad, productos.nombre_plastico, productos.bin from productos inner join movimientos on productos.idprod=movimientos.producto where ";
+      case 'productoMovimiento':  query += ", movimientos.fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where ";
+                                  consultaCSV = "select movimientos.fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, productos.entidad, productos.nombre_plastico, productos.bin from productos inner join movimientos on productos.idprod=movimientos.producto where ";
                                   if ((idProd === 'NADA') || (nombreProducto === '')){
                                     alert('Debe seleccionar un producto. Por favor verifique.');
                                     document.getElementById("productoMovimiento").focus();
@@ -2053,10 +2061,10 @@ $(document).on("click", "#realizarBusqueda", function () {
                                     ordenFecha = true;
                                   }
                                   tipoConsulta = 'de los movimientos del producto '+nombreSolo;
-                                  campos = 'Id-Entidad-Nombre-BIN-Código-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios';
+                                  campos = 'Id-Entidad-Nombre-BIN-Código-Contacto-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios';
                                   //Orden de la consulta: entidad - nombre - bin - codigo - snapshot - stock - alarma - prodcom - fecha - hora - cantidad - tipo - comentarios
-                                  largos = '0.4-1.5-1.8-1-1-1-1-1-1-1.1-1.5-0.8-1.2-1.4-2';
-                                  mostrarCampos = '1-1-1-0-0-0-0-0-0-0-1-1-1-1-1';
+                                  largos = '0.4-1.5-1.8-1-1-1-1-1-1-1-1.1-1.5-0.8-1.2-1.4-2';
+                                  mostrarCampos = '1-1-1-0-0-0-0-0-0-0-0-1-1-1-1-1';
                                   break;
       default: break;
     }
@@ -2202,7 +2210,7 @@ $(document).on("click", "#realizarBusqueda", function () {
       mostrar += "<h3>"+mensajeConsulta+"</h3>";
 
       var url = "data/selectQuery.php";
-      //alert(consultaCSV);
+      //alert(query);
       $.getJSON(url, {query: ""+query+""}).done(function(request){
         var datos = request.resultado;
         var totalDatos = request.rows;
@@ -2293,6 +2301,11 @@ $(document).on("click", "#realizarBusqueda", function () {
                                   var alarma2 = parseInt(datos[0]['alarma2'], 10);
                                   var stock = parseInt(datos[0]['stock'], 10);
                                   var snapshot = datos[0]['snapshot'];
+                                  var contacto = datos[0]['contacto'];
+                                  if (contacto === null) 
+                                      {
+                                      contacto = '';
+                                    }
                                   var prodcom = datos[0]['prodcom'];
                                   if (prodcom === null) 
                                       {
@@ -2318,6 +2331,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                   tabla += '<tr><th style="text-align:left">C&oacute;digo:</th><td>'+datos[0]['codigo_emsa']+'</td></tr>';
                                   tabla += '<tr><th style="text-align:left">BIN:</th><td nowrap>'+bin+'</td></tr>';
                                   tabla += '<tr><th style="text-align:left">Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
+                                  tabla += '<tr><th style="text-align:left">Contacto:</th><td>'+contacto+'</td></tr>';
                                   tabla += '<tr><th style="text-align:left">Comentarios:</th><td>'+prodcom+'</td></tr>';
                                   tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
                                   tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
@@ -2326,7 +2340,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                     <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                    <td style="display:none"><input type="text" id="idProd" name="largos" value="'+idProd+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProd+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
@@ -2484,6 +2498,16 @@ $(document).on("click", "#realizarBusqueda", function () {
                                       break;
             case 'productoMovimiento':  var bin = datos[0]['bin'];
                                         var produ = datos[0]['produ'];
+                                        var contacto = datos[0]['contacto'];
+                                        if (contacto === null) 
+                                            {
+                                            contacto = '';
+                                          }
+                                        var comentarios = datos[0]['prodcom'];
+                                        if (comentarios === null) 
+                                            {
+                                            comentarios = '';
+                                          }  
                                         if ((bin === 'SIN BIN')||(bin === null)) 
                                             {
                                             bin = 'N/D o N/C';
@@ -2498,7 +2522,8 @@ $(document).on("click", "#realizarBusqueda", function () {
                                         tabla += '<tr><th>C&oacute;digo:</th><td>'+datos[0]['codigo_emsa']+'</td></tr>';
                                         tabla += '<tr><th>BIN:</th><td nowrap>'+bin+'</td></tr>';
                                         tabla += '<tr><th>Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
-                                        tabla += '<tr><th>Stock:</th><td class="resaltado">'+stock.toLocaleString()+'</td></tr>';
+                                        tabla += '<tr><th>Contacto:</th><td>'+contacto+'</td></tr>';
+                                        tabla += '<tr><th>Comentarios:</th><td>'+comentarios+'</td></tr>';
                                         tabla += '<tr><th colspan="2" class="pieTabla centrado">FIN</th></tr></table>';
                                         
                                         tabla += '<br>';
