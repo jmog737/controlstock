@@ -163,7 +163,7 @@ require_once("data/sesiones.php");
               <td>
                 <select id="tipo" name="tipo" style="width:100%">
                   <option value="Todos" selected="yes">---TODOS---</option>
-                  <option value='Retiro' selected='yes'>Retiro</option>
+                  <option value='Retiro'>Retiro</option>
                   <option value="Importaci&oacute;n">Importaci&oacute;n</option>
                   <option value='Renovaci&oacute;n'>Reno</option>
                   <option value='Devoluci&oacute;n'>Devoluci&oacute;n</option>

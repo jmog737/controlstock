@@ -278,10 +278,10 @@ function validarMovimiento()
   {
   var seguir = false;
   var cantidad = document.getElementById("cantidad").value;
-  var cantidad2 = document.getElementById("cantidad2").value;
+  //var cantidad2 = document.getElementById("cantidad2").value;
   var fecha = document.getElementById("fecha").value;
-  var usuarioBoveda = document.getElementById("usuarioBoveda").value;
-  var usuarioGrabaciones = document.getElementById("usuarioGrabaciones").value;
+  //var usuarioBoveda = document.getElementById("usuarioBoveda").value;
+  //var usuarioGrabaciones = document.getElementById("usuarioGrabaciones").value;
   
   if (fecha === "") {
     alert('Se debe seleccionar la Fecha');
@@ -308,58 +308,60 @@ function validarMovimiento()
       } 
       else
         {
-        var cant2 = validarEntero(document.getElementById("cantidad2").value);  
-
-        if ((cantidad2 <= 0) || (cantidad2 === "null") || !cant2)
-          {
-          alert('La repetición de la cantidad de tarjetas debe ser un entero mayor o igual a 1.');
-          $("#cantidad2").val("");
-          document.getElementById("cantidad2").focus();
-          seguir = false;
-        } 
-        else
-          {
-          if (cantidad !== cantidad2)
-            {
-            alert('Las cantidades de tarjetas ingresadas deben coincidir. Por favor verifique!.');
-            $("#cantidad").val("");
-            $("#cantidad2").val("");
-            document.getElementById("cantidad").focus();
-            seguir = false;
-          } 
-          else
-            {
-            if (usuarioBoveda === "ninguno")
-              {
-              alert('Se debe seleccionar al controlador 1. Por favor verifique!.');
-              document.getElementById("usuarioBoveda").focus();
-              seguir = false;
-            } 
-            else
-              {
-              if (usuarioGrabaciones === "ninguno")
-                {
-                alert('Se debe seleccionar al controlador 2. Por favor verifique!.');
-                document.getElementById("usuarioGrabaciones").focus();
-                seguir = false;
-              } 
-              else
-                {
-                if (usuarioGrabaciones === usuarioBoveda) {
-                  alert('NO puede estar el mismo usuario en ambos controles. Por favor verifique!.');
-                  document.getElementById("usuarioGrabaciones").focus();
-                  seguir = false;
-                } 
-                else {  
-                  seguir = true;
-                }
-              }// usuarioGrabaciones
-            }// usuarioBoveda  
-          }// cantidad != cantidad2
-        }// cantidad 2
+          /// Se quitan el doble ingreso de la cantidad, y el ingreso de las personas involucradas a pedido de Diego:
+////        var cant2 = validarEntero(document.getElementById("cantidad2").value);  
+////
+////        if ((cantidad2 <= 0) || (cantidad2 === "null") || !cant2)
+////          {
+////          alert('La repetición de la cantidad de tarjetas debe ser un entero mayor o igual a 1.');
+////          $("#cantidad2").val("");
+////          document.getElementById("cantidad2").focus();
+////          seguir = false;
+////        } 
+////        else
+////          {
+////          if (cantidad !== cantidad2)
+////            {
+////            alert('Las cantidades de tarjetas ingresadas deben coincidir. Por favor verifique!.');
+////            $("#cantidad").val("");
+////            $("#cantidad2").val("");
+////            document.getElementById("cantidad").focus();
+////            seguir = false;
+//////          } 
+////          else
+////            {
+//            if (usuarioBoveda === "ninguno")
+//              {
+//              alert('Se debe seleccionar al controlador 1. Por favor verifique!.');
+//              document.getElementById("usuarioBoveda").focus();
+//              seguir = false;
+//            } 
+//            else
+//              {
+//              if (usuarioGrabaciones === "ninguno")
+//                {
+//                alert('Se debe seleccionar al controlador 2. Por favor verifique!.');
+//                document.getElementById("usuarioGrabaciones").focus();
+//                seguir = false;
+//              } 
+//              else
+//                {
+//                if (usuarioGrabaciones === usuarioBoveda) {
+//                  alert('NO puede estar el mismo usuario en ambos controles. Por favor verifique!.');
+//                  document.getElementById("usuarioGrabaciones").focus();
+//                  seguir = false;
+//                } 
+//                else {  
+//                  seguir = true;
+//                }
+//              //}// usuarioGrabaciones
+//            //}// usuarioBoveda  
+//          //}// cantidad != cantidad2
+//        //}// cantidad 2
+      seguir = true;
       }// cantidad
     }// nombre_plastico
-  }
+  }//
   if (seguir) return true;
   else return false;
 }
@@ -376,11 +378,14 @@ function cargarMovimiento(selector, hint, prod){
   if (mes < 10) {
     mes = "0"+mes;
   }
+  if (dia < 10) {
+    dia = "0"+dia;
+  }
   var año = actual.getFullYear();
   var hoy = año+"-"+mes+"-"+dia;
   
   $.getJSON(url, {query: ""+query+""}).done(function(request) {
-    var usuarios = request.resultado;
+    //var usuarios = request.resultado;
     var total = request.rows;
     if (total >= 1) {
       
@@ -414,39 +419,39 @@ function cargarMovimiento(selector, hint, prod){
               <th align="left"><font class="negra">Cantidad:</font></th>\n\
               <td align="center"><input type="text" id="cantidad" name="cantidad" class="agrandar" maxlength="35" size="9"></td>\n\
             </tr>';
-      tr += '<tr>\n\
-              <th align="left"><font class="negra">Repetir Cantidad:</font></th>\n\
-              <td align="center"><input type="text" id="cantidad2" name="cantidad2" class="agrandar" maxlength="35" size="9"></td>\n\
-            </tr>';
+//      tr += '<tr>\n\
+//              <th align="left"><font class="negra">Repetir Cantidad:</font></th>\n\
+//              <td align="center"><input type="text" id="cantidad2" name="cantidad2" class="agrandar" maxlength="35" size="9"></td>\n\
+//            </tr>';
       tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
               <td align="center"><input type="textarea" id="comentarios" name="comentarios" class="agrandar" maxlength="35" size="9"></td>\n\
             </tr>';
-      tr += '<th colspan="2" class="centrado">CONTROL</th>';
-      tr += '<tr>\n\
-              <th align="left"><font class="negra">Control 1:</font></th>\n\
-              <td>\n\
-                <select id="usuarioBoveda" name="usuarioBoveda" style="width:100%">\n\
-                  <option value="ninguno" selected="yes">---Seleccionar---</option>';
-      for (var index in usuarios) 
-        {
-        tr += '<option value="'+usuarios[index]["iduser"]+'" name="'+usuarios[index]["nombre"]+' '+usuarios[index]['apellido']+'">'+usuarios[index]['nombre']+' '+usuarios[index]['apellido']+'</option>';
-      }
-      tr += '</select>\n\
-            </td>\n\
-          </tr>';
-      tr += '<tr>\n\
-              <th align="left"><font class="negra">Control 2:</font></th>\n\
-              <td>\n\
-                <select id="usuarioGrabaciones" name="usuarioGrabaciones" style="width: 100%">\n\
-                  <option value="ninguno" selected="yes">---Seleccionar---</option>';
-      for (var index in usuarios) 
-        {
-        tr += '<option value="'+usuarios[index]["iduser"]+'" name="'+usuarios[index]["nombre"]+' '+usuarios[index]['apellido']+'">'+usuarios[index]['nombre']+' '+usuarios[index]['apellido']+'</option>';
-      }
-      tr += '</select>\n\
-            </td>\n\
-          </tr>';
+//      tr += '<th colspan="2" class="centrado">CONTROL</th>';
+//      tr += '<tr>\n\
+//              <th align="left"><font class="negra">Control 1:</font></th>\n\
+//              <td>\n\
+//                <select id="usuarioBoveda" name="usuarioBoveda" style="width:100%">\n\
+//                  <option value="ninguno" selected="yes">---Seleccionar---</option>';
+//      for (var index in usuarios) 
+//        {
+//        tr += '<option value="'+usuarios[index]["iduser"]+'" name="'+usuarios[index]["nombre"]+' '+usuarios[index]['apellido']+'">'+usuarios[index]['nombre']+' '+usuarios[index]['apellido']+'</option>';
+//      }
+//      tr += '</select>\n\
+//            </td>\n\
+//          </tr>';
+//      tr += '<tr>\n\
+//              <th align="left"><font class="negra">Control 2:</font></th>\n\
+//              <td>\n\
+//                <select id="usuarioGrabaciones" name="usuarioGrabaciones" style="width: 100%">\n\
+//                  <option value="ninguno" selected="yes">---Seleccionar---</option>';
+//      for (var index in usuarios) 
+//        {
+//        tr += '<option value="'+usuarios[index]["iduser"]+'" name="'+usuarios[index]["nombre"]+' '+usuarios[index]['apellido']+'">'+usuarios[index]['nombre']+' '+usuarios[index]['apellido']+'</option>';
+//      }
+//      tr += '</select>\n\
+//            </td>\n\
+//          </tr>';
       tr += '<tr>\n\
               <td colspan="2" class="pieTabla">\n\
                 <input type="button" value="ACEPTAR" id="agregarMovimiento" name="agregarMovimiento" class="btn-success" align="center"/>\n\
@@ -1117,8 +1122,8 @@ $(document).on("click", "#agregarMovimiento", function (){
     var tipo = $("#tipo").val();
     var cantidad = parseInt($("#cantidad").val(), 10);
     var comentarios = $("#comentarios").val();
-    var idUserBoveda = $("#usuarioBoveda").val();
-    var idUserGrabaciones = $("#usuarioGrabaciones").val();
+    //var idUserBoveda = $("#usuarioBoveda").val();
+    //var idUserGrabaciones = $("#usuarioGrabaciones").val();
     var tempDate = new Date();
     var hora = tempDate.getHours()+":"+tempDate.getMinutes();
     var nuevoStock = stockActual;
@@ -1157,7 +1162,7 @@ $(document).on("click", "#agregarMovimiento", function (){
     //if (confirmar) {
       /// Agrego el movimiento según los datos pasados:
       var url = "data/updateQuery.php";
-      var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+idUserBoveda+", "+idUserGrabaciones+", '"+comentarios+"')";
+      var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+2+", "+3+", '"+comentarios+"')";
       //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
       
       $.getJSON(url, {query: ""+query+""}).done(function(request) {
@@ -1969,7 +1974,7 @@ $(document).on("click", "#realizarBusqueda", function () {
     var rangoFecha = null;
     
     var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
-    var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock';
+    var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
     var tipoConsulta = '';
     var mensajeFecha = '';
     var campos;
@@ -2190,8 +2195,8 @@ $(document).on("click", "#realizarBusqueda", function () {
       }
       
       if (ordenFecha) {
-        query += " order by fecha desc, hora desc, entidad asc, nombre_plastico asc, idprod";
-        consultaCSV += " order by fecha desc, hora desc, entidad asc, nombre_plastico asc, idprod";
+        query += " order by entidad asc, nombre_plastico asc, fecha desc, hora desc,  idprod";
+        consultaCSV += " order by entidad asc, nombre_plastico asc, fecha desc, hora desc, idprod";
       }
       else {
         query += " order by entidad asc, nombre_plastico asc, idprod asc";

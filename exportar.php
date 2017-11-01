@@ -5,6 +5,7 @@ require_once("data/sesiones.php");
 
 require_once('data\baseMysql.php');
 require_once('..\..\fpdf\mc_table.php');
+require_once('generarExcel.php');
 //***************************** DESTINATARIOS CORREOS ***********************************************************************************************
 $paraListados = array();
 $copiaListados = array();
@@ -1503,11 +1504,29 @@ $pdfResumen->AddPage();
 //$pdfResumen->SetAutoPageBreak(true, 18);
 $totalCampos = sizeof($campos);
 $pdfResumen->SetWidths($largoCampos);
+
 //echo $query."<br>".$consultaCSV."<br>******<br>";
+
 // Conectar con la base de datos
 $con = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 $resultado1 = consultarBD($query, $con);
 
+///Ejecuto consulta para la generación del excel:
+$resultado2 = consultarBD($consultaCSV, $con);
+$filas1 = obtenerResultadosArray($resultado2);
+$registros1 = array();
+$j = 1;
+$total1 = 0;
+foreach($filas1 as $fila)
+  {
+  array_unshift($fila, $j);
+  $j++;
+  //Acumulo el total de plásticos ya sea en stock o movidos:
+  $total1 = $total1 + $fila[4];
+  $registros1[] = $fila;
+}
+
+/// Ejecuto la consulta:
 $filas = obtenerResultadosArray($resultado1);
 $registros = array();
 $i = 1;
@@ -1541,6 +1560,19 @@ $salida = $dir."/".$nombreArchivo;
 ///Guardo el archivo en el disco, y además lo muestro en pantalla:
 $pdfResumen->Output($salida, 'F');
 $pdfResumen->Output($salida, 'I');
+
+switch ($id) {
+  case "1": generarExcelStock($registros1, $total1);
+            break;
+  case "2": generarExcelStock($registros1, $total1);
+            break;
+  case "3": break;
+  case "4": //generarExcelMovimientos();
+            break;
+  case "5": //generarExcelMovimientos();
+            break;
+  default: break;
+}    
 
 /*
 /// Exportación de la consulta a CSV:
