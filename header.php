@@ -20,7 +20,7 @@
       <div id='collapsable-nav' class='collapse navbar-collapse'>
         <ul id='nav-list' class='nav navbar-nav navbar-right'>
           <li id='navHomeButton' class='hidden-xs' >
-            <a href='index.php'>
+            <a href='movimiento.php'>
               <span class='glyphicon glyphicon-home'></span> Home
             </a>
           </li>

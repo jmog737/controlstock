@@ -1562,14 +1562,14 @@ $pdfResumen->Output($salida, 'F');
 $pdfResumen->Output($salida, 'I');
 
 switch ($id) {
-  case "1": generarExcelStock($registros1, $total1);
+  case "1": $archivo = generarExcelStock($registros1, $total1);
             break;
-  case "2": generarExcelStock($registros1, $total1);
+  case "2": $archivo = generarExcelStock($registros1, $total1);
             break;
   case "3": break;
-  case "4": //generarExcelMovimientos();
+  case "4": $archivo = generarExcelMovimientos($registros1);
             break;
-  case "5": //generarExcelMovimientos();
+  case "5": $archivo = generarExcelMovimientos($registros1);
             break;
   default: break;
 }    
@@ -1583,6 +1583,24 @@ $resultado2 = consultarBD($exportarCSV, $con);
 //echo $exportarCSV;
 */
 
+//************ GENERACION ZIP FILE *************************************************************************************    
+$zip = new ZipArchive;
+$nombreZip = "lista".$timestamp.".zip";
+$fileDir = $dir."/".$nombreZip;
+
+$excel = $dir."/".$archivo;
+
+if ($zip->open($fileDir, ZIPARCHIVE::CREATE ) !== TRUE) 
+    {
+    exit("No se pudo abrir el archivo\n");
+    } 
+//agrego el pdf correspondiente al reporte para EMSA:
+$zip->addFile($salida, $nombreArchivo);
+$zip->addFile($excel, $archivo);
+
+$zip->close();
+//***********************************************************************************************************************  
+
 /// Envío de mails:
 if (isset($mails)){
   $destinatarios = explode(",", $mails);
@@ -1592,7 +1610,8 @@ if (isset($mails)){
   $asunto = $asunto." (MAIL DE TEST!!!)";
   //$asunto = $asunto;
   $cuerpo = utf8_decode("<html><body><h4>Se adjunta el reporte generado del stock</h4></body></html>");
-  $respuesta = enviarMail($para, '', '', $asunto, $cuerpo, "REPORTE", $nombreArchivo, $salida);echo $respuesta;
+  $respuesta = enviarMail($para, '', '', $asunto, $cuerpo, "REPORTE", $nombreZip, $fileDir);
+  echo $respuesta;
 }
 
 

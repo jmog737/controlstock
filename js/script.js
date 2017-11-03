@@ -464,7 +464,7 @@ function cargarMovimiento(selector, hint, prod){
       tabla += '</table>';
       formu += titulo;
       formu += tabla;
-      formu += '</form>';
+      formu += '</form><br>';
       $(selector).html(formu);
       if (prod !== -1) {//alert('en el if:'+prod);
         showHint(hint, "#producto", prod);
@@ -1025,7 +1025,7 @@ function todo () {
                                           cargarMovimiento("#main-content", h, idprod);                                          
                                         }
                                         else {
-                                          cargarMovimiento("#main-content", "", -1);
+                                          cargarMovimiento("#main-content", "", "-1");
                                         }
                                         break;    
                                       }
@@ -2050,7 +2050,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                 x = 40;
                                 break;                       
       case 'productoMovimiento':  query += ", movimientos.fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where ";
-                                  consultaCSV = "select movimientos.fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, productos.entidad, productos.nombre_plastico, productos.bin from productos inner join movimientos on productos.idprod=movimientos.producto where ";
+                                  consultaCSV = "select movimientos.fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
                                   if ((idProd === 'NADA') || (nombreProducto === '')){
                                     alert('Debe seleccionar un producto. Por favor verifique.');
                                     document.getElementById("productoMovimiento").focus();

@@ -87,7 +87,8 @@ require_once("data/sesiones.php");
             <td colspan="3" class="pieTabla"><input type="button" value="NUEVO" id="agregarProducto" name="agregarProducto" class='btn-success' align='center'/></td>
           </tr>
         </table>
-      </form> 
+      </form>
+      <br>
     </div>
     
     <?php 

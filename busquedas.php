@@ -191,6 +191,7 @@ require_once("data/sesiones.php");
               </td>
             </tr>
           </table>
+          <br>
         </div>
         <div id='resultado' class='col-md-6 col-sm-12'></div>
       </div>
