@@ -341,6 +341,23 @@ $styleColumnaStock = array(
 $rangoStock = 'H2:H'.$i.'';
 $hoja->getStyle($rangoStock)->applyFromArray($styleColumnaStock);
 
+/// Defino el formato para la columna con la FECHA:
+$styleColumnaFecha = array(
+	  'fill' => array(
+        'color' => array('rgb' => 'A9FF96'),
+        'type' => 'solid',
+    ),
+    'alignment' => array(
+       'wrap' => true,
+       'horizontal' => 'center',
+       'vertical' => 'middle',
+    ),
+    'numberformat' => array(
+        'code' => 'DD/MM/YYYY',
+    ),
+);
+$rangoFecha = 'B2:B'.$i.'';
+$hoja->getStyle($rangoFecha)->applyFromArray($styleColumnaFecha);
 
 /// Estilos para las alarmas aunque en el caso de los movimientos no tiene sentido: REVISAR!!!:
 $styleAl1 = array(

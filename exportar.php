@@ -1505,7 +1505,7 @@ $pdfResumen->AddPage();
 $totalCampos = sizeof($campos);
 $pdfResumen->SetWidths($largoCampos);
 
-//echo $query."<br>".$consultaCSV."<br>******<br>";
+//echo $query."<br>-------------------------------<br>".$consultaCSV."<br>******<br>";
 
 // Conectar con la base de datos
 $con = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
