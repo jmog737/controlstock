@@ -1,16 +1,16 @@
 <?php
-
-/** Error reporting */
-//error_reporting(E_ALL);
-//ini_set('display_errors', TRUE);
-//ini_set('display_startup_errors', TRUE);
-//date_default_timezone_set('Europe/London');
-
-//define('EOL',(PHP_SAPI == 'cli') ? PHP_EOL : '<br />');
+/**
+******************************************************
+*  @file generarExcel.php
+*  @brief Archivo con las funciones que generan los archivos de excel.
+*  @author Juan Martín Ortega
+*  @version 1.0
+*  @date Noviembre 2017
+*
+*******************************************************/
 
 /** Include PHPExcel */
 require_once('..\..\excel\PHPExcel.php');
-//require_once ('..\..\excel\PHPxcel\Shared\String.php');
 
 function generarExcelStock($registros, $total) {
   // Create new PHPExcel object

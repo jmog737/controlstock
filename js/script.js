@@ -410,7 +410,6 @@ function cargarMovimiento(selector, hint, prod){
                   <option value="Retiro" selected="yes">Retiro</option>\n\
                   <option value="Ingreso">Ingreso</option>\n\
                   <option value="Renovaci&oacute;n">Reno</option>\n\
-                  <option value="Devoluci&oacute;n">Devoluci&oacute;n</option>\n\
                   <option value="Destrucci&oacute;n">Destrucci&oacute;n</option>\n\
                 </select>\n\
               </td>\n\
@@ -425,7 +424,7 @@ function cargarMovimiento(selector, hint, prod){
 //            </tr>';
       tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center"><input type="textarea" id="comentarios" name="comentarios" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center"><input type="textarea" id="comentarios" name="comentarios" class="agrandar" maxlength="150" size="9"></td>\n\
             </tr>';
 //      tr += '<th colspan="2" class="centrado">CONTROL</th>';
 //      tr += '<tr>\n\
@@ -1133,7 +1132,7 @@ $(document).on("click", "#agregarMovimiento", function (){
     //var confirmar = confirm("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fechaMostrar+"\nProducto: "+nombreProducto+"\nTipo: "+tipo+"\nCantidad: "+cantidad+"\nControl 1: "+userBoveda+"\nControl 2: "+userGrabaciones+"\nComentarios: "+comentarios);
     
     /// Si el movimiento NO es una devolución, calculo el nuevo stock. De serlo, NO se quita de stock pues las tarjetas se reponen.
-    if ((tipo !== 'Destrucción') && (tipo !== 'Ingreso')) {
+    if (tipo !== 'Ingreso') {
       nuevoStock = stockActual - cantidad;
     }
     if (tipo === 'Ingreso') {
@@ -1145,10 +1144,13 @@ $(document).on("click", "#agregarMovimiento", function (){
     var avisarInsuficiente = false;
     
     /// Si el nuevoStock es menor a 0, siginifica que no hay stock suficiente. Se alerta y se descuenta sólo la cantidad disponible.
+    /// CAMBIO: La política actual es DEJAR en suspenso el movimiento hasta que haya stock suficiente. NO HAY QUE HACER EL MOVIMIENTO!!
+    var seguir = true;
     if (nuevoStock <0) {
-      cantidad = stockActual;
+      //cantidad = stockActual;
       avisarInsuficiente = true;
-      nuevoStock = 0;
+      seguir = false;
+      //nuevoStock = 0;
     }
     else {
       if ((nuevoStock < alarma1) && (nuevoStock > alarma2)) {
@@ -1159,7 +1161,7 @@ $(document).on("click", "#agregarMovimiento", function (){
       }
     }
     
-    //if (confirmar) {
+    if (seguir) {
       /// Agrego el movimiento según los datos pasados:
       var url = "data/updateQuery.php";
       var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+2+", "+3+", '"+comentarios+"')";
@@ -1176,36 +1178,36 @@ $(document).on("click", "#agregarMovimiento", function (){
             var resultado = request["resultado"];
             if (resultado === "OK") {
               if (avisarAlarma1) {
-                alert('El stock quedó por debajo de la alarma1 definida!. \n\nStock actual: ' + nuevoStock);
+                //alert('El stock quedó por debajo de la alarma1 definida!. \n\nStock actual: ' + nuevoStock);
               }
               else {
                 if (avisarAlarma2) {
-                  alert('El stock quedó por debajo de la alarma2 definida!. \n\nStock actual: ' + nuevoStock);
+                  //alert('El stock quedó por debajo de la alarma2 definida!. \n\nStock actual: ' + nuevoStock);
                 }
                 else {
                   if (avisarInsuficiente) {
-                    alert('Stock insuficiente!. \nSe descuenta sólo la cantidad existente. \n\nStock 0!!.');
+                    //alert('Stock insuficiente!. \nSe descuenta sólo la cantidad existente. \n\nStock 0!!.');
                   }
                   else {
-                    alert('Registro agregado correctamente!. \n\nStock actual: '+nuevoStock);
+                    //alert('Registro agregado correctamente!. \n\nStock actual: '+nuevoStock);
                   }
                 }
               }  
               window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda+"&id="+idProd;
             }
             else {
-              alert('Hubo un error. Por favor verifique.');
+              alert('Hubo un error en la actualizacion del producto. Por favor verifique.');
             }
           });
         }
         else {
-          alert('Hubo un error. Por favor verifique.');
+          alert('Hubo un error en el agregado del movimiento. Por favor verifique.');
         }
       });  
-    /*}
+    }
     else {
-      alert('no hacer el insert');
-    }*/
+      alert('No hay stock suficiente del producto como para realizar el retiro.\n\n NO SE REALIZA!.');
+    }
   }
 });
 
@@ -1214,7 +1216,6 @@ $(document).on("click", "#agregarMovimiento", function (){
 /// ***************************************************** FIN MOVIMIENTOS ******************************************************
 ********************************************************************************************************************************
 */
-
 
 
 
@@ -1594,76 +1595,6 @@ $(document).on("click", "#agregarProducto", function (){
 */
 
 
-
-/*****************************************************************************************************************************
-/// Comienzan las funciones que manejan los eventos relacionados a las IMPORTACIONES como ser creación, edición y eliminación.
-******************************************************************************************************************************
-*/
-
-///Disparar funcion al hacer clic en el botón para agregar la importación.
-$(document).on("click", "#agregarImportacion", function (){
-  //$(this).css('background-color', '#efe473');
-  var seguir = true;
-  seguir = validarImportacion();
-  if (seguir) {
-    var fecha = $("#fecha").val();
-    var temp = fecha.split('-');
-    var fechaMostrar = temp[2]+"/"+temp[1]+"/"+temp[0];
-    var idProd = $("#hint").val();
-    var nombreProducto = $("#hint").find('option:selected').text( );
-    var stockActual = parseInt($("#hint").find('option:selected').attr("stock"), 10);
-    //var alarma = parseInt($("#hint").find('option:selected').attr("alarma"), 10);
-    var fabricante = $("#fabricante").val();
-    var cantidad = parseInt($("#cantidad").val(), 10);
-    var comentarios = $("#comentarios").val();
-    var idUserBoveda = $("#usuarioBoveda").val();
-    var userBoveda = $("#usuarioBoveda").find('option:selected').attr("name");
-    var idUserGrabaciones = $("#usuarioGrabaciones").val();
-    var userGrabaciones = $("#usuarioGrabaciones").find('option:selected').attr("name");
-    var tempDate = new Date();
-    var hora = tempDate.getHours()+":"+tempDate.getMinutes();
-    var confirmar = confirm("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fechaMostrar+"\nProducto: "+nombreProducto+"\nFabricante: "+fabricante+"\nCantidad: "+cantidad+"\nControl Bóveda: "+userBoveda+"\nControl Grabaciones: "+userGrabaciones+"\nComentarios: "+comentarios);
-     
-    var nuevoStock = stockActual + cantidad;
-    
-    if (confirmar) {
-      var url = "data/updateQuery.php";
-      var query = "insert into movimientos (producto, fecha, hora, fabricante, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+fabricante+"', 'Importación', "+cantidad+", "+idUserBoveda+", "+idUserGrabaciones+", '"+comentarios+"')";
-      //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
-      
-      $.getJSON(url, {query: ""+query+""}).done(function(request) {
-        var resultado = request["resultado"];
-        if (resultado === "OK") {
-          var url = "data/updateQuery.php";
-          var query = "update productos set stock="+nuevoStock+", ultimoMovimiento='"+fecha+"' where idprod="+idProd;
-                    
-          $.getJSON(url, {query: ""+query+""}).done(function(request) {
-            var resultado = request["resultado"];
-            if (resultado === "OK") {  
-              alert('Registro agregado correctamente!. Stock actual: '+nuevoStock);
-              location.reload();
-            }
-            else {
-              alert('Hubo un error (update). Por favor verifique.');
-            }
-          });
-        }
-        else {
-          alert('Hubo un error. Por favor verifique.');
-        }
-      });
-    }
-    else {
-      alert('no hacer el insert');
-    }
-  }
-});
-
-/*******************************************************************************************************************************
-/// **************************************************** FIN IMPORTACIONES *****************************************************
-********************************************************************************************************************************
-*/
-
 /***************************************************************************************************************************
 /// Comienzan las funciones que manejan los eventos relacionados a los USUARIOS como ser creación, edición y eliminación.
 ****************************************************************************************************************************
@@ -1973,13 +1904,13 @@ $(document).on("click", "#realizarBusqueda", function () {
     var año = $("#año").val();
     var rangoFecha = null;
     
-    var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+    var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, DATE_FORMAT(productos.ultimoMovimiento, \'%d/%m/%Y\') as ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
     var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
     var tipoConsulta = '';
     var mensajeFecha = '';
     var campos;
     var largos;
-    var mostrarCampos = "1-1-1-1-1-1-1-1-0-0";;
+    var mostrarCamposQuery = "1-1-1-1-1-1-1-1-0-0";;
     var x = 55;
     
     var validado = true;
@@ -2000,9 +1931,9 @@ $(document).on("click", "#realizarBusqueda", function () {
                              consultaCSV += " from productos where estado='activo'";
                              tipoConsulta = 'del stock de todas las entidades';
                            }
-                           campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-Stock";
-                           largos = "0.8-1.2-2.5-0.8-2-1-1-1.6";
-                           mostrarCampos = "1-1-1-1-1-0-0-1-0-0-0";
+                           campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Comentarios";
+                           largos = "0.8-1.2-2.5-0.8-2-1-1-1.4-1.2-1-2-1";
+                           mostrarCamposQuery = "1-1-1-1-1-0-0-1-1-0-0-0";
                            x = 20;
                            break;
       case 'productoStock':  if ((idProd === 'NADA') || (nombreProducto === '')){
@@ -2016,9 +1947,9 @@ $(document).on("click", "#realizarBusqueda", function () {
                                consultaCSV += " from productos where idProd="+idProd;
                              }
                              tipoConsulta = 'de stock del producto '+nombreSolo;
-                             campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-Stock-Comentarios";
-                             largos = "0.8-1.2-2.5-0.8-2-2.5-1-1-2";
-                             mostrarCampos = "1-1-1-1-1-1-1-1-0-0-1";;
+                             campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-Stock-Alarma1-Alarma2-Comentarios-&Uacute;ltimo Movimiento";
+                             largos = "0.8-1.2-2.5-0.8-2-2.5-1-1-1-1-2-1";
+                             mostrarCamposQuery = "1-1-1-1-1-1-1-1-0-0-1-1";;
                              x = 22;
                              break;
       case 'totalStock':  query = "select entidad, sum(stock) as subtotal from productos where estado='activo' group by entidad";
@@ -2026,10 +1957,10 @@ $(document).on("click", "#realizarBusqueda", function () {
                           tipoConsulta = 'del total de plásticos en bóveda';
                           campos = 'Id-Entidad-Stock';
                           largos = '1-3.0-1.8';
-                          mostrarCampos = "1-1-1";
+                          mostrarCamposQuery = "1-1-1";
                           x = 60;
                           break;                    
-      case 'entidadMovimiento': query += ", movimientos.fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
+      case 'entidadMovimiento': query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
                                 consultaCSV = "select DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
                                 if (entidadMovimiento !== 'todos') {
                                   query += "entidad='"+entidadMovimiento+"' and ";
@@ -2043,13 +1974,13 @@ $(document).on("click", "#realizarBusqueda", function () {
                                 validarTipo = true;
                                 validarUser = true;
                                 ordenFecha = true;
-                                campos = 'Id-Entidad-Nombre-BIN-Código-Contacto-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios';
+                                campos = 'Id-Entidad-Nombre-BIN-Código-Contacto-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-&Uacute;ltimo Movimiento-Fecha-Hora-Cantidad-Tipo-Comentarios';
                                 //Orden de la consulta: entidad - nombre - bin - codigo - contacto - snapshot - stock - alarma1 - alarma2 - prodcom - fecha - hora - cantidad - tipo - comentarios
-                                largos = '0.6-1.6-1.9-1-1-1-1-1-1-1-1.1-1.5-0.8-1.2-1.4-2';
-                                mostrarCampos = '1-1-1-0-0-0-0-0-0-0-0-1-1-1-1-1';
+                                largos = '0.6-1.6-1.9-1-1-1-1-1-1-1-1.1-1.5-1.5-0.8-1.2-1.4-2';
+                                mostrarCamposQuery = '1-1-1-0-0-0-0-0-0-0-0-0-1-1-1-1-1';
                                 x = 40;
                                 break;                       
-      case 'productoMovimiento':  query += ", movimientos.fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where ";
+      case 'productoMovimiento':  query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where ";
                                   consultaCSV = "select DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
                                   if ((idProd === 'NADA') || (nombreProducto === '')){
                                     alert('Debe seleccionar un producto. Por favor verifique.');
@@ -2066,10 +1997,10 @@ $(document).on("click", "#realizarBusqueda", function () {
                                     ordenFecha = true;
                                   }
                                   tipoConsulta = 'de los movimientos del producto '+nombreSolo;
-                                  campos = 'Id-Entidad-Nombre-BIN-Código-Contacto-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios';
+                                  campos = 'Id-Entidad-Nombre-BIN-Código-Contacto-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-&Uacute;ltimo Movimiento-Fecha-Hora-Cantidad-Tipo-Comentarios';
                                   //Orden de la consulta: entidad - nombre - bin - codigo - snapshot - stock - alarma - prodcom - fecha - hora - cantidad - tipo - comentarios
-                                  largos = '0.4-1.5-1.8-1-1-1-1-1-1-1-1.1-1.5-0.8-1.2-1.4-2';
-                                  mostrarCampos = '1-1-1-0-0-0-0-0-0-0-0-1-1-1-1-1';
+                                  largos = '0.4-1.5-1.8-1-1-1-1-1-1-1-1.1-1.5-1.5-0.8-1.2-1.4-2';
+                                  mostrarCamposQuery = '1-0-0-0-0-0-0-0-0-0-0-0-1-1-1-1-1';
                                   break;
       default: break;
     }
@@ -2195,8 +2126,8 @@ $(document).on("click", "#realizarBusqueda", function () {
       }
       
       if (ordenFecha) {
-        query += " order by entidad asc, nombre_plastico asc, fecha desc, hora desc,  idprod";
-        consultaCSV += " order by entidad asc, nombre_plastico asc, fecha desc, hora desc, idprod";
+        query += " order by entidad asc, nombre_plastico asc, movimientos.fecha desc, hora desc,  idprod";
+        consultaCSV += " order by entidad asc, nombre_plastico asc, movimientos.fecha desc, hora desc, idprod";
       }
       else {
         query += " order by entidad asc, nombre_plastico asc, idprod asc";
@@ -2226,7 +2157,7 @@ $(document).on("click", "#realizarBusqueda", function () {
           var tabla = '<form name="resultadoBusqueda" id="resultadoBusqueda" action="exportar.php" method="post" class="exportarForm">';
           tabla += '<table name="producto" class="tabla2">';
           switch(radio) {
-            case 'entidadStock':  tabla += '<tr><th class="tituloTabla" colspan="7">CONSULTA DE STOCK</th></tr>';
+            case 'entidadStock':  tabla += '<tr><th class="tituloTabla" colspan="8">CONSULTA DE STOCK</th></tr>';
                                   tabla += '<tr>\n\
                                               <th>Item</th>\n\
                                               <th>Entidad</th>\n\
@@ -2234,6 +2165,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                               <th>BIN</th>\n\
                                               <th>Código</th>\n\
                                               <th>Snapshot</th>\n\
+                                              <th>&Uacute;ltimo Movimiento</th>\n\
                                               <th>Stock</th>\n\
                                            </tr>';
                                   var indice = 1;
@@ -2247,6 +2179,10 @@ $(document).on("click", "#realizarBusqueda", function () {
                                     var stock = parseInt(datos[i]['stock'], 10);
                                     var alarma1 = parseInt(datos[i]['alarma1'], 10);
                                     var alarma2 = parseInt(datos[i]['alarma2'], 10);
+                                    var ultimoMovimiento = datos[i]['ultimoMovimiento'];
+                                    if (ultimoMovimiento === null) {
+                                      ultimoMovimiento = '';
+                                    }
                                     var claseResaltado = "";
                                     if ((stock < alarma1) && (stock > alarma2)){
                                       claseResaltado = "alarma1";
@@ -2270,12 +2206,13 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                 <td nowrap>'+bin+'</td>\n\
                                                 <td>'+codigo_emsa+'</td>\n\
                                                 <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="76" width="120"></img></td>\n\
+                                                <td>'+ultimoMovimiento+'</td>\n\
                                                 <td class="'+claseResaltado+'" style="text-align: right">'+stock.toLocaleString()+'</td>\n\
                                               </tr>';
                                     indice++;
                                     total += stock;
                                   }
-                                  tabla += '<tr><th colspan="6" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td></tr>';
+                                  tabla += '<tr><th colspan="7" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td></tr>';
                                   
                                   tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
@@ -2284,12 +2221,12 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
                                                     <td style="display:none"><input type="text" id="entidad" value="'+entidadStock+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                   </tr>';
                                   tabla += '<tr>\n\
-                                              <td class="pieTabla" colspan="7">\n\
+                                              <td class="pieTabla" colspan="8">\n\
                                                 <input type="button" id="1" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
                                               </td>\n\
                                             </tr>\n\
@@ -2306,6 +2243,10 @@ $(document).on("click", "#realizarBusqueda", function () {
                                   var alarma2 = parseInt(datos[0]['alarma2'], 10);
                                   var stock = parseInt(datos[0]['stock'], 10);
                                   var snapshot = datos[0]['snapshot'];
+                                  var ultimoMovimiento = datos[0]['ultimoMovimiento'];
+                                    if (ultimoMovimiento === null) {
+                                      ultimoMovimiento = '';
+                                    }
                                   var contacto = datos[0]['contacto'];
                                   if (contacto === null) 
                                       {
@@ -2318,16 +2259,16 @@ $(document).on("click", "#realizarBusqueda", function () {
                                     }
                                   var claseResaltado = "italica";
                                   if ((stock < alarma1) && (stock > alarma2)){
-                                      claseResaltado = "alarma1";
+                                    claseResaltado = "alarma1";
+                                  }
+                                  else {
+                                    if (stock < alarma2) {
+                                      claseResaltado = "alarma2";
                                     }
                                     else {
-                                      if (stock < alarma2) {
-                                        claseResaltado = "alarma2";
-                                      }
-                                      else {
-                                        claseResaltado = "resaltado italica";
-                                      }
-                                    } 
+                                      claseResaltado = "resaltado italica";
+                                    }
+                                  } 
                                   tabla += '<tr>\n\
                                               <th colspan="2" class="tituloTabla">DETALLES</th>\n\
                                            </tr>';                       
@@ -2338,6 +2279,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                   tabla += '<tr><th style="text-align:left">Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
                                   tabla += '<tr><th style="text-align:left">Contacto:</th><td>'+contacto+'</td></tr>';
                                   tabla += '<tr><th style="text-align:left">Comentarios:</th><td>'+prodcom+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">&Uacute;ltimo Movimiento:</th><td>'+ultimoMovimiento+'</td></tr>';
                                   tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
                                   tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
@@ -2346,7 +2288,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                     <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
                                                     <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProd+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                   </tr>';
@@ -2392,7 +2334,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                 tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
                                               <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
                                                     <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
@@ -2421,21 +2363,22 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                   <th>Comentarios</th>\n\
                                                </tr>';
                                       var indice = 1;
+                                      var productoViejo = datos[0]['nombre_plastico'];
+                                      //var separador = false;
+                                      var subtotal = 0;
+                                      
                                       for (var i in datos) { 
                                         //var produ = datos[i]["idProd"];
                                         var entidad = datos[i]["entidad"];
                                         var nombre = datos[i]['nombre_plastico'];
+                                        var cantidad = parseInt(datos[i]['cantidad'], 10);
                                         var bin = datos[i]['bin'];
                                         var codigo_emsa = datos[i]['codigo_emsa'];
                                         var tipo1 = datos[i]['tipo'];
                                         var snapshot = datos[i]['snapshot'];
                                         var fecha = datos[i]['fecha'];
-                                        var fechaTemp = fecha.split('-');
-                                        var fechaMostrar = fechaTemp[2]+"/"+fechaTemp[1]+"/"+fechaTemp[0];
-                                        var hora = datos[i]["hora"];
-                                        var horaTemp = hora.split(':');
-                                        var horaMostrar = horaTemp[0]+":"+horaTemp[1];      
-                                        var cantidad = parseInt(datos[i]['cantidad'], 10);
+                                        var hora = datos[i]["hora"];    
+                                        
                                         var alarma1 = parseInt(datos[i]['alarma1'], 10);
                                         var alarma2 = parseInt(datos[i]['alarma2'], 10);
                                         var stock = parseInt(datos[i]['stock'], 10);
@@ -2459,10 +2402,27 @@ $(document).on("click", "#realizarBusqueda", function () {
                                           {
                                           bin = 'N/D o N/C';
                                         }
+                                        
+                                        if (productoViejo !== nombre) {
+                                         // separador = true;
+                                          productoViejo = nombre;
+                                          tabla += '<tr>\n\
+                                                      <td colspan="9" class="negrita">Subtotal:</td>\n\
+                                                      <td class="subtotal" colspan="2">'+subtotal+'</td>\n\
+                                                    </tr>\
+                                                    <th colspan="11">&nbsp;\n\
+                                                    </th>';
+                                          subtotal = cantidad;//alert('puse separador:'+subtotal);
+                                        }
+                                        else {
+                                          //separador = false;
+                                          subtotal = subtotal + cantidad;//alert("cantidad: "+cantidad+"\nsubtotal acumulado: "+subtotal);
+                                        }
+                                        
                                         tabla += '<tr>\n\
                                                     <td>'+indice+'</td>\n\
-                                                    <td>'+fechaMostrar+'</td>\n\
-                                                    <td>'+horaMostrar+'</td>\n\
+                                                    <td>'+fecha+'</td>\n\
+                                                    <td>'+hora+'</td>\n\
                                                     <td>'+entidad+'</td>\n\
                                                     <td>'+nombre+'</td>\n\
                                                     <td nowrap>'+bin+'</td>\n\
@@ -2471,9 +2431,15 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                     <td>'+tipo1+'</td>\n\
                                                     <td class="'+claseResaltado+'">'+cantidad.toLocaleString()+'</td>\n\
                                                     <td>'+comentarios+'</td>\n\
-                                                  </tr>';
+                                                  </tr>';        
                                         indice++;  
-                                        }
+                                      }
+                                      tabla += '<tr>\n\
+                                                      <td colspan="9" class="negrita">Subtotal:</td>\n\
+                                                      <td class="subtotal" colspan="2">'+subtotal+'</td>\n\
+                                                    </tr>\
+                                                    <th colspan="11">&nbsp;\n\
+                                                    </th>';
                                       tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
@@ -2481,7 +2447,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
                                                     <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="usuario" name="usuario" value="'+idUser+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="criterioFecha" name="criterioFecha" value="'+radioFecha+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="inicio" name="inicio" value="'+inicio+'"></td>\n\
@@ -2503,6 +2469,10 @@ $(document).on("click", "#realizarBusqueda", function () {
                                       break;
             case 'productoMovimiento':  var bin = datos[0]['bin'];
                                         var produ = datos[0]['produ'];
+                                        var ultimoMovimiento = datos[0]['ultimoMovimiento'];
+                                        if (ultimoMovimiento === null) {
+                                          ultimoMovimiento = '';
+                                        }
                                         var contacto = datos[0]['contacto'];
                                         if (contacto === null) 
                                             {
@@ -2517,8 +2487,22 @@ $(document).on("click", "#realizarBusqueda", function () {
                                             {
                                             bin = 'N/D o N/C';
                                           }
-                                        var snapshot = datos[0]['snapshot'];  
+                                        var snapshot = datos[0]['snapshot'];
+                                        var alarma1 = parseInt(datos[0]['alarma1'], 10);
+                                        var alarma2 = parseInt(datos[0]['alarma2'], 10);
                                         var stock = parseInt(datos[0]['stock'],10);
+                                        if ((stock < alarma1) && (stock > alarma2)){
+                                          claseResaltado = "alarma1";
+                                        }
+                                        else {
+                                          if (stock < alarma2) {
+                                            claseResaltado = "alarma2";
+                                          }
+                                          else {
+                                            claseResaltado = "resaltado italica";
+                                          }
+                                        } 
+                                  
                                         tabla += '<tr>\n\
                                                     <th colspan="2" class="tituloTabla">PRODUCTO</th>\n\
                                                  </tr>';                       
@@ -2529,6 +2513,8 @@ $(document).on("click", "#realizarBusqueda", function () {
                                         tabla += '<tr><th>Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
                                         tabla += '<tr><th>Contacto:</th><td>'+contacto+'</td></tr>';
                                         tabla += '<tr><th>Comentarios:</th><td>'+comentarios+'</td></tr>';
+                                        tabla += '<tr><th>&Uacute;ltimo Moviemiento:</th><td>'+ultimoMovimiento+'</td></tr>';
+                                        tabla += '<tr><th>Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
                                         tabla += '<tr><th colspan="2" class="pieTabla centrado">FIN</th></tr></table>';
                                         
                                         tabla += '<br>';
@@ -2546,11 +2532,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                         for (var i in datos) { 
                                           var tipo2 = datos[i]['tipo'];
                                           var fecha = datos[i]['fecha'];
-                                          var fechaTemp = fecha.split('-');
-                                          var fechaMostrar = fechaTemp[2]+"/"+fechaTemp[1]+"/"+fechaTemp[0];
                                           var hora = datos[i]["hora"];
-                                          var horaTemp = hora.split(':');
-                                          var horaMostrar = horaTemp[0]+":"+horaTemp[1];
                                           var cantidad = parseInt(datos[i]['cantidad'], 10);
                                           var alarma1 = parseInt(datos[i]['alarma1'], 10);
                                           var alarma2 = parseInt(datos[i]['alarma2'], 10);
@@ -2573,8 +2555,8 @@ $(document).on("click", "#realizarBusqueda", function () {
                                           }
                                           tabla += '<tr>\n\
                                                       <td>'+indice+'</td>\n\
-                                                      <td>'+fechaMostrar+'</td>\n\
-                                                      <td>'+horaMostrar+'</td>\n\
+                                                      <td>'+fecha+'</td>\n\
+                                                      <td>'+hora+'</td>\n\
                                                       <td>'+tipo2+'</td>\n\
                                                       <td class="'+claseResaltado+'">'+cantidad.toLocaleString()+'</td>\n\
                                                       <td>'+comentarios+'</td>\n\
@@ -2588,7 +2570,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
                                                     <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCampos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="criterioFecha" name="criterioFecha" value="'+radioFecha+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="inicio" name="inicio" value="'+inicio+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="fin" name="fin" value="'+fin+'"></td>\n\
@@ -2667,7 +2649,10 @@ $(document).on("click", ".exportar", function (){
   var nombreProducto = $("#nombreProducto").val();
   
   
-  var enviarMail = confirm('¿Desea enviar por correo electrónico el pdf?');
+  //var enviarMail = confirm('¿Desea enviar por correo electrónico el pdf?');
+  
+  /// Se quita la pregunta del envío del mail pues, por ahora, NO hay acceso a internet desde donde está instalado y carece de sentido:
+  var enviarMail = false;
   
   if (enviarMail === true) {
     var dir = prompt('Dirección/es: (SEPARADAS POR COMAS)');
@@ -2677,7 +2662,7 @@ $(document).on("click", ".exportar", function (){
     }
     else {
       if (dir !== null) {
-        alert('Se enviará el reporte a: '+dir);
+        //alert('Se enviará el reporte a: '+dir);
         param += "&mails:"+dir+"";
       }
       else {

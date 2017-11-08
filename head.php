@@ -11,4 +11,7 @@
   <script src='js/ajax-utils.js'></script>
   <script src='js/script.js' type="text/javaScript"></script> 
 </head>
-<?php require_once('..\..\fpdf\fpdf.php'); require_once('data/baseMysql.php');?>
+<?php 
+require_once('..\..\fpdf\fpdf.php'); 
+require_once('data/baseMysql.php');
+?>

@@ -164,9 +164,8 @@ require_once("data/sesiones.php");
                 <select id="tipo" name="tipo" style="width:100%">
                   <option value="Todos" selected="yes">---TODOS---</option>
                   <option value='Retiro'>Retiro</option>
-                  <option value="Importaci&oacute;n">Importaci&oacute;n</option>
+                  <option value="Ingreso">Ingreso</option>
                   <option value='Renovaci&oacute;n'>Reno</option>
-                  <option value='Devoluci&oacute;n'>Devoluci&oacute;n</option>
                   <option value='Destrucci&oacute;n'>Destrucci&oacute;n</option>
                 </select>
               </td>

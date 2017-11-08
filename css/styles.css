@@ -357,9 +357,10 @@ a.detailObject:focus, a.detailObject:hover {
   min-width: 100px;
   overflow:auto
 }
-.hint option {
- 
-  
+.subtotal {
+  background-color:#9db0f3;
+  font-weight: bolder;
+  font-size: 1.4em;
 }
 /************************* END HOME PAGE *************************************/
 

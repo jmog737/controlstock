@@ -76,7 +76,7 @@ require_once("data/sesiones.php");
           </tr>
           <tr>
             <th align='left'><font class='negra'>Comentarios:</font></th>
-            <td align='center' colspan="2"><input type='textarea' id='comentarios' name='comentarios' class="agrandar" maxlength='35' size='9'></td>
+            <td align='center' colspan="2"><input type='textarea' id='comentarios' name='comentarios' class="agrandar" maxlength='100' size='9'></td>
           </tr>
           <tr>
             <td style="width: 33%;border-right: 0px;"><input type="button" value="EDITAR" id="editarProducto" name="editarProducto" class='btn-info' align='center'/></td>
