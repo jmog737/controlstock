@@ -366,7 +366,7 @@ function validarMovimiento()
   else return false;
 }
 
-function cargarMovimiento(selector, hint, prod){
+function cargarMovimiento(selector, hint, prod, tipo){
   var url = "data/selectQuery.php";
   var query = "select iduser, apellido, nombre from usuarios where (estado='activo' and (sector='Bóveda' or sector='Grabaciones')) order by nombre asc, apellido asc";
   
@@ -409,7 +409,7 @@ function cargarMovimiento(selector, hint, prod){
                 <select id="tipo" name="tipo" style="width:100%">\n\
                   <option value="Retiro" selected="yes">Retiro</option>\n\
                   <option value="Ingreso">Ingreso</option>\n\
-                  <option value="Renovaci&oacute;n">Reno</option>\n\
+                  <option value="Renovaci&oacute;n">Renovaci&oacute;n</option>\n\
                   <option value="Destrucci&oacute;n">Destrucci&oacute;n</option>\n\
                 </select>\n\
               </td>\n\
@@ -471,6 +471,9 @@ function cargarMovimiento(selector, hint, prod){
       else {
         ///showHint(hint, "#producto", "");
       }
+      if ((tipo !== '') && (tipo !== undefined)){
+        $("#tipo option[value="+ tipo +"]").attr("selected",true);
+      }
       $("#producto").focus();
     }
   });    
@@ -478,113 +481,6 @@ function cargarMovimiento(selector, hint, prod){
 
 /***********************************************************************************************************************
 /// ********************************************* FIN FUNCIONES MOVIMIENTOS ********************************************
-************************************************************************************************************************
-**/
-
-
-
-/***********************************************************************************************************************
-/// ********************************************** FUNCIONES IMPORTACIONES *********************************************
-************************************************************************************************************************
-*/
-
-/**
- * \brief Función que valida los datos pasados para la importación.
- * @returns {Boolean} Devuelve un booleano que indica si se pasó o no la validación de los datos para la importación.
- */
-function validarImportacion()
-  {
-  var seguir = false;
-  var cantidad = document.getElementById("cantidad").value;
-  var cantidad2 = document.getElementById("cantidad2").value;
-  var fecha = document.getElementById("fecha").value;
-  var usuarioBoveda = document.getElementById("usuarioBoveda").value;
-  var usuarioGrabaciones = document.getElementById("usuarioGrabaciones").value;
-  
-  if (fecha === "") {
-    alert('Se debe seleccionar la Fecha');
-    document.getElementById("fecha").focus();
-    seguir = false;
-  }
-  else
-    {
-    if ($("#hint").find('option:selected').val() === "NADA")
-      {
-      alert('Debe seleccionar el nombre del plástico.');
-      document.getElementById("hint").focus();
-      seguir = false;
-    }
-    else
-      {  
-      var cant = validarEntero(document.getElementById("cantidad").value);
-
-      if ((cantidad <= 0) || (cantidad === "null") || !cant)
-        {
-        alert('La cantidad de tarjetas debe ser un entero mayor o igual a 1.');
-        $("#cantidad").val("");
-        document.getElementById("cantidad").focus();
-        seguir = false;
-      } 
-      else
-        {
-        var cant2 = validarEntero(document.getElementById("cantidad2").value);  
-        if ((cantidad2 <= 0) || (cantidad2 === "null") || !cant2)
-          {
-          alert('La repetición de la cantidad de tarjetas debe ser un entero mayor o igual a 1.');
-          $("#cantidad2").val("");
-          document.getElementById("cantidad2").focus();
-          seguir = false;
-        } 
-        else
-          {
-          if (cantidad !== cantidad2)
-            {
-            alert('Las cantidades de tarjetas ingresadas deben coincidir. Por favor verifique!.');
-            $("#cantidad").val("");
-            $("#cantidad2").val("");
-            document.getElementById("cantidad").focus();
-            seguir = false;
-          } 
-          else
-            {
-            if (usuarioBoveda === "ninguno")
-              {
-              alert('Se debe seleccionar al controlador 1. Por favor verifique!.');
-              document.getElementById("usuarioBoveda").focus();
-              seguir = false;
-            } 
-            else
-              {
-              if (usuarioGrabaciones === "ninguno")
-                {
-                alert('Se debe seleccionar al controlador 2. Por favor verifique!.');
-                document.getElementById("usuarioGrabaciones").focus();
-                seguir = false;
-              } 
-              else
-                {
-                if (usuarioGrabaciones === usuarioBoveda) {
-                  alert('NO puede estar el mismo usuario en ambos controles. Por favor verifique!.');
-                  document.getElementById("usuarioGrabaciones").focus();
-                  seguir = false;
-                } 
-                else {
-                  seguir = true;
-                }
-              }// usuarioGrabaciones
-            }// usuarioBoveda
-          }// cantidad != cantidad2
-        }// cantidad 2
-      }// cantidad
-    }// nombre_plastico
-  }
-  
-  if (seguir) return true;
-  else return false;
-}
-
-/***********************************************************************************************************************
-/// ******************************************** FIN FUNCIONES IMPORTACIONES *******************************************
 ************************************************************************************************************************
 **/
 
@@ -939,22 +835,93 @@ function cargarProductos(selector){
 function validarProducto() {
   var entidad = $("#entidad").val();
   var nombre = $("#nombre").val();
-  
+  var alarma1 = parseInt($("#alarma1").val(), 10);
+  var alarma2 = parseInt($("#alarma2").val(), 10);
+  var seguir = true;
+  var al1Ingresada = false;
+  var al2Ingresada = false;
+    
   if ((entidad === '') || (entidad === null)) {
     alert('El campo Entidad NO puede estar vacío. Por favor verifique.');
     $("#entidad").focus();
+    seguir = false;
     return false;
   }
-  else {
+  
+  if (seguir){
     if ((nombre === '') || (nombre === null)) {
       alert('El Nombre del producto NO puede estar vacío. Por favor verifique.');
       $("#nombre").focus();
+      seguir = false;
+      return false;
+    }
+  }
+  
+  if (seguir) {
+    if ((alarma1 === '') || (alarma1 === null))
+      {
+      alert('La alarma 1 no puede ser nula ni estar vacía.\nPor favor verifique');
+      $("#alarma1").focus();
+      seguir = false;
       return false;
     }
     else {
-      return true;
+      var al1 = validarEntero(alarma1);
+      if ((!al1) || (alarma1 <= 0)) {
+        alert('La alarma 1 debe ser un entero mayor que 0. Por favor verifique.');
+        $("#alarma1").val('');
+        $("#alarma1").focus();
+        seguir = false;
+        return false;
+      }
+      else {
+        al1Ingresada = true;
+      }
     }
   }
+  
+  if (seguir) {
+    if ((alarma2 === '') || (alarma2 === null))
+      {
+      alert('La alarma 2 no puede ser nula ni estar vacía.\nPor favor verifique');
+      $("#alarma2").focus();
+      seguir = false;
+      return false;
+    }
+    else {
+      var al2 = validarEntero(alarma2);
+      if ((!al2) || (alarma2 <= 0)) {
+        alert('La alarma 2 debe ser un entero mayor que 0. Por favor verifique.');
+        $("#alarma2").val('');
+        $("#alarma2").focus();
+        seguir = false;
+        return false;
+      }
+      else {
+        al2Ingresada = true;
+      }
+    }
+  }
+  
+  if (seguir) {
+    if (al1Ingresada && al2Ingresada) {
+      if (alarma2 >= alarma1) {
+        alert('La alarma 2 (nivel crítico) DEBE ser menor que la alarma 1 (nivel advertencia).\nPor favor verifique.');
+        $("#alarma2").val('');
+        $("#alarma2").focus();
+        seguir = false;
+        return false;
+      }
+    }
+  }
+  
+  if (seguir) {
+    return true;
+  }
+  else {
+    return false;
+  }
+  
 }
 
 /**
@@ -1019,9 +986,11 @@ function todo () {
                                           var temp1 = temp[1].split('&');
                                           var temp2 = temp1[0].split('=');
                                           var temp3 = temp1[1].split('=');
-                                          var h = temp2[1];
+                                          var temp4 = temp1[2].split('=');
+                                          var h = temp2[1];                                          
+                                          var tipo = decodeURI(temp4[1]);
                                           var idprod = parseInt(temp3[1], 10);
-                                          cargarMovimiento("#main-content", h, idprod);                                          
+                                          cargarMovimiento("#main-content", h, idprod, tipo);                                          
                                         }
                                         else {
                                           cargarMovimiento("#main-content", "", "-1");
@@ -1192,8 +1161,9 @@ $(document).on("click", "#agregarMovimiento", function (){
                     //alert('Registro agregado correctamente!. \n\nStock actual: '+nuevoStock);
                   }
                 }
-              }  
-              window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda+"&id="+idProd;
+              }
+              var tipo1 = encodeURI(tipo);
+              window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda+"&id="+idProd+"&t="+tipo1;
             }
             else {
               alert('Hubo un error en la actualizacion del producto. Por favor verifique.');
@@ -1321,6 +1291,7 @@ $(document).on("click", "#actualizarProducto", function (){
   else {
     var validar = validarProducto();
     if (validar) {
+      /*
       var entero = validarEntero(alarma1);
       if (entero) {
         alarma1 = parseInt(alarma1, 10);
@@ -1353,7 +1324,7 @@ $(document).on("click", "#actualizarProducto", function (){
         $("#alarma2").focus();
         return false;
       }
-      
+      */
       var confirmar = confirm('¿Confirma la modificación del producto con los siguientes datos?\n\nEntidad: '+entidad+'\nNombre: '+nombre+'\nCódigo Emsa: '+codigo_emsa+'\nCódigo Origen: '+codigo_origen+'\nContacto: '+contacto+'\nBin: '+bin+'\nAlarma1: '+alarma1+'\nAlarma2: '+alarma2+'\nComentarios: '+comentarios+"\n?");
       if (confirmar) {
         var url = "data/updateQuery.php";
@@ -1497,59 +1468,9 @@ $(document).on("click", "#agregarProducto", function (){
       var codigo_origen = $("#codigo_origen").val();
       var contacto = $("#contacto").val();
       var stock = $("#stockProducto").val();
-      var alarma1 = $("#alarma1").val();
-      var alarma2 = $("#alarma2").val();
-      var entero = validarEntero(stock);
-      var entero1 = validarEntero(alarma1);
-      var entero2 = validarEntero(alarma2);
-      if (entero) {
-        stock = parseInt($("#stockProducto").val(), 10);
-        if (stock < 0) {
-          alert('El valor del stock debe ser un entero mayor o igual a 0. Por favor verifique.');
-          $("#stockProducto").val('');
-          $("#stockProducto").focus();
-          return false;
-        }
-      }
-      else {
-        alert('El valor para el stock debe ser un entero. Por favor verifique.');
-        $("#stockProducto").val('');
-        $("#stockProducto").focus();
-        return false;
-      }
+      var alarma1 = parseInt($("#alarma1").val(), 10);
+      var alarma2 = parseInt($("#alarma2").val(), 10);
       
-      if (entero1) {
-        alarma1 = parseInt($("#alarma1").val(), 10);
-        if (alarma1 < 0) {
-          alert('El valor para la alarma1 del producto debe ser un entero mayor o igual a 0. Por favor verifique.');
-          $("#alarma1").val('');
-          $("#alarma1").focus();
-          return false;
-        }
-      }
-      else {
-          alert('El valor para la alarma1 del producto debe ser un entero. Por favor verifique.');
-          $("#alarma1").val('');
-          $("#alarma1").focus();
-          return false;
-        }
-        
-      if (entero2) {
-        alarma2 = parseInt($("#alarma2").val(), 10);
-        if (alarma2 < 0) {
-          alert('El valor para la alarma2 del producto debe ser un entero mayor o igual a 0. Por favor verifique.');
-          $("#alarma2").val('');
-          $("#alarma2").focus();
-          return false;
-        }
-      }
-      else {
-          alert('El valor para la alarma2 del producto debe ser un entero. Por favor verifique.');
-          $("#alarma2").val('');
-          $("#alarma2").focus();
-          return false;
-        }  
-      }
        
       var comentarios = $("#comentarios").val();
       var bin = $("#bin").val();
@@ -1586,7 +1507,8 @@ $(document).on("click", "#agregarProducto", function (){
         $("#alarma").val('');
         $("#comentarios").val('');
       }
-    }   
+    }  
+  }   
 });
 
 /*******************************************************************************************************************************
@@ -2408,7 +2330,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                           productoViejo = nombre;
                                           tabla += '<tr>\n\
                                                       <td colspan="9" class="negrita">Subtotal:</td>\n\
-                                                      <td class="subtotal" colspan="2">'+subtotal+'</td>\n\
+                                                      <td class="subtotal" colspan="2">'+subtotal.toLocaleString()+'</td>\n\
                                                     </tr>\
                                                     <th colspan="11">&nbsp;\n\
                                                     </th>';
@@ -2436,7 +2358,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                       }
                                       tabla += '<tr>\n\
                                                       <td colspan="9" class="negrita">Subtotal:</td>\n\
-                                                      <td class="subtotal" colspan="2">'+subtotal+'</td>\n\
+                                                      <td class="subtotal" colspan="2">'+subtotal.toLocaleString()+'</td>\n\
                                                     </tr>\
                                                     <th colspan="11">&nbsp;\n\
                                                     </th>';

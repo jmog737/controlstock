@@ -655,6 +655,7 @@ class PDF extends PDF_MC_Table
         
         $this->SetFont('Courier', 'BI', 14);
         $this->setFillColor(220, 223, 232);
+        $this->setFillColor(127, 128, 129);
         $this->SetTextColor(0);  
         $this->Cell($tamSubTotal,$h, $subtotalMostrar,1,1,'C', true);
         
@@ -663,7 +664,7 @@ class PDF extends PDF_MC_Table
         $this->SetTextColor(0);  
         $this->SetX($x);
         
-        $subtotal = $cantidad;
+        $subtotal = $cantidad1;
         $subtotalMostrar = number_format($subtotal, 0, ",", ".");
         
         $this->CheckPageBreak($h);
@@ -671,7 +672,7 @@ class PDF extends PDF_MC_Table
         $this->SetX($x);   
       }
       else {
-        $subtotal = $subtotal + $cantidad;
+        $subtotal = $subtotal + $cantidad1;
         $subtotalMostrar = number_format($subtotal, 0, ",", ".");
       }
       
@@ -1118,8 +1119,9 @@ class PDF extends PDF_MC_Table
 
     $this->SetFont('Courier', 'BI', 14);
     $this->setFillColor(220, 223, 232);
+    $this->setFillColor(127, 128, 129);
     $this->SetTextColor(0);  
-    $this->Cell($tamSubTotal,$h, $subtotal,1,1,'C', true);
+    $this->Cell($tamSubTotal,$h, $subtotalMostrar,1,1,'C', true);
   }
   
   //Tabla tipo listado con el detalle del producto:
