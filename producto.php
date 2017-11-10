@@ -31,7 +31,7 @@ require_once("data/sesiones.php");
           <th colspan="3" class="tituloTabla">PRODUCTOS</th>
           <tr>
             <th align='left'><font class='negra'>Buscar:</font></th>
-            <td align='center' style="max-width: 250px" colspan="2"><input type='text' id='producto' name='producto' class='agrandar' size='9' onkeyup='showHintProd(this.value, "#producto"), ""'></td>
+            <td align='center' colspan="2"><input type='text' id='producto' name='producto' class='agrandar' size='9' onkeyup='showHintProd(this.value, "#producto"), ""'></td>
           </tr>
           <th colspan="3" class="centrado">DATOS DEL PRODUCTO</th>
           <tr>
@@ -40,7 +40,7 @@ require_once("data/sesiones.php");
           </tr>
           <tr>
             <th align='left'><font class='negra'>Nombre:</font></th>
-            <td align='center' colspan="2"><input type="text" name="nombre" id="nombre" class="agrandar" maxlength='35' style="width:100%; text-align: center"></td>
+            <td align='center' colspan="2"><input type="text" name="nombre" id="nombre" class="agrandar" maxlength='45' style="width:100%; text-align: center"></td>
           </tr>
           <tr>
             <th align='left'><font class='negra'>Código EMSA:</font></th>
@@ -52,7 +52,7 @@ require_once("data/sesiones.php");
           </tr>
           <tr>
             <th align='left'><font class='negra'>Contacto:</font></th>
-            <td align='center' colspan="2"><input type="text" name="contacto" id="contacto" class="agrandar" maxlength='35' style="width:100%; text-align: center"></td>
+            <td align='center' colspan="2"><input type="text" name="contacto" id="contacto" class="agrandar" maxlength='150' style="width:100%; text-align: center"></td>
           </tr>
           <tr>
             <th align='left'><font class='negra'>BIN:</font></th>
@@ -76,7 +76,7 @@ require_once("data/sesiones.php");
           </tr>
           <tr>
             <th align='left'><font class='negra'>Comentarios:</font></th>
-            <td align='center' colspan="2"><input type='textarea' id='comentarios' name='comentarios' class="agrandar" maxlength='100' size='9'></td>
+            <td align='center' colspan="2"><input type='textarea' id='comentarios' name='comentarios' class="agrandar" maxlength='200' size='9'></td>
           </tr>
           <tr>
             <td style="width: 33%;border-right: 0px;"><input type="button" value="EDITAR" id="editarProducto" name="editarProducto" class='btn-info' align='center'/></td>

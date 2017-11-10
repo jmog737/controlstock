@@ -630,13 +630,22 @@ class PDF extends PDF_MC_Table
     $this->SetFont('Courier', '', 9);    
     $fill = false;
     $productoViejo = $registros[0][$indNombre];
-    $subtotal = 0;
-    $subtotalMostrar = 0;
-    
+    $subtotalRetiro = 0;
+    $subtotalRetiroMostrar = 0;
+    $subtotalIngreso = 0;
+    $subtotalIngresoMostrar = 0;
+    $subtotalReno = 0;
+    $subtotalRenoMostrar = 0;
+    $subtotalDestruccion = 0;
+    $subtotalDestruccionMostrar = 0;
+    $totalConsumos = 0;
+    $totalConsumosMostrar = 0;
+            
     foreach ($registros as $dato) {
       $nombre = trim(utf8_decode($dato[$indNombre]));
       $cantidad1 = trim(utf8_decode($dato[$indCantidad]));
       $cantidad = number_format($cantidad1, 0, ",", ".");
+      $tipo = trim($dato[$indTipo]);
       
       if ($productoViejo !== $nombre) {
         $productoViejo = $nombre;
@@ -648,32 +657,142 @@ class PDF extends PDF_MC_Table
         $tamSubTotal = $largoCampos[$indCantidad] + $largoCampos[$indComentarios];
         $tamTextoSubtotal = $tamTabla-$tamSubTotal;
         
-        $this->SetFont('Courier', 'B', 9);
-        $this->setFillColor(220, 223, 232);
-        $this->SetTextColor(0);  
-        $this->Cell($tamTextoSubtotal,$h, "SubTotal:",1,0,'C', false);
+        if ($subtotalRetiro > 0) {
+          $this->SetFont('Courier', 'B', 9);
+          $this->setFillColor(220, 223, 232);
+          $this->SetTextColor(0);  
+          $this->SetX($x);
+          $this->Cell($tamTextoSubtotal,$h, "Total Retiros:",1,0,'C', false);
+
+          $this->SetFont('Courier', 'BI', 14);
+          $this->setFillColor(165, 156, 149);
+          $this->setFillColor(200, 202, 212);
+          $this->SetTextColor(0);  
+          $this->Cell($tamSubTotal,$h, $subtotalRetiroMostrar,1,1,'C', true);
+          
+          $subtotalRetiro = 0;
+          $subtotalRetiroMostrar = 0;
+        }
         
-        $this->SetFont('Courier', 'BI', 14);
-        $this->setFillColor(220, 223, 232);
-        $this->setFillColor(127, 128, 129);
-        $this->SetTextColor(0);  
-        $this->Cell($tamSubTotal,$h, $subtotalMostrar,1,1,'C', true);
+        if ($subtotalReno > 0){
+          $this->SetFont('Courier', 'B', 9);
+          $this->setFillColor(220, 223, 232);
+          $this->SetTextColor(0); 
+          $this->SetX($x);
+          $this->Cell($tamTextoSubtotal,$h, "Total Renovaciones:",1,0,'C', false);
+
+          $this->SetFont('Courier', 'BI', 14);
+          $this->setFillColor(165, 156, 149);
+          $this->setFillColor(200, 202, 212);
+          $this->SetTextColor(0);  
+          $this->Cell($tamSubTotal,$h, $subtotalRenoMostrar,1,1,'C', true);
+          
+          $subtotalReno = 0;
+          $subtotalRenoMostrar = 0;
+        }
+        
+        if ($subtotalDestruccion > 0) {
+          $this->SetFont('Courier', 'B', 9);
+          $this->setFillColor(220, 223, 232);
+          $this->SetTextColor(0);  
+          $this->SetX($x);
+          $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total Destrucciones:"),1,0,'C', false);
+
+          $this->SetFont('Courier', 'BI', 14);
+          $this->setFillColor(165, 156, 149);
+          $this->setFillColor(200, 202, 212);
+          $this->SetTextColor(0);  
+          $this->Cell($tamSubTotal,$h, $subtotalDestruccionMostrar,1,1,'C', true);
+          
+          $subtotalDestruccion = 0;
+          $subtotalDestruccionMostrar = 0;
+        }
+        
+        if ($totalConsumos > 0) {
+          $this->SetFont('Courier', 'B', 9);
+          $this->setFillColor(220, 223, 232);
+          $this->SetTextColor(0);  
+          $this->SetX($x);
+          $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total de Consumos:"),1,0,'C', false);
+
+          $this->SetFont('Courier', 'BI', 14);
+          $this->setFillColor(220, 223, 232);
+          $this->setFillColor(239, 165, 105);
+          $this->SetTextColor(0);  
+          $this->Cell($tamSubTotal,$h, $totalConsumosMostrar,1,1,'C', true);
+          
+          $totalConsumos = 0;
+          $totalConsumosMostrar = 0;
+        }
+        
+        if ($subtotalIngreso > 0) {
+          $this->SetFont('Courier', 'B', 9);
+          $this->setFillColor(220, 223, 232);
+          $this->SetTextColor(0);  
+          $this->SetX($x);
+          $this->Cell($tamTextoSubtotal,$h, "Total de Ingresos:",1,0,'C', false);
+
+          $this->SetFont('Courier', 'BI', 14);
+          $this->setFillColor(220, 223, 232);
+          $this->setFillColor(127, 128, 129);
+          $this->SetTextColor(0);  
+          $this->Cell($tamSubTotal,$h, $subtotalIngresoMostrar,1,1,'C', true);
+          
+          $subtotalIngreso = 0;
+          $subtotalIngresoMostrar = 0;
+        }
         
         $this->SetFont('Courier', '', 9);
         $this->setFillColor(220, 223, 232);
         $this->SetTextColor(0);  
         $this->SetX($x);
         
-        $subtotal = $cantidad1;
-        $subtotalMostrar = number_format($subtotal, 0, ",", ".");
+        switch ($tipo) {
+          case "Ingreso": $subtotalIngreso = $cantidad1;
+                          $subtotalIngresoMostrar = number_format($subtotalIngreso, 0, ",", ".");
+                          break;
+          case "Retiro":  $subtotalRetiro = $cantidad1;
+                          $subtotalRetiroMostrar = number_format($subtotalRetiro, 0, ",", ".");
+                          break;
+          case "Renovación":  $subtotalReno = $cantidad1;
+                        $subtotalRenoMostrar = number_format($subtotalReno, 0, ",", ".");
+                        break;
+          case "Destrucción": $subtotalDestruccion = $cantidad1;
+                              $subtotalDestruccionMostrar = number_format($subtotalDestruccion, 0, ",", ".");
+                              break;
+          default: break;
+        }
+        $totalConsumos = $subtotalRetiro + $subtotalReno + $subtotalDestruccion;
+        $totalConsumosMostrar = number_format($totalConsumos, 0, ",", ".");
+        //$subtotal = $cantidad1;
+        //$subtotalMostrar = number_format($subtotal, 0, ",", ".");
         
         $this->CheckPageBreak($h);
         $this->Cell($tamTabla,$h, "",0,1,'C', false);
         $this->SetX($x);   
       }
       else {
-        $subtotal = $subtotal + $cantidad1;
-        $subtotalMostrar = number_format($subtotal, 0, ",", ".");
+        //$subtotal = $subtotal + $cantidad1;
+        //$subtotalMostrar = number_format($subtotal, 0, ",", ".");
+        switch ($tipo) {
+          case "Ingreso": $subtotalIngreso = $subtotalIngreso + $cantidad1;
+                          $subtotalIngresoMostrar = number_format($subtotalIngreso, 0, ",", ".");
+                          break;
+          case "Retiro":  $subtotalRetiro = $subtotalRetiro + $cantidad1;
+                          $subtotalRetiroMostrar = number_format($subtotalRetiro, 0, ",", ".");
+                          break;
+          case "Renovación":  $subtotalReno = $subtotalReno + $cantidad1;
+                        $subtotalRenoMostrar = number_format($subtotalReno, 0, ",", ".");
+                        break;
+          case "Destrucción": $subtotalDestruccion = $subtotalDestruccion + $cantidad1;
+                              $subtotalDestruccionMostrar = number_format($subtotalDestruccion, 0, ",", ".");
+                              break;
+          default: break;
+        }
+        if ($tipo !== 'Ingreso') {
+          $totalConsumos = $totalConsumos + $cantidad1;
+          $totalConsumosMostrar = number_format($totalConsumos, 0, ",", ".");
+        }
       }
       
       //Calculate the height of the row
@@ -1112,6 +1231,92 @@ class PDF extends PDF_MC_Table
     $tamSubTotal = $largoCampos[$indCantidad] + $largoCampos[$indComentarios];
     $tamTextoSubtotal = $tamTabla-$tamSubTotal;
 
+    if ($subtotalRetiro > 0) {
+          $this->SetFont('Courier', 'B', 9);
+          $this->setFillColor(220, 223, 232);
+          $this->SetTextColor(0);  
+          $this->SetX($x);
+          $this->Cell($tamTextoSubtotal,$h, "Total Retiros:",1,0,'C', false);
+
+          $this->SetFont('Courier', 'BI', 14);
+          $this->setFillColor(165, 156, 149);
+          $this->setFillColor(200, 202, 212);
+          $this->SetTextColor(0);  
+          $this->Cell($tamSubTotal,$h, $subtotalRetiroMostrar,1,1,'C', true);
+          
+          $subtotalRetiro = 0;
+          $subtotalRetiroMostrar = 0;
+        }
+        
+        if ($subtotalReno > 0){
+          $this->SetFont('Courier', 'B', 9);
+          $this->setFillColor(220, 223, 232);
+          $this->SetTextColor(0); 
+          $this->SetX($x);
+          $this->Cell($tamTextoSubtotal,$h, "Total Renovaciones:",1,0,'C', false);
+
+          $this->SetFont('Courier', 'BI', 14);
+          $this->setFillColor(165, 156, 149);
+          $this->setFillColor(200, 202, 212);
+          $this->SetTextColor(0);  
+          $this->Cell($tamSubTotal,$h, $subtotalRenoMostrar,1,1,'C', true);
+          
+          $subtotalReno = 0;
+          $subtotalRenoMostrar = 0;
+        }
+        
+        if ($subtotalDestruccion > 0) {
+          $this->SetFont('Courier', 'B', 9);
+          $this->setFillColor(220, 223, 232);
+          $this->SetTextColor(0);  
+          $this->SetX($x);
+          $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total Destrucciones:"),1,0,'C', false);
+
+          $this->SetFont('Courier', 'BI', 14);
+          $this->setFillColor(165, 156, 149);
+          $this->setFillColor(200, 202, 212);
+          $this->SetTextColor(0);  
+          $this->Cell($tamSubTotal,$h, $subtotalDestruccionMostrar,1,1,'C', true);
+          
+          $subtotalDestruccion = 0;
+          $subtotalDestruccionMostrar = 0;
+        }
+        
+        if ($totalConsumos > 0) {
+          $this->SetFont('Courier', 'B', 9);
+          $this->setFillColor(220, 223, 232);
+          $this->SetTextColor(0);  
+          $this->SetX($x);
+          $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total de Consumos:"),1,0,'C', false);
+
+          $this->SetFont('Courier', 'BI', 14);
+          $this->setFillColor(220, 223, 232);
+          $this->setFillColor(239, 165, 105);
+          $this->SetTextColor(0);  
+          $this->Cell($tamSubTotal,$h, $totalConsumosMostrar,1,1,'C', true);
+          
+          $totalConsumos = 0;
+          $totalConsumosMostrar = 0;
+        }
+        
+        if ($subtotalIngreso > 0) {
+          $this->SetFont('Courier', 'B', 9);
+          $this->setFillColor(220, 223, 232);
+          $this->SetTextColor(0);  
+          $this->SetX($x);
+          $this->Cell($tamTextoSubtotal,$h, "Total de Ingresos:",1,0,'C', false);
+
+          $this->SetFont('Courier', 'BI', 14);
+          $this->setFillColor(220, 223, 232);
+          $this->setFillColor(127, 128, 129);
+          $this->SetTextColor(0);  
+          $this->Cell($tamSubTotal,$h, $subtotalIngresoMostrar,1,1,'C', true);
+          
+          $subtotalIngreso = 0;
+          $subtotalIngresoMostrar = 0;
+        }
+        
+    /*
     $this->SetFont('Courier', 'B', 9);
     $this->setFillColor(220, 223, 232);
     $this->SetTextColor(0);  
@@ -1121,7 +1326,7 @@ class PDF extends PDF_MC_Table
     $this->setFillColor(220, 223, 232);
     $this->setFillColor(127, 128, 129);
     $this->SetTextColor(0);  
-    $this->Cell($tamSubTotal,$h, $subtotalMostrar,1,1,'C', true);
+    $this->Cell($tamSubTotal,$h, $subtotalMostrar,1,1,'C', true);*/
   }
   
   //Tabla tipo listado con el detalle del producto:

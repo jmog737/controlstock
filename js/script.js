@@ -200,6 +200,10 @@ function showHint(str, id, seleccionado) {
       }
       $(id).after(mostrar);
       $("#hint").focusin();
+      /// Agregado a pedido de Diego para que se abra el select automáticamente:
+      var length = $('#hint> option').length;
+      //open dropdown
+      $("#hint").attr('size',length);
     });
   }
 }
@@ -254,6 +258,10 @@ function showHintProd(str, id) {
       $(id).after(mostrar);
       inhabilitarProducto();
       $("#hintProd").focusin();
+      /// Agregado a pedido de Diego para que se abra el select automáticamente:
+      var length = $('#hintProd> option').length;
+      //open dropdown
+      $("#hintProd").attr('size',length);
     });
   }
 }
@@ -1074,6 +1082,15 @@ $(document).on("change focusin", "#hint", function (){
   //$(this).find('option:selected').css('background-color', '#79ea52');
   $("#hint").after(mostrar);
   });
+  
+///Disparar función al hacer click en alguna de las opciones del select para minimizar dicho select.
+/// Por ahora se comenta pues quizás es mejor que quede abierto:
+$(document).on("click", "#hint option", function (){
+  
+  //close dropdown
+  //alert('en el evento');
+  //$("#hint").attr('size',0);
+}); 
 
 ///Disparar funcion al hacer clic en el botón para agregar el movimiento.
 $(document).on("click", "#agregarMovimiento", function (){
@@ -1958,7 +1975,7 @@ $(document).on("click", "#realizarBusqueda", function () {
             }
             fin = temp.getFullYear()+'-'+mes+'-'+dia;
           }
-          //alert("inicio: "+inicio+"\nfin: "+fin);
+          
           if (inicio>fin) 
             {
             alert('Error. La fecha inicial NO puede ser mayor que la fecha final. Por favor verifique.');
@@ -2286,8 +2303,11 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                </tr>';
                                       var indice = 1;
                                       var productoViejo = datos[0]['nombre_plastico'];
-                                      //var separador = false;
-                                      var subtotal = 0;
+                                      var subtotalRetiro = 0;
+                                      var subtotalIngreso = 0;
+                                      var subtotalReno = 0;
+                                      var subtotalDestruccion = 0;
+                                      var totalConsumos = 0;
                                       
                                       for (var i in datos) { 
                                         //var produ = datos[i]["idProd"];
@@ -2326,19 +2346,73 @@ $(document).on("click", "#realizarBusqueda", function () {
                                         }
                                         
                                         if (productoViejo !== nombre) {
-                                         // separador = true;
                                           productoViejo = nombre;
-                                          tabla += '<tr>\n\
-                                                      <td colspan="9" class="negrita">Subtotal:</td>\n\
-                                                      <td class="subtotal" colspan="2">'+subtotal.toLocaleString()+'</td>\n\
-                                                    </tr>\
-                                                    <th colspan="11">&nbsp;\n\
+                                          if (subtotalRetiro > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="9" class="negrita">Total Retiros:</td>\n\
+                                                        <td class="subtotal" colspan="2">'+subtotalRetiro.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalRetiro = 0;
+                                          }
+                                          if (subtotalReno > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="9" class="negrita">Total Renovaciones:</td>\n\
+                                                        <td class="subtotal" colspan="2">'+subtotalReno.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalReno = 0;
+                                          }
+                                          if (subtotalDestruccion > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="9" class="negrita">Total Destrucciones:</td>\n\
+                                                        <td class="subtotal" colspan="2">'+subtotalDestruccion.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalDestruccion = 0;
+                                          }
+                                          if (totalConsumos > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="9" class="negrita">Total de Consumos:</td>\n\
+                                                        <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            totalConsumos = 0;
+                                          }
+                                          if (subtotalIngreso > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="9" class="negrita">Total de Ingresos:</td>\n\
+                                                        <td class="totalIngresos" colspan="2">'+subtotalIngreso.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalIngreso = 0;
+                                          }
+                                          
+                                          tabla += '<th colspan="11">&nbsp;\n\
                                                     </th>';
-                                          subtotal = cantidad;//alert('puse separador:'+subtotal);
+                                          switch (tipo1){
+                                            case "Retiro": subtotalRetiro = cantidad;
+                                                           break;
+                                            case "Ingreso": subtotalIngreso = cantidad;
+                                                            break;
+                                            case "Renovación": subtotalReno = cantidad;
+                                                                break;
+                                            case "Destrucción": subtotalDestruccion = cantidad;
+                                                                break;
+                                            default: break;
+                                          }
+                                          totalConsumos = subtotalRetiro + subtotalReno + subtotalDestruccion;
                                         }
                                         else {
-                                          //separador = false;
-                                          subtotal = subtotal + cantidad;//alert("cantidad: "+cantidad+"\nsubtotal acumulado: "+subtotal);
+                                          switch (tipo1){
+                                            case "Retiro": subtotalRetiro = subtotalRetiro + cantidad;
+                                                           break;
+                                            case "Ingreso": subtotalIngreso = subtotalIngreso + cantidad;
+                                                            break;
+                                            case "Renovación": subtotalReno = subtotalReno + cantidad;
+                                                                break;
+                                            case "Destrucción": subtotalDestruccion = subtotalDestruccion + cantidad;
+                                                                break;
+                                            default: break;
+                                          }
+                                          if (tipo1 !== 'Ingreso') {
+                                            totalConsumos = totalConsumos + cantidad;
+                                          }
                                         }
                                         
                                         tabla += '<tr>\n\
@@ -2356,12 +2430,44 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                   </tr>';        
                                         indice++;  
                                       }
-                                      tabla += '<tr>\n\
-                                                      <td colspan="9" class="negrita">Subtotal:</td>\n\
-                                                      <td class="subtotal" colspan="2">'+subtotal.toLocaleString()+'</td>\n\
-                                                    </tr>\
-                                                    <th colspan="11">&nbsp;\n\
-                                                    </th>';
+                                      if (subtotalRetiro > 0) {
+                                        tabla += '<tr>\n\
+                                                    <td colspan="9" class="negrita">Total Retiros:</td>\n\
+                                                    <td class="subtotal" colspan="2">'+subtotalRetiro.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        subtotalRetiro = 0;
+                                      }
+                                      if (subtotalReno > 0) {
+                                        tabla += '<tr>\n\
+                                                    <td colspan="9" class="negrita">Total Renovaciones:</td>\n\
+                                                    <td class="subtotal" colspan="2">'+subtotalReno.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        subtotalReno = 0;
+                                      }
+                                      if (subtotalDestruccion > 0) {
+                                        tabla += '<tr>\n\
+                                                    <td colspan="9" class="negrita">Total Destrucciones:</td>\n\
+                                                    <td class="subtotal" colspan="2">'+subtotalDestruccion.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        subtotalDestruccion = 0;  
+                                      }
+                                      if (totalConsumos > 0) {
+                                        tabla += '<tr>\n\
+                                                    <td colspan="9" class="negrita">Total de Consumos:</td>\n\
+                                                    <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        totalConsumos = 0;  
+                                      }
+                                      if (subtotalIngreso > 0) {
+                                        tabla += '<tr>\n\
+                                                    <td colspan="9" class="negrita">Total de Ingresos:</td>\n\
+                                                    <td class="totalIngresos" colspan="2">'+subtotalIngreso.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        subtotalIngreso = 0;
+                                      }
+                                      
+                                      tabla += '<th colspan="11">&nbsp;\n\
+                                                </th>';
                                       tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
@@ -2451,6 +2557,12 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                     <th>Comentarios</th>\n\
                                                  </tr>';
                                         var indice = 1;
+                                        var subtotalRetiro = 0;
+                                        var subtotalIngreso = 0;
+                                        var subtotalReno = 0;
+                                        var subtotalDestruccion = 0;
+                                        var totalConsumos = 0;
+                                      
                                         for (var i in datos) { 
                                           var tipo2 = datos[i]['tipo'];
                                           var fecha = datos[i]['fecha'];
@@ -2475,6 +2587,21 @@ $(document).on("click", "#realizarBusqueda", function () {
                                           if ((comentarios === "undefined")||(comentarios === null)) {
                                             comentarios = "";
                                           }
+                                          switch (tipo2){
+                                            case "Retiro": subtotalRetiro = subtotalRetiro + cantidad;
+                                                           break;
+                                            case "Ingreso": subtotalIngreso = subtotalIngreso + cantidad;
+                                                            break;
+                                            case "Renovación": subtotalReno = subtotalReno + cantidad;
+                                                                break;
+                                            case "Destrucción": subtotalDestruccion = subtotalDestruccion + cantidad;
+                                                                break;
+                                            default: break;
+                                          }
+                                          if (tipo2 !== 'Ingreso') {
+                                            totalConsumos = totalConsumos + cantidad;
+                                          }
+                                          
                                           tabla += '<tr>\n\
                                                       <td>'+indice+'</td>\n\
                                                       <td>'+fecha+'</td>\n\
@@ -2485,33 +2612,70 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                     </tr>';
                                           indice++;  
                                           }
-                                        tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
-                                                      <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                    <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="criterioFecha" name="criterioFecha" value="'+radioFecha+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="inicio" name="inicio" value="'+inicio+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="fin" name="fin" value="'+fin+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="mes" name="mes" value="'+mes+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="año" name="año" value="'+año+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="usuario" name="usuario" value="'+idUser+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="idProd" name="largos" value="'+idProd+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
-                                                  </tr>';
-              
-                                        tabla += '<tr>\n\
-                                                    <td class="pieTabla" colspan="6">\n\
-                                                      <input type="button" id="5" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
-                                                    </td>\n\
-                                                  </tr>\n\
-                                                </table>\n\
-                                              </form>';
-                                        break;
+                                          
+                                          if (subtotalRetiro > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="4" class="negrita">Total Retiros:</td>\n\
+                                                        <td class="subtotal" colspan="2">'+subtotalRetiro.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalRetiro = 0;
+                                          }
+                                          if (subtotalReno > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="4" class="negrita">Total Renovaciones:</td>\n\
+                                                        <td class="subtotal" colspan="2">'+subtotalReno.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalReno = 0;
+                                          }
+                                          if (subtotalDestruccion > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="4" class="negrita">Total Destrucciones:</td>\n\
+                                                        <td class="subtotal" colspan="2">'+subtotalDestruccion.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalDestruccion = 0;  
+                                          }
+                                          if (totalConsumos > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="4" class="negrita">Total de Consumos:</td>\n\
+                                                        <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            totalConsumos = 0;  
+                                          }
+                                          if (subtotalIngreso > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="4" class="negrita">Total de Ingresos:</td>\n\
+                                                        <td class="totalIngresos" colspan="2">'+subtotalIngreso.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalIngreso = 0;
+                                          }
+                                          
+                                          tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                                      <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="criterioFecha" name="criterioFecha" value="'+radioFecha+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="inicio" name="inicio" value="'+inicio+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="fin" name="fin" value="'+fin+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="mes" name="mes" value="'+mes+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="año" name="año" value="'+año+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="usuario" name="usuario" value="'+idUser+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="idProd" name="largos" value="'+idProd+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                                    </tr>';
+
+                                          tabla += '<tr>\n\
+                                                      <td class="pieTabla" colspan="6">\n\
+                                                        <input type="button" id="5" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
+                                                      </td>\n\
+                                                    </tr>\n\
+                                                  </table>\n\
+                                                </form>';
+                                          break;
             default: break;
           }   
         }/// FIN del if de totalDatos>1  
@@ -2522,7 +2686,7 @@ $(document).on("click", "#realizarBusqueda", function () {
         
         mostrar += "<h3>Total de registros afectados: <font class='naranja'>"+totalDatos+"</font></h3>";
         mostrar += tabla;
-        var volver = '<br><a href="#" name="volver" id="volverBusqueda" onclick="location.reload()">Volver</a>';
+        var volver = '<br><a href="#" name="volver" id="volverBusqueda" onclick="location.reload()">Volver</a><br><br>';
         mostrar += volver;
         $("#main-content").append(mostrar);
       });    
