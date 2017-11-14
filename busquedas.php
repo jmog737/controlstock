@@ -186,7 +186,7 @@ require_once("data/sesiones.php");
             </tr>
             <tr>
               <td colspan="5" class="pieTabla">
-                <input type="button" class="btn-success" name="consultar" id="realizarBusqueda" value="Consultar" align='center'>
+                <input type="button" class="btn btn-success" name="consultar" id="realizarBusqueda" value="Consultar" align='center'>
               </td>
             </tr>
           </table>

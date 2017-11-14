@@ -79,12 +79,12 @@ require_once("data/sesiones.php");
             <td align='center' colspan="2"><input type='textarea' id='comentarios' name='comentarios' class="agrandar" maxlength='200' size='9'></td>
           </tr>
           <tr>
-            <td style="width: 33%;border-right: 0px;"><input type="button" value="EDITAR" id="editarProducto" name="editarProducto" class='btn-info' align='center'/></td>
-            <td style="width: 33%;border-left: 0px;border-right: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarProducto" name="actualizarProducto" class='btn-warning' align='center'/></td>
-            <td style="width: 33%;border-left: 0px;"><input type="button" value="ELIMINAR" id="eliminarProducto" name="eliminarProducto" class='btn-danger' align='center'/></td>
+            <td style="width: 33%;border-right: 0px;"><input type="button" value="EDITAR" id="editarProducto" name="editarProducto" class='btn btn-primary' align='center'/></td>
+            <td style="width: 33%;border-left: 0px;border-right: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarProducto" name="actualizarProducto" class='btn btn-warning' align='center'/></td>
+            <td style="width: 33%;border-left: 0px;"><input type="button" value="ELIMINAR" id="eliminarProducto" name="eliminarProducto" class='btn btn-danger' align='center'/></td>
           </tr>
           <tr>
-            <td colspan="3" class="pieTabla"><input type="button" value="NUEVO" id="agregarProducto" name="agregarProducto" class='btn-success' align='center'/></td>
+            <td colspan="3" class="pieTabla"><input type="button" value="NUEVO" id="agregarProducto" name="agregarProducto" class='btn btn-success' align='center'/></td>
           </tr>
         </table>
       </form>

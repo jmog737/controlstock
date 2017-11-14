@@ -64,6 +64,9 @@ if (!isset($_SESSION['user_id']))
 }
 
 require_once ('head.php');
+?>
+<body>
+<?php
 require_once ('header.php');
 
 // If the session var is empty, show any error message and the log-in form; otherwise confirm the log-in
@@ -71,7 +74,7 @@ if (empty($_SESSION['user_id']))
   {
 ?>
   <div id='main-content' class='container-fluid'>
-    <body>
+    
     <br>  
     <h1>Acceso al sistema:</h1>
     <br>
@@ -81,7 +84,7 @@ if (empty($_SESSION['user_id']))
     echo $error_msg;
     }
 ?>
-    <br>
+    
     <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
       <table class='tabla2' name='login'> 
         <th colspan="2" class="tituloTabla">INGRESO</th>
@@ -98,32 +101,22 @@ if (empty($_SESSION['user_id']))
         </tr>
       </table>
     </form>
-    <br>
-    </body>
+    
+    </div>
 <?php
   }
   else 
     {
     
 ?>
-    <div id='main-content' class='container-fluid'>
     <body>
-      
+    <div id='main-content' class='container-fluid'>
       <script type="text/javascript">
         window.location.href = "http://localhost/controlstock/movimiento.php";
       </script> 
-    <?php
-      //$home_url = 'http://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/actividades.php';
-      //header('Content-Type: text/html; charset=utf-8');
-      //header('Location: ' . $home_url);
-    ?>
-    </body>
+    </div> <!-- fin del div contenido -->
 <?php       
   }
+  require_once ('footer.php');
 ?>
-    
-</div> <!-- fin del div contenido -->
-<?php
-require_once ('footer.php');
-?>
-
+</body>

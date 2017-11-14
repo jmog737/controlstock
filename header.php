@@ -36,14 +36,14 @@
               <li><a href="movimiento.php">Movimientos</a></li>
               <li><a href="producto.php">Productos</a></li>
               <li><a href="busquedas.php">Consultas</a></li>
-              <li role="separator" class="divider"></li>
-              <li><a href="#">Administrar</a></li>
+<!--              <li role="separator" class="divider"></li>
+              <li><a href="#">Administrar</a></li>-->
             </ul>
             
             <li class='visible-xs'><a href="movimiento.php">Movimientos</a></li>
             <li class='visible-xs'><a href="producto.php">Productos</a></li>
-            <li role="separator" class="divider visible-xs"></li>
-            <li class='visible-xs'><a href="#">Administrar</a></li>
+<!--            <li role="separator" class="divider visible-xs"></li>
+            <li class='visible-xs'><a href="#">Administrar</a></li>-->
             
           </li>
           <?php

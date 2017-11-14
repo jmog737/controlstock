@@ -105,7 +105,7 @@ body {
   position: absolute;
   bottom: 0;
   width: 100%;
-  height: 140px;
+  max-height: 140px;
 }
 .panel-footer div.row {
   margin-bottom: 15px;
@@ -148,7 +148,7 @@ input[type=checkbox] {
   /*padding: 15px;*/
   margin: auto;
   position: relative;
-  min-height: 100%;
+  
 }
 #fila {
   background-color: #61122f;
@@ -412,7 +412,7 @@ a.detailObject:focus, a.detailObject:hover {
 @media (min-width: 992px) and (max-width: 1199px) {
   /* Header */
   .navbar-brand h1 { /* Page section name */
-  font-size: 4.5vw; /* 1vw = 1% of viewport width */
+  font-size: 4.15vw; /* 1vw = 1% of viewport width */
   margin-top: 9px;
   }
   /* End Header */
@@ -435,7 +435,7 @@ a.detailObject:focus, a.detailObject:hover {
     margin-top: 10px
   }
   .navbar-brand h1 { /* Page section name */
-  font-size: 4.0vw; /* 1vw = 1% of viewport width */
+  font-size: 3.73vw; /* 1vw = 1% of viewport width */
   padding-top: 20px;
   padding-right: 10px;
   }
@@ -453,6 +453,10 @@ a.detailObject:focus, a.detailObject:hover {
     height: 432px;
   }
   /* End Home Page */
+  
+  #testimonials {
+    font-size: 15px;
+  }
 }
 
 /********** Extra small devices only (480px - 767px) **********/
@@ -465,7 +469,7 @@ a.detailObject:focus, a.detailObject:hover {
   }
   .navbar-brand h1 { /* Restaurant name */
     padding-top: 20px;
-    font-size: 3.8vw; /* 1vw = 1% of viewport width */
+    font-size: 3.5vw; /* 1vw = 1% of viewport width */
   }
   .divider {
         height: 1px;
@@ -489,6 +493,10 @@ a.detailObject:focus, a.detailObject:hover {
   /* End Header */
 
   /* Footer */
+  .panel-footer {
+    max-height: 150px;
+    font-size: 11px;
+  }
   .panel-footer section {
     margin-bottom: 10px;
     text-align: center;

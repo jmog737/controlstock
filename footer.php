@@ -3,7 +3,7 @@
     <div class='row'>
       <section id='hours' class='col-sm-4'>
         <span>Horario:</span>
-        <br>Lunes a Viernes: 09:00 - 18:00<br><br>
+        <br>Lunes a Viernes: 09:00 - 18:00<br>
         <hr class='visible-xs'>
         <?php
           if (!empty($_SESSION['user_id']))
@@ -22,7 +22,7 @@
             }
         ?>
       </section>
-      <section id='address' class='col-sm-4'>
+      <section id='address' class='col-sm-4 hidden-xs'>
         <span>Dirección:</span><br>
         Buenos Aires 486<br>
         Montevideo, Uruguay<br><br>
@@ -34,9 +34,6 @@
         <br>29153304 / 29160318 / 29154195
         <hr class='visible-xs'>
       </section>
-    </div>
-    <div class='text-center'>
-      
     </div>
   </div>  
 </footer>

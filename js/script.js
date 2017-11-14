@@ -202,6 +202,7 @@ function showHint(str, id, seleccionado) {
       $("#hint").focusin();
       /// Agregado a pedido de Diego para que se abra el select automáticamente:
       var length = $('#hint> option').length;
+      if (length > 10) length = 10;
       //open dropdown
       $("#hint").attr('size',length);
     });
@@ -461,7 +462,7 @@ function cargarMovimiento(selector, hint, prod, tipo){
 //          </tr>';
       tr += '<tr>\n\
               <td colspan="2" class="pieTabla">\n\
-                <input type="button" value="ACEPTAR" id="agregarMovimiento" name="agregarMovimiento" class="btn-success" align="center"/>\n\
+                <input type="button" value="ACEPTAR" id="agregarMovimiento" name="agregarMovimiento" class="btn btn-success" align="center"/>\n\
               </td>\n\
               <td style="display:none">\n\
                 <input type="text" id="idPasado" name="idPasado" value="<?php echo $idPasado ?>">\n\
@@ -1811,6 +1812,7 @@ $(document).on("change", "#fin", function (){
   $(this).parent().prev().prev().prev().prev().children().prop("checked", true);
 });
 
+
 $(document).on("click", "#realizarBusqueda", function () {
   var timestamp = Math.round(Date.now() / 1000);
       
@@ -2166,7 +2168,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                   </tr>';
                                   tabla += '<tr>\n\
                                               <td class="pieTabla" colspan="8">\n\
-                                                <input type="button" id="1" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
+                                                <input type="button" id="1" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                               </td>\n\
                                             </tr>\n\
                                           </table>\n\
@@ -2233,7 +2235,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                   </tr>';
                                   tabla += '<tr>\n\
                                               <td class="pieTabla" colspan="2">\n\
-                                                <input type="button" id="2" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
+                                                <input type="button" id="2" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                               </td>\n\
                                             </tr>\n\
                                           </table>\n\
@@ -2281,7 +2283,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                   </tr>';
                                 tabla += '<tr>\n\
                                             <td class="pieTabla" colspan="3">\n\
-                                              <input type="button" id="3" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
+                                              <input type="button" id="3" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                             </td>\n\
                                           </tr>\n\
                                         </table>\n\
@@ -2489,7 +2491,7 @@ $(document).on("click", "#realizarBusqueda", function () {
               
                                       tabla += '<tr>\n\
                                                   <td class="pieTabla" colspan="11">\n\
-                                                    <input type="button" id="4" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
+                                                    <input type="button" id="4" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                                   </td>\n\
                                                 </tr>\n\
                                               </table>\n\
@@ -2670,7 +2672,7 @@ $(document).on("click", "#realizarBusqueda", function () {
 
                                           tabla += '<tr>\n\
                                                       <td class="pieTabla" colspan="6">\n\
-                                                        <input type="button" id="5" name="exportarBusqueda" value="EXPORTAR" class="btn-info exportar">\n\
+                                                        <input type="button" id="5" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                                       </td>\n\
                                                     </tr>\n\
                                                   </table>\n\
