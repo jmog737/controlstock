@@ -171,6 +171,7 @@ a.detailObject:focus, a.detailObject:hover {
   /*background-color: #99ff99;/* agregardo durante el desarrollo para diferenciar!!!*/
   position: relative;
   padding: 0px;
+  height: 100%;
 }
 #selector a:hover, a:focus {
   color: #080571;
@@ -178,8 +179,8 @@ a.detailObject:focus, a.detailObject:hover {
 }
 #content {
   background-color: #61122f;
-  /*background-color: #ffcc99;/* agregardo durante el desarrollo para diferenciar!!!*/
-  /*padding-left: 50px;*/
+  /*background-color: #ffcc99; agregardo durante el desarrollo para diferenciar!!!*/
+  padding-left: 50px;
   position: relative;
   padding: 0px;
 }
@@ -244,7 +245,7 @@ a.detailObject:focus, a.detailObject:hover {
   border-collapse: separate;
   margin: 0 auto;
   border-radius: 25px;
-  max-width: 50%;
+  max-width: 60%;
 }
 .tabla2 th {
   background-color: #0066cc;

@@ -213,15 +213,14 @@ function showHint(str, id, seleccionado) {
  * 
  * @param {String} str String con la cadena de texto a buscar como parte del producto.
  * @param {String} id String con el id del campo luego del cual se tienen que agregar los datos.
+ * @param {String} seleccionado String que indica, si es que es disitinto de nulo, el producto seleccionado.
  * \brief Función que muestra las sugerencias de los productos disponibles.
  */
-function showHintProd(str, id) {
+function showHintProd(str, id, seleccionado) {
   if (str.length === 0) { 
     document.getElementById("producto").innerHTML = "";
     return;
   } else {
-    $("#editarProducto").attr("disabled", false);
-    $("#eliminarProducto").attr("disabled", false);
     var url = "data/selectQuery.php";
     var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2 from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') and estado='activo' order by productos.nombre_plastico asc";
     //alert(query);
@@ -233,7 +232,7 @@ function showHintProd(str, id) {
       var mostrar = '';
       
       if (totalSugerencias >= 1) {
-        mostrar = '<select name="hintProd" id="hintProd" style="width: 100%">';
+        mostrar = '<select name="hintProd" id="hintProd" class="hint">';
         mostrar += '<option value="NADA" name="NADA" selected>--Seleccionar--</option>';
         for (var i in sugerencias) {
           var bin = sugerencias[i]["bin"];
@@ -248,8 +247,12 @@ function showHintProd(str, id) {
           if ((codigo_emsa === null) || (codigo_emsa === "")) {
             codigo_emsa = 'SIN CODIGO AÚN';
           }
+          var sel = "";
+          if (parseInt(sugerencias[i]["idprod"], 10) === parseInt(seleccionado, 10)) {
+            sel = 'selected="yes"';
+          }
           //mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+'>[' + sugerencias[i]["entidad"]+'] '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
-          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma1='+sugerencias[i]["alarma1"]+' alarma2='+sugerencias[i]["alarma2"]+'>[' + sugerencias[i]["entidad"]+': '+codigo_emsa+'] --- '+sugerencias[i]["nombre_plastico"] + '</option>';
+          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma1='+sugerencias[i]["alarma1"]+' alarma2='+sugerencias[i]["alarma2"]+' '+sel+ '>[' + sugerencias[i]["entidad"]+': '+codigo_emsa+'] --- '+sugerencias[i]["nombre_plastico"] + '</option>';
         }
         mostrar += '</select>';
       }
@@ -257,10 +260,17 @@ function showHintProd(str, id) {
         mostrar = '<p name="hintProd" value="">No se encontraron sugerencias!</p>';
       }
       $(id).after(mostrar);
-      inhabilitarProducto();
+      //inhabilitarProducto();
       $("#hintProd").focusin();
       /// Agregado a pedido de Diego para que se abra el select automáticamente:
       var length = $('#hintProd> option').length;
+      if (totalSugerencias > 10) {
+        length = 10;
+      }
+      else {
+        length = totalSugerencias;
+      }
+      //alert('sugerencias: '+totalSugerencias+'\nlength: '+length);
       //open dropdown
       $("#hintProd").attr('size',length);
     });
@@ -773,77 +783,153 @@ function validarBusqueda() {
 /**
   \brief Función que carga en el selector pasado como parámetro la tabla para ver los productos.
   @param {String} selector String con el selector en donde se debe mostrar la tabla.
+  @param {Integer} idProd Entero con el identificador del producto a cargar.
 */
-function cargarProductos(selector){
-  var mostrar = "";
-  var titulo = '<h2 id="titulo" class="encabezado">PRODUCTOS</h2>';
-  var formu = '<form method="post" action="producto.php">';
-  var tabla = '<table class="tabla2" name="producto">';
-  var tr = '<th colspan="3" class="tituloTabla">PRODUCTOS</th>';
-  tr += '<tr>\n\
-          <th align="left"><font class="negra">Buscar:</font></th>\n\
-          <td align="center" style="max-width: 250px" colspan="2"><input type="text" id="producto" name="producto" class="agrandar" size="9" onkeyup="\'showHint(this.value, "#producto", "")\'"></td>\n\
-        </tr>';
-  tr += '<th colspan="3" class="centrado">DATOS DEL PRODUCTO</th>';
-  tr += '<tr>\n\
-          <th align="left"><font class="negra">Entidad:</font></th><td align="center" colspan="2"><input type="text" name="entidad" id="entidad" class="agrandar" style="width:100%; text-align: center"></td>\n\
-        </tr>';
-  tr += '<tr>\n\
-            <th align="left"><font class="negra">Nombre:</font></th>\n\
-            <td align="center" colspan="2"><input type="text" name="nombre" id="nombre" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
-        </tr>';
-  tr += '<tr>\n\
-            <th align="left"><font class="negra">Código EMSA:</font></th>\n\
-            <td align="center" colspan="2"><input type="text" name="codigo_emsa" id="codigo_emsa" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
-        </tr>';
-  tr += '<tr>\n\
-            <th align="left"><font class="negra">Código Origen:</font></th>\n\
-            <td align="center" colspan="2"><input type="text" name="codigo_origen" id="codigo_origen" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
-        </tr>';
-  tr += '<tr>\n\
-            <th align="left"><font class="negra">BIN:</font></th>\n\
-            <td align="center" colspan="2"><input type="text" name="bin" id="bin" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
-        </tr>';
-  tr += '<tr>\n\
-            <th align="left"><font class="negra">Stock:</font></th>\n\
-            <td align="center" colspan="2"><input type="text" id="stockProducto" name="stockProducto" class="agrandar" maxlength="35" size="9"></td>\n\
-        </tr>';
-  tr += '<tr>\n\
-            <th align="left"><font class="negra">Alarma:</font></th>\n\
-            <td align="center" colspan="2"><input type="text" id="alarma" name="alarma" class="agrandar" maxlength="35" size="9"></td>\n\
-         </tr>';
-  tr += '<tr>\n\
-            <th align="left"><font class="negra">Último Movimiento:</font></th>\n\
-            <td align="center" colspan="2"><input type="text" id="ultimoMovimiento" name="ultimoMovimiento" class="agrandar" maxlength="35" size="9"></td>\n\
-         </tr>';
-  tr += '<tr>\n\
-            <th align="left"><font class="negra">Comentarios:</font></th>\n\
-            <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comentarios" class="agrandar" maxlength="35" size="9"></td>\n\
-        </tr>';
-  tr += '<tr>\n\
-            <td style="width: 33%;border-right: 0px;"><input type="button" value="EDITAR" id="editarProducto" name="editarProducto" class="btn-info" align="center"/></td>\n\
-            <td style="width: 33%;border-left: 0px;border-right: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarProducto" name="actualizarProducto" class="btn-warning" align="center"/></td>\n\
-            <td style="width: 33%;border-left: 0px;"><input type="button" value="ELIMINAR" id="eliminarProducto" name="eliminarProducto" class="btn-danger" align="center"/></td>\n\
-        </tr>';
-  tr += '<tr>\n\
-            <td colspan="3" class="pieTabla"><input type="button" value="NUEVO" id="agregarProducto" name="agregarProducto" class="btn-success" align="center"/></td>\n\
-        </tr>';
-  tabla += tr;
-  tabla += '</table>';
-  formu += tabla;
-  formu += '</form>';
-  mostrar += titulo;
-  mostrar += formu;
+function cargarProducto(idProd, selector){
+  var url = "data/selectQuery.php";
+  var query = 'select idprod, nombre_plastico, entidad, codigo_emsa, bin, codigo_origen, contacto, snapshot, stock, alarma1, alarma2, ultimoMovimiento, comentarios from productos where idprod='+idProd;
+  
+  $.getJSON(url, {query: ""+query+""}).done(function(request) {
+    var resultado = request["resultado"];
+    var total = request["rows"];
+    if (total >= 1) {
+    var stock = parseInt(resultado[0]['stock'], 10);
+    var alarma1 = parseInt(resultado[0]['alarma1'], 10);
+    var alarma2 = parseInt(resultado[0]['alarma2'], 10);
+    var fecha = resultado[0]['ultimoMovimiento'];
+    var ultimoMovimiento = '';
+    if (fecha !== null) {
+      var temp = fecha.split('-');
+      ultimoMovimiento = temp[2]+"/"+temp[1]+"/"+temp[0];
+    }
+    }
+    var mostrar = "";
+    var formu = '<form method="post" action="producto.php">';
+    var tabla = '<table class="tabla2" name="producto">';
+    var tr = '<th colspan="3" class="centrado tituloTabla">DATOS DEL PRODUCTO</th>';
+
+    tr += '<tr>\n\
+            <th align="left"><font class="negra">Entidad:</font></th><td align="center" colspan="2"><input type="text" name="entidad" id="entidad" class="agrandar" style="width:100%; text-align: center"></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Nombre:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" name="nombre" id="nombre" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Código EMSA:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" name="codigo_emsa" id="codigo_emsa" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Código Origen:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" name="codigo_origen" id="codigo_origen" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Contacto:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" id="contacto" name="contacto2" class="agrandar" maxlength="35" size="9"></td>\n\
+           </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Foto:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" id="nombreFoto" name="nombreFoto" class="agrandar" maxlength="35" size="9"></td>\n\
+           </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">BIN:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" name="bin" id="bin" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Stock:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" id="stockProducto" name="stockProducto" class="agrandar" maxlength="35" size="9"></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Alarma 1:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" id="alarma1" name="alarma1" class="agrandar" maxlength="35" size="9"></td>\n\
+           </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Alarma 2:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" id="alarma2" name="alarma2" class="agrandar" maxlength="35" size="9"></td>\n\
+           </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Último Movimiento:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" id="ultimoMovimiento" name="ultimoMovimiento" class="agrandar" maxlength="35" size="9"></td>\n\
+           </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Comentarios:</font></th>\n\
+              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comentarios" class="agrandar" maxlength="35" size="9"></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <td style="width: 33%;border-right: 0px;"><input type="button" value="EDITAR" id="editarProducto" name="editarProducto" class="btn-info" align="center"/></td>\n\
+              <td style="width: 33%;border-left: 0px;border-right: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarProducto" name="actualizarProducto" class="btn-warning" align="center"/></td>\n\
+              <td style="width: 33%;border-left: 0px;"><input type="button" value="ELIMINAR" id="eliminarProducto" name="eliminarProducto" class="btn-danger" align="center"/></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <td colspan="3" class="pieTabla"><input type="button" value="NUEVO" id="agregarProducto" name="agregarProducto" class="btn-success" align="center"/></td>\n\
+          </tr>';
+    tabla += tr;
+    tabla += '</table>';
+    formu += tabla;
+    formu += '</form>';
+    mostrar += formu;
+    $(selector).html(mostrar);
+  
+    if (total >=1) {
+    $("#entidad").val(resultado[0]['entidad']);
+    $("#nombre").val(resultado[0]['nombre_plastico']);
+    $("#codigo_emsa").val(resultado[0]['codigo_emsa']);
+    $("#codigo_origen").val(resultado[0]['codigo_origen']);
+    $("#contacto").val(resultado[0]['contacto']);
+    $("#nombreFoto").val(resultado[0]['snapshot']);
+    $("#stockProducto").val(stock);
+    $("#alarma1").val(alarma1);
+    $("#alarma2").val(alarma2);
+    $("#comentarios").val(resultado[0]['comentarios']);
+    $("#ultimoMovimiento").val(ultimoMovimiento);
+    $("#bin").val(resultado[0]['bin']); 
+    
+    //$(selector).html(mostrar);
+
+    if ((stock < alarma1) && (stock > alarma2)) {
+      $("#stockProducto").addClass('alarma1');
+    }
+    else {
+      if (stock < alarma2) {
+        $("#stockProducto").addClass('alarma2');
+      }
+      else {
+        $("#stockProducto").addClass('resaltado');
+      }
+    }
+    }
+    inhabilitarProducto();
+  });
+  
+}
+
+/**
+  \brief Función que carga en el selector pasado como parámetro la tabla con el campo para la búsqueda de productos.
+  @param {String} selector String con el selector en donde se debe mostrar la tabla.
+*/
+function cargarBusquedaProductos(selector) {
+  var mostrar = '';
+  var tabla = '<table class="tabla2" name="busquedaProducto" style="width: 60%;">\n\
+                <tr>\n\
+                  <th align="left" class="tituloTabla" colspan="5"><font class="negra">BUSCAR:</font></th>\n\
+                </tr>\n\
+                <tr>\n\
+                  <td align="center" colspan="5" class="pieTabla"><input type="text" id="productoBusqueda" name="productoBusqueda" class="agrandar" size="9" onkeyup=\'showHintProd(this.value, "#productoBusqueda", ""), ""\'></td>\n\
+                </tr>\n\
+              </table><br>';
+  mostrar += tabla;
   $(selector).html(mostrar);
 }
 
 /**
  * \brief Función que valida los datos pasados para el producto
+ * @param {Boolean} nuevo Booleano que indica si estoy validando un producto nuevo a agregar, o editando uno ya ingresado.
  * @returns {Boolean} Devuelve un booleano que indica si se pasó o no la validación de los datos para el producto.
  */
-function validarProducto() {
+function validarProducto(nuevo) {
   var entidad = $("#entidad").val();
   var nombre = $("#nombre").val();
+  var stockProducto1 = $("#stcokProducto").val();
   var alarma1 = parseInt($("#alarma1").val(), 10);
   var alarma2 = parseInt($("#alarma2").val(), 10);
   var seguir = true;
@@ -863,6 +949,26 @@ function validarProducto() {
       $("#nombre").focus();
       seguir = false;
       return false;
+    }
+  }
+  
+  /// Si estoy agregando un producto nuevo, y si se ingresa el stock inicial, debo validarlo:
+  if (nuevo) {
+    if (seguir) {
+      if (stockProducto1 !== undefined){
+        var stockProducto = parseInt(stockProducto1, 10);
+        var stock1 = validarEntero(stockProducto);
+        if ((!stock1) || (stockProducto <= 0)) {
+          alert('El stock inicial debe ser un entero mayor que 0. Por favor verifique.');
+          $("#stockProducto").val('');
+          $("#stockProducto").focus();
+          seguir = false;
+          return false;
+        }
+      }
+      else {
+        $("#stockProducto").val(0);
+      }
     }
   }
   
@@ -942,6 +1048,7 @@ function inhabilitarProducto(){
   document.getElementById("codigo_origen").disabled = true;
   document.getElementById("codigo_emsa").disabled = true;
   document.getElementById("contacto").disabled = true;
+  document.getElementById("nombreFoto").disabled = true;
   document.getElementById("bin").disabled = true;
   document.getElementById("alarma1").disabled = true;
   document.getElementById("alarma2").disabled = true;
@@ -961,6 +1068,7 @@ function habilitarProducto(){
   document.getElementById("codigo_origen").disabled = false;
   document.getElementById("codigo_emsa").disabled = false;
   document.getElementById("contacto").disabled = false;
+  document.getElementById("nombreFoto").disabled = false;
   document.getElementById("bin").disabled = false;
   document.getElementById("alarma1").disabled = false;
   document.getElementById("alarma2").disabled = false;
@@ -999,17 +1107,18 @@ function todo () {
                                           var h = temp2[1];                                          
                                           var tipo = decodeURI(temp4[1]);
                                           var idprod = parseInt(temp3[1], 10);
-                                          cargarMovimiento("#main-content", h, idprod, tipo);                                          
+                                          setTimeout(function(){cargarMovimiento("#main-content", h, idprod, tipo)}, 100);                                          
                                         }
                                         else {
-                                          cargarMovimiento("#main-content", "", "-1");
+                                          setTimeout(function(){cargarMovimiento("#main-content", "", "-1")}, 100);
                                         }
                                         break;    
                                       }
     case "/controlstock/index.php": break;
                                     
-    case "/controlstock/producto.php":  break;                                   
-                                        
+    case "/controlstock/producto.php":  setTimeout(function(){cargarBusquedaProductos("#selector")}, 100);
+                                        setTimeout(function(){cargarProducto(0, "#content")}, 100);
+                                        break;                                                                      
     case "/controlstock/busquedas.php": {
                                         break;
                                         }
@@ -1216,77 +1325,62 @@ $(document).on("click", "#agregarMovimiento", function (){
 ///Cambia el color de fondo para resaltarlo, carga un snapshot del plástico si está disponible, y muestra
 ///el stock actual.
 $(document).on("change focusin", "#hintProd", function (){
-  $("#hintProd").css('background-color', '#ffffff');
-  $("#stockProducto").removeClass('alarma1');
-  $("#stockProducto").removeClass('alarma2');
-  $("#stockProducto").removeClass('resaltado');
-  inhabilitarProducto();
+  $("#hintProd").css('background-color', '#9db7ef');
   var rutaFoto = 'images/snapshots/';
   var nombreFoto = $(this).find('option:selected').attr("name");
-  var idProd = parseInt($(this).find('option:selected').val(), 10);
-  var mostrar = '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
+  $(this).css('background-color', '#ffffff');
+  
   $("#snapshot").remove();
-
-  if ($(this).find('option:selected').val() === 'NADA') {
+  $("#stock").remove();
+  $("#stock").removeClass('alarma1');
+  $("#stock").removeClass('alarma2');
+  $("#stock").removeClass('resaltado');
+  
+  var idProd = $(this).find('option:selected').val();
+  var stock = $("#hintProd").find('option:selected').attr("stock");
+  var alarma1 = $("#hintProd").find('option:selected').attr("alarma1");
+  alarma1 = parseInt(alarma1, 10);
+  var alarma2 = $("#hintProd").find('option:selected').attr("alarma2");
+  alarma2 = parseInt(alarma2, 10);
+  if ((stock === 'undefined') || ($(this).find('option:selected').val() === 'NADA')) {
+    stock = '';
+  }
+  else {
+    stock = parseInt(stock, 10);
+  }
+  var resaltado = '';
+  if ((stock < alarma1) && (stock > alarma2)){
+    resaltado = 'alarma1';
+  }
+  else {
+    if (stock < alarma2) {
+      resaltado = 'alarma2';
+    }
+    else {
+      resaltado = 'resaltado';
+    }  
+  }
+  var mostrar = '<img id="snapshot" name="hintProd" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
+  mostrar += '<p id="stock" name="hintProd" style="padding-top: 10px"><b>Stock actual: <b><font class="'+resaltado+'" style="font-size:1.6em">'+stock.toLocaleString()+'</font></p>';
+  $(this).css('background-color', '#9db7ef');
+  $("#hintProd").after(mostrar);
+  if (idProd !== 'NADA') {
+    cargarProducto(idProd, "#content");
+  }
+  else {
     $("#entidad").val('');
     $("#nombre").val('');
     $("#codigo_emsa").val('');
     $("#codigo_origen").val('');
     $("#contacto").val('');
+    $("#nombreFoto").val('');
+    $("#bin").val(''); 
     $("#stockProducto").val('');
-    $("#comentarios").val('');
-    $("#ultimoMovimiento").val('');
-    $("#bin").val('');
     $("#alarma1").val('');
     $("#alarma2").val('');
+    $("#ultimoMovimiento").val('');
+    $("#comentarios").val('');
   }
-  else {
-    var url = "data/selectQuery.php";
-    var query = 'select idprod, nombre_plastico, entidad, codigo_emsa, bin, codigo_origen, contacto, stock, alarma1, alarma2, ultimoMovimiento, comentarios from productos where idprod='+idProd;
-
-    $.getJSON(url, {query: ""+query+""}).done(function(request) {
-      var resultado = request["resultado"];
-      var stock = parseInt(resultado[0]['stock'], 10);
-      var alarma1 = parseInt(resultado[0]['alarma1'], 10);
-      var alarma2 = parseInt(resultado[0]['alarma2'], 10);
-      var fecha = resultado[0]['ultimoMovimiento'];
-      var ultimoMovimiento = '';
-      if (fecha !== null) {
-        var temp = fecha.split('-');
-        ultimoMovimiento = temp[2]+"/"+temp[1]+"/"+temp[0];
-      }
-      
-      //mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><b>Stock actual: <b><font class="resaltado" style="font-size:1.6em">'+$("#hintProd").find('option:selected').attr("stock")+'</font></p>';
-      //$("#hintProd").css('background-color', '#efe473');
-      
-      
-      $("#entidad").val(resultado[0]['entidad']);
-      $("#nombre").val(resultado[0]['nombre_plastico']);
-      $("#codigo_emsa").val(resultado[0]['codigo_emsa']);
-      $("#codigo_origen").val(resultado[0]['codigo_origen']);
-      $("#contacto").val(resultado[0]['contacto']);
-      $("#stockProducto").val(stock);
-      $("#alarma1").val(alarma1);
-      $("#alarma2").val(alarma2);
-      $("#comentarios").val(resultado[0]['comentarios']);
-      $("#ultimoMovimiento").val(ultimoMovimiento);
-      $("#bin").val(resultado[0]['bin']);   
-      $("#hintProd").after(mostrar);
-      
-      if ((stock < alarma1) && (stock > alarma2)) {
-        $("#stockProducto").addClass('alarma1');
-      }
-      else {
-        if (stock < alarma2) {
-          $("#stockProducto").addClass('alarma2');
-        }
-        else {
-          $("#stockProducto").addClass('resaltado');
-        }
-      }
-    });
-  } 
-  $("#hintProd").css('background-color', '#9db7ef');
 });
 
 $(document).on("click", "#actualizarProducto", function (){
@@ -1296,6 +1390,7 @@ $(document).on("click", "#actualizarProducto", function (){
   var alarma2 = $("#alarma2").val();
   var codigo_emsa = $("#codigo_emsa").val();
   var contacto = $("#contacto").val();
+  var nombreFoto = $("#nombreFoto").val();
   var codigo_origen = $("#codigo_origen").val();
   var idProducto = $("#hintProd").val();
   var comentarios = $("#comentarios").val();
@@ -1307,7 +1402,7 @@ $(document).on("click", "#actualizarProducto", function (){
     $("#producto").focus();
   }
   else {
-    var validar = validarProducto();
+    var validar = validarProducto(false);
     if (validar) {
       /*
       var entero = validarEntero(alarma1);
@@ -1343,15 +1438,15 @@ $(document).on("click", "#actualizarProducto", function (){
         return false;
       }
       */
-      var confirmar = confirm('¿Confirma la modificación del producto con los siguientes datos?\n\nEntidad: '+entidad+'\nNombre: '+nombre+'\nCódigo Emsa: '+codigo_emsa+'\nCódigo Origen: '+codigo_origen+'\nContacto: '+contacto+'\nBin: '+bin+'\nAlarma1: '+alarma1+'\nAlarma2: '+alarma2+'\nComentarios: '+comentarios+"\n?");
+      var confirmar = confirm('¿Confirma la modificación del producto con los siguientes datos?\n\nEntidad: '+entidad+'\nNombre: '+nombre+'\nCódigo Emsa: '+codigo_emsa+'\nCódigo Origen: '+codigo_origen+'\nContacto: '+contacto+'\nSnapshot: '+nombreFoto+'\nBin: '+bin+'\nAlarma1: '+alarma1+'\nAlarma2: '+alarma2+'\nComentarios: '+comentarios+"\n?");
       if (confirmar) {
         var url = "data/updateQuery.php";
-        var query = "update productos set nombre_plastico= '"+nombre+"', entidad = '"+entidad+"', codigo_emsa = '"+codigo_emsa+"', codigo_origen = '"+codigo_origen+"', contacto = '"+contacto+"', bin = '"+bin+"', alarma1 = "+alarma1+", alarma2 = "+alarma2+", comentarios = '"+comentarios+"' where idprod = "+idProducto;
+        var query = "update productos set nombre_plastico= '"+nombre+"', entidad = '"+entidad+"', codigo_emsa = '"+codigo_emsa+"', codigo_origen = '"+codigo_origen+"', contacto = '"+contacto+"', snapshot = '"+nombreFoto+"', bin = '"+bin+"', alarma1 = "+alarma1+", alarma2 = "+alarma2+", comentarios = '"+comentarios+"' where idprod = "+idProducto;
         //alert(query);
         $.getJSON(url, {query: ""+query+""}).done(function(request) {
           var resultado = request["resultado"];
           if (resultado === "OK") {
-            alert('Los datos del producto se actualizaron correctamente!.');
+            //alert('Los datos del producto se actualizaron correctamente!.');
             //showHintProd($("#producto").val(), "#producto");
             //$("#hintProd option[value='"+idProducto+"']").attr("selected","selected");
             $("#stockProducto").removeClass('alarma1');
@@ -1368,7 +1463,9 @@ $(document).on("click", "#actualizarProducto", function (){
                 $("#stockProducto").addClass('resaltado');
               }
             }
-            
+            var productoBusqueda = $("#productoBusqueda").val();
+            var elegido = $("#hintProd").find('option:selected').val();
+            showHintProd(productoBusqueda, "#productoBusqueda", elegido);
             /*
             $("#entidad").val('');
             $("#nombre").val('');
@@ -1466,10 +1563,12 @@ $(document).on("click", "#agregarProducto", function (){
     $("#alarma2").val('');
     $("#ultimoMovimiento").val('');
     $("#bin").val(''); 
+    $("#productoBusqueda").val('');
     $("#producto").val('');
     $("#producto").attr("disabled", true);
     $("#hintProd").remove();
     $("#snapshot").remove();
+    $("#stock").remove();
     habilitarProducto();
     $("#stockProducto").attr("disabled", false);
     $("#editarProducto").attr("disabled", true);
@@ -1478,25 +1577,25 @@ $(document).on("click", "#agregarProducto", function (){
     $("#entidad").focus();
   }
   else {
-    var validar = validarProducto();
+    var validar = validarProducto(true);
     if (validar) {
       var entidad = $("#entidad").val();
       var nombre = $("#nombre").val();
       var codigo_emsa = $("#codigo_emsa").val();
       var codigo_origen = $("#codigo_origen").val();
       var contacto = $("#contacto").val();
-      var stock = $("#stockProducto").val();
+      var stock = parseInt($("#stockProducto").val(), 10);
       var alarma1 = parseInt($("#alarma1").val(), 10);
       var alarma2 = parseInt($("#alarma2").val(), 10);
-      
+      var nombreFoto = $("#nombreFoto").val();
        
       var comentarios = $("#comentarios").val();
       var bin = $("#bin").val();
       
       var url = "data/updateQuery.php";
-      var query = "insert into productos (entidad, nombre_plastico, codigo_emsa, codigo_origen, contacto, stock, bin, comentarios, alarma1, alarma2, estado) values ('"+entidad+"', '"+nombre+"', '"+codigo_emsa+"', '"+codigo_origen+"', '"+contacto+"', "+stock+", '"+bin+"', '"+comentarios+"', "+alarma1+", "+alarma2+", 'activo')";
+      var query = "insert into productos (entidad, nombre_plastico, codigo_emsa, codigo_origen, contacto, snapshot, stock, bin, comentarios, alarma1, alarma2, estado) values ('"+entidad+"', '"+nombre+"', '"+codigo_emsa+"', '"+codigo_origen+"', '"+contacto+"', '"+nombreFoto+"', "+stock+", '"+bin+"', '"+comentarios+"', "+alarma1+", "+alarma2+", 'activo')";
       
-      var confirmar = confirm("¿Confirma que desea agregar el producto con los siguientes datos: \n\nEntidad: "+entidad+"\nNombre: "+nombre+"\nCódigo Emsa: "+codigo_emsa+"\nCódigo Origen: "+codigo_origen+"\nContacto: "+contacto+"\nBin: "+bin+"\nStock Inicial: "+stock+"\nAlarma1: "+alarma1+"\nAlarma2: "+alarma2+"\nComentarios: "+comentarios+"\n?");
+      var confirmar = confirm("¿Confirma que desea agregar el producto con los siguientes datos: \n\nEntidad: "+entidad+"\nNombre: "+nombre+"\nCódigo Emsa: "+codigo_emsa+"\nCódigo Origen: "+codigo_origen+"\nContacto: "+contacto+"\nSnapshot: "+nombreFoto+"\nBin: "+bin+"\nStock Inicial: "+stock+"\nAlarma1: "+alarma1+"\nAlarma2: "+alarma2+"\nComentarios: "+comentarios+"\n?");
       if (confirmar) {
         $.getJSON(url, {query: ""+query+""}).done(function(request){
           var resultado = request["resultado"];
