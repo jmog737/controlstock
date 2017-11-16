@@ -11,6 +11,7 @@
 
 /** Include PHPExcel */
 require_once('..\..\excel\PHPExcel.php');
+$dirExcel = "D:/PROCESOS/PDFS";
 
 function generarExcelStock($registros, $total) {
   // Create new PHPExcel object
@@ -201,10 +202,10 @@ $hoja->getStyle($rango)->applyFromArray($styleGeneral);
 
 // Se guarda como Excel 2007:
 $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-$dir = "D:/PROCESOS/PDFS";
+
 $timestamp = date('Ymd_His');
 $nombreArchivo = "reporteStock".$timestamp.".xlsx";
-$salida = $dir."/".$nombreArchivo;
+$salida = $GLOBALS["dirExcel"]."/".$nombreArchivo;
 $objWriter->save($salida);
 return $nombreArchivo;
 }
@@ -421,10 +422,9 @@ $hoja->getStyle($rango)->applyFromArray($styleGeneral);
 
 // Se guarda como Excel 2007:
 $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-$dir = "D:/PROCESOS/PDFS";
 $timestamp = date('Ymd_His');
 $nombreArchivo = "reporteMovimientos".$timestamp.".xlsx";
-$salida = $dir."/".$nombreArchivo;
+$salida = $GLOBALS["dir"]."/".$nombreArchivo;
 $objWriter->save($salida);
 return $nombreArchivo;
 }

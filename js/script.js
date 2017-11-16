@@ -1290,7 +1290,7 @@ $(document).on("click", "#agregarMovimiento", function (){
                 }
               }
               var tipo1 = encodeURI(tipo);
-              window.location.href = "http://localhost/controlstock/movimiento.php?h="+busqueda+"&id="+idProd+"&t="+tipo1;
+              window.location.href = "../controlstock/movimiento.php?h="+busqueda+"&id="+idProd+"&t="+tipo1;
             }
             else {
               alert('Hubo un error en la actualizacion del producto. Por favor verifique.');
@@ -1639,22 +1639,6 @@ $(document).on("click", "#agregarProducto", function (){
 ****************************************************************************************************************************
 */
 
-///Disparar funcion al hacer clic en el link del usuario.
-///Se cargan en el DIV #content los datos del mismo.
-$(document).on("click", ".detailUser", function () {
-    var user = $(this).attr("id");
-    
-    var timestamp = Math.round(Date.now() / 1000);
-      
-    if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-      window.location.href = "http://localhost/testKMS/index.php";
-    }
-    else {
-      verificarSesion();
-      cargarDetalleUsuario(user);
-    }
-    
-  });//*** fin del click detailUser ***
   
 ///Disparar funcion al hacer click en el botón eliminar.
 ///Esto hace que el registro correspondiente al usuario pase a estado de inactivo.
@@ -1916,7 +1900,7 @@ $(document).on("click", "#realizarBusqueda", function () {
   var timestamp = Math.round(Date.now() / 1000);
       
   if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-    window.location.href = "http://localhost/consultastock/index.php";
+    window.location.href = "../consultastock/index.php";
   }
   else {
     verificarSesion();

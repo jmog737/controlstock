@@ -112,7 +112,7 @@ if (empty($_SESSION['user_id']))
     <body>
     <div id='main-content' class='container-fluid'>
       <script type="text/javascript">
-        window.location.href = "http://localhost/controlstock/movimiento.php";
+        window.location.href = "../controlstock/movimiento.php";
       </script> 
     </div> <!-- fin del div contenido -->
 <?php       

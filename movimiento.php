@@ -32,7 +32,7 @@ require_once("data/sesiones.php");
     ?>
       <script> 
         alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-        window.location.href = "http://localhost/controlstock/index.php";
+        window.location.href = "../controlstock/index.php";
       </script>  
     <?php
     }        

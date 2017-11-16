@@ -20,6 +20,7 @@ $copiaListados['Juan Martín Ortega'] = "juanortega@emsa.com.uy";
 //****************************************************IMPORTANTE:************************************************************************************
 //                                              SETEO DE LAS CARPETAS
 $dir = "D:/PROCESOS/PDFS";
+$dir = "http:\\\\192.168.1.9\\Clasificadoras\\";echo $dir;
 $rutaFotos = "D:/Servidor/disenos/controlstock/images/snapshots";
 //***************************************************************************************************************************************************
 
@@ -224,11 +225,11 @@ switch ($id) {
 
 $timestamp = date('Ymd_His');
 $nombreArchivo = $nombreReporte.$timestamp.".pdf";
-$salida = $dir."/".$nombreArchivo;
+$salida = $dir.$nombreArchivo;
 //phpinfo();
 ///Guardo el archivo en el disco, y además lo muestro en pantalla:
 $pdfResumen->Output($salida, 'F');
-$pdfResumen->Output($salida, 'I');
+//$pdfResumen->Output($salida, 'I');
 
 switch ($id) {
   case "1": $archivo = generarExcelStock($registros1, $total1);
@@ -255,9 +256,9 @@ $resultado2 = consultarBD($exportarCSV, $con);
 //************ GENERACION ZIP FILE *************************************************************************************    
 $zip = new ZipArchive;
 $nombreZip = "lista".$timestamp.".zip";
-$fileDir = $dir."/".$nombreZip;
+$fileDir = $dir.$nombreZip;
 
-$excel = $dir."/".$archivo;
+$excel = $dir.$archivo;
 
 if ($zip->open($fileDir, ZIPARCHIVE::CREATE ) !== TRUE) 
     {
