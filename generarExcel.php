@@ -12,7 +12,7 @@
 /** Include PHPExcel */
 require_once('..\..\excel\PHPExcel.php');
 $dirExcel = "D:/PROCESOS/PDFS";
-
+$dirExcel = "//192.168.1.145/Reportes/";
 function generarExcelStock($registros, $total) {
   // Create new PHPExcel object
 $objPHPExcel = new PHPExcel();

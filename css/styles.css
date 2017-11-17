@@ -365,11 +365,19 @@ a.detailObject:focus, a.detailObject:hover {
   text-align: center;
 }
 .hint {
-  max-width: 100%;
+  max-width: 100px;
   position: relative;
   min-width: 100px;
-  overflow:auto
+  overflow:auto;
 }
+#hint {
+  max-width: 100%;
+  
+  position: relative;
+  overflow-x: scroll;
+  overflow-y: auto;
+}
+
 .subtotal {
   background-color:#9db0f3;
   font-weight: bolder;

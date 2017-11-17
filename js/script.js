@@ -157,6 +157,9 @@ function validarEntero(valor)
  */
 function showHint(str, id, seleccionado) {
   if (str.length === 0) { 
+    $("#hint").remove();
+    $("#snapshot").remove();
+    $("#stock").remove();
     document.getElementById("producto").innerHTML = "";
     return;
   } else {
@@ -172,7 +175,9 @@ function showHint(str, id, seleccionado) {
       
       if (totalSugerencias >= 1) {
         mostrar = '<select name="hint" id="hint" class="hint">';
-        mostrar += '<option value="NADA" name="NADA">--Seleccionar--</option>';
+        if (totalSugerencias > 1) {
+          mostrar += '<option value="NADA" name="NADA" selected>--Seleccionar--</option>';
+        }
         for (var i in sugerencias) {
           var bin = sugerencias[i]["bin"];
           if ((bin === null)||(bin === '')) {
@@ -202,7 +207,12 @@ function showHint(str, id, seleccionado) {
       $("#hint").focusin();
       /// Agregado a pedido de Diego para que se abra el select automáticamente:
       var length = $('#hint> option').length;
-      if (length > 10) length = 10;
+      if (length > 10) {
+        length = 10;
+      }
+      else {
+        length++;
+      }
       //open dropdown
       $("#hint").attr('size',length);
     });
@@ -218,6 +228,9 @@ function showHint(str, id, seleccionado) {
  */
 function showHintProd(str, id, seleccionado) {
   if (str.length === 0) { 
+    $("#hintProd").remove();
+    $("#snapshot").remove();
+    $("#stock").remove();
     document.getElementById("producto").innerHTML = "";
     return;
   } else {
@@ -233,7 +246,9 @@ function showHintProd(str, id, seleccionado) {
       
       if (totalSugerencias >= 1) {
         mostrar = '<select name="hintProd" id="hintProd" class="hint">';
-        mostrar += '<option value="NADA" name="NADA" selected>--Seleccionar--</option>';
+        if (totalSugerencias > 1) {
+          mostrar += '<option value="NADA" name="NADA" selected>--Seleccionar--</option>';
+        }
         for (var i in sugerencias) {
           var bin = sugerencias[i]["bin"];
           if ((bin === null) || (bin === '') ){
@@ -264,11 +279,11 @@ function showHintProd(str, id, seleccionado) {
       $("#hintProd").focusin();
       /// Agregado a pedido de Diego para que se abra el select automáticamente:
       var length = $('#hintProd> option').length;
-      if (totalSugerencias > 10) {
+      if (length > 10) {
         length = 10;
       }
       else {
-        length = totalSugerencias;
+        length++;
       }
       //alert('sugerencias: '+totalSugerencias+'\nlength: '+length);
       //open dropdown
