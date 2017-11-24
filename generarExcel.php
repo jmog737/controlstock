@@ -11,8 +11,21 @@
 
 /** Include PHPExcel */
 require_once('..\..\excel\PHPExcel.php');
-$dirExcel = "D:/PROCESOS/PDFS";
-$dirExcel = "//192.168.1.145/Reportes/";
+
+$unidad = "D:";
+$ip = "192.168.1.145";
+
+//$dir = $unidad.":/PROCESOS/PDFS";
+$dirExcel = "//".$ip."/Reportes/";
+
+if (!file_exists($unidad)) {
+  $unidad = "C:";
+}
+
+if (!file_exists($dirExcel)){
+  echo "No existe la carpeta. Por favor verifique.";
+}
+
 function generarExcelStock($registros, $total) {
   // Create new PHPExcel object
 $objPHPExcel = new PHPExcel();

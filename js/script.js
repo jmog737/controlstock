@@ -871,12 +871,12 @@ function cargarProducto(idProd, selector){
               <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comentarios" class="agrandar" maxlength="35" size="9"></td>\n\
           </tr>';
     tr += '<tr>\n\
-              <td style="width: 33%;border-right: 0px;"><input type="button" value="EDITAR" id="editarProducto" name="editarProducto" class="btn-info" align="center"/></td>\n\
-              <td style="width: 33%;border-left: 0px;border-right: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarProducto" name="actualizarProducto" class="btn-warning" align="center"/></td>\n\
-              <td style="width: 33%;border-left: 0px;"><input type="button" value="ELIMINAR" id="eliminarProducto" name="eliminarProducto" class="btn-danger" align="center"/></td>\n\
+              <td style="width: 33%;border-right: 0px;"><input type="button" value="EDITAR" id="editarProducto" name="editarProducto" class="btn btn-primary" align="center"/></td>\n\
+              <td style="width: 33%;border-left: 0px;border-right: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarProducto" name="actualizarProducto" class="btn btn-warning" align="center"/></td>\n\
+              <td style="width: 33%;border-left: 0px;"><input type="button" value="ELIMINAR" id="eliminarProducto" name="eliminarProducto" class="btn btn-danger" align="center"/></td>\n\
           </tr>';
     tr += '<tr>\n\
-              <td colspan="3" class="pieTabla"><input type="button" value="NUEVO" id="agregarProducto" name="agregarProducto" class="btn-success" align="center"/></td>\n\
+              <td colspan="3" class="pieTabla"><input type="button" value="NUEVO" id="agregarProducto" name="agregarProducto" class="btn btn-success" align="center"/></td>\n\
           </tr>';
     tabla += tr;
     tabla += '</table>';
@@ -892,7 +892,7 @@ function cargarProducto(idProd, selector){
     $("#codigo_origen").val(resultado[0]['codigo_origen']);
     $("#contacto").val(resultado[0]['contacto']);
     $("#nombreFoto").val(resultado[0]['snapshot']);
-    $("#stockProducto").val(stock);
+    $("#stockProducto").val(stock.toLocaleString());
     $("#alarma1").val(alarma1);
     $("#alarma2").val(alarma2);
     $("#comentarios").val(resultado[0]['comentarios']);
@@ -1100,6 +1100,146 @@ function habilitarProducto(){
 **/
 
 
+
+/**************************************************************************************************************************
+/// ************************************************* FUNCIONES ESTADISTICAS **********************************************
+***************************************************************************************************************************
+*/
+
+/**
+  \brief Función que carga en el selector pasado como parámetro el formulario para realizar las estadisticas.
+  @param {String} selector String con el selector en donde se debe mostrar el formulario.
+*/
+function cargarFormEstadisticas(selector){
+  var url = "data/selectQuery.php";
+  var query = "select distinct entidad from productos order by entidad asc, nombre_plastico asc";
+
+  $.getJSON(url, {query: ""+query+""}).done(function(request) {
+    var entidades = request["resultado"];
+    //var totalEntidades = request["rows"];
+    var mostrar = '';
+    var formu = '<form method="post" action="estadisticas.php">';
+    var tabla = '<table id="estadisticas" name="estadisticas" class="tabla2">';
+    var tr = '<tr>\n\
+                <th colspan="5" class="centrado tituloTabla">CRITERIOS</th>\n\
+              </tr>';
+    tr += '<tr>\n\
+            <td class="fondoVerde"><input type="radio" name="criterio" value="entidadMovimiento" checked="true"></td>\n\
+            <th>Entidad:</th>\n\
+            <td colspan="3">\n\
+              <select name="entidadGrafica" id="entidadGrafica" style="width: 100%">\n\
+                <option value="todos" selected="yes">---TODOS---</option>';
+    for (var i in entidades) {
+      tr += '<option value="'+entidades[i]['entidad']+'">'+entidades[i]['entidad']+'</option>';
+    }
+    tr += '   </select>\n\
+            </td>\n\
+          </tr>';
+    tr += '<tr>\n\
+            <td class="fondoVerde"><input type="radio" name="criterio" value="productoMovimiento"></td>\n\
+            <th>Producto:</th>\n\
+            <td align="center" colspan="3"><input type="text" id="productoMovimiento" name="producto" class="agrandar" size="9" onkeyup="showHint(this.value, \'#productoMovimiento\')"></td>\n\
+          </tr>';
+    tr += '<th colspan="5" class="centrado">FECHAS</th>';
+    tr += '<tr>\n\
+            <td class="fondoNaranja"></td>\n\
+            <th>Inicio:</th>\n\
+            <td>\n\
+              <select id="mesInicio" name="mesInicio" style="width:100%">\n\
+                <option value="todos" selected="yes">--Seleccionar--</option>\n\
+                <option value="01">Enero</option>\n\
+                <option value="02">Febrero</option>\n\
+                <option value="03">Marzo</option>\n\
+                <option value="04">Abril</option>\n\
+                <option value="05">Mayo</option>\n\
+                <option value="06">Junio</option>\n\
+                <option value="07">Julio</option>\n\
+                <option value="08">Agosto</option>\n\
+                <option value="09">Setiembre</option>\n\
+                <option value="10">Octubre</option>\n\
+                <option value="11">Noviembre</option>\n\
+                <option value="12">Diciembre</option>\n\
+              </select>\n\
+            </td>\n\
+            <th>Año:</th>\n\
+            <td>\n\
+              <select id="añoInicio" name="añoInicio" style="width:100%">\n\
+                <option value="2017" selected="yes">2017</option>\n\
+                <option value="2018">2018</option>\n\
+                <option value="2019">2019</option>\n\
+                <option value="2020">2020</option>\n\
+                <option value="2021">2021</option>\n\
+              </select>\n\
+            </td>\n\
+          </tr>';
+    tr += '<tr>\n\
+            <td class="fondoNaranja"></td>\n\
+            <th>Fin:</th>\n\
+            <td>\n\
+              <select id="mesFin" name="mesFin" style="width:100%">\n\
+                <option value="todos" selected="yes">--Seleccionar--</option>\n\
+                <option value="01">Enero</option>\n\
+                <option value="02">Febrero</option>\n\
+                <option value="03">Marzo</option>\n\
+                <option value="04">Abril</option>\n\
+                <option value="05">Mayo</option>\n\
+                <option value="06">Junio</option>\n\
+                <option value="07">Julio</option>\n\
+                <option value="08">Agosto</option>\n\
+                <option value="09">Setiembre</option>\n\
+                <option value="10">Octubre</option>\n\
+                <option value="11">Noviembre</option>\n\
+                <option value="12">Diciembre</option>\n\
+              </select>\n\
+            </td>\n\
+            <th>Año:</th>\n\
+            <td>\n\
+              <select id="añoFin" name="añoFin" style="width:100%">\n\
+                <option value="2017" selected="yes">2017</option>\n\
+                <option value="2018">2018</option>\n\
+                <option value="2019">2019</option>\n\
+                <option value="2020">2020</option>\n\
+                <option value="2021">2021</option>\n\
+              </select>\n\
+            </td>\n\
+          </tr>';
+    tr += '<tr>\n\
+            <th>Tipo:</th>\n\
+            <td>\n\
+              <select id="tipo" name="tipo" style="width:100%">\n\
+                <option value="Todos" selected="yes">---TODOS---</option>\n\
+                <option value="Retiro">Retiro</option>\n\
+                <option value="Ingreso">Ingreso</option>\n\
+                <option value="Renovaci&oacute;n">Reno</option>\n\
+                <option value="Destrucci&oacute;n">Destrucci&oacute;n</option>\n\
+              </select>\n\
+            </td>\n\
+          </tr>';
+//    tr += '<tr>\n\
+//            <th>Usuario:</th>\n\
+//            <td colspan="3">\n\
+//              <select name="usuario" id="usuario" style="width: 100%">\n\
+//                <option value="todos">---TODOS---</option>\n\
+//              </select>\n\
+//            </td>\n\
+//          </tr>';
+    tr += '<tr>\n\
+            <td colspan="5" class="pieTabla"><input type="button" class="btn btn-success" name="realizarGrafica" id="realizarGrafica" value="Consultar" align="center"></td>\n\
+          </tr>';
+    tabla += tr;
+    tabla += '</table>';
+    formu += tabla;
+    formu += '</form><br>';
+    mostrar += formu;
+    $(selector).html(mostrar);
+  });
+}
+
+/**************************************************************************************************************************
+/// ********************************************** FIN FUNCIONES ESTADISTICAS *********************************************
+***************************************************************************************************************************
+**/
+
 /**
 \brief Función que se ejecuta al cargar la página.
 En la misma se ve primero desde que página se llamó, y en base a eso
@@ -1137,6 +1277,8 @@ function todo () {
     case "/controlstock/busquedas.php": {
                                         break;
                                         }
+    case "/controlstock/estadisticas.php":  setTimeout(function(){cargarFormEstadisticas("#main-content")}, 100);
+                                        break;                                    
     default: break;
   }  
   
@@ -1879,6 +2021,16 @@ $(document).on("click", "#agregarUsuario", function(){
     });
   }
 });//*** fin del click agregarUsuario ***
+
+
+$(document).on("click", "#user", function(){
+  //alert('hice click');
+  $("#dialog").dialog({
+    autoOpen: true,
+    show: "blind",
+    hide: "explode"
+    });
+});
     
 /**************************************************************************************************************************
 /// **************************************************** FIN USUARIOS *****************************************************
@@ -2103,6 +2255,10 @@ $(document).on("click", "#realizarBusqueda", function () {
         else {
           inicio = año+"-"+mes+"-01";
           var mesSiguiente = parseInt(mes, 10) + 1;
+          if (mesSiguiente === 13) {
+            mesSiguiente = 1;
+            año = parseInt(año, 10) + 1;
+          }
           fin = año+"-"+mesSiguiente+"-01";
           var mesMostrar = '';
           switch (mes) {
@@ -2896,6 +3052,197 @@ $(document).on("click", ".exportar", function (){
 
 /**************************************************************************************************************************
 /// *************************************************** FIN BÚSQUEDAS *****************************************************
+***************************************************************************************************************************
+*/
+
+/*****************************************************************************************************************************
+/// Comienzan las funciones que manejan los eventos relacionados a las GRAFICAS
+******************************************************************************************************************************
+*/
+
+
+$(document).on("click", "#realizarGrafica", function (){
+ var timestamp = Math.round(Date.now() / 1000);
+      
+  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+    window.location.href = "../consultastock/index.php";
+  }
+  else {
+    verificarSesion();
+    var radio = $('input:radio[name=criterio]:checked').val();
+    var entidadGrafica = document.getElementById("entidadGrafica").value;
+    var idProd = $("#hint").val();
+    var nombreProducto = $("#hint").find('option:selected').text( );
+    
+    if ((nombreProducto !== "undefined") && (nombreProducto !== '')) {
+      ///Separo en partes el nombreProducto que contiene [entidad: codigo] --- nombreProducto
+      var tempo = nombreProducto.split("- ");
+      var nombreSolo = tempo[1].trim();
+      //var tempo2 = tempo1.split("{");
+      //var nombreSolo = tempo2[0].trim();
+    }
+    
+    var tipo = $("#tipo").find('option:selected').val( );
+    var mesInicio = $("#mesInicio").val();
+    var añoInicio = $("#añoInicio").val();
+    var mesFin = $("#mesFin").val();
+    var añoFin = $("#añoFin").val();
+    var rangoFecha = null;
+    var tipoConsulta = '';
+    var mensajeFecha = '';
+    var validado = true;
+    var inicio = '';
+    var fin = '';
+    var query = "select productos.nombre_plastico, sum(movimientos.cantidad) as total, movimientos.tipo from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
+    
+    switch (radio) {
+      case 'entidadMovimiento': if (entidadGrafica !== 'todos') {
+                                  query += "entidad='"+entidadGrafica+"' and ";
+                                  tipoConsulta = 'de los movimientos de '+entidadGrafica;
+                                } 
+                                else {
+                                  tipoConsulta = 'de los movimientos de todas las entidades';
+                                }
+                                break;                       
+      case 'productoMovimiento':  if ((idProd === 'NADA') || (nombreProducto === '')){
+                                    alert('Debe seleccionar un producto. Por favor verifique.');
+                                    document.getElementById("productoMovimiento").focus();
+                                    validado = false;
+                                    return false;
+                                  }
+                                  else {
+                                    query += "idProd="+idProd+' and ';
+                                  }
+                                  tipoConsulta = 'de los movimientos del producto '+nombreSolo;
+                                  break;
+    }
+    
+    ///Comienzo la validación de las fechas:  
+    if (mesInicio === 'todos') {
+      inicio = añoInicio+"-01-01";
+      //fin = añoInicio+"-12-31";
+      mensajeFecha += "del mes de Enero de "+añoInicio;
+    }
+    else {
+      var mes = parseInt(mesInicio, 10);
+      inicio = añoInicio+"-"+mesInicio+"-01";
+      var mesInicioMostrar = '';
+      switch (mesInicio) {
+        case '01': mesInicioMostrar = "Enero";
+                   break;
+        case '02': mesInicioMostrar = "Febrero";
+                   break;
+        case '03': mesInicioMostrar = "Marzo";
+                   break;
+        case '04': mesInicioMostrar = "Abril";
+                   break;
+        case '05': mesInicioMostrar = "Mayo";
+                   break;
+        case '06': mesInicioMostrar = "Junio";
+                   break;
+        case '07': mesInicioMostrar = "Julio";
+                   break;
+        case '08': mesInicioMostrar = "Agosto";
+                   break;
+        case '09': mesInicioMostrar = "Setiembre";
+                   break;
+        case '10': mesInicioMostrar = "Octubre";
+                   break;
+        case '11': mesInicioMostrar = "Noviembre";
+                   break;
+        case '12': mesInicioMostrar = "Diciembre";
+                   break;
+        default: break;         
+      }
+      mensajeFecha += "del mes de "+mesInicioMostrar+" de "+añoInicio;
+    }
+    
+    
+    if (mesFin === 'todos') {
+      var añoSiguiente = parseInt(añoFin, 10) + 1;
+      fin = añoSiguiente+"-01-01";
+      //fin = añoInicio+"-12-31";
+      mensajeFecha += " hasta el mes de Diciembre de "+añoFin;
+    }
+    else { 
+      var mes = parseInt(mesFin, 10) + 1;
+      if (mes === 13) {
+        mes = 1;
+        añoSiguiente = parseInt(añoFin, 10) + 1;
+        fin = añoSiguiente+"-"+mesFin+"-01";
+      }
+      else {
+        fin = añoFin+"-"+mes+"-01";
+      }
+      var mesFinMostrar = '';
+      switch (mesFin) {
+        case '01': mesFinMostrar = "Enero";
+                   break;
+        case '02': mesFinMostrar = "Febrero";
+                   break;
+        case '03': mesFinMostrar = "Marzo";
+                   break;
+        case '04': mesFinMostrar = "Abril";
+                   break;
+        case '05': mesFinMostrar = "Mayo";
+                   break;
+        case '06': mesFinMostrar = "Junio";
+                   break;
+        case '07': mesFinMostrar = "Julio";
+                   break;
+        case '08': mesFinMostrar = "Agosto";
+                   break;
+        case '09': mesFinMostrar = "Setiembre";
+                   break;
+        case '10': mesFinMostrar = "Octubre";
+                   break;
+        case '11': mesFinMostrar = "Noviembre";
+                   break;
+        case '12': mesFinMostrar = "Diciembre";
+                   break;
+        default: break;         
+      }
+      mensajeFecha += " hasta el mes de "+mesFinMostrar+" de "+añoFin;
+    }
+
+    validado = true;
+    if ((añoInicio === añoFin)&&(mesInicio > mesFin)) {
+      validado = false;
+      alert('El mes inicial NO puede ser posterior al mes final (del mismo año).\nPor favor verifique.');
+      $("#inicio").focus();
+    }
+    else {
+      
+      rangoFecha = "(fecha >='"+inicio+"') and (fecha<'"+fin+"')";
+    }
+    //alert(rangoFecha);
+    
+    if (validado) {
+      query += rangoFecha;
+      var mensajeTipo = null; 
+      if (tipo !== 'Todos') 
+        {
+        query += " and tipo='"+tipo+"'";
+        mensajeTipo = "del tipo "+tipo;
+      }
+      else {
+        mensajeTipo = "de todos los tipos";
+      };
+      
+      query += " group by nombre_plastico, tipo order by entidad asc, nombre_plastico asc, movimientos.fecha desc, hora desc,  idprod";
+      var mensajeConsulta = "Consulta "+tipoConsulta;
+      if (mensajeTipo !== null) {
+        mensajeConsulta += " "+mensajeTipo;
+      }
+      mensajeConsulta += " "+mensajeFecha;
+      //alert(query);
+      alert(mensajeConsulta);
+    }  
+  }
+});
+
+/**************************************************************************************************************************
+/// *************************************************** FIN GRAFICAS *****************************************************
 ***************************************************************************************************************************
 */
 

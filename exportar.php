@@ -19,9 +19,21 @@ $copiaListados['Juan Martín Ortega'] = "juanortega@emsa.com.uy";
 
 //****************************************************IMPORTANTE:************************************************************************************
 //                                              SETEO DE LAS CARPETAS
-$dir = "D:/PROCESOS/PDFS";
-$dir = "//192.168.1.145/Reportes/";//echo $dir;
-$rutaFotos = "D:/Servidor/disenos/controlstock/images/snapshots";
+$unidad = "D:";
+$ip = "192.168.1.145";
+
+//$dir = $unidad.":/PROCESOS/PDFS";
+$dir = "//".$ip."/Reportes/";
+
+if (!file_exists($unidad)) {
+  $unidad = "C:";
+}
+
+if (!file_exists($dir)){
+  echo "No existe la carpeta. Por favor verifique.";
+}
+
+$rutaFotos = "$unidad/Servidor/disenos/controlstock/images/snapshots";
 //***************************************************************************************************************************************************
 
 //********************************************* Defino tamaño de la celda base: c1, y el número ************************************************

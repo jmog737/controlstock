@@ -13,7 +13,7 @@
         <font class='naranja'>
         <?php
             // Confirm the successful log-in
-            echo strtoupper($_SESSION['username']);
+            echo "<a href='' class='naranja' id='user'>".strtoupper($_SESSION['username'])."</a>";
         ?>
         </font>
         <br>
@@ -25,7 +25,7 @@
       <section id='address' class='col-sm-4 hidden-xs'>
         <span>Dirección:</span><br>
         Buenos Aires 486<br>
-        Montevideo, Uruguay<br><br>
+        Montevideo, Uruguay<br>v.1.0.1<br>
         &copy; Copyright EMSA SERV. TEC. 2017
         <hr class='visible-xs'>
       </section>
