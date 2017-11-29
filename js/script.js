@@ -1127,7 +1127,7 @@ function cargarFormEstadisticas(selector){
             <td class="fondoVerde"><input type="radio" name="criterio" value="entidadMovimiento" checked="true"></td>\n\
             <th>Entidad:</th>\n\
             <td colspan="3">\n\
-              <select name="entidadGrafica" id="entidadGrafica" style="width: 100%">\n\
+              <select name="entidad" id="entidadGrafica" style="width: 100%">\n\
                 <option value="todos" selected="yes">---TODOS---</option>';
     for (var i in entidades) {
       tr += '<option value="'+entidades[i]['entidad']+'">'+entidades[i]['entidad']+'</option>';
@@ -1142,8 +1142,7 @@ function cargarFormEstadisticas(selector){
           </tr>';
     tr += '<th colspan="5" class="centrado">FECHAS</th>';
     tr += '<tr>\n\
-            <td class="fondoNaranja"></td>\n\
-            <th>Inicio:</th>\n\
+            <th colspan="2">Inicio:</th>\n\
             <td>\n\
               <select id="mesInicio" name="mesInicio" style="width:100%">\n\
                 <option value="todos" selected="yes">--Seleccionar--</option>\n\
@@ -1173,8 +1172,7 @@ function cargarFormEstadisticas(selector){
             </td>\n\
           </tr>';
     tr += '<tr>\n\
-            <td class="fondoNaranja"></td>\n\
-            <th>Fin:</th>\n\
+            <th colspan="2">Fin:</th>\n\
             <td>\n\
               <select id="mesFin" name="mesFin" style="width:100%">\n\
                 <option value="todos" selected="yes">--Seleccionar--</option>\n\
@@ -1204,8 +1202,8 @@ function cargarFormEstadisticas(selector){
             </td>\n\
           </tr>';
     tr += '<tr>\n\
-            <th>Tipo:</th>\n\
-            <td>\n\
+            <th colspan="2">Tipo:</th>\n\
+            <td colspan="3">\n\
               <select id="tipo" name="tipo" style="width:100%">\n\
                 <option value="Todos" selected="yes">---TODOS---</option>\n\
                 <option value="Retiro">Retiro</option>\n\
@@ -1239,6 +1237,8 @@ function cargarFormEstadisticas(selector){
 /// ********************************************** FIN FUNCIONES ESTADISTICAS *********************************************
 ***************************************************************************************************************************
 **/
+
+
 
 /**
 \brief Función que se ejecuta al cargar la página.
@@ -3093,7 +3093,7 @@ $(document).on("click", "#realizarGrafica", function (){
     var validado = true;
     var inicio = '';
     var fin = '';
-    var query = "select productos.nombre_plastico, sum(movimientos.cantidad) as total, movimientos.tipo from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
+    var query = "select productos.nombre_plastico, movimientos.cantidad, movimientos.tipo, fecha from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
     
     switch (radio) {
       case 'entidadMovimiento': if (entidadGrafica !== 'todos') {
@@ -3120,6 +3120,7 @@ $(document).on("click", "#realizarGrafica", function (){
     ///Comienzo la validación de las fechas:  
     if (mesInicio === 'todos') {
       inicio = añoInicio+"-01-01";
+      mesInicio = "01";
       //fin = añoInicio+"-12-31";
       mensajeFecha += "del mes de Enero de "+añoInicio;
     }
@@ -3160,6 +3161,7 @@ $(document).on("click", "#realizarGrafica", function (){
     
     if (mesFin === 'todos') {
       var añoSiguiente = parseInt(añoFin, 10) + 1;
+      mesFin = "12";
       fin = añoSiguiente+"-01-01";
       //fin = añoInicio+"-12-31";
       mensajeFecha += " hasta el mes de Diciembre de "+añoFin;
@@ -3204,22 +3206,30 @@ $(document).on("click", "#realizarGrafica", function (){
       }
       mensajeFecha += " hasta el mes de "+mesFinMostrar+" de "+añoFin;
     }
-
+    
     validado = true;
-    if ((añoInicio === añoFin)&&(mesInicio > mesFin)) {
+    if (añoInicio > añoFin) {
+      alert('El año inicial NO puede ser poseterior al año final.\nPor favor verifique.');
       validado = false;
-      alert('El mes inicial NO puede ser posterior al mes final (del mismo año).\nPor favor verifique.');
       $("#inicio").focus();
     }
     else {
-      
-      rangoFecha = "(fecha >='"+inicio+"') and (fecha<'"+fin+"')";
+      if ((añoInicio === añoFin)&&(mesInicio > mesFin)&&((mesInicio !== 'todos')&&(mesFin !== 'todos'))) {
+        validado = false;
+        alert('El mes inicial NO puede ser posterior al mes final (del mismo año).\nPor favor verifique.');
+        $("#inicio").focus();
+      }
+      else {
+        if ((añoInicio===añoFin)&&(mesInicio===mesFin)&&(mesInicio!=='todos')){
+          mensajeFecha = " del mes de "+mesInicioMostrar+" de "+añoInicio;
+        }
+        rangoFecha = "(fecha >='"+inicio+"') and (fecha<'"+fin+"')";
+      }
     }
-    //alert(rangoFecha);
     
     if (validado) {
       query += rangoFecha;
-      var mensajeTipo = null; 
+      var mensajeTipo = null;
       if (tipo !== 'Todos') 
         {
         query += " and tipo='"+tipo+"'";
@@ -3229,14 +3239,95 @@ $(document).on("click", "#realizarGrafica", function (){
         mensajeTipo = "de todos los tipos";
       };
       
-      query += " group by nombre_plastico, tipo order by entidad asc, nombre_plastico asc, movimientos.fecha desc, hora desc,  idprod";
+      query += " order by fecha asc, hora desc, entidad asc, nombre_plastico asc,  idprod";
       var mensajeConsulta = "Consulta "+tipoConsulta;
       if (mensajeTipo !== null) {
         mensajeConsulta += " "+mensajeTipo;
       }
       mensajeConsulta += " "+mensajeFecha;
       //alert(query);
-      alert(mensajeConsulta);
+      //alert(mensajeConsulta);
+      var url = "data/selectQuery.php";
+      
+      $.getJSON(url, {query: ""+query+""}).done(function(request){
+        var datos = request.resultado;
+        var totalDatos = request.rows;
+        
+        ///******************************************* INICIO de recuperación de los datos(si los hay) **************************************************************
+        if (totalDatos >= 1) {
+          var indice = parseInt(añoInicio+mesInicio, 10);
+          var retiros = 0;
+          var ingresos = 0;
+          var renos = 0;
+          var destrucciones = 0;
+          var datitos = [];
+          datitos[indice] = {"retiros":0, "ingresos":0, "renos":0, "destrucciones":0};
+          
+          for (var i in datos) {
+            var fechaMov = datos[i]["fecha"].split("-");
+            var indiceMov = parseInt(fechaMov[0]+fechaMov[1], 10);
+            var cantidad = parseInt(datos[i]["cantidad"], 10);
+            var tipoActual = datos[i]["tipo"];
+            if (indiceMov !== indice) {
+              if ((retiros !== 0)||(ingresos !== 0)||(renos !== 0)||(destrucciones !== 0)) 
+                {
+                datitos[indice].retiros = retiros;
+                datitos[indice].ingresos = ingresos;
+                datitos[indice].renos = renos;
+                datitos[indice].destrucciones = destrucciones;
+              }
+              else {
+                datitos.splice(indice, 1);
+              }
+              datitos[indiceMov] = {"retiros":0, "ingresos":0, "renos":0, "destrucciones":0};
+
+              indice = indiceMov;
+              retiros = 0;
+              ingresos = 0;
+              destrucciones = 0;
+              renos = 0;        
+            }
+            switch (tipoActual) {
+              case "Retiro": retiros = parseInt(retiros, 10) + cantidad;
+                             break;
+              case "Ingreso": ingresos = parseInt(ingresos, 10) + cantidad;
+                             break;
+              case "Renovación": renos = parseInt(renos, 10) + cantidad;
+                             break;
+              case "Destrucción": destrucciones = parseInt(destrucciones, 10) + cantidad;
+                             break;               
+              default: break; 
+            }    
+          }
+          /// Agrego para los casos en que haya un único mes y por ende nunca entre en el if pues habrá un único índice.
+          /// Se aclara que no hace falta chequear si alguno de los tipos es diferente de 0, pues de serlo la consulta 
+          /// hubiera sido nula y no se habría llegado hasta acá
+          datitos[indice].retiros = retiros;
+          datitos[indice].ingresos = ingresos;
+          datitos[indice].renos = renos;
+          datitos[indice].destrucciones = destrucciones;
+          ///**************************************************** FIN de recuperación de los datos ************************************************************************
+          var meses = [];
+          var totalRetiros = [];
+          var totalIngresos = [];
+          var totalRenos = [];
+          var totalDestrucciones = [];
+          for (var j in datitos){
+            alert("mes: "+j+"\nRetiros: "+datitos[j].retiros+"\nIngresos: "+datitos[j].ingresos+"\nRenos: "+datitos[j].renos+"\nDestrucciones: "+datitos[j].destrucciones);
+            meses.push(j);
+            totalRetiros.push(datitos[j].retiros);
+            totalIngresos.push(datitos[j].ingresos);
+            totalRenos.push(datitos[j].renos);
+            totalDestrucciones.push(datitos[j].destrucciones);
+          }alert('despues');
+          for (var i in meses) {
+            alert("mes "+i+" : "+meses[i]+"\nretiros: "+totalRetiros[i]+"\ningresos: "+totalIngresos[i]+"\nrenos: "+totalRenos[i]+"\ndestrucciones: "+totalDestrucciones[i]);
+          }
+        }
+        else {
+          alert('No existen registros que coincidan con los parámetros pasados. Por favor verifique.');
+        }
+      });  
     }  
   }
 });
