@@ -1118,7 +1118,7 @@ function cargarFormEstadisticas(selector){
     var entidades = request["resultado"];
     //var totalEntidades = request["rows"];
     var mostrar = '';
-    var formu = '<form method="post" action="estadisticas.php">';
+    var formu = '<form method="post" id="graficar" action="graficar.php">';
     var tabla = '<table id="estadisticas" name="estadisticas" class="tabla2">';
     var tr = '<tr>\n\
                 <th colspan="5" class="centrado tituloTabla">CRITERIOS</th>\n\
@@ -1223,6 +1223,11 @@ function cargarFormEstadisticas(selector){
 //          </tr>';
     tr += '<tr>\n\
             <td colspan="5" class="pieTabla"><input type="button" class="btn btn-success" name="realizarGrafica" id="realizarGrafica" value="Consultar" align="center"></td>\n\
+            <td style="display:none"><input type="text" id="meses" name="meses" value=""></td>\n\
+            <td style="display:none"><input type="text" id="retiros" name="retiros" value=""></td>\n\
+            <td style="display:none"><input type="text" id="ingresos" name="ingresos" value=""></td>\n\
+            <td style="display:none"><input type="text" id="renos" name="renos" value=""></td>\n\
+            <td style="display:none"><input type="text" id="destrucciones" name="destrucciones" value=""></td>\n\
           </tr>';
     tabla += tr;
     tabla += '</table>';
@@ -3313,16 +3318,25 @@ $(document).on("click", "#realizarGrafica", function (){
           var totalRenos = [];
           var totalDestrucciones = [];
           for (var j in datitos){
-            alert("mes: "+j+"\nRetiros: "+datitos[j].retiros+"\nIngresos: "+datitos[j].ingresos+"\nRenos: "+datitos[j].renos+"\nDestrucciones: "+datitos[j].destrucciones);
-            meses.push(j);
+            //alert("mes: "+j+"\nRetiros: "+datitos[j].retiros+"\nIngresos: "+datitos[j].ingresos+"\nRenos: "+datitos[j].renos+"\nDestrucciones: "+datitos[j].destrucciones);
+            var temp = j.substr(0, 4);
+            var temp1 = j.substr(4,2);
+            var mes = temp1+"/"+temp;alert(mes);
+            meses.push(mes);
             totalRetiros.push(datitos[j].retiros);
             totalIngresos.push(datitos[j].ingresos);
             totalRenos.push(datitos[j].renos);
             totalDestrucciones.push(datitos[j].destrucciones);
-          }alert('despues');
+          }
           for (var i in meses) {
             alert("mes "+i+" : "+meses[i]+"\nretiros: "+totalRetiros[i]+"\ningresos: "+totalIngresos[i]+"\nrenos: "+totalRenos[i]+"\ndestrucciones: "+totalDestrucciones[i]);
           }
+          $("#meses").val(meses);
+          $("#retiros").val(totalRetiros);
+          $("#ingresos").val(totalIngresos);
+          $("#renos").val(totalRenos);
+          $("#destrucciones").val(totalDestrucciones);
+          $("#graficar").submit();
         }
         else {
           alert('No existen registros que coincidan con los parámetros pasados. Por favor verifique.');
