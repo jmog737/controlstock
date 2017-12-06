@@ -2,6 +2,13 @@
 //Reanudamos la sesión:
 session_start();
 require_once("data/sesiones.php");
+
+if ($_POST["hacerGrafica"] === "yes") {
+  $_SESSION["consulta"] = $_POST["consulta"];
+  $_SESSION["fechaInicio"] = $_POST["fechaInicio"];
+  $_SESSION["fechaFin"] = $_POST["fechaFin"];
+  $_SESSION["mensaje"] = $_POST["mensaje"];
+}
 /**
 ******************************************************
 *  @file estadisticas.php

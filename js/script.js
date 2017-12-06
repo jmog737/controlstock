@@ -11,6 +11,9 @@
 ************************************************************************************************************************
 */
 
+/**
+ * \brief Función que chequea las variables de sesión para saber si la misma aún está activa o si ya expiró el tiempo.
+ */
 function verificarSesion() {
   var xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange = function() {
@@ -1116,9 +1119,9 @@ function cargarFormEstadisticas(selector){
 
   $.getJSON(url, {query: ""+query+""}).done(function(request) {
     var entidades = request["resultado"];
-    //var totalEntidades = request["rows"];
     var mostrar = '';
-    var formu = '<form method="post" id="graficar" action="graficar.php">';
+    var titulo = '<h2 id="titulo" class="encabezado">CONSULTAR ESTAD&Iacute;STICAS</h2>';
+    var formu = '<form method="POST" id="graficar" action="graficar.php">';
     var tabla = '<table id="estadisticas" name="estadisticas" class="tabla2">';
     var tr = '<tr>\n\
                 <th colspan="5" class="centrado tituloTabla">CRITERIOS</th>\n\
@@ -1223,19 +1226,37 @@ function cargarFormEstadisticas(selector){
 //          </tr>';
     tr += '<tr>\n\
             <td colspan="5" class="pieTabla"><input type="button" class="btn btn-success" name="realizarGrafica" id="realizarGrafica" value="Consultar" align="center"></td>\n\
-            <td style="display:none"><input type="text" id="meses" name="meses" value=""></td>\n\
-            <td style="display:none"><input type="text" id="retiros" name="retiros" value=""></td>\n\
-            <td style="display:none"><input type="text" id="ingresos" name="ingresos" value=""></td>\n\
-            <td style="display:none"><input type="text" id="renos" name="renos" value=""></td>\n\
-            <td style="display:none"><input type="text" id="destrucciones" name="destrucciones" value=""></td>\n\
+            <td style="display:none"><input type="text" id="consulta" name="consulta" value=""></td>\n\
+            <td style="display:none"><input type="text" id="fechaInicio" name="fechaInicio" value=""></td>\n\
+            <td style="display:none"><input type="text" id="fechaFin" name="fechaFin" value=""></td>\n\
+            <td style="display:none"><input type="text" id="mensaje" name="mensaje" value=""></td>\n\
+            <td style="display:none"><input type="text" id="hacerGrafica" name="hacerGrafica" value=""></td>\n\
           </tr>';
     tabla += tr;
     tabla += '</table>';
     formu += tabla;
     formu += '</form><br>';
+    mostrar += titulo;
     mostrar += formu;
     $(selector).html(mostrar);
   });
+}
+
+/**
+  \brief Función que carga en el selector pasado como parámetro una imágen con la gráfica.
+  @param {String} selector String con el selector en donde se debe mostrar la gráfica.
+*/
+function cargarGrafica(selector){
+  var mostrar = '';
+  var titulo = '<h2 id="titulo" class="encabezado">RESULTADO ESTAD&Iacute;STICAS</h2>';
+  var grafica = '<img src="graficar.php" width="750px" height="350px">';
+  var volver = '<a href="estadisticas.php">Volver</a>';
+  mostrar += titulo;
+  mostrar += grafica;
+  mostrar += '<br><br>';
+  mostrar += volver;
+  mostrar += '<br><br>';
+  $(selector).html(mostrar);
 }
 
 /**************************************************************************************************************************
@@ -1282,12 +1303,25 @@ function todo () {
     case "/controlstock/busquedas.php": {
                                         break;
                                         }
-    case "/controlstock/estadisticas.php":  setTimeout(function(){cargarFormEstadisticas("#main-content")}, 100);
-                                        break;                                    
+    case "/controlstock/estadisticas.php":  if (parametros) {
+                                              var temp = parametros.split('?');
+                                              var temp1 = temp[1].split('=');
+                                              var hacerGrafica = temp1[1];
+                                              if (hacerGrafica ===  '1') {
+                                                setTimeout(function(){cargarGrafica("#main-content")}, 100);
+                                              }
+                                              else {
+                                                alert('ver por que llega hasta acá...');
+                                              }
+                                            }
+                                            else {
+                                              setTimeout(function(){cargarFormEstadisticas("#main-content")}, 100);
+                                            }  
+                                            break;                                    
     default: break;
   }  
   
-  ///Disparar funcion cuando algún elemento de la clase agrandar reciba el foco.
+///Disparar funcion cuando algún elemento de la clase agrandar reciba el foco.
 ///Se usa para resaltar el elemento seleccionado.
 $(document).on("focus", ".agrandar", function (){
   $(this).css("font-size", 24);
@@ -1307,6 +1341,7 @@ $(document).on("blur", ".agrandar", function (){
   $(this).css("font-weight", "inherit");
   $(this).css("color", "inherit");
 });
+  
   
 /***************************************************************************************************************************
 /// Comienzan las funciones que manejan los eventos relacionados a los MOVIMIENTOS como ser creación, edición y eliminación.
@@ -1545,6 +1580,7 @@ $(document).on("change focusin", "#hintProd", function (){
   }
 });
 
+///Dispara función para realizar los cambios con las modificaciones para el producto (luego de validar los datos obviamente).
 $(document).on("click", "#actualizarProducto", function (){
   var entidad = $("#entidad").val();
   var nombre = $("#nombre").val();
@@ -1655,6 +1691,7 @@ $(document).on("click", "#actualizarProducto", function (){
   }
 });
 
+///Dispara función que da de baja el producto. NO lo borra, sino que le cambia su estado a INACTIVO.
 $(document).on("click", "#eliminarProducto", function (){
   var nombre = $("#nombre").val();
   var idProducto = $("#hintProd").val();
@@ -1700,6 +1737,8 @@ $(document).on("click", "#eliminarProducto", function (){
   
 });
 
+///Disparar función al hacer click en el botón de EDITAR del form para los productos.
+///Cambia entre habilitar o deshabilitar los input del form cosa de poder hacer la edición del producto.
 $(document).on("click", "#editarProducto", function (){
   var nombre = $(this).val();
   if (nombre === 'EDITAR') {
@@ -1710,6 +1749,8 @@ $(document).on("click", "#editarProducto", function (){
   }
 });
 
+///Disparar función al hacer click en el botón AGREGAR (o NUEVO) del form productos.
+///Según si dice NUEVO o AGREGAR, vacío el form para poder agregar los datos o envío los datos para agregarlo a la base de datos.
 $(document).on("click", "#agregarProducto", function (){
   var accion = $("#agregarProducto").val();
   if (accion === "NUEVO") {
@@ -2047,27 +2088,43 @@ $(document).on("click", "#user", function(){
 ***************************************************************************************************************************
 */
 
+///Disparar función al cambiar la entidad elegida en el select ENTIDAD. 
+///Lo que hace es seleccionar automáticamente el radio button correspondiente.
 $(document).on("change", "[name=entidad]", function (){
   $(this).parent().prev().prev().children().prop("checked", true);
 });
 
+///Disparar función al cambiar el mes elegido como parámetro para la búsqueda.
+///Si se eligió algún mes quiere decir que la búsqueda es de movimientos y por mes/año 
+///Lo que hace es seleccionar automáticamente el radio button correspondiente.
 $(document).on("change", "#mes", function (){
   $(this).parent().prev().prev().children().prop("checked", true);
 });
 
+///Disparar función al cambiar el año elegido como parámetro para la búsqueda.
+///Si se eligió algún año quiere decir que la búsqueda es de movimientos y por mes/año 
+///Lo que hace es seleccionar automáticamente el radio button correspondiente.
 $(document).on("change", "#año", function (){
   $(this).parent().prev().prev().prev().prev().children().prop("checked", true);
 });
 
+///Disparar función al cambiar el mes elegido como parámetro para la búsqueda.
+///Si se eligió alguna fecha de inicio quiere decir que la búsqueda es de movimientos y por rango (inicio/fin) 
+///Lo que hace es seleccionar automáticamente el radio button correspondiente.
 $(document).on("change", "#inicio", function (){
   $(this).parent().prev().prev().children().prop("checked", true);
 });
 
+///Disparar función al cambiar el mes elegido como parámetro para la búsqueda.
+///Si se eligió alguna fecha de fin quiere decir que la búsqueda es de movimientos y por rango (inicio/fin) 
+///Lo que hace es seleccionar automáticamente el radio button correspondiente.
 $(document).on("change", "#fin", function (){
   $(this).parent().prev().prev().prev().prev().children().prop("checked", true);
 });
 
-
+///Disparar función al hacer click en el botón de CONSULTAR en la parte de búsquedas.
+///Valida y arma la consulta, luego la ejecuta y muestra los resultados con un botón de EXPORTAR
+///el cual permite hacer la exportación a PDF de la búsqueda realizada.
 $(document).on("click", "#realizarBusqueda", function () {
   var timestamp = Math.round(Date.now() / 1000);
       
@@ -3065,7 +3122,10 @@ $(document).on("click", ".exportar", function (){
 ******************************************************************************************************************************
 */
 
-
+///Disparar función al hacer click en el botón CONSULTAR del form graficar
+///Arma la consulta acorde a los parámetros pasados, setea variables de sesión con la misma,  la fecha de inicio, y con el mensaje de la consulta
+///También ambia el atributo ACTION del form (agrega un g=1) cosa de indicar a estadisticas.php que hay que mostrar la gráfica.
+///Finalmente, hace el submit del form.
 $(document).on("click", "#realizarGrafica", function (){
  var timestamp = Math.round(Date.now() / 1000);
       
@@ -3103,10 +3163,10 @@ $(document).on("click", "#realizarGrafica", function (){
     switch (radio) {
       case 'entidadMovimiento': if (entidadGrafica !== 'todos') {
                                   query += "entidad='"+entidadGrafica+"' and ";
-                                  tipoConsulta = 'de los movimientos de '+entidadGrafica;
+                                  tipoConsulta = 'de '+entidadGrafica;
                                 } 
                                 else {
-                                  tipoConsulta = 'de los movimientos de todas las entidades';
+                                  tipoConsulta = 'de todas las entidades';
                                 }
                                 break;                       
       case 'productoMovimiento':  if ((idProd === 'NADA') || (nombreProducto === '')){
@@ -3118,7 +3178,7 @@ $(document).on("click", "#realizarGrafica", function (){
                                   else {
                                     query += "idProd="+idProd+' and ';
                                   }
-                                  tipoConsulta = 'de los movimientos del producto '+nombreSolo;
+                                  tipoConsulta = 'del producto '+nombreSolo;
                                   break;
     }
     
@@ -3126,8 +3186,8 @@ $(document).on("click", "#realizarGrafica", function (){
     if (mesInicio === 'todos') {
       inicio = añoInicio+"-01-01";
       mesInicio = "01";
-      //fin = añoInicio+"-12-31";
-      mensajeFecha += "del mes de Enero de "+añoInicio;
+      mensajeFecha += "entre Enero de "+añoInicio;
+      mesInicioMostrar = "Enero";
     }
     else {
       var mes = parseInt(mesInicio, 10);
@@ -3160,7 +3220,7 @@ $(document).on("click", "#realizarGrafica", function (){
                    break;
         default: break;         
       }
-      mensajeFecha += "del mes de "+mesInicioMostrar+" de "+añoInicio;
+      mensajeFecha += "entre "+mesInicioMostrar+" de "+añoInicio;
     }
     
     
@@ -3168,15 +3228,15 @@ $(document).on("click", "#realizarGrafica", function (){
       var añoSiguiente = parseInt(añoFin, 10) + 1;
       mesFin = "12";
       fin = añoSiguiente+"-01-01";
-      //fin = añoInicio+"-12-31";
-      mensajeFecha += " hasta el mes de Diciembre de "+añoFin;
+      mensajeFecha += " y Diciembre de "+añoFin;
+      mesFinMostrar = "Diciembre";
     }
     else { 
       var mes = parseInt(mesFin, 10) + 1;
       if (mes === 13) {
         mes = 1;
         añoSiguiente = parseInt(añoFin, 10) + 1;
-        fin = añoSiguiente+"-"+mesFin+"-01";
+        fin = añoSiguiente+"-01-01";
       }
       else {
         fin = añoFin+"-"+mes+"-01";
@@ -3209,7 +3269,7 @@ $(document).on("click", "#realizarGrafica", function (){
                    break;
         default: break;         
       }
-      mensajeFecha += " hasta el mes de "+mesFinMostrar+" de "+añoFin;
+      mensajeFecha += " y "+mesFinMostrar+" de "+añoFin;
     }
     
     validado = true;
@@ -3226,10 +3286,20 @@ $(document).on("click", "#realizarGrafica", function (){
       }
       else {
         if ((añoInicio===añoFin)&&(mesInicio===mesFin)&&(mesInicio!=='todos')){
-          mensajeFecha = " del mes de "+mesInicioMostrar+" de "+añoInicio;
+          mensajeFecha = "del mes de "+mesInicioMostrar+" de "+añoInicio;
         }
-        rangoFecha = "(fecha >='"+inicio+"') and (fecha<'"+fin+"')";
+        else {
+          if ((añoInicio===añoFin)&&(mesInicio==='01')&&(mesFin==='12')){
+            mensajeFecha = "del año "+añoInicio;
+          }
+          else {
+            if (añoInicio===añoFin){
+              mensajeFecha = "entre "+mesInicioMostrar+" y "+mesFinMostrar+" de "+añoInicio;
+            }          
+          }
+        }
       }
+      rangoFecha = "(fecha >='"+inicio+"') and (fecha<'"+fin+"')";
     }
     
     if (validado) {
@@ -3238,113 +3308,54 @@ $(document).on("click", "#realizarGrafica", function (){
       if (tipo !== 'Todos') 
         {
         query += " and tipo='"+tipo+"'";
-        mensajeTipo = "del tipo "+tipo;
+        var tipo1 = '';
+        switch (tipo) {
+          case "Retiro": tipo1 = "Retiros";
+                                  break;
+          case "Ingreso": tipo1 = "Ingresos";
+                                  break;
+          case "Renovación": tipo1 = "Renovaciones";
+                                  break;
+          case "Destrucción": tipo1 = "Destrucciones";
+                                  break;
+          default: break;
+        }
+        mensajeTipo = tipo1+" ";
       }
       else {
-        mensajeTipo = "de todos los tipos";
+        mensajeTipo = "Movimientos ";
       };
       
       query += " order by fecha asc, hora desc, entidad asc, nombre_plastico asc,  idprod";
-      var mensajeConsulta = "Consulta "+tipoConsulta;
+      var mensajeConsulta = "";
       if (mensajeTipo !== null) {
-        mensajeConsulta += " "+mensajeTipo;
+        mensajeConsulta += mensajeTipo;
       }
-      mensajeConsulta += " "+mensajeFecha;
-      //alert(query);
-      //alert(mensajeConsulta);
-      var url = "data/selectQuery.php";
+      mensajeConsulta += tipoConsulta+" "+mensajeFecha;
       
-      $.getJSON(url, {query: ""+query+""}).done(function(request){
-        var datos = request.resultado;
-        var totalDatos = request.rows;
-        
-        ///******************************************* INICIO de recuperación de los datos(si los hay) **************************************************************
-        if (totalDatos >= 1) {
-          var indice = parseInt(añoInicio+mesInicio, 10);
-          var retiros = 0;
-          var ingresos = 0;
-          var renos = 0;
-          var destrucciones = 0;
-          var datitos = [];
-          datitos[indice] = {"retiros":0, "ingresos":0, "renos":0, "destrucciones":0};
-          
-          for (var i in datos) {
-            var fechaMov = datos[i]["fecha"].split("-");
-            var indiceMov = parseInt(fechaMov[0]+fechaMov[1], 10);
-            var cantidad = parseInt(datos[i]["cantidad"], 10);
-            var tipoActual = datos[i]["tipo"];
-            if (indiceMov !== indice) {
-              if ((retiros !== 0)||(ingresos !== 0)||(renos !== 0)||(destrucciones !== 0)) 
-                {
-                datitos[indice].retiros = retiros;
-                datitos[indice].ingresos = ingresos;
-                datitos[indice].renos = renos;
-                datitos[indice].destrucciones = destrucciones;
-              }
-              else {
-                datitos.splice(indice, 1);
-              }
-              datitos[indiceMov] = {"retiros":0, "ingresos":0, "renos":0, "destrucciones":0};
+      var url = "data/selectQuery.php";
 
-              indice = indiceMov;
-              retiros = 0;
-              ingresos = 0;
-              destrucciones = 0;
-              renos = 0;        
-            }
-            switch (tipoActual) {
-              case "Retiro": retiros = parseInt(retiros, 10) + cantidad;
-                             break;
-              case "Ingreso": ingresos = parseInt(ingresos, 10) + cantidad;
-                             break;
-              case "Renovación": renos = parseInt(renos, 10) + cantidad;
-                             break;
-              case "Destrucción": destrucciones = parseInt(destrucciones, 10) + cantidad;
-                             break;               
-              default: break; 
-            }    
-          }
-          /// Agrego para los casos en que haya un único mes y por ende nunca entre en el if pues habrá un único índice.
-          /// Se aclara que no hace falta chequear si alguno de los tipos es diferente de 0, pues de serlo la consulta 
-          /// hubiera sido nula y no se habría llegado hasta acá
-          datitos[indice].retiros = retiros;
-          datitos[indice].ingresos = ingresos;
-          datitos[indice].renos = renos;
-          datitos[indice].destrucciones = destrucciones;
-          ///**************************************************** FIN de recuperación de los datos ************************************************************************
-          var meses = [];
-          var totalRetiros = [];
-          var totalIngresos = [];
-          var totalRenos = [];
-          var totalDestrucciones = [];
-          for (var j in datitos){
-            //alert("mes: "+j+"\nRetiros: "+datitos[j].retiros+"\nIngresos: "+datitos[j].ingresos+"\nRenos: "+datitos[j].renos+"\nDestrucciones: "+datitos[j].destrucciones);
-            var temp = j.substr(0, 4);
-            var temp1 = j.substr(4,2);
-            var mes = temp1+"/"+temp;alert(mes);
-            meses.push(mes);
-            totalRetiros.push(datitos[j].retiros);
-            totalIngresos.push(datitos[j].ingresos);
-            totalRenos.push(datitos[j].renos);
-            totalDestrucciones.push(datitos[j].destrucciones);
-          }
-          for (var i in meses) {
-            alert("mes "+i+" : "+meses[i]+"\nretiros: "+totalRetiros[i]+"\ningresos: "+totalIngresos[i]+"\nrenos: "+totalRenos[i]+"\ndestrucciones: "+totalDestrucciones[i]);
-          }
-          $("#meses").val(meses);
-          $("#retiros").val(totalRetiros);
-          $("#ingresos").val(totalIngresos);
-          $("#renos").val(totalRenos);
-          $("#destrucciones").val(totalDestrucciones);
+      $.getJSON(url, {query: ""+query+""}).done(function(request){
+        var totalDatos = request.rows;     
+        if (totalDatos >= 1) {
+          $("#consulta").val(query);
+          $("#mensaje").val(mensajeConsulta);
+          $("#fechaInicio").val(añoInicio+mesInicio);
+          $("#fechaFin").val(fin);
+          $("#hacerGrafica").val("yes");
+          $('#graficar').attr('action', 'estadisticas.php?g=1');
           $("#graficar").submit();
         }
         else {
-          alert('No existen registros que coincidan con los parámetros pasados. Por favor verifique.');
+          alert("No existen registros que coincidan con esos parámetros.");
         }
-      });  
+      });
+      
+      
     }  
   }
 });
+
 
 /**************************************************************************************************************************
 /// *************************************************** FIN GRAFICAS *****************************************************
