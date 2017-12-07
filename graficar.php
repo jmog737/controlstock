@@ -18,6 +18,22 @@ require_once('../../jpgraph/jpgraph_pie3d.php');
 require_once('../../jpgraph/jpgraph_bar.php');
 require_once ('../../jpgraph/jpgraph_line.php');
 
+///********************************************************************** INICIO SETEO DE CARPETAS ************************************************************
+$unidad = "D:";
+$ip = "192.168.1.145";
+
+//$dir = $unidad.":/PROCESOS/PDFS";
+$dirGrafica = "//".$ip."/Reportes/";
+
+if (!file_exists($unidad)) {
+  $unidad = "C:";
+}
+
+if (!file_exists($dirGrafica)){
+  echo "No existe la carpeta. Por favor verifique.";
+}
+///*********************************************************************** FIN SETEO DE CARPETAS **************************************************************
+
 /// Recupero la consulta a ejecutar y el mes inicial:
 
 $query = $_SESSION["consulta"];
@@ -180,29 +196,14 @@ foreach($meses as $valor){
 }*/
 ///*********************************************************** FIN cálculos estadísticos **************************************************************************
 
-
-$unidad = "D:";
-$ip = "192.168.1.145";
-
-//$dir = $unidad.":/PROCESOS/PDFS";
-$dirGrafica = "//".$ip."/Reportes/";
-
-if (!file_exists($unidad)) {
-  $unidad = "C:";
-}
-
-if (!file_exists($dirGrafica)){
-  echo "No existe la carpeta. Por favor verifique.";
-}
-
 ///A partir del contenido del subtítulo discrimino si es una gráfica para un producto o para una entidad
 ///y en base a esto, elijo el tipo de gráfica a mostrar:
 $producto = strpos($mensaje, 'producto');
 if ($producto !== FALSE) {
-  graficarTorta($mensaje, $meses, $totales, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones);
+  graficarTorta($mensaje, $totales, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones);
 }
 else {
-  graficarBarras($mensaje, $meses, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones);
+  graficarBarras($mensaje, $meses,$totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones);
 }
 
 function graficarBarras($subtitulo, $meses, $data1, $data2, $data3, $data4, $avg1, $avg2, $avg3, $avg4){
@@ -381,7 +382,9 @@ function graficarBarras($subtitulo, $meses, $data1, $data2, $data3, $data4, $avg
 
   // Default is PNG so use ".png" as suffix
   $timestamp = date('Ymd_His');
-  $fileName = $dirGrafica."Graficas\grafica".$timestamp.".jpg";
+  $nombreArchivo = "graficaEntidad".$timestamp.".png";
+  $fileName = $dirGrafica."Graficas/".$nombreArchivo;
+  $_SESSION["nombreGrafica"] = $nombreArchivo;
   $graph->img->Stream($fileName);
 
   // Send it back to browser
@@ -390,7 +393,9 @@ function graficarBarras($subtitulo, $meses, $data1, $data2, $data3, $data4, $avg
 
 }
 
-function graficarTorta($subtitulo, $meses, $data, $avg1, $avg2, $avg3, $avg4){
+function graficarTorta($subtitulo, $data, $avg1, $avg2, $avg3, $avg4){
+  global $dirGrafica;
+  
   // A new pie graph
   $graph = new PieGraph(750,350, 'auto');
   // Setup background
@@ -426,7 +431,11 @@ function graficarTorta($subtitulo, $meses, $data, $avg1, $avg2, $avg3, $avg4){
   $p1->SetHeight(20);
   //$p1->SetAngle(50);
 
-  $p1->SetLegends(array("Retiros: $data[0]","Ingresos: $data[1]","Renos: $data[2]","Destrucciones: $data[3]"));
+  $retiros = number_format($data[0], 0, ',', '.');
+  $ingresos = number_format($data[1], 0, ',', '.');
+  $renos = number_format($data[2], 0, ',', '.');
+  $destrucciones = number_format($data[3], 0, ',', '.');
+  $p1->SetLegends(array("Retiros: $retiros","Ingresos: $ingresos","Renos: $renos","Destrucciones: $destrucciones"));
   $graph->legend->SetShadow('#e2bd6e@1',1);
   $graph->legend->SetPos(0.5,0.95,'center','bottom');
   $graph->legend->SetPos(0.015,0.18,'right','top');
@@ -449,8 +458,8 @@ function graficarTorta($subtitulo, $meses, $data, $avg1, $avg2, $avg3, $avg4){
   $txt->SetFont(FF_FONT1,FS_BOLD); 
   $txt->Align('right');
   $txt->SetColor('red');
-  $txt->SetPos(0.96,$posPrimero,'right','center');
-  $txt->SetBox('#7c90d4','#7c90d4'); 
+  $txt->SetPos(0.965,$posPrimero,'right','center');
+  $txt->SetBox('#b19dda','#7c90d4'); 
   $graph->AddText($txt); 
   
   $avg1 = number_format($avg1, 0, ',', '.');
@@ -489,11 +498,22 @@ function graficarTorta($subtitulo, $meses, $data, $avg1, $avg2, $avg3, $avg4){
   // Explode all slices
   $p1->ExplodeAll(14);
 
-  // Add drop shadow
-  //$p1->SetShadow();
-//
-  // ... and stroke it
-  $graph->Stroke();
+  // Get the handler to prevent the library from sending the
+  // image to the browser
+  $gdImgHandler = $graph->Stroke(_IMG_HANDLER);
+
+  // Stroke image to a file and browser
+
+  // Default is PNG so use ".png" as suffix
+  $timestamp = date('Ymd_His');
+  $nombreArchivo = "graficaProducto".$timestamp.".png";
+  $fileName = $dirGrafica."Graficas/".$nombreArchivo;
+  $_SESSION["nombreGrafica"] = $nombreArchivo;
+  $graph->img->Stream($fileName);
+
+  // Send it back to browser
+  $graph->img->Headers();
+  $graph->img->Stream();
 }
 
 ?>

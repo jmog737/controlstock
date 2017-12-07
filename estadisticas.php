@@ -9,6 +9,7 @@ if ($_POST["hacerGrafica"] === "yes") {
   $_SESSION["fechaFin"] = $_POST["fechaFin"];
   $_SESSION["mensaje"] = $_POST["mensaje"];
 }
+
 /**
 ******************************************************
 *  @file estadisticas.php
