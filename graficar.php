@@ -382,7 +382,7 @@ function graficarBarras($subtitulo, $meses, $data1, $data2, $data3, $data4, $avg
 
   // Default is PNG so use ".png" as suffix
   $timestamp = date('Ymd_His');
-  $nombreArchivo = "graficaEntidad".$timestamp.".png";
+  $nombreArchivo = "graficaEntidad".$timestamp.".jpg";
   $fileName = $dirGrafica."Graficas/".$nombreArchivo;
   $_SESSION["nombreGrafica"] = $nombreArchivo;
   $graph->img->Stream($fileName);
@@ -506,7 +506,7 @@ function graficarTorta($subtitulo, $data, $avg1, $avg2, $avg3, $avg4){
 
   // Default is PNG so use ".png" as suffix
   $timestamp = date('Ymd_His');
-  $nombreArchivo = "graficaProducto".$timestamp.".png";
+  $nombreArchivo = "graficaProducto".$timestamp.".jpg";
   $fileName = $dirGrafica."Graficas/".$nombreArchivo;
   $_SESSION["nombreGrafica"] = $nombreArchivo;
   $graph->img->Stream($fileName);

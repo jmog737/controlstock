@@ -2316,12 +2316,13 @@ $(document).on("click", "#realizarBusqueda", function () {
         }
         else {
           inicio = año+"-"+mes+"-01";
+          var añoFin = parseInt(año, 10);
           var mesSiguiente = parseInt(mes, 10) + 1;
           if (mesSiguiente === 13) {
             mesSiguiente = 1;
-            año = parseInt(año, 10) + 1;
+            añoFin = parseInt(año, 10) + 1;
           }
-          fin = año+"-"+mesSiguiente+"-01";
+          fin = añoFin+"-"+mesSiguiente+"-01";
           var mesMostrar = '';
           switch (mes) {
             case '01': mesMostrar = "Enero";
