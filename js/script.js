@@ -787,6 +787,185 @@ function validarBusqueda() {
   
 }
 
+/**
+ * \brief Función que genera el formulario para realizar las consultas.
+ */
+function cargarFormBusqueda(){
+  var url = "data/selectQuery.php";
+  var consultarProductos = "select idprod, nombre_plastico as nombre from productos order by nombre_plastico asc";
+  
+  $.getJSON(url, {query: ""+consultarProductos+""}).done(function(request){
+    var resultadoProductos = request["resultado"];
+    var productos = new Array();
+    var idprods = new Array();
+    for (var i in resultadoProductos) {
+      productos.push(resultadoProductos[i]["nombre"]);
+      idprods.push(resultadoProductos[i]["idprod"]);
+    }
+    
+    var consultarEntidades = "select distinct entidad from productos order by entidad asc, nombre_plastico asc";
+    
+    $.getJSON(url, {query: ""+consultarEntidades+""}).done(function(request){
+      var resultadoEntidades = request["resultado"];
+      var entidades = new Array();
+      for (var i in resultadoEntidades) {
+        entidades.push(resultadoEntidades[i]["entidad"]);
+      }
+      
+      var consultarUsuarios = "select iduser, apellido, nombre from usuarios order by sector asc, apellido asc, nombre asc";
+    
+      $.getJSON(url, {query: ""+consultarUsuarios+""}).done(function(request){
+        var resultadoUsuarios = request["resultado"];
+        var idusers = new Array();
+        var nombresUsuarios = new Array();
+        var apellidosUsuarios = new Array();
+        for (var i in resultadoUsuarios) {
+          idusers.push(resultadoUsuarios[i]["iduser"]);
+          apellidosUsuarios.push(resultadoUsuarios[i]["apellido"]);
+          nombresUsuarios.push(resultadoUsuarios[i]["nombre"]);
+        }
+        
+      var tabla = '<table id="parametros" name="parametros" class="tabla2">';
+      var tr = '<tr>\n\
+                  <th colspan="5" class="tituloTabla">STOCK</th>\n\
+                </tr>';
+      tr += '<tr>\n\
+              <td class="fondoVerde">\n\
+                <input type="radio" name="criterio" value="entidadStock" checked="checked">\n\
+              </td>\n\
+              <th>Entidad:</th>\n\
+                <td colspan="3">\n\
+                  <select name="entidad" id="entidadStock" style="width: 100%">\n\
+                    <option value="todos" selected="yes">---TODOS---</option>';
+      for (var j in entidades) {
+        tr += '<option value="'+entidades[j]+'">'+entidades[j]+'</option>';
+      }  
+      tr += '   </select>\n\
+              </td>\n\
+            </tr>';
+      tr += '<tr>\n\
+              <td class="fondoVerde">\n\
+                <input type="radio" name="criterio" value="productoStock">\n\
+              </td>\n\
+              <th>Producto:</th>\n\
+              <td align="center" colspan="3">\n\
+                <input type="text" id="productoStock" name="producto" class="agrandar size="9" onkeyup="showHint(this.value, "#productoStock")">\n\
+              </td>\n\
+            </tr>';
+      tr += '<tr>\n\
+              <td class="fondoVerde">\n\
+                <input type="radio" name="criterio" value="totalStock">\n\
+              </td>\n\
+              <td colspan="4" class="negrita" style="text-align: left">Total de plásticos en bóveda</td>\n\
+            </tr>';
+      tr += '<tr>\n\
+              <th colspan="5" class="centrado">MOVIMIENTOS</th>\n\
+            </tr>';
+      tr += '<tr>\n\
+              <td class="fondoVerde">\n\
+                <input type="radio" name="criterio" value="entidadMovimiento">\n\
+              </td>\n\
+              <th>Entidad:</th>\n\
+                <td colspan="3">\n\
+                  <select name="entidad" id="entidadMovimiento" style="width: 100%">\n\
+                    <option value="todos" selected="yes">---TODOS---</option>';
+      for (var j in entidades) {
+        tr += '<option value="'+entidades[j]+'">'+entidades[j]+'</option>';
+      }   
+      tr += '   </select>\n\
+              </td>\n\
+            </tr>';
+      tr += '<tr>\n\
+              <td class="fondoVerde">\n\
+                <input type="radio" name="criterio" value="productoMovimiento">\n\
+              </td>\n\
+              <th>Producto:</th>\n\
+              <td align="center" colspan="3">\n\
+                <input type="text" id="productoMovimiento" name="producto" class="agrandar" size="9" onkeyup="showHint(this.value, "#productoMovimiento")">\n\
+              </td>\n\
+            </tr>';
+      tr += '<tr>\n\
+                <td class="fondoNaranja">\n\
+                  <input type="radio" name="criterioFecha" value="intervalo">\n\
+                </td>\n\
+                <th>Entre:</th>\n\
+                <td>\n\
+                  <input type="date" name="inicio" id="inicio" style="width:100%; text-align: center" min="2016-07-01">\n\
+                </td>\n\
+                <td>y:</td>\n\
+                <td>\n\
+                  <input type="date" name="fin" id="fin" style="width:100%; text-align: center" min="2016-10-01">\n\
+                </td>\n\
+              </tr>';
+      tr += '<tr>\n\
+              <td class="fondoNaranja">\n\
+                <input type="radio" name="criterioFecha" value="mes" checked="checked">\n\
+              </td>\n\
+              <th>Mes:</th>\n\
+              <td>\n\
+                <select id="mes" name="mes" style="width:100%">\n\
+                  <option value="todos" selected="yes">--Seleccionar--</option>\n\
+                  <option value="01">Enero</option>\n\
+                  <option value="02">Febrero</option>\n\
+                  <option value="03">Marzo</option>\n\
+                  <option value="04">Abril</option>\n\
+                  <option value="05">Mayo</option>\n\
+                  <option value="06">Junio</option>\n\
+                  <option value="07">Julio</option>\n\
+                  <option value="08">Agosto</option>\n\
+                  <option value="09">Setiembre</option>\n\
+                  <option value="10">Octubre</option>\n\
+                  <option value="11">Noviembre</option>\n\
+                  <option value="12">Diciembre</option>\n\
+                </select>\n\
+              </td>\n\
+              <th>Año:</th>\n\
+              <td>\n\
+                <select id="año" name="año" style="width:100%">\n\
+                  <option value="2017" selected="yes">2017</option>\n\
+                  <option value="2018">2018</option>\n\
+                  <option value="2019">2019</option>\n\
+                  <option value="2020">2020</option>\n\
+                  <option value="2021">2021</option>\n\
+                </select>\n\
+              </td>\n\
+            </tr>';
+      tr += '<tr>\n\
+              <th>Tipo:</th>\n\
+              <td>\n\
+                <select id="tipo" name="tipo" style="width:100%">\n\
+                  <option value="Todos" selected="yes">---TODOS---</option>\n\
+                  <option value="Retiro">Retiro</option>\n\
+                  <option value="Ingreso">Ingreso</option>\n\
+                  <option value="Renovaci&oacute;n">Reno</option>\n\
+                  <option value="Destrucci&oacute;n">Destrucci&oacute;n</option>\n\
+                </select>\n\
+              </td>\n\
+            </tr>';
+      tr += '<tr>\n\
+              <th>Usuario:</th>\n\
+              <td colspan="3">\n\
+                <select name="usuario" id="usuario" style="width: 100%">\n\
+                  <option value="todos">---TODOS---</option>';
+      for (var j in nombresUsuarios) {
+          tr += '<option value="'+idusers[j]+'">'+nombresUsuarios[j]+' '+apellidosUsuarios[j]+'</option>';
+        }      
+      tr += '   </select>\n\
+              </td>\n\
+            </tr>';
+      tr += '<tr>\n\
+              <td colspan="5" class="pieTabla">\n\
+                <input type="button" class="btn btn-success" name="consultar" id="realizarBusqueda" value="Consultar" align="center">\n\
+              </td>\n\
+            </tr>';
+      tabla += tr;
+      tabla += '</table>';
+
+      });  
+    });  
+  });
+}
+
 /***********************************************************************************************************************
 /// *********************************************** FIN FUNCIONES BÚSQUEDAS *********************************************
 ************************************************************************************************************************
@@ -1301,6 +1480,18 @@ function todo () {
                                         setTimeout(function(){cargarProducto(0, "#content")}, 100);
                                         break;                                                                      
     case "/controlstock/busquedas.php": {
+                                        if (parametros) {
+                                          var temp = parametros.split('?');
+                                          var temp1 = temp[1].split('&');
+                                          var temp2 = temp1[0].split('=');
+                                          var hint = temp2[1];
+                                          alert(hint);
+                                          $("#productoStock").val(hint);
+                                          setTimeout(function(){cargarFormBusqueda()}, 100);                                          
+                                        }
+                                        else {
+                                          setTimeout(function(){cargarFormBusqueda()}, 100);
+                                        }
                                         break;
                                         }
     case "/controlstock/estadisticas.php":  if (parametros) {
@@ -2156,6 +2347,7 @@ $(document).on("click", "#realizarBusqueda", function () {
     var mes = $("#mes").val();
     var año = $("#año").val();
     var rangoFecha = null;
+    var prodHint = '';
     
     var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, DATE_FORMAT(productos.ultimoMovimiento, \'%d/%m/%Y\') as ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
     var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
@@ -2199,6 +2391,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                query += " from productos where idProd="+idProd;
                                consultaCSV += " from productos where idProd="+idProd;
                              }
+                             prodHint = $("#productoStock").val();
                              tipoConsulta = 'de stock del producto '+nombreSolo;
                              campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-Stock-Alarma1-Alarma2-Comentarios-&Uacute;ltimo Movimiento";
                              largos = "0.8-1.2-2.5-0.8-2-2.5-1-1-1-1-2-1";
@@ -2249,6 +2442,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                     validarUser = true;
                                     ordenFecha = true;
                                   }
+                                  prodHint = $("#productoMovimiento").val();
                                   tipoConsulta = 'de los movimientos del producto '+nombreSolo;
                                   campos = 'Id-Entidad-Nombre-BIN-Código-Contacto-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-&Uacute;ltimo Movimiento-Fecha-Hora-Cantidad-Tipo-Comentarios';
                                   //Orden de la consulta: entidad - nombre - bin - codigo - snapshot - stock - alarma - prodcom - fecha - hora - cantidad - tipo - comentarios
@@ -2412,7 +2606,7 @@ $(document).on("click", "#realizarBusqueda", function () {
         if (totalDatos >= 1) 
           {
           $("#main-content").empty();  
-          var tabla = '<form name="resultadoBusqueda" id="resultadoBusqueda" action="exportar.php" method="post" class="exportarForm">';
+          var tabla = '<form name="resultadoBusqueda" id="resultadoBusqueda" target="_blank" action="exportar.php" method="post" class="exportarForm">';
           tabla += '<table name="producto" class="tabla2">';
           switch(radio) {
             case 'entidadStock':  tabla += '<tr><th class="tituloTabla" colspan="8">CONSULTA DE STOCK</th></tr>';
@@ -3005,7 +3199,7 @@ $(document).on("click", "#realizarBusqueda", function () {
         
         mostrar += "<h3>Total de registros afectados: <font class='naranja'>"+totalDatos+"</font></h3>";
         mostrar += tabla;
-        var volver = '<br><a href="#" name="volver" id="volverBusqueda" onclick="location.reload()">Volver</a><br><br>';
+        var volver = '<br><a href="../controlstock/busquedas.php?h='+prodHint+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         $("#main-content").append(mostrar);
       });    

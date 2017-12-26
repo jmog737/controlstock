@@ -10,6 +10,23 @@
 *******************************************************/
 require_once('..\..\fpdf\mc_table.php');
 
+///*************************** COLORES USADOS PARA LAS TABLAS: *******************************************************************
+
+///Título de la tabla:
+///$this->SetFillColor(2, 49, 132);
+///$this->SetTextColor(255, 255, 255);
+
+/// Nombre de los campos y línea con el total: 
+///$this->SetFillColor(103, 167, 253);
+///$this->SetTextColor(255, 255, 255);
+
+///Resaltado TOTAL:
+///$this->SetFillColor(0, 255, 255);
+
+///*************************** FIN COLORES USADOS PARA LAS TABLAS ****************************************************************
+
+
+
 class PDF extends PDF_MC_Table
   {
   //Cabecera de página
@@ -112,15 +129,21 @@ class PDF extends PDF_MC_Table
     //************************************** TÍTULO *****************************************************************************************
     $this->SetX($x);
     //Defino color de fondo:
-    $this->SetFillColor(153, 255, 102);
+    //$this->SetFillColor(153, 255, 102);
+    //Defino color de fondo para el título de la tabla:
+    $this->SetFillColor(2, 49, 132);
+    //Defino el color del texto para el título de la tabla:
+    $this->SetTextColor(255, 255, 255);
     //Escribo el título:
     $this->Cell($largoCampos[$totalCampos], 7, utf8_decode($tituloTabla), 1, 0, 'C', 1);
     $this->Ln();
     //**************************************  FIN TÍTULO ************************************************************************************
     
-    //Restauro color de fondo y tipo de letra para el contenido:
-    $this->SetFillColor(255, 204, 120);
-    $this->SetTextColor(0);
+    //Restauro color de fondo y tipo de letra para los nombres de los campos (que será el mismo que para la fila con el total):
+    //$this->SetFillColor(255, 204, 120);
+    //$this->SetTextColor(0);
+    $this->SetFillColor(103, 167, 253);
+    $this->SetTextColor(255, 255, 255);
     $this->SetFont('Courier');
     $this->SetX($x);
 
@@ -208,11 +231,19 @@ class PDF extends PDF_MC_Table
                 $fill = 1;
               }
               else {
-                /// seteo color de stock regular (verde):
-                $this->SetFillColor(113, 236, 113);
-                $fill = 1;
+                if (!$tipo) {
+                  /// seteo color de stock regular (verde):
+                  $this->SetFillColor(113, 236, 113);
+                  $fill = 1;
+                }
+                else {
+                  $this->SetFillColor(103, 167, 253);
+                  $this->SetTextColor(0);
+                  $fill = 0;
+                }
+                
               }
-            }
+            }             
           }
           else {
             if ($i === $indiceEntidad) {
@@ -251,8 +282,10 @@ class PDF extends PDF_MC_Table
     if ($total !== -1) {
       //Agrego fila final de la tabla con el total de plásticos:
       $this->SetFont('Courier', 'B', 12);
-      $this->SetFillColor(255, 204, 120);
-      $this->SetTextColor(0);
+      //$this->SetFillColor(255, 204, 120);
+      //$this->SetTextColor(0);*****************************************************************************************************
+      $this->SetFillColor(103, 167, 253);
+      $this->SetTextColor(255, 255, 255);
       if ($tipo) {
         $largoTemp = $largoCampos[$totalCampos] - $largoCampos[$totalCampos-1];
       }
@@ -262,7 +295,8 @@ class PDF extends PDF_MC_Table
       $this->Cell($largoTemp, 6, 'TOTAL:', 'LRBT', 0, 'C', true);
       $this->SetFont('Courier', 'BI', 14);
       $this->SetTextColor(255,0,0);
-      $this->SetFillColor(153, 255, 102);
+      //$this->SetFillColor(153, 255, 102);
+      $this->SetFillColor(0, 255, 255);
       if ($tipo) {
         $this->Cell($largoCampos[$totalCampos-1], 6, number_format($total, 0, ",", "."), 'LRBT', 0, 'C', true);
       }
@@ -348,7 +382,10 @@ class PDF extends PDF_MC_Table
       //************************************** TÍTULO *****************************************************************************************
       $this->SetX($x);
       //Defino color de fondo:
-      $this->SetFillColor(153, 255, 102);
+      //$this->SetFillColor(153, 255, 102);
+      ///Título de la tabla:
+      $this->SetFillColor(2, 49, 132);
+      $this->SetTextColor(255, 255, 255);
       //Escribo el título:
       $this->Cell($tamTabla, 7, "DETALLES DEL PRODUCTO", 1, 0, 'C', 1);
       $this->Ln();
@@ -363,9 +400,13 @@ class PDF extends PDF_MC_Table
       $nb1 = $this->NbLines($cResto,$nombre);
       $h0=$h*$nb1;
 
+      $this->SetFillColor(103, 167, 253);
+      
+      $this->SetTextColor(255, 255, 255);
       $this->SetFont('Courier', 'B', 10);
       $this->Cell($cCampo, $h0, "Nombre:", 'LRBT', 0, 'L', true);
       $this->SetFont('Courier', '', 9);
+      $this->SetTextColor(0);
       //Save the current position
       $x1=$this->GetX();
       $y=$this->GetY();
@@ -387,8 +428,10 @@ class PDF extends PDF_MC_Table
       $h0=$h*$nb;
 
       $this->SetFont('Courier', 'B', 10);
+      $this->SetTextColor(255, 255, 255);
       $this->Cell($cCampo, $h0, "Entidad:", 'LRBT', 0, 'L', true);
       $this->SetFont('Courier', '', 9);
+      $this->SetTextColor(0);
       //Save the current position
       $x1=$this->GetX();
       $y=$this->GetY();
@@ -409,8 +452,10 @@ class PDF extends PDF_MC_Table
         $codigo = 'No ingresado';
       }
       $this->SetFont('Courier', 'B', 10);
+      $this->SetTextColor(255, 255, 255);
       $this->Cell($cCampo, 6, utf8_decode("Código:"), 'LRBT', 0, 'L', true);
       $this->SetFont('Courier', '', 9);
+      $this->SetTextColor(0);
       $this->Cell($cResto, 6, $codigo, 'LRBT', 0, 'C', false);
       $this->Ln();
       $this->SetX($x);
@@ -420,8 +465,10 @@ class PDF extends PDF_MC_Table
         $bin = 'N/D o N/C';
       }
       $this->SetFont('Courier', 'B', 10);
+      $this->SetTextColor(255, 255, 255);
       $this->Cell($cCampo, 6, "BIN:", 'LRBT', 0, 'L', true);
       $this->SetFont('Courier', '', 9);
+      $this->SetTextColor(0);
       $this->Cell($cResto, 6, $bin, 'LRBT', 0, 'C', false);
       $this->Ln();
       $this->SetX($x);
@@ -431,8 +478,10 @@ class PDF extends PDF_MC_Table
         $contacto = '';
       }
       $this->SetFont('Courier', 'B', 10);
+      $this->SetTextColor(255, 255, 255);
       $this->Cell($cCampo, 6, "Contacto:", 'LRBT', 0, 'L', true);
       $this->SetFont('Courier', '', 9);
+      $this->SetTextColor(0);
       $this->Cell($cResto, 6, $contacto, 'LRBT', 0, 'C', false);
       $this->Ln();
       $this->SetX($x);      
@@ -445,8 +494,10 @@ class PDF extends PDF_MC_Table
       $h0=$h*$nb;
 
       $this->SetFont('Courier', 'B', 10);
+      $this->SetTextColor(255, 255, 255);
       $this->Cell($cCampo, $h0, "Comentarios:", 'LRBT', 0, 'L', true);
       $this->SetFont('Courier', '', 9);
+      $this->SetTextColor(0);
       //Save the current position
       $x1=$this->GetX();
       $y=$this->GetY();
@@ -470,8 +521,10 @@ class PDF extends PDF_MC_Table
       $h0=$h*$nb;
 
       $this->SetFont('Courier', 'B', 10);
+      $this->SetTextColor(255, 255, 255);
       $this->Cell($cCampo, $h0, utf8_decode("Último Movimiento:"), 'LRBT', 0, 'L', true);
       $this->SetFont('Courier', '', 9);
+      $this->SetTextColor(0);
       //Save the current position
       $x1=$this->GetX();
       $y=$this->GetY();
@@ -493,8 +546,10 @@ class PDF extends PDF_MC_Table
       $stock = $registros[0][8];
 
       $this->SetFont('Courier', 'B', 10);
+      $this->SetTextColor(255, 255, 255);
       $this->Cell($cCampo, 6, "Stock:", 'LRBT', 0, 'L', true);
       $this->SetFont('Courier', 'BI', 16);
+      $this->SetTextColor(0);
       if (($stock < $alarma1) && ($stock > $alarma2)){
         $this->SetFillColor(255, 255, 51);
         $this->SetTextColor(0);
@@ -527,19 +582,22 @@ class PDF extends PDF_MC_Table
     //Defino tipo de letra y tamaño para el Título:
     $this->SetFont('Courier', 'B', 12);
     //Defino color para el texto:
-    $this->SetTextColor(0);  
+    $this->SetTextColor(255, 255, 255);  
     //************************************** TÍTULO *****************************************************************************************
     $this->SetX($x);
     //Defino color de fondo:
-    $this->SetFillColor(153, 255, 102);
+    //$this->SetFillColor(153, 255, 102);
+    $this->SetFillColor(2, 49, 132);
+    //
     //Escribo el título:
     $this->Cell($largoCampos[$totalCampos], 7, utf8_decode($tituloTabla), 1, 0, 'C', 1);
     $this->Ln();
     //**************************************  FIN TÍTULO ************************************************************************************
     
     //Restauro color de fondo y tipo de letra para el contenido:
-    $this->SetFillColor(255, 204, 120);
-    $this->SetTextColor(0);
+    //$this->SetFillColor(255, 204, 120);
+    $this->SetFillColor(103, 167, 253);
+    
     $this->SetFont('Courier');
     $this->SetX($x);
 
@@ -627,7 +685,8 @@ class PDF extends PDF_MC_Table
     
     $this->Ln();
     $this->SetX($x);
-    $this->SetFont('Courier', '', 9);    
+    $this->SetFont('Courier', '', 9);
+    $this->SetTextColor(0); 
     $fill = false;
     $productoViejo = $registros[0][$indNombre];
     $subtotalRetiro = 0;
@@ -640,7 +699,7 @@ class PDF extends PDF_MC_Table
     $subtotalDestruccionMostrar = 0;
     $totalConsumos = 0;
     $totalConsumosMostrar = 0;
-            
+          
     foreach ($registros as $dato) {
       $nombre = trim(utf8_decode($dato[$indNombre]));
       $cantidad1 = trim(utf8_decode($dato[$indCantidad]));
@@ -1413,15 +1472,20 @@ class PDF extends PDF_MC_Table
     //************************************** TÍTULO *****************************************************************************************
     $this->SetX($x);
     //Defino color de fondo:
-    $this->SetFillColor(153, 255, 102);
+    //$this->SetFillColor(153, 255, 102);
+    ///Título de la tabla:
+    $this->SetFillColor(2, 49, 132);
+    $this->SetTextColor(255, 255, 255);
     //Escribo el título:
     $this->Cell($tamTabla, 7, "DETALLES DEL PRODUCTO", 1, 0, 'C', 1);
     $this->Ln();
     //**************************************  FIN TÍTULO ************************************************************************************
     
     //Restauro color de fondo y tipo de letra para el contenido:
-    $this->SetFillColor(255, 204, 120);
-    $this->SetTextColor(0);
+    //$this->SetFillColor(255, 204, 120);
+    //$this->SetTextColor(0);
+    $this->SetFillColor(103, 167, 253);
+    $this->SetTextColor(255, 255, 255);
     $this->SetFont('Courier');
     $this->SetX($x);
     
@@ -1431,6 +1495,7 @@ class PDF extends PDF_MC_Table
     $this->SetFont('Courier', 'B', 10);
     $this->Cell($cCampo, $h0, "Nombre:", 'LRBT', 0, 'L', true);
     $this->SetFont('Courier', '', 9);
+    $this->SetTextColor(0);
     //Save the current position
     $x1=$this->GetX();
     $y=$this->GetY();
@@ -1452,8 +1517,10 @@ class PDF extends PDF_MC_Table
     $h0=$h*$nb;
     
     $this->SetFont('Courier', 'B', 10);
+    $this->SetTextColor(255, 255, 255);
     $this->Cell($cCampo, $h0, "Entidad:", 'LRBT', 0, 'L', true);
     $this->SetFont('Courier', '', 9);
+    $this->SetTextColor(0);
     //Save the current position
     $x1=$this->GetX();
     $y=$this->GetY();
@@ -1473,9 +1540,11 @@ class PDF extends PDF_MC_Table
     if (($codigo === '')||($codigo === null)) {
       $codigo = 'No ingresado';
     }
+    $this->SetTextColor(255, 255, 255);
     $this->SetFont('Courier', 'B', 10);
     $this->Cell($cCampo, 6, utf8_decode("Código:"), 'LRBT', 0, 'L', true);
     $this->SetFont('Courier', '', 9);
+    $this->SetTextColor(0);
     $this->Cell($cResto, 6, $codigo, 'LRBT', 0, 'C', false);
     $this->Ln();
     $this->SetX($x);
@@ -1485,8 +1554,10 @@ class PDF extends PDF_MC_Table
       $bin = 'N/D o N/C';
     }
     $this->SetFont('Courier', 'B', 10);
+    $this->SetTextColor(255, 255, 255);
     $this->Cell($cCampo, 6, "BIN:", 'LRBT', 0, 'L', true);
     $this->SetFont('Courier', '', 9);
+    $this->SetTextColor(0);
     $this->Cell($cResto, 6, $bin, 'LRBT', 0, 'C', false);
     $this->Ln();
     $this->SetX($x);
@@ -1496,8 +1567,11 @@ class PDF extends PDF_MC_Table
       $contacto = '';
     }
     $this->SetFont('Courier', 'B', 10);
+    $this->SetTextColor(255, 255, 255);
+    
     $this->Cell($cCampo, 6, "Contacto:", 'LRBT', 0, 'L', true);
     $this->SetFont('Courier', '', 9);
+    $this->SetTextColor(0);
     $this->Cell($cResto, 6, $contacto, 'LRBT', 0, 'C', false);
     $this->Ln();
     $this->SetX($x);  
@@ -1510,8 +1584,10 @@ class PDF extends PDF_MC_Table
     $h0=$h*$nb;
     
     $this->SetFont('Courier', 'B', 10);
+    $this->SetTextColor(255, 255, 255);
     $this->Cell($cCampo, $h0, "Comentarios:", 'LRBT', 0, 'L', true);
     $this->SetFont('Courier', '', 9);
+    $this->SetTextColor(0);
     //Save the current position
     $x1=$this->GetX();
     $y=$this->GetY();
@@ -1536,8 +1612,10 @@ class PDF extends PDF_MC_Table
     $h0=$h*$nb;
     
     $this->SetFont('Courier', 'B', 10);
+    $this->SetTextColor(255, 255, 255);
     $this->Cell($cCampo, $h0, utf8_decode("Último Movimiento:"), 'LRBT', 0, 'L', true);
     $this->SetFont('Courier', '', 9);
+    $this->SetTextColor(0);
     //Save the current position
     $x1=$this->GetX();
     $y=$this->GetY();
@@ -1560,7 +1638,9 @@ class PDF extends PDF_MC_Table
     $stock = $registros[0][8];
     
     $this->SetFont('Courier', 'B', 10);
+    $this->SetTextColor(255, 255, 255);
     $this->Cell($cCampo, 6, "Stock:", 'LRBT', 0, 'L', true);
+    $this->SetTextColor(0);
     $this->SetFont('Courier', 'BI', 16);
     if (($stock < $alarma1) && ($stock > $alarma2)){
       $this->SetFillColor(255, 255, 51);
