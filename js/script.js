@@ -790,7 +790,7 @@ function validarBusqueda() {
 /**
  * \brief Función que genera el formulario para realizar las consultas.
  */
-function cargarFormBusqueda(){
+function cargarFormBusqueda(selector, hint){
   var url = "data/selectQuery.php";
   var consultarProductos = "select idprod, nombre_plastico as nombre from productos order by nombre_plastico asc";
   
@@ -825,142 +825,155 @@ function cargarFormBusqueda(){
           nombresUsuarios.push(resultadoUsuarios[i]["nombre"]);
         }
         
-      var tabla = '<table id="parametros" name="parametros" class="tabla2">';
-      var tr = '<tr>\n\
-                  <th colspan="5" class="tituloTabla">STOCK</th>\n\
-                </tr>';
-      tr += '<tr>\n\
-              <td class="fondoVerde">\n\
-                <input type="radio" name="criterio" value="entidadStock" checked="checked">\n\
-              </td>\n\
-              <th>Entidad:</th>\n\
-                <td colspan="3">\n\
-                  <select name="entidad" id="entidadStock" style="width: 100%">\n\
-                    <option value="todos" selected="yes">---TODOS---</option>';
-      for (var j in entidades) {
-        tr += '<option value="'+entidades[j]+'">'+entidades[j]+'</option>';
-      }  
-      tr += '   </select>\n\
-              </td>\n\
-            </tr>';
-      tr += '<tr>\n\
-              <td class="fondoVerde">\n\
-                <input type="radio" name="criterio" value="productoStock">\n\
-              </td>\n\
-              <th>Producto:</th>\n\
-              <td align="center" colspan="3">\n\
-                <input type="text" id="productoStock" name="producto" class="agrandar size="9" onkeyup="showHint(this.value, "#productoStock")">\n\
-              </td>\n\
-            </tr>';
-      tr += '<tr>\n\
-              <td class="fondoVerde">\n\
-                <input type="radio" name="criterio" value="totalStock">\n\
-              </td>\n\
-              <td colspan="4" class="negrita" style="text-align: left">Total de plásticos en bóveda</td>\n\
-            </tr>';
-      tr += '<tr>\n\
-              <th colspan="5" class="centrado">MOVIMIENTOS</th>\n\
-            </tr>';
-      tr += '<tr>\n\
-              <td class="fondoVerde">\n\
-                <input type="radio" name="criterio" value="entidadMovimiento">\n\
-              </td>\n\
-              <th>Entidad:</th>\n\
-                <td colspan="3">\n\
-                  <select name="entidad" id="entidadMovimiento" style="width: 100%">\n\
-                    <option value="todos" selected="yes">---TODOS---</option>';
-      for (var j in entidades) {
-        tr += '<option value="'+entidades[j]+'">'+entidades[j]+'</option>';
-      }   
-      tr += '   </select>\n\
-              </td>\n\
-            </tr>';
-      tr += '<tr>\n\
-              <td class="fondoVerde">\n\
-                <input type="radio" name="criterio" value="productoMovimiento">\n\
-              </td>\n\
-              <th>Producto:</th>\n\
-              <td align="center" colspan="3">\n\
-                <input type="text" id="productoMovimiento" name="producto" class="agrandar" size="9" onkeyup="showHint(this.value, "#productoMovimiento")">\n\
-              </td>\n\
-            </tr>';
-      tr += '<tr>\n\
-                <td class="fondoNaranja">\n\
-                  <input type="radio" name="criterioFecha" value="intervalo">\n\
+        var tabla = '<table id="parametros" name="parametros" class="tabla2">';
+        var tr = '<tr>\n\
+                    <th colspan="5" class="tituloTabla">STOCK</th>\n\
+                  </tr>';
+        tr += '<tr>\n\
+                <td class="fondoVerde">\n\
+                  <input type="radio" name="criterio" value="entidadStock" checked="checked">\n\
                 </td>\n\
-                <th>Entre:</th>\n\
-                <td>\n\
-                  <input type="date" name="inicio" id="inicio" style="width:100%; text-align: center" min="2016-07-01">\n\
-                </td>\n\
-                <td>y:</td>\n\
-                <td>\n\
-                  <input type="date" name="fin" id="fin" style="width:100%; text-align: center" min="2016-10-01">\n\
+                <th>Entidad:</th>\n\
+                  <td colspan="3">\n\
+                    <select name="entidad" id="entidadStock" style="width: 100%">\n\
+                      <option value="todos" selected="yes">---TODOS---</option>';
+        for (var j in entidades) {
+          tr += '<option value="'+entidades[j]+'">'+entidades[j]+'</option>';
+        }  
+        tr += '   </select>\n\
                 </td>\n\
               </tr>';
-      tr += '<tr>\n\
-              <td class="fondoNaranja">\n\
-                <input type="radio" name="criterioFecha" value="mes" checked="checked">\n\
-              </td>\n\
-              <th>Mes:</th>\n\
-              <td>\n\
-                <select id="mes" name="mes" style="width:100%">\n\
-                  <option value="todos" selected="yes">--Seleccionar--</option>\n\
-                  <option value="01">Enero</option>\n\
-                  <option value="02">Febrero</option>\n\
-                  <option value="03">Marzo</option>\n\
-                  <option value="04">Abril</option>\n\
-                  <option value="05">Mayo</option>\n\
-                  <option value="06">Junio</option>\n\
-                  <option value="07">Julio</option>\n\
-                  <option value="08">Agosto</option>\n\
-                  <option value="09">Setiembre</option>\n\
-                  <option value="10">Octubre</option>\n\
-                  <option value="11">Noviembre</option>\n\
-                  <option value="12">Diciembre</option>\n\
-                </select>\n\
-              </td>\n\
-              <th>Año:</th>\n\
-              <td>\n\
-                <select id="año" name="año" style="width:100%">\n\
-                  <option value="2017" selected="yes">2017</option>\n\
-                  <option value="2018">2018</option>\n\
-                  <option value="2019">2019</option>\n\
-                  <option value="2020">2020</option>\n\
-                  <option value="2021">2021</option>\n\
-                </select>\n\
-              </td>\n\
-            </tr>';
-      tr += '<tr>\n\
-              <th>Tipo:</th>\n\
-              <td>\n\
-                <select id="tipo" name="tipo" style="width:100%">\n\
-                  <option value="Todos" selected="yes">---TODOS---</option>\n\
-                  <option value="Retiro">Retiro</option>\n\
-                  <option value="Ingreso">Ingreso</option>\n\
-                  <option value="Renovaci&oacute;n">Reno</option>\n\
-                  <option value="Destrucci&oacute;n">Destrucci&oacute;n</option>\n\
-                </select>\n\
-              </td>\n\
-            </tr>';
-      tr += '<tr>\n\
-              <th>Usuario:</th>\n\
-              <td colspan="3">\n\
-                <select name="usuario" id="usuario" style="width: 100%">\n\
-                  <option value="todos">---TODOS---</option>';
-      for (var j in nombresUsuarios) {
-          tr += '<option value="'+idusers[j]+'">'+nombresUsuarios[j]+' '+apellidosUsuarios[j]+'</option>';
-        }      
-      tr += '   </select>\n\
-              </td>\n\
-            </tr>';
-      tr += '<tr>\n\
-              <td colspan="5" class="pieTabla">\n\
-                <input type="button" class="btn btn-success" name="consultar" id="realizarBusqueda" value="Consultar" align="center">\n\
-              </td>\n\
-            </tr>';
-      tabla += tr;
-      tabla += '</table>';
-
+        tr += '<tr>\n\
+                <td class="fondoVerde">\n\
+                  <input type="radio" name="criterio" value="productoStock">\n\
+                </td>\n\
+                <th>Producto:</th>\n\
+                <td align="center" colspan="3">\n\
+                  <input type="text" id="productoStock" name="producto" class="agrandar size="9" onkeyup=\'showHint(this.value, "#productoStock")\'>\n\
+                </td>\n\
+              </tr>';
+        tr += '<tr>\n\
+                <td class="fondoVerde">\n\
+                  <input type="radio" name="criterio" value="totalStock">\n\
+                </td>\n\
+                <td colspan="4" class="negrita" style="text-align: left">Total de plásticos en bóveda</td>\n\
+              </tr>';
+        tr += '<tr>\n\
+                <th colspan="5" class="centrado">MOVIMIENTOS</th>\n\
+              </tr>';
+        tr += '<tr>\n\
+                <td class="fondoVerde">\n\
+                  <input type="radio" name="criterio" value="entidadMovimiento">\n\
+                </td>\n\
+                <th>Entidad:</th>\n\
+                  <td colspan="3">\n\
+                    <select name="entidad" id="entidadMovimiento" style="width: 100%">\n\
+                      <option value="todos" selected="yes">---TODOS---</option>';
+        for (var j in entidades) {
+          tr += '<option value="'+entidades[j]+'">'+entidades[j]+'</option>';
+        }   
+        tr += '   </select>\n\
+                </td>\n\
+              </tr>';
+        tr += '<tr>\n\
+                <td class="fondoVerde">\n\
+                  <input type="radio" name="criterio" value="productoMovimiento">\n\
+                </td>\n\
+                <th>Producto:</th>\n\
+                <td align="center" colspan="3">\n\
+                  <input type="text" id="productoMovimiento" name="producto" class="agrandar" size="9" onkeyup=\'showHint(this.value, "#productoMovimiento")\'>\n\
+                </td>\n\
+              </tr>';
+        tr += '<tr>\n\
+                  <td class="fondoNaranja">\n\
+                    <input type="radio" name="criterioFecha" value="intervalo">\n\
+                  </td>\n\
+                  <th>Entre:</th>\n\
+                  <td>\n\
+                    <input type="date" name="inicio" id="inicio" style="width:100%; text-align: center" min="2016-07-01">\n\
+                  </td>\n\
+                  <td>y:</td>\n\
+                  <td>\n\
+                    <input type="date" name="fin" id="fin" style="width:100%; text-align: center" min="2016-10-01">\n\
+                  </td>\n\
+                </tr>';
+        tr += '<tr>\n\
+                <td class="fondoNaranja">\n\
+                  <input type="radio" name="criterioFecha" value="mes" checked="checked">\n\
+                </td>\n\
+                <th>Mes:</th>\n\
+                <td>\n\
+                  <select id="mes" name="mes" style="width:100%">\n\
+                    <option value="todos" selected="yes">--Seleccionar--</option>\n\
+                    <option value="01">Enero</option>\n\
+                    <option value="02">Febrero</option>\n\
+                    <option value="03">Marzo</option>\n\
+                    <option value="04">Abril</option>\n\
+                    <option value="05">Mayo</option>\n\
+                    <option value="06">Junio</option>\n\
+                    <option value="07">Julio</option>\n\
+                    <option value="08">Agosto</option>\n\
+                    <option value="09">Setiembre</option>\n\
+                    <option value="10">Octubre</option>\n\
+                    <option value="11">Noviembre</option>\n\
+                    <option value="12">Diciembre</option>\n\
+                  </select>\n\
+                </td>\n\
+                <th>Año:</th>\n\
+                <td>\n\
+                  <select id="año" name="año" style="width:100%">\n\
+                    <option value="2017" selected="yes">2017</option>\n\
+                    <option value="2018">2018</option>\n\
+                    <option value="2019">2019</option>\n\
+                    <option value="2020">2020</option>\n\
+                    <option value="2021">2021</option>\n\
+                  </select>\n\
+                </td>\n\
+              </tr>';
+        tr += '<tr>\n\
+                <th>Tipo:</th>\n\
+                <td>\n\
+                  <select id="tipo" name="tipo" style="width:100%">\n\
+                    <option value="Todos" selected="yes">---TODOS---</option>\n\
+                    <option value="Retiro">Retiro</option>\n\
+                    <option value="Ingreso">Ingreso</option>\n\
+                    <option value="Renovaci&oacute;n">Reno</option>\n\
+                    <option value="Destrucci&oacute;n">Destrucci&oacute;n</option>\n\
+                  </select>\n\
+                </td>\n\
+              </tr>';
+        tr += '<tr>\n\
+                <th>Usuario:</th>\n\
+                <td colspan="3">\n\
+                  <select name="usuario" id="usuario" style="width: 100%">\n\
+                    <option value="todos">---TODOS---</option>';
+        for (var j in nombresUsuarios) {
+            tr += '<option value="'+idusers[j]+'">'+nombresUsuarios[j]+' '+apellidosUsuarios[j]+'</option>';
+          }      
+        tr += '   </select>\n\
+                </td>\n\
+              </tr>';
+        tr += '<tr>\n\
+                <td colspan="5" class="pieTabla">\n\
+                  <input type="button" class="btn btn-success" name="consultar" id="realizarBusqueda" value="Consultar" align="center">\n\
+                </td>\n\
+              </tr>';
+        tabla += tr;
+        tabla += '</table>';
+        
+        var mostrar = '';
+        //var volver = '<a href="estadisticas.php">Volver</a>';
+        mostrar += tabla;
+        mostrar += '<br><br>';
+        //mostrar += volver;
+        mostrar += '<br><br>';
+        $(selector).html(mostrar);
+        
+        if (hint !== '') {
+          alert('distinto');
+          $("#productoStock").val(hint);
+          $("#productoMovimiento").val(hint);
+        }
       });  
     });  
   });
@@ -1485,12 +1498,11 @@ function todo () {
                                           var temp1 = temp[1].split('&');
                                           var temp2 = temp1[0].split('=');
                                           var hint = temp2[1];
-                                          alert(hint);
+                                          setTimeout(function(){cargarFormBusqueda("#fila", hint)}, 100); 
                                           $("#productoStock").val(hint);
-                                          setTimeout(function(){cargarFormBusqueda()}, 100);                                          
                                         }
                                         else {
-                                          setTimeout(function(){cargarFormBusqueda()}, 100);
+                                          setTimeout(function(){cargarFormBusqueda("#fila", '')}, 100);
                                         }
                                         break;
                                         }
@@ -2332,7 +2344,7 @@ $(document).on("click", "#realizarBusqueda", function () {
     var idProd = $("#hint").val();
     var nombreProducto = $("#hint").find('option:selected').text( );
     
-    if ((nombreProducto !== "undefined") && (nombreProducto !== '')) {
+    if ((nombreProducto !== "undefined") && (nombreProducto !== '') && (nombreProducto !== '--Seleccionar--')) {
       ///Separo en partes el nombreProducto que contiene [entidad: codigo] --- nombreProducto
       var tempo = nombreProducto.split("- ");
       var nombreSolo = tempo[1].trim();
