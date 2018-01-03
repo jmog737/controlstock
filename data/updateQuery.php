@@ -11,6 +11,7 @@ $result = consultarBD($query, $dbc);
 if ($result === TRUE) {
   $dato["resultado"] = "OK";
   
+  /***** MOMENTANEAMENTE COMENTO ESCRITURA DEL LOG *************************************************
   //******************* TEST escritura LOG **************************************
   //recupero la fecha actual para generar nombre del archivo:
     $hoy = getdate();
@@ -43,7 +44,7 @@ if ($result === TRUE) {
     fclose($gestor);    
     }
   //******************* FIN TEST ************************************************
-  
+  */
 }
 else {
   $dato["resultado"] = "ERROR";

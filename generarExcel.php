@@ -11,20 +11,15 @@
 
 /** Include PHPExcel */
 require_once('..\..\excel\PHPExcel.php');
+require_once("data/config.php");
 
-$unidad = "D:";
-$ip = "192.168.1.145";
+///********************************************************************** INICIO SETEO DE CARPETAS ************************************************************
+//// AHORA SE SETEAN EN EL CONFIG.PHP
+//$ip = "192.168.1.145";
 
-//$dir = $unidad.":/PROCESOS/PDFS";
-$dirExcel = "//".$ip."/Reportes/";
+//$dirExcel = "//".$ip."/Reportes/";
 
-if (!file_exists($unidad)) {
-  $unidad = "C:";
-}
-
-if (!file_exists($dirExcel)){
-  echo "No existe la carpeta. Por favor verifique.";
-}
+///*********************************************************************** FIN SETEO DE CARPETAS **************************************************************
 
 function generarExcelStock($registros, $total) {
   // Create new PHPExcel object

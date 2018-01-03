@@ -3,10 +3,11 @@
 session_start();
 require_once("data/sesiones.php");
 
-require_once('data\baseMysql.php');
+require_once('data/baseMysql.php');
 require_once('generarExcel.php');
 require_once('generarPdfs.php');
 require_once('enviarMails.php');
+require_once('data/config.php');
 
 //***************************** DESTINATARIOS CORREOS ***********************************************************************************************
 $paraListados = array();
@@ -19,21 +20,7 @@ $copiaListados['Juan Martín Ortega'] = "juanortega@emsa.com.uy";
 
 //****************************************************IMPORTANTE:************************************************************************************
 //                                              SETEO DE LAS CARPETAS
-$unidad = "D:";
-$ip = "192.168.1.145";
-
-//$dir = $unidad.":/PROCESOS/PDFS";
-$dir = "//".$ip."/Reportes/";
-
-if (!file_exists($unidad)) {
-  $unidad = "C:";
-}
-
-if (!file_exists($dir)){
-  echo "No existe la carpeta. Por favor verifique.";
-}
-
-$rutaFotos = "$unidad/Servidor/disenos/controlstock/images/snapshots";
+//// AHORA SE SETEAN EN EL CONFIG.PHP
 //***************************************************************************************************************************************************
 
 //********************************************* Defino tamaño de la celda base: c1, y el número ************************************************

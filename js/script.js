@@ -218,6 +218,9 @@ function showHint(str, id, seleccionado) {
       }
       //open dropdown
       $("#hint").attr('size',length);
+      if (totalSugerencias === 1){
+        $("#cantidad").focus();
+      }
     });
   }
 }
@@ -403,6 +406,14 @@ function validarMovimiento()
   else return false;
 }
 
+/**
+  \brief Función que carga en el selector pasado como parámetro la tabla para agregar un movimiento.
+         Además, según desde donde se llame, carga también el "hint" de productos ya hecha así también como el tipo de movimiento recién hecho.
+  @param {String} selector String con el selector en donde se debe mostrar la tabla.
+  @param {String} hint String con la palabra o palabras a buscar como sugerencia de productos.
+  @param {Integer} prod Integer con el id del producto.  
+  @param {String} tipo String con el tipo de movimiento ingresado anteriormente.
+*/
 function cargarMovimiento(selector, hint, prod, tipo){
   var url = "data/selectQuery.php";
   var query = "select iduser, apellido, nombre from usuarios where (estado='activo' and (sector='Bóveda' or sector='Grabaciones')) order by nombre asc, apellido asc";
@@ -504,16 +515,276 @@ function cargarMovimiento(selector, hint, prod, tipo){
       $(selector).html(formu);
       if (prod !== -1) {//alert('en el if:'+prod);
         showHint(hint, "#producto", prod);
+        $("#cantidad").focus();
       }
       else {
         ///showHint(hint, "#producto", "");
+        $("#producto").focus();
       }
       if ((tipo !== '') && (tipo !== undefined)){
         $("#tipo option[value="+ tipo +"]").attr("selected",true);
       }
-      $("#producto").focus();
+      
     }
   });    
+}
+
+/**
+ * \brief Función que hace el agregado del movimiento en la base de datos. 
+ *        Se separó del evento agregarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento cantidad.
+ */
+function agregarMovimiento(){
+  var fecha = $("#fecha").val();
+  var idProd = $("#hint").val();
+  var busqueda = $("#producto").val();
+  var stockActual = parseInt($("#hint").find('option:selected').attr("stock"), 10);
+  var alarma1 = parseInt($("#hint").find('option:selected').attr("alarma1"), 10);
+  var alarma2 = parseInt($("#hint").find('option:selected').attr("alarma2"), 10);
+  var tipo = $("#tipo").val();
+  var cantidad = parseInt($("#cantidad").val(), 10);
+  var comentarios = $("#comentarios").val();
+  //var idUserBoveda = $("#usuarioBoveda").val();
+  //var idUserGrabaciones = $("#usuarioGrabaciones").val();
+  var tempDate = new Date();
+  var hora = tempDate.getHours()+":"+tempDate.getMinutes();
+  var nuevoStock = stockActual;
+
+  /// Elimino el pop up de confirmación a pedido de Diego: 
+  /// Esto elimina también la necesidad de chequear la variable confirmar en el if más abajo
+  //var confirmar = confirm("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fechaMostrar+"\nProducto: "+nombreProducto+"\nTipo: "+tipo+"\nCantidad: "+cantidad+"\nControl 1: "+userBoveda+"\nControl 2: "+userGrabaciones+"\nComentarios: "+comentarios);
+
+  /// Si el movimiento NO es una devolución, calculo el nuevo stock. De serlo, NO se quita de stock pues las tarjetas se reponen.
+  if (tipo !== 'Ingreso') {
+    nuevoStock = stockActual - cantidad;
+  }
+  if (tipo === 'Ingreso') {
+    nuevoStock = stockActual + cantidad;
+  }
+
+  var avisarAlarma1 = false;
+  var avisarAlarma2 = false;
+  var avisarInsuficiente = false;
+
+  /// Si el nuevoStock es menor a 0, siginifica que no hay stock suficiente. Se alerta y se descuenta sólo la cantidad disponible.
+  /// CAMBIO: La política actual es DEJAR en suspenso el movimiento hasta que haya stock suficiente. NO HAY QUE HACER EL MOVIMIENTO!!
+  var seguir = true;
+  if (nuevoStock <0) {
+    //cantidad = stockActual;
+    avisarInsuficiente = true;
+    seguir = false;
+    //nuevoStock = 0;
+  }
+  else {
+    if ((nuevoStock < alarma1) && (nuevoStock > alarma2)) {
+      avisarAlarma1 = true;
+    }
+    if (nuevoStock < alarma2) {
+      avisarAlarma2 = true;
+    }
+  }
+
+  if (seguir) {
+    /// Agrego el movimiento según los datos pasados:
+    var url = "data/updateQuery.php";
+    var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+2+", "+3+", '"+comentarios+"')";
+    //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
+
+    $.getJSON(url, {query: ""+query+""}).done(function(request) {
+      var resultado = request["resultado"];
+      /// Si el agregado es exitoso, actualizo el stock y la fecha de la última modificación en la tabla Productos:
+      if (resultado === "OK") {
+        var url = "data/updateQuery.php";
+        var query = "update productos set stock="+nuevoStock+", ultimoMovimiento='"+fecha+"' where idprod="+idProd;
+
+        $.getJSON(url, {query: ""+query+""}).done(function(request) {
+          var resultado = request["resultado"];
+          if (resultado === "OK") {
+            if (avisarAlarma1) {
+              //alert('El stock quedó por debajo de la alarma1 definida!. \n\nStock actual: ' + nuevoStock);
+            }
+            else {
+              if (avisarAlarma2) {
+                //alert('El stock quedó por debajo de la alarma2 definida!. \n\nStock actual: ' + nuevoStock);
+              }
+              else {
+                if (avisarInsuficiente) {
+                  //alert('Stock insuficiente!. \nSe descuenta sólo la cantidad existente. \n\nStock 0!!.');
+                }
+                else {
+                  //alert('Registro agregado correctamente!. \n\nStock actual: '+nuevoStock);
+                }
+              }
+            }
+            var tipo1 = encodeURI(tipo);
+            window.location.href = "../controlstock/movimiento.php?h="+busqueda+"&id="+idProd+"&t="+tipo1;
+          }
+          else {
+            alert('Hubo un error en la actualizacion del producto. Por favor verifique.');
+          }
+        });
+      }
+      else {
+        alert('Hubo un error en el agregado del movimiento. Por favor verifique.');
+      }
+    });  
+  }
+  else {
+    alert('No hay stock suficiente del producto como para realizar el retiro.\n\n NO SE REALIZA!.');
+  }
+}
+
+/**
+ * \brief Función que hace la actualización del movimiento en la base de datos. 
+ *        Se separó del evento actualizarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento comentarios.
+ */
+function actualizarMovimiento(){
+  var idmov = $("input[name='idMov']").val();
+  var comentarios = $("#comentarios").val();
+  
+  ///Se comenta la validación del movimiento pues por el momento SÓLO se puede EDITAR el comentario el cual es opcional.
+  ///De en un futuro querer editar algo más habrá que crear la función validarMovimiento. Se setea la variable validar a TRUE
+  //var validar = validarMovimiento();
+  var validar = true;
+  
+  if (validar) {
+    //var confirmar = confirm('¿Confirma la modificación del movimiento con los siguientes datos?\n\nFecha: '+fecha+'\nHora: '+hora+'\nProducto: '+nombre+'\nTipo: '+tipo+'\nCantidad: '+cantidad+'\nComentarios: '+comentarios+"\n?");
+    var confirmar = true;
+    if (confirmar) {
+      var url = "data/updateQuery.php";
+      var query = 'update movimientos set comentarios="'+comentarios+'" where idmov='+idmov;
+      //alert(query);
+      $.getJSON(url, {query: ""+query+""}).done(function(request) {
+        var resultado = request["resultado"];
+        if (resultado === "OK") {
+          //alert('Los datos del movimiento se actualizaron correctamente!.');
+          cargarEditarMovimiento(idmov, "main-content");
+          inhabilitarMovimiento();
+        }
+        else {
+          alert('Hubo un problema en la actualización. Por favor verifique.');
+        }
+      });
+    }
+    else {
+      alert('Se optó por no actualizar el movimiento!.');
+    }
+  }
+}
+
+/**
+  \brief Función que deshabilita los input del form editarMovimiento.
+*/
+function inhabilitarMovimiento(){
+  document.getElementById("fecha").disabled = true;
+  document.getElementById("hora").disabled = true;
+  document.getElementById("nombre").disabled = true;
+  document.getElementById("tipo").disabled = true;
+  document.getElementById("cantidad").disabled = true;
+  document.getElementById("comentarios").disabled = true;
+  document.getElementById("editarMovimiento").value = "EDITAR";
+  document.getElementById("actualizarMovimiento").disabled = true;
+}
+
+/**
+  \brief Función que habilita los input del form editarMovimiento.
+*/
+function habilitarMovimiento(){
+  ///******* Queda hecho para poder editar el resto de los campos, pero la idea es SOLO poder editar los comentarios. **********
+  //document.getElementById("fecha").disabled = false;
+  //document.getElementById("hora").disabled = false;
+  //document.getElementById("nombre").disabled = false;
+  //document.getElementById("tipo").disabled = false;
+  //document.getElementById("cantidad").disabled = false;
+  document.getElementById("comentarios").disabled = false;
+  document.getElementById("editarMovimiento").value = "BLOQUEAR";
+  document.getElementById("actualizarMovimiento").disabled = false;
+}
+
+/**
+  \brief Función que carga en el selector pasado como parámetro la tabla para ver el movimiento.
+  @param {String} selector String con el selector en donde se debe mostrar la tabla.
+  @param {Integer} idMov Entero con el identificador del movimiento a cargar.
+*/
+function cargarEditarMovimiento(idMov, selector){
+  var url = "data/selectQuery.php";
+  var query = 'select movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.comentarios, movimientos.tipo, productos.nombre_plastico from movimientos inner join productos on movimientos.producto=productos.idprod where movimientos.idmov='+idMov;
+  
+  $.getJSON(url, {query: ""+query+""}).done(function(request) {
+    var resultado = request["resultado"];
+    var total = request["rows"];
+    if (total >= 1) {
+      var cantidad = parseInt(resultado[0]['cantidad'], 10);
+      var fechaTemp = resultado[0]['fecha'];
+      var fecha = '';
+      var hora = '';
+      if (fechaTemp !== null) {
+        var temp = fechaTemp.split('-');
+        fecha = temp[2]+"/"+temp[1]+"/"+temp[0];
+      }
+      var horaTemp = resultado[0]['hora'];
+      if (horaTemp !== null) {
+        var temp = horaTemp.split(':');
+        hora = temp[0]+":"+temp[1];
+      }
+      var tipo = resultado[0]['tipo'];
+      var comentarios = resultado[0]['comentarios'];
+      var producto = resultado[0]['nombre_plastico'];
+    }
+    var mostrar = "";
+    var titulo = '<h2 id="titulo" class="encabezado">EDICIÓN DE MOVIMIENTOS</h2>';
+    var formu = '<form method="post" action="editarMovimiento.php">';
+    var tabla = '<table class="tabla2" name="editarMovimiento">';
+    var tr = '<th colspan="3" class="centrado tituloTabla">DATOS DEL MOVIMIENTO</th>';
+
+    tr += '<tr>\n\
+            <th align="left" width="15"><font class="negra">Fecha:</font></th>\n\
+            <td align="center" colspan="2"><input type="text" name="fecha" id="fecha" class="agrandar" style="width:100%; text-align: center" disabled></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Hora:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" name="hora" id="hora" class="agrandar" maxlength="35" style="width:100%; text-align: center" disabled></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Nombre:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" name="nombre" id="nombre" class="agrandar" maxlength="75" style="width:100%; text-align: center" disabled></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Tipo:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" name="tipo" id="tipo" class="agrandar" maxlength="35" style="width:100%; text-align: center" disabled></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Cantidad:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" id="cantidad" name="cantidad" class="agrandar" maxlength="35" size="9" disabled></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Comentarios:</font></th>\n\
+              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comentarios" class="agrandar" maxlength="35" size="9"></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <td class="pieTablaIzquierdo" style="width: 50%;border-right: 0px;"><input type="button" value="BLOQUEAR" id="editarMovimiento" name="editarMovimiento" class="btn btn-primary" align="center"/></td>\n\
+              <td class="pieTablaDerecho" style="width: 50%;border-left: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarMovimiento" name="actualizarMovimiento" class="btn btn-warning" align="center"/></td>\n\
+              <td style="display:none"><input type="text" name="idMov" value="'+idMov+'"></td>\n\
+          </tr>';
+    tabla += tr;
+    tabla += '</table>';
+    
+    formu += tabla;
+    formu += '</form>';
+    mostrar += titulo;
+    mostrar += formu;
+    var volver = '<br><a href="../controlstock/busquedas.php" name="volver" id="volverEdicionMovimiento" >Volver</a><br><br>';
+    mostrar += volver;
+    $(selector).html(mostrar);
+  
+    if (total >=1) {
+      $("#fecha").val(fecha);
+      $("#hora").val(hora);
+      $("#tipo").val(tipo);
+      $("#nombre").val(producto);
+      $("#cantidad").val(cantidad.toLocaleString());
+      $("#comentarios").val(comentarios);
+    }
+  }); 
 }
 
 /***********************************************************************************************************************
@@ -789,8 +1060,11 @@ function validarBusqueda() {
 
 /**
  * \brief Función que genera el formulario para realizar las consultas.
+ * @param {String} selector String con el nombre del DIV donde cargar el form.
+ * @param {String} hint String con la sugerencia pasada.
+ * @param {String} tipo String que indica si la consulta es de stock o de movimientos.
  */
-function cargarFormBusqueda(selector, hint){
+function cargarFormBusqueda(selector, hint, tipo){
   var url = "data/selectQuery.php";
   var consultarProductos = "select idprod, nombre_plastico as nombre from productos order by nombre_plastico asc";
   
@@ -970,9 +1244,18 @@ function cargarFormBusqueda(selector, hint){
         $(selector).html(mostrar);
         
         if (hint !== '') {
-          alert('distinto');
-          $("#productoStock").val(hint);
-          $("#productoMovimiento").val(hint);
+          if (tipo === 'stock') {
+            $("#productoStock").val(hint);
+            showHint(hint, "#productoStock");
+            $("#productoStock").parent().prev().prev().children().prop("checked", true);
+            $("#productoMovimiento").val('');
+          }
+          else {
+            $("#productoMovimiento").val(hint);
+            showHint(hint, "#productoMovimiento");
+            $("#productoMovimiento").parent().prev().prev().children().prop("checked", true);
+            $("#productoStock").val('');
+          }    
         }
       });  
     });  
@@ -1109,8 +1392,7 @@ function cargarProducto(idProd, selector){
     }
     }
     inhabilitarProducto();
-  });
-  
+  }); 
 }
 
 /**
@@ -1472,12 +1754,15 @@ function todo () {
   switch (urlActual) {
     case "/controlstock/movimiento.php":{
                                         if (parametros) {
+                                          var remplaza = /\+|%20/g; 
+                                          parametros = unescape(parametros);
+                                          parametros = parametros.replace(remplaza, " ");
                                           var temp = parametros.split('?');
                                           var temp1 = temp[1].split('&');
                                           var temp2 = temp1[0].split('=');
                                           var temp3 = temp1[1].split('=');
                                           var temp4 = temp1[2].split('=');
-                                          var h = temp2[1];                                          
+                                          var h = temp2[1]; 
                                           var tipo = decodeURI(temp4[1]);
                                           var idprod = parseInt(temp3[1], 10);
                                           setTimeout(function(){cargarMovimiento("#main-content", h, idprod, tipo)}, 100);                                          
@@ -1497,12 +1782,13 @@ function todo () {
                                           var temp = parametros.split('?');
                                           var temp1 = temp[1].split('&');
                                           var temp2 = temp1[0].split('=');
+                                          var temp3 = temp1[1].split('=');
                                           var hint = temp2[1];
-                                          setTimeout(function(){cargarFormBusqueda("#fila", hint)}, 100); 
-                                          $("#productoStock").val(hint);
+                                          var tipMov = temp3[1];
+                                          setTimeout(function(){cargarFormBusqueda("#fila", hint, tipMov)}, 30); 
                                         }
                                         else {
-                                          setTimeout(function(){cargarFormBusqueda("#fila", '')}, 100);
+                                          setTimeout(function(){cargarFormBusqueda("#fila", '', '')}, 30);
                                         }
                                         break;
                                         }
@@ -1520,7 +1806,17 @@ function todo () {
                                             else {
                                               setTimeout(function(){cargarFormEstadisticas("#main-content")}, 100);
                                             }  
-                                            break;                                    
+                                            break;  
+    case "/controlstock/editarMovimiento.php":  if (parametros) {
+                                                  var temp = parametros.split('?');
+                                                  var temp1 = temp[1].split('=');
+                                                  var idmov = temp1[1];
+                                                  setTimeout(function(){cargarEditarMovimiento(idmov, "#main-content")}, 100);
+                                                }
+                                                else {
+                                                  setTimeout(function(){cargarEditarMovimiento(1, "#main-content")}, 100);
+                                                }  
+                                              break;                                       
     default: break;
   }  
   
@@ -1593,13 +1889,16 @@ $(document).on("change focusin", "#hint", function (){
   $("#hint").after(mostrar);
   });
   
-///Disparar función al hacer click en alguna de las opciones del select para minimizar dicho select.
+///Disparar función SÓLO al seleccionar un elemento del select HINT. Hace que luego se pase el foto automáticamente a Cantidad.   
+///Además, al hacer click en alguna de las opciones del select se minimiza (por ahora comentado).
 /// Por ahora se comenta pues quizás es mejor que quede abierto:
-$(document).on("click", "#hint option", function (){
-  
+$(document).on("click", "#hint option", function (){ 
   //close dropdown
   //alert('en el evento');
   //$("#hint").attr('size',0);
+  if ($("#hint").find('option:selected').val() !== 'NADA') {
+    $("#cantidad").focus();
+  }  
 }); 
 
 ///Disparar funcion al hacer clic en el botón para agregar el movimiento.
@@ -1608,106 +1907,53 @@ $(document).on("click", "#agregarMovimiento", function (){
   var seguir = true;
   seguir = validarMovimiento();
   if (seguir) {
-    var fecha = $("#fecha").val();
-    var idProd = $("#hint").val();
-    var busqueda = $("#producto").val();
-    var stockActual = parseInt($("#hint").find('option:selected').attr("stock"), 10);
-    var alarma1 = parseInt($("#hint").find('option:selected').attr("alarma1"), 10);
-    var alarma2 = parseInt($("#hint").find('option:selected').attr("alarma2"), 10);
-    var tipo = $("#tipo").val();
-    var cantidad = parseInt($("#cantidad").val(), 10);
-    var comentarios = $("#comentarios").val();
-    //var idUserBoveda = $("#usuarioBoveda").val();
-    //var idUserGrabaciones = $("#usuarioGrabaciones").val();
-    var tempDate = new Date();
-    var hora = tempDate.getHours()+":"+tempDate.getMinutes();
-    var nuevoStock = stockActual;
-    
-    /// Elimino el pop up de confirmación a pedido de Diego: 
-    /// Esto elimina también la necesidad de chequear la variable confirmar en el if más abajo
-    //var confirmar = confirm("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fechaMostrar+"\nProducto: "+nombreProducto+"\nTipo: "+tipo+"\nCantidad: "+cantidad+"\nControl 1: "+userBoveda+"\nControl 2: "+userGrabaciones+"\nComentarios: "+comentarios);
-    
-    /// Si el movimiento NO es una devolución, calculo el nuevo stock. De serlo, NO se quita de stock pues las tarjetas se reponen.
-    if (tipo !== 'Ingreso') {
-      nuevoStock = stockActual - cantidad;
-    }
-    if (tipo === 'Ingreso') {
-      nuevoStock = stockActual + cantidad;
-    }
-    
-    var avisarAlarma1 = false;
-    var avisarAlarma2 = false;
-    var avisarInsuficiente = false;
-    
-    /// Si el nuevoStock es menor a 0, siginifica que no hay stock suficiente. Se alerta y se descuenta sólo la cantidad disponible.
-    /// CAMBIO: La política actual es DEJAR en suspenso el movimiento hasta que haya stock suficiente. NO HAY QUE HACER EL MOVIMIENTO!!
-    var seguir = true;
-    if (nuevoStock <0) {
-      //cantidad = stockActual;
-      avisarInsuficiente = true;
-      seguir = false;
-      //nuevoStock = 0;
-    }
-    else {
-      if ((nuevoStock < alarma1) && (nuevoStock > alarma2)) {
-        avisarAlarma1 = true;
-      }
-      if (nuevoStock < alarma2) {
-        avisarAlarma2 = true;
-      }
-    }
-    
-    if (seguir) {
-      /// Agrego el movimiento según los datos pasados:
-      var url = "data/updateQuery.php";
-      var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+2+", "+3+", '"+comentarios+"')";
-      //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
-      
-      $.getJSON(url, {query: ""+query+""}).done(function(request) {
-        var resultado = request["resultado"];
-        /// Si el agregado es exitoso, actualizo el stock y la fecha de la última modificación en la tabla Productos:
-        if (resultado === "OK") {
-          var url = "data/updateQuery.php";
-          var query = "update productos set stock="+nuevoStock+", ultimoMovimiento='"+fecha+"' where idprod="+idProd;
-          
-          $.getJSON(url, {query: ""+query+""}).done(function(request) {
-            var resultado = request["resultado"];
-            if (resultado === "OK") {
-              if (avisarAlarma1) {
-                //alert('El stock quedó por debajo de la alarma1 definida!. \n\nStock actual: ' + nuevoStock);
-              }
-              else {
-                if (avisarAlarma2) {
-                  //alert('El stock quedó por debajo de la alarma2 definida!. \n\nStock actual: ' + nuevoStock);
-                }
-                else {
-                  if (avisarInsuficiente) {
-                    //alert('Stock insuficiente!. \nSe descuenta sólo la cantidad existente. \n\nStock 0!!.');
-                  }
-                  else {
-                    //alert('Registro agregado correctamente!. \n\nStock actual: '+nuevoStock);
-                  }
-                }
-              }
-              var tipo1 = encodeURI(tipo);
-              window.location.href = "../controlstock/movimiento.php?h="+busqueda+"&id="+idProd+"&t="+tipo1;
-            }
-            else {
-              alert('Hubo un error en la actualizacion del producto. Por favor verifique.');
-            }
-          });
-        }
-        else {
-          alert('Hubo un error en el agregado del movimiento. Por favor verifique.');
-        }
-      });  
-    }
-    else {
-      alert('No hay stock suficiente del producto como para realizar el retiro.\n\n NO SE REALIZA!.');
-    }
+    agregarMovimiento();
   }
 });
 
+///Disparar función al hacer enter estando en el elemento Cantidad.
+///Básicamente, la idea es hacer "el submit" cosa de ahorrar tiempo en el ingreso.
+$(document).on("keypress", "#cantidad", function(e) {
+  if(e.which === 13) {
+    var seguir = true;
+    seguir = validarMovimiento();
+    if (seguir) {
+      agregarMovimiento();
+    }
+  }  
+});
+
+///Disparar función al hacer click en el botón de EDITAR del form para los movimientos.
+///Cambia entre habilitar o deshabilitar los input del form cosa de poder hacer la edición del movimiento.
+$(document).on("click", "#editarMovimiento", function (){
+  var nombre = $(this).val();
+  if (nombre === 'EDITAR') {
+    habilitarMovimiento();
+  }
+  else {
+    inhabilitarMovimiento();
+  }
+});
+
+///Dispara función para realizar los cambios con las modificaciones para el movimiento.
+$(document).on("click", "#actualizarMovimiento", function (){
+  /* *** Por ahora se comentan los otros campos pues solo se puede editar el comentario: ******
+  var fecha = $("#fecha").val();
+  var nombre = $("#nombre").val();
+  var hora = $("#hora").val();
+  var tipo = $("#tipo").val();
+  var cantidad = $("#cantidad").val();
+  */
+  actualizarMovimiento();
+});
+
+///Disparar función al hacer enter estando en el elemento Cantidad.
+///Básicamente, la idea es hacer "el submit" cosa de ahorrar tiempo en el ingreso.
+$(document).on("keypress", "#comentarios", function(e) {
+  if(e.which === 13) {
+    actualizarMovimiento();
+  }  
+});
 
 /*******************************************************************************************************************************
 /// ***************************************************** FIN MOVIMIENTOS ******************************************************
@@ -2273,7 +2519,7 @@ $(document).on("click", "#agregarUsuario", function(){
 
 
 $(document).on("click", "#user", function(){
-  //alert('hice click');
+  alert('hice click');
   $("#dialog").dialog({
     autoOpen: true,
     show: "blind",
@@ -2360,6 +2606,7 @@ $(document).on("click", "#realizarBusqueda", function () {
     var año = $("#año").val();
     var rangoFecha = null;
     var prodHint = '';
+    var tipMov = '';
     
     var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, DATE_FORMAT(productos.ultimoMovimiento, \'%d/%m/%Y\') as ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
     var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
@@ -2404,6 +2651,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                consultaCSV += " from productos where idProd="+idProd;
                              }
                              prodHint = $("#productoStock").val();
+                             tipMov = 'stock';
                              tipoConsulta = 'de stock del producto '+nombreSolo;
                              campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-Stock-Alarma1-Alarma2-Comentarios-&Uacute;ltimo Movimiento";
                              largos = "0.8-1.2-2.5-0.8-2-2.5-1-1-1-1-2-1";
@@ -2418,7 +2666,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                           mostrarCamposQuery = "1-1-1";
                           x = 60;
                           break;                    
-      case 'entidadMovimiento': query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
+      case 'entidadMovimiento': query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
                                 consultaCSV = "select DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
                                 if (entidadMovimiento !== 'todos') {
                                   query += "entidad='"+entidadMovimiento+"' and ";
@@ -2438,7 +2686,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                 mostrarCamposQuery = '1-1-1-0-0-0-0-0-0-0-0-0-1-1-1-1-1';
                                 x = 40;
                                 break;                       
-      case 'productoMovimiento':  query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where ";
+      case 'productoMovimiento':  query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where ";
                                   consultaCSV = "select DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
                                   if ((idProd === 'NADA') || (nombreProducto === '')){
                                     alert('Debe seleccionar un producto. Por favor verifique.');
@@ -2455,6 +2703,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                     ordenFecha = true;
                                   }
                                   prodHint = $("#productoMovimiento").val();
+                                  tipMov = 'mov';
                                   tipoConsulta = 'de los movimientos del producto '+nombreSolo;
                                   campos = 'Id-Entidad-Nombre-BIN-Código-Contacto-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-&Uacute;ltimo Movimiento-Fecha-Hora-Cantidad-Tipo-Comentarios';
                                   //Orden de la consulta: entidad - nombre - bin - codigo - snapshot - stock - alarma - prodcom - fecha - hora - cantidad - tipo - comentarios
@@ -2836,6 +3085,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                       
                                       for (var i in datos) { 
                                         //var produ = datos[i]["idProd"];
+                                        var idmov = datos[i]["idmov"];
                                         var entidad = datos[i]["entidad"];
                                         var nombre = datos[i]['nombre_plastico'];
                                         var cantidad = parseInt(datos[i]['cantidad'], 10);
@@ -2941,6 +3191,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                         }
                                         
                                         tabla += '<tr>\n\
+                                                    <td style="display:none"><input type="text" name="idmov" value="'+idmov+'"></td>\n\
                                                     <td>'+indice+'</td>\n\
                                                     <td>'+fecha+'</td>\n\
                                                     <td>'+hora+'</td>\n\
@@ -2950,7 +3201,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                                     <td>'+codigo_emsa+'</td>\n\
                                                     <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="75" width="120"></img></td>\n\
                                                     <td>'+tipo1+'</td>\n\
-                                                    <td class="'+claseResaltado+'">'+cantidad.toLocaleString()+'</td>\n\
+                                                    <td class="'+claseResaltado+'"><a href="editarMovimiento.php?id='+idmov+'">'+cantidad.toLocaleString()+'</a></td>\n\
                                                     <td>'+comentarios+'</td>\n\
                                                   </tr>';        
                                         indice++;  
@@ -3092,6 +3343,7 @@ $(document).on("click", "#realizarBusqueda", function () {
                                           var tipo2 = datos[i]['tipo'];
                                           var fecha = datos[i]['fecha'];
                                           var hora = datos[i]["hora"];
+                                          var idmov = datos[i]["idmov"];
                                           var cantidad = parseInt(datos[i]['cantidad'], 10);
                                           var alarma1 = parseInt(datos[i]['alarma1'], 10);
                                           var alarma2 = parseInt(datos[i]['alarma2'], 10);
@@ -3128,11 +3380,12 @@ $(document).on("click", "#realizarBusqueda", function () {
                                           }
                                           
                                           tabla += '<tr>\n\
+                                                      <td style="display:none"><input type="text" name="idmov" value="'+idmov+'"></td>\n\
                                                       <td>'+indice+'</td>\n\
                                                       <td>'+fecha+'</td>\n\
                                                       <td>'+hora+'</td>\n\
                                                       <td>'+tipo2+'</td>\n\
-                                                      <td class="'+claseResaltado+'">'+cantidad.toLocaleString()+'</td>\n\
+                                                      <td class="'+claseResaltado+'"><a href="editarMovimiento.php?id='+idmov+'">'+cantidad.toLocaleString()+'</a></td>\n\
                                                       <td>'+comentarios+'</td>\n\
                                                     </tr>';
                                           indice++;  
@@ -3211,7 +3464,7 @@ $(document).on("click", "#realizarBusqueda", function () {
         
         mostrar += "<h3>Total de registros afectados: <font class='naranja'>"+totalDatos+"</font></h3>";
         mostrar += tabla;
-        var volver = '<br><a href="../controlstock/busquedas.php?h='+prodHint+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        var volver = '<br><a href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         $("#main-content").append(mostrar);
       });    

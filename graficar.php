@@ -10,7 +10,10 @@ session_start();
 *  @date Diciembre 2017
 *
 *******************************************************/
+require_once("data/config.php");
 require_once("data/baseMysql.php");
+
+
 /** Include JPgraph files */
 require_once('../../jpgraph/jpgraph.php');
 require_once('../../jpgraph/jpgraph_pie.php');
@@ -19,19 +22,11 @@ require_once('../../jpgraph/jpgraph_bar.php');
 require_once ('../../jpgraph/jpgraph_line.php');
 
 ///********************************************************************** INICIO SETEO DE CARPETAS ************************************************************
-$unidad = "D:";
-$ip = "192.168.1.145";
+//// AHORA SE SETEAN EN EL CONFIG.PHP
+//$ip = "192.168.1.145";
 
-//$dir = $unidad.":/PROCESOS/PDFS";
-$dirGrafica = "//".$ip."/Reportes/";
+//$dirGrafica = "//".$ip."/Reportes/";
 
-if (!file_exists($unidad)) {
-  $unidad = "C:";
-}
-
-if (!file_exists($dirGrafica)){
-  echo "No existe la carpeta. Por favor verifique.";
-}
 ///*********************************************************************** FIN SETEO DE CARPETAS **************************************************************
 
 /// Recupero la consulta a ejecutar y el mes inicial:
@@ -403,7 +398,7 @@ function graficarTorta($subtitulo, $data, $avg1, $avg2, $avg3, $avg4){
   $graph->title->Set("MOVIMIENTOS DE STOCK");
   $graph->subtitle->Set($subtitulo);
   $graph->img->SetMargin(80,190,65,20);
-  //$graph->SetMargin(1,1,40,1);
+  $graph->SetMargin(1,1,40,1);
   $graph->SetMarginColor('ivory3');
   //$graph->SetShadow(false);
   //
@@ -422,20 +417,21 @@ function graficarTorta($subtitulo, $data, $avg1, $avg2, $avg3, $avg4){
   $p1 = new PiePlot3D($data);
   $p1->SetShadow('silver', 30);
   $p1->ShowBorder(true, true);
-  $graph->Add($p1);
+  
   
   $p1->SetSliceColors(array('dodgerblue2','forestgreen','lightgoldenrod1', 'firebrick1'));
   // Adjust size and position of plot
   $p1->SetSize(0.4);
   $p1->SetCenter(0.5,0.5);
   $p1->SetHeight(20);
-  //$p1->SetAngle(50);
-
+  $p1->SetAngle(50);
+  
   $retiros = number_format($data[0], 0, ',', '.');
   $ingresos = number_format($data[1], 0, ',', '.');
   $renos = number_format($data[2], 0, ',', '.');
   $destrucciones = number_format($data[3], 0, ',', '.');
   $p1->SetLegends(array("Retiros: $retiros","Ingresos: $ingresos","Renos: $renos","Destrucciones: $destrucciones"));
+  
   $graph->legend->SetShadow('#e2bd6e@1',1);
   $graph->legend->SetPos(0.5,0.95,'center','bottom');
   $graph->legend->SetPos(0.015,0.18,'right','top');
@@ -449,6 +445,11 @@ function graficarTorta($subtitulo, $data, $avg1, $avg2, $avg3, $avg4){
   $p1->value->SetColor("blue");
   $p1->value->SetFont(FF_FONT1,FS_BOLD);    
   $p1->value->SetFormat('%d%%');  
+  //$p1->value->HideZero(true);
+  //$p1->SetEdge("black", 5);
+  // Explode all slices
+  $p1->ExplodeAll(14);
+  $graph->Add($p1);
   
   ///******************************************************** INICIO Textos con los promedios: ***************************************************************
   $separacion = 0.07;
@@ -495,15 +496,13 @@ function graficarTorta($subtitulo, $data, $avg1, $avg2, $avg3, $avg4){
   $graph->AddText($txt4); 
   ///************************************************************ FIN Textos con los promedios: **************************************************************
   
-  // Explode all slices
-  $p1->ExplodeAll(14);
-
   // Get the handler to prevent the library from sending the
   // image to the browser
   $gdImgHandler = $graph->Stroke(_IMG_HANDLER);
 
   // Stroke image to a file and browser
-
+  
+  
   // Default is PNG so use ".png" as suffix
   $timestamp = date('Ymd_His');
   $nombreArchivo = "graficaProducto".$timestamp.".jpg";
