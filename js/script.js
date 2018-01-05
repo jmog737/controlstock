@@ -177,7 +177,7 @@ function showHint(str, id, seleccionado) {
       var mostrar = '';
       
       if (totalSugerencias >= 1) {
-        mostrar = '<select name="hint" id="hint" class="hint">';
+        mostrar = '<select name="hint" id="hint" class="hint" tabindex="2">';
         if (totalSugerencias > 1) {
           mostrar += '<option value="NADA" name="NADA" selected>--Seleccionar--</option>';
         }
@@ -251,7 +251,7 @@ function showHintProd(str, id, seleccionado) {
       var mostrar = '';
       
       if (totalSugerencias >= 1) {
-        mostrar = '<select name="hintProd" id="hintProd" class="hint">';
+        mostrar = '<select name="hintProd" id="hintProd" tabindex="2" class="hint">';
         if (totalSugerencias > 1) {
           mostrar += '<option value="NADA" name="NADA" selected>--Seleccionar--</option>';
         }
@@ -282,7 +282,7 @@ function showHintProd(str, id, seleccionado) {
       }
       $(id).after(mostrar);
       //inhabilitarProducto();
-      $("#hintProd").focusin();
+      //$("#hintProd").focusin();
       /// Agregado a pedido de Diego para que se abra el select automáticamente:
       var length = $('#hintProd> option').length;
       if (length > 10) {
@@ -448,13 +448,13 @@ function cargarMovimiento(selector, hint, prod, tipo){
       tr += '<tr>\n\
               <th align="left"><font class="negra">Producto:</font></th>\n\
               <td align="center">\n\
-                <input type="text" id="producto" name="producto" size="9" class="agrandar" onkeyup=\'showHint(this.value, "#producto", "")\' value="'+hint+'">\n\
+                <input type="text" id="producto" name="producto" size="9" class="agrandar" tabindex="1" onkeyup=\'showHint(this.value, "#producto", "")\' value="'+hint+'">\n\
               </td>\n\
             </tr>';
       tr += '<tr>\n\
               <th align="left"><font class="negra">Tipo:</font></th>\n\
               <td align="center">\n\
-                <select id="tipo" name="tipo" style="width:100%">\n\
+                <select id="tipo" name="tipo" tabindex="5" style="width:100%">\n\
                   <option value="Retiro" selected="yes">Retiro</option>\n\
                   <option value="Ingreso">Ingreso</option>\n\
                   <option value="Renovaci&oacute;n">Renovaci&oacute;n</option>\n\
@@ -464,7 +464,7 @@ function cargarMovimiento(selector, hint, prod, tipo){
             </tr>';
       tr += '<tr>\n\
               <th align="left"><font class="negra">Cantidad:</font></th>\n\
-              <td align="center"><input type="text" id="cantidad" name="cantidad" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center"><input type="text" id="cantidad" name="cantidad" class="agrandar" tabindex="2" maxlength="35" size="9"></td>\n\
             </tr>';
 //      tr += '<tr>\n\
 //              <th align="left"><font class="negra">Repetir Cantidad:</font></th>\n\
@@ -472,7 +472,7 @@ function cargarMovimiento(selector, hint, prod, tipo){
 //            </tr>';
       tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center"><input type="textarea" id="comentarios" name="comentarios" class="agrandar" maxlength="150" size="9"></td>\n\
+              <td align="center"><input type="textarea" id="comentarios" name="comentarios" tabindex="6" class="agrandar" maxlength="150" size="9"></td>\n\
             </tr>';
 //      tr += '<th colspan="2" class="centrado">CONTROL</th>';
 //      tr += '<tr>\n\
@@ -501,7 +501,7 @@ function cargarMovimiento(selector, hint, prod, tipo){
 //          </tr>';
       tr += '<tr>\n\
               <td colspan="2" class="pieTabla">\n\
-                <input type="button" value="ACEPTAR" id="agregarMovimiento" name="agregarMovimiento" class="btn btn-success" align="center"/>\n\
+                <input type="button" value="ACEPTAR" id="agregarMovimiento" name="agregarMovimiento" tabindex="3" class="btn btn-success" align="center"/>\n\
               </td>\n\
               <td style="display:none">\n\
                 <input type="text" id="idPasado" name="idPasado" value="<?php echo $idPasado ?>">\n\
@@ -514,8 +514,8 @@ function cargarMovimiento(selector, hint, prod, tipo){
       formu += '</form><br>';
       $(selector).html(formu);
       if (prod !== -1) {//alert('en el if:'+prod);
-        showHint(hint, "#producto", prod);
-        $("#cantidad").focus();
+        showHint(hint, "#producto", prod);alert('antes de pasar foco');
+        $("#hint").focusin();
       }
       else {
         ///showHint(hint, "#producto", "");
@@ -524,7 +524,7 @@ function cargarMovimiento(selector, hint, prod, tipo){
       if ((tipo !== '') && (tipo !== undefined)){
         $("#tipo option[value="+ tipo +"]").attr("selected",true);
       }
-      
+      //$("#producto").focus();
     }
   });    
 }
@@ -758,11 +758,11 @@ function cargarEditarMovimiento(idMov, selector){
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comentarios" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comentarios" tabindex="1" class="agrandar" maxlength="35" size="9"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <td class="pieTablaIzquierdo" style="width: 50%;border-right: 0px;"><input type="button" value="BLOQUEAR" id="editarMovimiento" name="editarMovimiento" class="btn btn-primary" align="center"/></td>\n\
-              <td class="pieTablaDerecho" style="width: 50%;border-left: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarMovimiento" name="actualizarMovimiento" class="btn btn-warning" align="center"/></td>\n\
+              <td class="pieTablaDerecho" style="width: 50%;border-left: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarMovimiento" name="actualizarMovimiento" tabindex="2" class="btn btn-warning" align="center"/></td>\n\
               <td style="display:none"><input type="text" name="idMov" value="'+idMov+'"></td>\n\
           </tr>';
     tabla += tr;
@@ -784,6 +784,7 @@ function cargarEditarMovimiento(idMov, selector){
       $("#cantidad").val(cantidad.toLocaleString());
       $("#comentarios").val(comentarios);
     }
+    $("#comentarios").focus();
   }); 
 }
 
@@ -1297,48 +1298,48 @@ function cargarProducto(idProd, selector){
     }
     }
     var mostrar = "";
-    var formu = '<form method="post" action="producto.php">';
+    var formu = '<form method="post" id="productUpdate" name="productUpdate" action="producto.php">';
     var tabla = '<table class="tabla2" name="producto">';
     var tr = '<th colspan="3" class="centrado tituloTabla">DATOS DEL PRODUCTO</th>';
 
     tr += '<tr>\n\
-            <th align="left"><font class="negra">Entidad:</font></th><td align="center" colspan="2"><input type="text" name="entidad" id="entidad" class="agrandar" style="width:100%; text-align: center"></td>\n\
+            <th align="left"><font class="negra">Entidad:</font></th><td align="center" colspan="2"><input type="text" name="entidad" id="entidad" tabindex="4" class="agrandar" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Nombre:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" name="nombre" id="nombre" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+              <td align="center" colspan="2"><input type="text" name="nombre" id="nombre" tabindex="5" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Código EMSA:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" name="codigo_emsa" id="codigo_emsa" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+              <td align="center" colspan="2"><input type="text" name="codigo_emsa" id="codigo_emsa" tabindex="6" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Código Origen:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" name="codigo_origen" id="codigo_origen" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+              <td align="center" colspan="2"><input type="text" name="codigo_origen" id="codigo_origen" tabindex="7" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Contacto:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="contacto" name="contacto2" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="text" id="contacto" name="contacto2" tabindex="8" class="agrandar" maxlength="35" size="9"></td>\n\
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Foto:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="nombreFoto" name="nombreFoto" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="text" id="nombreFoto" name="nombreFoto" tabindex="9" class="agrandar" maxlength="35" size="9"></td>\n\
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">BIN:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" name="bin" id="bin" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+              <td align="center" colspan="2"><input type="text" name="bin" id="bin" tabindex="10" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Stock:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="stockProducto" name="stockProducto" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="text" id="stockProducto" name="stockProducto" tabindex="-1" class="agrandar" maxlength="35" size="9"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Alarma 1:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="alarma1" name="alarma1" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="text" id="alarma1" name="alarma1" tabindex="11" class="agrandar" maxlength="35" size="9"></td>\n\
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Alarma 2:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="alarma2" name="alarma2" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="text" id="alarma2" name="alarma2" tabindex="12" class="agrandar" maxlength="35" size="9"></td>\n\
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Último Movimiento:</font></th>\n\
@@ -1346,11 +1347,11 @@ function cargarProducto(idProd, selector){
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comentarios" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comentarios" tabindex="13" class="agrandar" maxlength="35" size="9"></td>\n\
           </tr>';
     tr += '<tr>\n\
-              <td style="width: 33%;border-right: 0px;"><input type="button" value="EDITAR" id="editarProducto" name="editarProducto" class="btn btn-primary" align="center"/></td>\n\
-              <td style="width: 33%;border-left: 0px;border-right: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarProducto" name="actualizarProducto" class="btn btn-warning" align="center"/></td>\n\
+              <td style="width: 33%;border-right: 0px;"><input type="button" value="EDITAR" id="editarProducto" name="editarProducto" tabindex="3" class="btn btn-primary" align="center"/></td>\n\
+              <td style="width: 33%;border-left: 0px;border-right: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarProducto" name="actualizarProducto" tabindex="14" class="btn btn-warning" align="center"/></td>\n\
               <td style="width: 33%;border-left: 0px;"><input type="button" value="ELIMINAR" id="eliminarProducto" name="eliminarProducto" class="btn btn-danger" align="center"/></td>\n\
           </tr>';
     tr += '<tr>\n\
@@ -1406,11 +1407,12 @@ function cargarBusquedaProductos(selector) {
                   <th align="left" class="tituloTabla" colspan="5"><font class="negra">BUSCAR:</font></th>\n\
                 </tr>\n\
                 <tr>\n\
-                  <td align="center" colspan="5" class="pieTabla"><input type="text" id="productoBusqueda" name="productoBusqueda" class="agrandar" size="9" onkeyup=\'showHintProd(this.value, "#productoBusqueda", ""), ""\'></td>\n\
+                  <td align="center" colspan="5" class="pieTabla"><input type="text" id="productoBusqueda" name="productoBusqueda" tabindex="1" class="agrandar" size="9" onkeyup=\'showHintProd(this.value, "#productoBusqueda", ""), ""\'></td>\n\
                 </tr>\n\
               </table><br>';
   mostrar += tabla;
   $(selector).html(mostrar);
+  $("#productoBusqueda").focus();
 }
 
 /**
@@ -1889,14 +1891,15 @@ $(document).on("change focusin", "#hint", function (){
   $("#hint").after(mostrar);
   });
   
-///Disparar función SÓLO al seleccionar un elemento del select HINT. Hace que luego se pase el foto automáticamente a Cantidad.   
+///Disparar función al hacer CLICK con el mouse sobre alguna de las OPTION del select HINT ó al darle ENTER sobre los mismos. 
+///Básicamente, la idea es que al presionar ENTER o al hacer CLICK, se pase automáticamente al elemento Cantidad cosa de ahorrar tiempo.  
 ///Además, al hacer click en alguna de las opciones del select se minimiza (por ahora comentado).
 /// Por ahora se comenta pues quizás es mejor que quede abierto:
-$(document).on("click", "#hint option", function (){ 
+$(document).on("click keypress", "#hint", function (e){ 
   //close dropdown
-  //alert('en el evento');
+  //alert('en el evento:'+e.which);
   //$("#hint").attr('size',0);
-  if ($("#hint").find('option:selected').val() !== 'NADA') {
+  if (($("#hint").find('option:selected').val() !== 'NADA') && ((e.which === 1) ||(e.which === 13))) {
     $("#cantidad").focus();
   }  
 }); 
@@ -1947,11 +1950,21 @@ $(document).on("click", "#actualizarMovimiento", function (){
   actualizarMovimiento();
 });
 
-///Disparar función al hacer enter estando en el elemento Cantidad.
-///Básicamente, la idea es hacer "el submit" cosa de ahorrar tiempo en el ingreso.
+///Disparar función al hacer enter estando en el elemento Comentarios.
+///Básicamente, la idea es hacer "el submit" cosa de ahorrar tiempo en la actualización del comentario.
 $(document).on("keypress", "#comentarios", function(e) {
   if(e.which === 13) {
     actualizarMovimiento();
+  }  
+});
+
+///Disparar función al hacer enter estando en el elemento Producto.
+///Básicamente, la idea es pasar el foco al select hint cosa de ahorrar tiempo en el ingreso.
+$(document).on("keypress", "#producto", function(e) {
+  
+  if(e.which === 13) {
+    //alert('enter');
+    $("#hint").focus();
   }  
 });
 
@@ -2006,6 +2019,7 @@ $(document).on("change focusin", "#hintProd", function (){
       resaltado = 'resaltado';
     }  
   }
+  
   var mostrar = '<img id="snapshot" name="hintProd" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
   mostrar += '<p id="stock" name="hintProd" style="padding-top: 10px"><b>Stock actual: <b><font class="'+resaltado+'" style="font-size:1.6em">'+stock.toLocaleString()+'</font></p>';
   $(this).css('background-color', '#9db7ef');
@@ -2027,6 +2041,31 @@ $(document).on("change focusin", "#hintProd", function (){
     $("#ultimoMovimiento").val('');
     $("#comentarios").val('');
   }
+});
+
+///Disparar función al hacer CLICK con el mouse sobre alguna de las OPTION del select HINTPROD ó al darle ENTER sobre los mismos. 
+///Básicamente, la idea es que al presionar ENTER o al hacer CLICK, se pase automáticamente al elemento Cantidad cosa de ahorrar tiempo.  
+///Además, al hacer click en alguna de las opciones del select se minimiza (por ahora comentado).
+/// Por ahora se comenta pues quizás es mejor que quede abierto:
+///
+///NOTA: POR AHORA SE QUITÓ el evento CLICK. Ver bien si sirve o NO.
+$(document).on("keypress", "#hintProd", function (e){ 
+  //close dropdown
+  //alert('en el evento:'+e.which);
+  //$("#hint").attr('size',0);
+  if (($("#hintProd").find('option:selected').val() !== 'NADA') && ((e.which === 1) ||(e.which === 13))) {
+    //$("#editarProducto").focus();
+    habilitarProducto();
+    $("#entidad").focus();
+  }  
+}); 
+
+///Disparar función al hacer enter estando en el elemento productoBusqueda.
+///Esto hace que se pase el foco al select hintProd para ahorrar tiempo.
+$(document).on("keypress", "#productoBusqueda", function(e) {
+  if(e.which === 13) {
+    $("#hintProd").focus();
+  }  
 });
 
 ///Dispara función para realizar los cambios con las modificaciones para el producto (luego de validar los datos obviamente).
@@ -2127,6 +2166,7 @@ $(document).on("click", "#actualizarProducto", function (){
             $("#producto").focus();
             */
             inhabilitarProducto();
+            $("#productoBusqueda").focus();
           }
           else {
             alert('Hubo un problema en la actualización. Por favor verifique.');
@@ -2136,6 +2176,20 @@ $(document).on("click", "#actualizarProducto", function (){
       else {
       alert('Se optó por no actualizar el producto!.');
     }
+    }
+  }
+});
+
+///Disparar función al hacer enter estando en el elemento productoBusqueda.
+///Esto hace que se pase el foco al select hintProd para ahorrar tiempo.
+$(document).on("keypress", "#productUpdate", function(e) {
+  
+  if (e.which === 13) {
+    if ($("#editarProducto").is(":focus")){
+      alert('no hay que hacer el submit pues estoy en el EDITAR');
+    }
+    else {
+      alert('hice enter en el form');
     }
   }
 });
