@@ -35,5 +35,5 @@
         <hr class='visible-xs'>
       </section>
     </div>
-  </div>  
+  </div>
 </footer>

@@ -14,7 +14,7 @@
     default: $estilos = 'styles1.css';
              break;
   }
-  $estilos = $estilos = 'styles.css';
+  //$estilos = $estilos = 'styles.css';
 ?>
   <link rel='stylesheet' href='css/<?php echo $estilos ?>'>
   <!-- jQuery (Bootstrap JS plugins depend on it) -->
