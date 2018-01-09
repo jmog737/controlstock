@@ -171,11 +171,15 @@ $fechafinal1 = new DateTime($fechaFin);
 $diferencia = $fechainicial1->diff($fechafinal1);
 $totalMeses = ($diferencia->y*12) + $diferencia->m;
 
+///Calculo el total de CONSUMOS para agregar el dato a las gráficas:
+$consumosTotal = $retirosTotal + $destruccionesTotal + $renosTotal;
+
 ///Calculo los promedios según cada tipo:
 $avgRetiros = ceil($retirosTotal/$totalMeses);
 $avgIngresos = ceil($ingresosTotal/$totalMeses);
 $avgRenos = ceil($renosTotal/$totalMeses);
 $avgDestrucciones = ceil($destruccionesTotal/$totalMeses);
+$avgConsumos = ceil($consumosTotal/$totalMeses);
 
 /*
 ///Genero los array con los datos de los promedios para cada tipo:
@@ -195,13 +199,13 @@ foreach($meses as $valor){
 ///y en base a esto, elijo el tipo de gráfica a mostrar:
 $producto = strpos($mensaje, 'producto');
 if ($producto !== FALSE) {
-  graficarTorta($mensaje, $totales, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones);
+  graficarTorta($mensaje, $totales, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos);
 }
 else {
-  graficarBarras($mensaje, $meses,$totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones);
+  graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos);
 }
 
-function graficarBarras($subtitulo, $meses, $data1, $data2, $data3, $data4, $avg1, $avg2, $avg3, $avg4){
+function graficarBarras($subtitulo, $meses, $totales, $data1, $data2, $data3, $data4, $avg1, $avg2, $avg3, $avg4, $avg5){
   global $dirGrafica;
   
   // Create the graph. These two calls are always required
@@ -244,6 +248,9 @@ function graficarBarras($subtitulo, $meses, $data1, $data2, $data3, $data4, $avg
   $b3 = new BarPlot($data3);
   $b4 = new BarPlot($data4);
 
+  $consumosTemp = $totales[0] + $totales[2] + $totales[3];
+  $consumos = number_format($consumosTemp, 0, ',', '.');
+  
   // Create the grouped bar plot
   $gbplot = new GroupBarPlot(array($b1,$b2,$b3,$b4));
   // ...and add it to the graPH
@@ -361,6 +368,14 @@ function graficarBarras($subtitulo, $meses, $data1, $data2, $data3, $data4, $avg
   $txt4->SetPos(0.98,$posPrimero+4*$separacion,'right','center');
   $txt4->SetBox('navajowhite1','white'); 
   $graph->AddText($txt4); 
+  
+  $avg5 = number_format($avg5, 0, ',', '.');
+  $txt5 = new Text("Consumos: ".$avg5." (Total ".$consumos.")"); 
+  $txt5->SetFont(FF_FONT1,FS_BOLD); 
+  $txt5->SetColor('#023184:0.98');
+  $txt5->SetPos(0.98,$posPrimero+5*$separacion,'right','center');
+  $txt5->SetBox('navajowhite1','white'); 
+  $graph->AddText($txt5);
   ///************************************************************ FIN Textos con los promedios: **************************************************************
   
   $graph->legend->SetShadow('#e2bd6e@1',1);
@@ -388,7 +403,7 @@ function graficarBarras($subtitulo, $meses, $data1, $data2, $data3, $data4, $avg
 
 }
 
-function graficarTorta($subtitulo, $data, $avg1, $avg2, $avg3, $avg4){
+function graficarTorta($subtitulo, $data, $avg1, $avg2, $avg3, $avg4, $avg5){
   global $dirGrafica;
   
   // A new pie graph
@@ -430,6 +445,8 @@ function graficarTorta($subtitulo, $data, $avg1, $avg2, $avg3, $avg4){
   $ingresos = number_format($data[1], 0, ',', '.');
   $renos = number_format($data[2], 0, ',', '.');
   $destrucciones = number_format($data[3], 0, ',', '.');
+  $consumosTemp = $data[0]+$data[2]+$data[3];
+  $consumos = number_format($consumosTemp, 0, ',', '.');
   $p1->SetLegends(array("Retiros: $retiros","Ingresos: $ingresos","Renos: $renos","Destrucciones: $destrucciones"));
   
   $graph->legend->SetShadow('#e2bd6e@1',1);
@@ -494,6 +511,14 @@ function graficarTorta($subtitulo, $data, $avg1, $avg2, $avg3, $avg4){
   $txt4->SetPos(0.98,$posPrimero+4*$separacion,'right','center');
   $txt4->SetBox('navajowhite1','white'); 
   $graph->AddText($txt4); 
+  
+  $avg5 = number_format($avg5, 0, ',', '.');
+  $txt5 = new Text("Consumos: ".$avg5." (Total ".$consumos.")"); 
+  $txt5->SetFont(FF_FONT1,FS_BOLD); 
+  $txt5->SetColor('#023184:0.98');
+  $txt5->SetPos(0.98,$posPrimero+5*$separacion,'right','center');
+  $txt5->SetBox('navajowhite1','white'); 
+  $graph->AddText($txt5); 
   ///************************************************************ FIN Textos con los promedios: **************************************************************
   
   // Get the handler to prevent the library from sending the

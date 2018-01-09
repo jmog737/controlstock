@@ -472,7 +472,7 @@ function cargarMovimiento(selector, hint, prod, tipo){
       tr += '<tr>\n\
               <th align="left"><font class="negra">Tipo:</font></th>\n\
               <td align="center">\n\
-                <select id="tipo" name="tipo" tabindex="5" style="width:100%">\n\
+                <select id="tipo" name="tipo" tabindex="4" style="width:100%">\n\
                   <option value="Retiro" selected="yes">Retiro</option>\n\
                   <option value="Ingreso">Ingreso</option>\n\
                   <option value="Renovaci&oacute;n">Renovaci&oacute;n</option>\n\
@@ -482,7 +482,7 @@ function cargarMovimiento(selector, hint, prod, tipo){
             </tr>';
       tr += '<tr>\n\
               <th align="left"><font class="negra">Cantidad:</font></th>\n\
-              <td align="center"><input type="text" id="cantidad" name="cantidad" class="agrandar" tabindex="2" maxlength="35" size="9"></td>\n\
+              <td align="center"><input type="text" id="cantidad" name="cantidad" class="agrandar" tabindex="3" maxlength="35" size="9"></td>\n\
             </tr>';
 //      tr += '<tr>\n\
 //              <th align="left"><font class="negra">Repetir Cantidad:</font></th>\n\
@@ -490,7 +490,7 @@ function cargarMovimiento(selector, hint, prod, tipo){
 //            </tr>';
       tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center"><input type="textarea" id="comentarios" name="comentarios" tabindex="6" class="agrandar" maxlength="150" size="9"></td>\n\
+              <td align="center"><input type="textarea" id="comentarios" name="comMov" tabindex="2" class="agrandar" maxlength="150" size="9"></td>\n\
             </tr>';
 //      tr += '<th colspan="2" class="centrado">CONTROL</th>';
 //      tr += '<tr>\n\
@@ -519,7 +519,7 @@ function cargarMovimiento(selector, hint, prod, tipo){
 //          </tr>';
       tr += '<tr>\n\
               <td colspan="2" class="pieTabla">\n\
-                <input type="button" value="ACEPTAR" id="agregarMovimiento" name="agregarMovimiento" tabindex="3" class="btn btn-success" align="center"/>\n\
+                <input type="button" value="ACEPTAR" id="agregarMovimiento" name="agregarMovimiento" tabindex="5" class="btn btn-success" align="center"/>\n\
               </td>\n\
               <td style="display:none">\n\
                 <input type="text" id="idPasado" name="idPasado" value="<?php echo $idPasado ?>">\n\
@@ -777,7 +777,7 @@ function cargarEditarMovimiento(idMov, selector){
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comentarios" tabindex="1" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comEditMov" tabindex="1" class="agrandar" maxlength="35" size="9"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <td class="pieTablaIzquierdo" style="width: 50%;border-right: 0px;"><input type="button" value="BLOQUEAR" id="editarMovimiento" name="editarMovimiento" class="btn btn-primary" align="center"/></td>\n\
@@ -2217,7 +2217,8 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
           $(sel).focus();
         }
         if (tipo === 'totalStock') {
-          $('input:radio [value="totalStock"]').attr('checked', true);
+          $("[name=criterio]").val(["totalStock"]);
+          $("#realizarBusqueda").focus();
         }
       });  
     });  
@@ -2308,7 +2309,7 @@ function cargarProducto(idProd, selector){
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comentarios" tabindex="13" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comProd" tabindex="13" class="agrandar" maxlength="35" size="9"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <td style="width: 33%;border-right: 0px;"><input type="button" value="EDITAR" id="editarProducto" name="editarProducto" tabindex="3" class="btn btn-primary" align="center"/></td>\n\
@@ -2870,7 +2871,7 @@ $(document).on("click keypress", "#hint", function (e){
 
   switch (temp) {
     case "#producto": if ((sel !== 'NADA') && ((e.which === 1) ||(e.which === 13))) {
-                        $("#cantidad").focus();
+                        $("#comentarios").focus();
                       }
                       break;
     case "#productoStock": if ((sel !== 'todos') && ((e.which === 1) || (e.which === 13))) {
@@ -2883,8 +2884,6 @@ $(document).on("click keypress", "#hint", function (e){
                                 break;
     default: break;
   }  
-  
-  
 }); 
 
 ///Disparar funcion al hacer clic en el botón para agregar el movimiento.
@@ -2935,9 +2934,24 @@ $(document).on("click", "#actualizarMovimiento", function (){
 
 ///Disparar función al hacer enter estando en el elemento Comentarios.
 ///Básicamente, la idea es hacer "el submit" cosa de ahorrar tiempo en la actualización del comentario.
+///En el caso en que me encuentre en el form de movimientos, debe pasar al campo CANTIDAD en lugar del hacer el submit.
 $(document).on("keypress", "#comentarios", function(e) {
-  if(e.which === 13) {
-    actualizarMovimiento();
+  var commentName = $(this).attr("name");
+
+  switch (commentName) {
+    case "comMov":  if(e.which === 13) {
+                      $("#cantidad").focus();
+                    }                   
+                    break;
+    case "comEditMov":  if(e.which === 13) {
+                          actualizarMovimiento();
+                        }
+                        break;
+    case "comProd": if(e.which === 13) {
+                      
+                    }  
+                    break;
+    default: break;
   }  
 });
 
@@ -3165,14 +3179,17 @@ $(document).on("click", "#actualizarProducto", function (){
 ///Disparar función al hacer enter estando en el elemento productoBusqueda.
 ///Esto hace que se pase el foco al select hintProd para ahorrar tiempo.
 $(document).on("keypress", "#productUpdate", function(e) {
-  
+ 
   if (e.which === 13) {
-    if ($("#editarProducto").is(":focus")){
-      alert('no hay que hacer el submit pues estoy en el EDITAR');
-    }
-    else {
-      alert('hice enter en el form');
-    }
+    $(this).next().focus();
+    alert($(this).attr("name"));
+//    if ($("#editarProducto").is(":focus")){
+//      alert('no hay que hacer el submit pues estoy en el EDITAR');
+//      $(this).next().focus();
+//    }
+//    else {
+//      alert('hice enter en el form');
+//    }
   }
 });
 
