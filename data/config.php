@@ -1,4 +1,5 @@
 <?php
+require_once("connectvars.php");
 /**
 ******************************************************
 *  @file config.php
@@ -9,14 +10,28 @@
 *
 *******************************************************/
 
+///Consulto nombre del HOST y en base al mismo, configuro la IP (porque el HSA tiene diferente rango de IPs):
+$hostname = getHostName();
+if ($hostname === "JUANMA") {
+  $ip = "192.168.1.145";
+}
+else {
+  $ip = "192.168.10.56";
+}
+//echo "host: ".$hostname."<br>ip: ".$ip;
+
 $unidad = "D:";
-$ip = "192.168.1.145";
+
+
+//var_dump($_SERVER);
+//echo "ip: ".$_SERVER["REMOTE_ADDR"];
 
 //$dir = $unidad.":/PROCESOS/PDFS";
 $dir = "//".$ip."/Reportes/";
 
 $dirGrafica = $dir;
 $dirExcel = $dir;
+$dirLog = $dir;
 
 if (!file_exists($unidad)) {
   $unidad = "C:";

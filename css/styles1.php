@@ -1,3 +1,10 @@
+<?php
+header('content-type:text/css');
+ 
+$colorFondo = '#396540';
+
+echo <<<FINCSS
+
 /**
 ******************************************************
 *  @file styles.css
@@ -22,7 +29,7 @@ html {
 body {
   font-size: 16px;
   color: #fff;
-  background-color: #ffffcc;
+  background-color: $colorFondo;
   font-family: sans-serif;
   margin-bottom: 140px;
 }
@@ -144,8 +151,8 @@ input[type=checkbox] {
 #main-content {
   text-align: center;
   background-color: #ffff99;/* agregardo durante el desarrollo para diferenciar!!!*/
-  /*background-color: #61122f;*/
-  background-color: #ffffcc;
+  background-color: #61122f;
+  background-color: $colorFondo;
   /*padding: 15px;*/
   margin: auto;
   position: relative;
@@ -153,7 +160,7 @@ input[type=checkbox] {
 }
 #fila {
   background-color: #61122f;
-  background-color: #ffffcc;
+  background-color: $colorFondo;      
   /*background-color: #99ffff;*/
   padding: 30px;
   padding-top: 0px;
@@ -170,7 +177,7 @@ a.detailObject:focus, a.detailObject:hover {
 
 #selector {
   background-color: #61122f;
-  background-color: #ffffcc;
+  background-color: $colorFondo;
   /*background-color: #99ff99;/* agregardo durante el desarrollo para diferenciar!!!*/
   position: relative;
   padding: 0px;
@@ -182,7 +189,7 @@ a.detailObject:focus, a.detailObject:hover {
 }
 #content {
   background-color: #61122f;
-  background-color: #ffffcc;
+  background-color: $colorFondo;      
   /*background-color: #ffcc99; agregardo durante el desarrollo para diferenciar!!!*/
   padding-left: 50px;
   position: relative;
@@ -596,5 +603,8 @@ a.detailObject:focus, a.detailObject:hover {
 }
 
 /************************* END MEDIA QUERIES ********************************/
+
+FINCSS;
+?>
 
 

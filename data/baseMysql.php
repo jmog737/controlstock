@@ -1,5 +1,8 @@
 <?php
-require_once("connectvars.php");
+session_start();
+require_once("config.php");
+require_once("sesiones.php");
+require_once ("escribirLog.php");
 
 /**
  * \brief Función usada para conectarse a la base de datos especificada.
@@ -16,7 +19,8 @@ function crearConexion($servidor, $usuario, $pass, $base)
     }
   if (!isset($pass)) {
     $usuario = 'root';
-    }  
+    } 
+
   $mysqli = new mysqli($servidor, $usuario, $pass, $base);
   if ($mysqli->connect_error)
       {

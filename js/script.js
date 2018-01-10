@@ -3176,22 +3176,17 @@ $(document).on("click", "#actualizarProducto", function (){
   }
 });
 
-///Disparar función al hacer enter estando en el elemento productoBusqueda.
-///Esto hace que se pase el foco al select hintProd para ahorrar tiempo.
-$(document).on("keypress", "#productUpdate", function(e) {
- 
-  if (e.which === 13) {
-    $(this).next().focus();
-    alert($(this).attr("name"));
-//    if ($("#editarProducto").is(":focus")){
-//      alert('no hay que hacer el submit pues estoy en el EDITAR');
-//      $(this).next().focus();
-//    }
-//    else {
-//      alert('hice enter en el form');
-//    }
+///Disparar función al hacer enter estando en alguno de los input de la edición del Producto
+///Esto hace que se pase el foco al siguiente input del form para ahorrar tiempo.
+$(document).on("keypress", "#productUpdate input", function(e) {
+  //alert($(this).attr("name"));
+  if (e.which === 13) { 
+    var tabindex = $(this).attr('tabindex');
+    tabindex++;
+    $('[tabindex=' + tabindex + ']').focus();
   }
 });
+
 
 ///Dispara función que da de baja el producto. NO lo borra, sino que le cambia su estado a INACTIVO.
 $(document).on("click", "#eliminarProducto", function (){

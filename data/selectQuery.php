@@ -16,6 +16,9 @@ $dbc = crearConexion(DB_HOST, $userDB, $pwDB, DB_NAME);
 
 $query = $_GET["query"];
 
+///Comento escritura en el log para evitar sobrecargar el archivo.
+//escribirLog($query);
+
 $result = consultarBD($query, $dbc);
 
 $datos = array();
