@@ -13,7 +13,7 @@
         <font class='naranja'>
         <?php
             // Confirm the successful log-in
-            echo "<a href='' class='naranja' id='user'>".strtoupper($_SESSION['username'])."</a>";
+            echo "<a href='#modalPwd' class='naranja' id='user'>".strtoupper($_SESSION['username'])."</a>";
         ?>
         </font>
         <br>

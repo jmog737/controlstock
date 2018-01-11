@@ -17,6 +17,7 @@ else {
   ///Definimos el valor de la sesión "ultima_actividad" como el timestamp del servidor
   $_SESSION['ultima_actividad'] = $hora;
   $myObj->user = $_SESSION['username'];
+  $myObj->user_id = $_SESSION['user_id'];
   $myObj->timestamp = $hora;
 }
 

@@ -56,11 +56,53 @@
         </ul><!-- #nav-list -->
       </div><!-- .collapse .navbar-collapse -->
     </div><!-- .container -->
-    <p><input id="usuarioSesion" name="usuarioSesion" type="text" value="" style="color: black; display: none">
-    <input id="timestampSesion" name="timestampSesion" type="text" value="" style="color: black; display: none">
-    <input id="duracionSesion" name="duracionSesion" type="text" value="<?php echo DURACION?>" style="color: black; display: none">
-  </p>
+    <p>
+      <input id="usuarioSesion" name="usuarioSesion" type="text" value="" style="color: black; display: none">
+      <input id="userID" name="userID" type="text" value="" style="color: black; display: none">
+      <input id="timestampSesion" name="timestampSesion" type="text" value="" style="color: black; display: none">
+      <input id="duracionSesion" name="duracionSesion" type="text" value="<?php echo DURACION?>" style="color: black; display: none">
+    </p>
   </nav><!-- #header-nav -->
   <script>verificarSesion();</script>
   
 </header>
+
+
+<!-- Modal para cambiar la contraseña -->
+<div class="modal fade" id="modalPwd" role="dialog">
+  <div class="modal-dialog"> 
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header tituloModal">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Cambiar Contraseña al usuario: <?php echo $_SESSION["username"]?></h4>
+      </div>
+      <div class="modal-body">
+        <table id="tblModal" class="tblModal">
+<!--          <tr>
+            <td>Nuevo nombre:</td>
+            <td>
+              <input type="text" id="nombreUser" name="nombreUser" class="agrandar">
+            </td>
+          </tr>-->
+          <tr>
+            <td>Introducir NUEVA contraseña:</td>
+            <td>
+              <input type="password" id="pw1" class="agrandar" autofocus="true">
+            </td>
+          </tr>
+          <tr>
+            <td>Repetir NUEVA contraseña:</td>
+            <td>
+              <input type="password" id="pw2" class="agrandar">
+            </td>
+          </tr>
+        </table>  
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-warning" id="btnModal">Actualizar</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>   
+  </div>
+</div><!-- FIN Modal para cambiar la contraseña -->

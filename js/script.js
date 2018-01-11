@@ -20,8 +20,10 @@ function verificarSesion() {
     if (this.readyState == 4 && this.status == 200) {
         var myObj = JSON.parse(this.responseText);
         var user = myObj.user;
+        var user_id = myObj.user_id;
         var timestamp = myObj.timestamp;
         $("#usuarioSesion").val(user);
+        $("#userID").val(user_id);
         $("#timestampSesion").val(timestamp);
     }
   };
@@ -1057,6 +1059,71 @@ function validarUsuario()
   
   if (seguir) return true;
   else return false;
+}
+
+/**
+ * \brief Función que primero valida la info ingresada, y de ser válida, hace la actualización del pwd del usuario del sistema.
+ */
+function actualizarUser ()
+  {
+  var timestamp = Math.round(Date.now() / 1000);
+      
+  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+    window.location.href = "../consultastock/index.php";
+  }
+  else {
+    verificarSesion();
+    
+    var pw1 = $("#pw1").val();
+    var pw2 = $("#pw2").val();
+
+    if (pw1 === ''){
+      alert('La contraseña 1 NO puede estar vacía.\nPor favor verifique.');
+      $("#pw1").focus();
+    }
+    else {
+      if (pw2 === ''){
+        alert('La contraseña 2 NO puede estar vacía.\nPor favor verifique.');
+        $("#pw2").focus();
+      }
+      else {
+        if (pw1 !== pw2) {
+          alert('Las contraseñas ingresadas NO son iguales.\nPor favor verifique.');
+          $("#pw1").val('');
+          $("#pw2").val('');
+          $("#pw1").focus();
+        }
+        else {
+          //alert('hay que actualizar a: '+$("#usuarioSesion").val()+'\nID: '+$("#userID").val());
+          /******** COMENTO PARTE DEL USUARIO POR AHORA **********************/
+          ///var user = $("#nombreUser").val();
+          var iduser = $("#userID").val();
+          var url = "data/updateQuery.php";
+          var query = 'update appusers set password=sha1("'+pw1+'") ';
+          /*
+          if (user !== ''){
+            query += ', user="'+user+'" ';
+          }
+          */
+          query += 'where id_usuario='+iduser;
+          //alert(query);
+          $.getJSON(url, {query: ""+query+""}).done(function(request) {
+            var resultado = request["resultado"];
+            if (resultado === "OK") {
+              alert('Los datos se modificaron correctamente!.');
+              $("#modalPwd").modal("hide");
+              //cargarEditarMovimiento(idmov, "main-content");
+              //inhabilitarMovimiento();
+            }
+            else {
+              alert('Hubo un problema en la actualización. Por favor verifique.');
+            }
+            
+          });
+        }
+      }
+    }
+  }
 }
 
 /***********************************************************************************************************************
@@ -2799,7 +2866,7 @@ $(document).on("focus", ".agrandar", function (){
   $(this).css("color", "red");
   $(this).css("height", "100%");
   //$(this).css("max-width", "100%");
-  $(this).parent().prev().prev().children().prop("checked", true);
+  //$(this).parent().prev().prev().children().prop("checked", true);
 });
 
 ///Disparar funcion cuando algún elemento de la clase agrandar pierda el foco.
@@ -2811,7 +2878,15 @@ $(document).on("blur", ".agrandar", function (){
   $(this).css("color", "inherit");
 });
   
-  
+///Disparar función al hacer enter estando en el elemento Producto.
+///Básicamente, la idea es pasar el foco al select hint cosa de ahorrar tiempo en el ingreso.
+$(document).on("keypress", "#nombreUsuario", function(e) {
+  if(e.which === 13) {
+    alert('REVISAR porque hace el SUBMIT directo');
+    $("#password").focus();
+  }  
+});
+
 /***************************************************************************************************************************
 /// Comienzan las funciones que manejan los eventos relacionados a los MOVIMIENTOS como ser creación, edición y eliminación.
 ****************************************************************************************************************************
@@ -2862,7 +2937,7 @@ $(document).on("change focusin", "#hint", function (){
 ///Disparar función al hacer CLICK con el mouse sobre alguna de las OPTION del select HINT ó al darle ENTER sobre los mismos. 
 ///Básicamente, la idea es que al presionar ENTER o al hacer CLICK, se ejecute la opción por defecto cosa de ahorrar tiempo.  
 ///En el caso de ser llamado desde MOVIMIENTOS, pasa al foco al campo CANTIDAD. Mientras que en el caso de BUSQUEDAS hace el SUBMIT.
-$(document).on("click keypress", "#hint", function (e){ 
+$(document).on("click keyup", "#hint", function (e){ 
   //close dropdown
   //alert('en el evento: '+e.which);
   //$("#hint").attr('size',0);
@@ -3120,7 +3195,9 @@ $(document).on("click", "#actualizarProducto", function (){
         return false;
       }
       */
-      var confirmar = confirm('¿Confirma la modificación del producto con los siguientes datos?\n\nEntidad: '+entidad+'\nNombre: '+nombre+'\nCódigo Emsa: '+codigo_emsa+'\nCódigo Origen: '+codigo_origen+'\nContacto: '+contacto+'\nSnapshot: '+nombreFoto+'\nBin: '+bin+'\nAlarma1: '+alarma1+'\nAlarma2: '+alarma2+'\nComentarios: '+comentarios+"\n?");
+      ///Por ahora se anula el pedido de confirmación y se hace el update igual a pedido de Diego:
+      //var confirmar = confirm('¿Confirma la modificación del producto con los siguientes datos?\n\nEntidad: '+entidad+'\nNombre: '+nombre+'\nCódigo Emsa: '+codigo_emsa+'\nCódigo Origen: '+codigo_origen+'\nContacto: '+contacto+'\nSnapshot: '+nombreFoto+'\nBin: '+bin+'\nAlarma1: '+alarma1+'\nAlarma2: '+alarma2+'\nComentarios: '+comentarios+"\n?");
+      var confirmar = true;
       if (confirmar) {
         var url = "data/updateQuery.php";
         var query = "update productos set nombre_plastico= '"+nombre+"', entidad = '"+entidad+"', codigo_emsa = '"+codigo_emsa+"', codigo_origen = '"+codigo_origen+"', contacto = '"+contacto+"', snapshot = '"+nombreFoto+"', bin = '"+bin+"', alarma1 = "+alarma1+", alarma2 = "+alarma2+", comentarios = '"+comentarios+"' where idprod = "+idProducto;
@@ -3565,14 +3642,41 @@ $(document).on("click", "#agregarUsuario", function(){
   }
 });//*** fin del click agregarUsuario ***
 
-
+///Disparar función al hacer click en el link con el nombre del usuario que está logueado.
+///Esto hace que se abra el modal para cambiar la contraseña.
 $(document).on("click", "#user", function(){
-  alert('hice click');
-  $("#dialog").dialog({
-    autoOpen: true,
-    show: "blind",
-    hide: "explode"
-    });
+  $("#modalPwd").modal("show");
+});
+
+///Disparar función al abrirse el modal para cambiar la contraseña.
+///Lo único que hace es limpiar el form para poder ingresar los nuevos datos.
+$(document).on("shown.bs.modal", "#modalPwd", function() {
+  $("#pw1").val('');
+  $("#pw2").val('');
+  $("#pw1").attr("autofocus", true);
+});
+
+///Disparar función al hacer click en el botón de ACTUALIZAR que está en el MODAL.
+///Primero valida que la info ingresada sea válida (pwd no nulos e iguales entre sí), y luego 
+///ejecuta la consulta para cambiar la contraseña.
+$(document).on("click", "#btnModal", function(){
+  actualizarUser();
+});
+
+///Disparar función al hacer ENTER estando en el elemento pw1 del MODAL.
+///Esto hace que se pase el foco al siguiente input del MODAL (pw2) cosa de ahorrar tiempo.
+$(document).on("keypress", "#pw1", function(e) {
+  if(e.which === 13) {
+    $("#pw2").focus();
+  }  
+});
+
+///Disparar función al hacer ENTER estando en el elemento pw1 del MODAL.
+///Esto hace que se pase el foco al siguiente input del MODAL (pw2) cosa de ahorrar tiempo.
+$(document).on("keypress", "#pw2", function(e) {
+  if(e.which === 13) {
+    actualizarUser();
+  }  
 });
     
 /**************************************************************************************************************************
