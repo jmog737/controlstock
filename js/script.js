@@ -459,7 +459,7 @@ function cargarMovimiento(selector, hint, prod, tipo){
       
       var titulo = '<h2 id="titulo" class="encabezado">INGRESO DE MOVIMIENTOS</h2>';
       var formu = '<form method="post" action="movimiento.php">';
-      var tabla = '<table class="tabla2" name="movimiento">';
+      var tabla = '<table class="tabla2" id="movimiento" name="movimiento">';
       var tr = '<th colspan="2" class="tituloTabla">MOVIMIENTO</th>';
       tr += '<tr>\n\
               <th><font class="negra">Fecha:</font></th>\n\
@@ -2979,11 +2979,11 @@ $(document).on("click keypress", "#hint", function (e){
                         $("#comentarios").focus();
                       }
                       break;
-    case "#productoStock": if ((sel !== 'todos') && ((e.which === 1) || (e.which === 13))) {
+    case "#productoStock": if ((sel !== 'NADA') && ((e.which === 1) || (e.which === 13))) {
                             realizarBusqueda();
                           } 
                           break;
-    case "#productoMovimiento": if ((sel !== 'todos') && ((e.which === 1) || (e.which === 13))) {
+    case "#productoMovimiento": if ((sel !== 'NADA') && ((e.which === 1) || (e.which === 13))) {
                                   realizarBusqueda();
                                 } 
                                 break;
@@ -3725,11 +3725,41 @@ $(document).on("keypress", "#pw2", function(e) {
 ///Disparar función al hacer enter estando en el elemento Producto.
 ///Básicamente, la idea es pasar el foco al select hint cosa de ahorrar tiempo en el ingreso.
 $(document).on("keypress", "#productoStock, #productoMovimiento", function(e) { 
-  //alert(e.which);
   if(e.which === 13) {
     //alert('enter');
     $("#hint").focus();
   }
+});      
+   
+///Disparar función al presionar el TAB estando en alguno de los input del form para las búsquedas.
+///Es un complemento del anterior que detecta primero si se presionó el TAB. En ese caso, chequea primero
+///que haya alguna sugerencia en HINT, y si la hay pasa el foco al select cosa de ahorrar tiempo.
+$(document).on("keydown", "#parametros input, #movimiento input", function(e) { 
+  var keyCode = e.keyCode ? e.keyCode : e.which ? e.which : e.charCode;
+  var sel = $(this).attr("id");
+  
+  if ((sel === "productoStock")||(sel === "productoMovimiento")||(sel === "producto")){
+    
+    if (keyCode == 9) { 
+      e.preventDefault(); 
+      var length = $('#hint> option').length;
+      if (length > 0) {
+        $("#hint").focus();
+      }
+      else {
+        switch (sel) {
+          case "producto":  $("#comentarios").focus();
+                            break;
+          case "productoStock":  $("#entidadMovimiento").focus();
+                            break;
+          case "productoMovimiento":  $("#inicio").focus();
+                            break;
+                          default: break;                
+        }
+      }
+    } 
+  }
+  
 });      
        
 ///Disparar función al cambiar la entidad elegida en el select ENTIDAD. 
