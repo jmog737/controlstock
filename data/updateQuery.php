@@ -15,12 +15,15 @@ else {
 $dbc = crearConexion(DB_HOST, $userDB, $pwDB, DB_NAME);
 
 $query = $_GET["query"];
+$log = $_GET["log"];
 
 $result = consultarBD($query, $dbc);
 
 if ($result === TRUE) {
   $dato["resultado"] = "OK";
-  escribirLog($query);
+  if ($log === "SI") {
+    escribirLog($query);
+  }
 }
 else {
   $dato["resultado"] = "ERROR";

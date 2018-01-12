@@ -157,14 +157,21 @@ class PDF extends PDF_MC_Table
         if ($campos[$i] === 'Entidad') {
           $indiceEntidad = $i;
         }
+        if ($campos[$i] === 'Mensaje') {
+          $indiceMensaje = $i;
+        }
+        if ($campos[$i] === utf8_decode('Últ. Mov.')) {
+          $indiceUltMov = $i;
+        }
       }
     }
       
     $this->Ln();
     $this->SetX($x);
     $this->SetFont('Courier', '', 9);    
-    $fill = true;
-    foreach ($registros as $dato) {  
+    $fill = 1;
+    foreach ($registros as $dato) { 
+      
       //Calculate the height of the row
       $nb=0;
       $h0 = 0;
@@ -173,6 +180,11 @@ class PDF extends PDF_MC_Table
         $tamDat = 0;
         $this->SetFont('Courier', '', 9);
         $dat = trim(utf8_decode($dato[$i]));
+        if ($i === $indiceUltMov) {
+          $separo = explode(" ", $dat);
+          $dat = $separo[0];
+        }
+        
         $tamDat = $this->GetStringWidth($dat);
         $w1 = $largoCampos[$i];
         if ($mostrar[$i]){
@@ -192,7 +204,13 @@ class PDF extends PDF_MC_Table
         if ($mostrar[$i]) {
           
           $w = $largoCampos[$i];
+          $this->SetFont('Courier', '', 9);
           $datito = trim(utf8_decode($dato[$i]));
+          if ($i === $indiceUltMov) {
+            $separo = explode(" ", $datito);
+            $datito = $separo[0];
+          }
+          $tamDat1 = $this->GetStringWidth($datito);
           $nb1 = $this->NbLines($w, $datito);
 
           //Save the current position
@@ -241,10 +259,9 @@ class PDF extends PDF_MC_Table
                   $this->SetFillColor(103, 167, 253);
                   $this->SetTextColor(0);
                   $fill = 0;
-                }
-                
+                }        
               }
-            }             
+            }        
           }
           else {
             if ($i === $indiceEntidad) {
@@ -255,20 +272,40 @@ class PDF extends PDF_MC_Table
               $a = 'C';
             }
             //$datito = utf8_decode($dato[$i]);
+            if ($i === $indiceMensaje) {
+              $patron = "dif";
+              $buscar = stripos($datito, $patron);
+              if ($buscar !== FALSE){
+                $this->SetFillColor(255, 255, 51);
+                $fill = 1;
+              }
+              else 
+                {
+                $this->setFillColor(220, 223, 232);
+              }
+            }
+            if ($i === $indiceUltMov) {
+              $separo = explode(" ", $datito);
+              $datito = $separo[0];
+            }
             
             $this->SetFont('Courier', '', 9);
-            $this->setFillColor(220, 223, 232);
             $this->SetTextColor(0);
           }
+          
           $h1 = $h0/$nb1;
+          
           //Print the text
           if ($nb1 > 1) {
-            $this->MultiCell($w,$h1, $datito,1,$a, $fill);
-            }
+            $this->MultiCell($w, $h1, $datito,1, $a, $fill);
+          }
           else {
-            $this->MultiCell($w,$h0, $datito,1,$a, $fill);
-            }  
+            $this->MultiCell($w, $h0, $datito,1, $a, $fill);
+          }  
           
+          if ($i === $indiceStock) {
+            $fill = $fillActual;
+          }
           //Put the position to the right of the cell
           $this->SetXY($x1+$w,$y);
         }
@@ -277,7 +314,12 @@ class PDF extends PDF_MC_Table
       $this->Ln($h0);
       $this->SetX($x);
       $fill = $fillActual;
-      $fill = !$fill;
+      if ($fill === 1) {
+        $fill = 0;
+      }
+      else {
+        $fill = 1;
+      }
     }
     
     if ($total !== -1) {
@@ -287,11 +329,13 @@ class PDF extends PDF_MC_Table
       //$this->SetTextColor(0);*****************************************************************************************************
       $this->SetFillColor(103, 167, 253);
       $this->SetTextColor(255, 255, 255);
+      $largoParaTotal = $largoCampos[$totalCampos-1];
       if ($tipo) {
-        $largoTemp = $largoCampos[$totalCampos] - $largoCampos[$totalCampos-1];
+        $largoTemp = $largoCampos[$totalCampos] - $largoParaTotal;
       }
       else {
-        $largoTemp = $largoCampos[$totalCampos] - $largoCampos[$totalCampos-4];
+        $largoParaTotal = $largoParaTotal + $largoCampos[$totalCampos-4];
+        $largoTemp = $largoCampos[$totalCampos] - $largoParaTotal;
       }
       $this->Cell($largoTemp, 6, 'TOTAL:', 'LRBT', 0, 'C', true);
       $this->SetFont('Courier', 'BI', 14);
@@ -299,10 +343,10 @@ class PDF extends PDF_MC_Table
       //$this->SetFillColor(153, 255, 102);
       $this->SetFillColor(0, 255, 255);
       if ($tipo) {
-        $this->Cell($largoCampos[$totalCampos-1], 6, number_format($total, 0, ",", "."), 'LRBT', 0, 'C', true);
+        $this->Cell($largoParaTotal, 6, number_format($total, 0, ",", "."), 'LRBT', 0, 'C', true);
       }
       else {
-        $this->Cell($largoCampos[$totalCampos-4], 6, number_format($total, 0, ",", "."), 'LRBT', 0, 'C', true);
+        $this->Cell($largoParaTotal, 6, number_format($total, 0, ",", "."), 'LRBT', 0, 'C', true);
       }
     }
   }

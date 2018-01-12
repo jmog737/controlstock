@@ -169,7 +169,7 @@ function showHint(str, id, seleccionado) {
     return;
   } else {
     var url = "data/selectQuery.php";
-    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2 from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') and estado='activo' order by productos.entidad asc, productos.nombre_plastico asc";
+    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2, ultimoMovimiento from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') and estado='activo' order by productos.entidad asc, productos.nombre_plastico asc";
     //alert(query);
     $.getJSON(url, {query: ""+query+""}).done(function(request) {
       var sugerencias = request.resultado;
@@ -179,7 +179,7 @@ function showHint(str, id, seleccionado) {
       var mostrar = '';
       
       if (totalSugerencias >= 1) {
-        mostrar = '<select name="hint" id="hint" class="hint" tabindex="2">';
+        mostrar = '<select name="hint" id="hint" class="hint">';
         if (totalSugerencias > 1) {
           mostrar += '<option value="NADA" name="NADA" selected>--Seleccionar--</option>';
         }
@@ -201,7 +201,7 @@ function showHint(str, id, seleccionado) {
             sel = 'selected="yes"';
           }
           //mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+' '+sel+ '>[' + sugerencias[i]["entidad"]+'] '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
-          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma1='+sugerencias[i]["alarma1"]+' alarma2='+sugerencias[i]["alarma2"]+' '+sel+ '>[' + sugerencias[i]["entidad"]+': '+codigo_emsa+'] --- '+sugerencias[i]["nombre_plastico"] + '</option>';
+          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma1='+sugerencias[i]["alarma1"]+' alarma2='+sugerencias[i]["alarma2"]+' ultimoMov="'+sugerencias[i]["ultimoMovimiento"]+'" '+sel+ '>[' + sugerencias[i]["entidad"]+': '+codigo_emsa+'] --- '+sugerencias[i]["nombre_plastico"] + '</option>';
         }
         mostrar += '</select>';
       }
@@ -534,7 +534,6 @@ function cargarMovimiento(selector, hint, prod, tipo){
       formu += '</form><br>';
       $(selector).html(formu);
       
-      
       if ((tipo !== '') && (tipo !== undefined)){
         $("#tipo option[value="+ tipo +"]").attr("selected",true);
       }
@@ -609,15 +608,21 @@ function agregarMovimiento(){
     var url = "data/updateQuery.php";
     var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+2+", "+3+", '"+comentarios+"')";
     //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
-
-    $.getJSON(url, {query: ""+query+""}).done(function(request) {
+    var log = "SI";
+    $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
       var resultado = request["resultado"];
       /// Si el agregado es exitoso, actualizo el stock y la fecha de la última modificación en la tabla Productos:
       if (resultado === "OK") {
+        /***** AGREGADO PARA CONOCER ULTIMO ID INGRESADO: ********************************/
+        var query = "SELECT MAX(idmov) AS id FROM movimientos where idprod="+idProd;
+        /* FIN AGREGADO */
         var url = "data/updateQuery.php";
-        var query = "update productos set stock="+nuevoStock+", ultimoMovimiento='"+fecha+"' where idprod="+idProd;
-
-        $.getJSON(url, {query: ""+query+""}).done(function(request) {
+        var fechaTemp = fecha.split("-");
+        var fechaMostrar = fechaTemp[2]+"/"+fechaTemp[1]+"/"+fechaTemp[0];
+        var ultimoMovimiento = fechaMostrar+" "+hora+" - "+tipo+": "+cantidad;
+        var query = "update productos set stock="+nuevoStock+", ultimoMovimiento='"+ultimoMovimiento+"' where idprod="+idProd;
+        log = "SI";
+        $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
           var resultado = request["resultado"];
           if (resultado === "OK") {
             if (avisarAlarma1) {
@@ -673,8 +678,9 @@ function actualizarMovimiento(){
     if (confirmar) {
       var url = "data/updateQuery.php";
       var query = 'update movimientos set comentarios="'+comentarios+'" where idmov='+idmov;
+      var log = "SI";
       //alert(query);
-      $.getJSON(url, {query: ""+query+""}).done(function(request) {
+      $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
         var resultado = request["resultado"];
         if (resultado === "OK") {
           //alert('Los datos del movimiento se actualizaron correctamente!.');
@@ -1106,8 +1112,9 @@ function actualizarUser ()
           }
           */
           query += 'where id_usuario='+iduser;
+          var log = "NO";
           //alert(query);
-          $.getJSON(url, {query: ""+query+""}).done(function(request) {
+          $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
             var resultado = request["resultado"];
             if (resultado === "OK") {
               alert('Los datos se modificaron correctamente!.');
@@ -1183,7 +1190,7 @@ function realizarBusqueda(){
     var tipMov = '';
     var ent = '';
     
-    var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, DATE_FORMAT(productos.ultimoMovimiento, \'%d/%m/%Y\') as ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+    var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
     var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
     var tipoConsulta = '';
     var mensajeFecha = '';
@@ -1211,9 +1218,9 @@ function realizarBusqueda(){
                              consultaCSV += " from productos where estado='activo'";
                              tipoConsulta = 'del stock de todas las entidades';
                            }
-                           campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Comentarios";
-                           largos = "0.8-1.2-2.5-0.8-2-1-1-1.4-1.2-1-2-1";
-                           mostrarCamposQuery = "1-1-1-1-1-0-0-1-1-0-0-0";
+                           campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje";
+                           largos = "0.8-1.2-2.5-0.8-2-1-1-1.2-1.2-1-2-1.7";
+                           mostrarCamposQuery = "1-1-1-0-1-0-0-1-1-0-0-1";
                            tipMov = 'entStock';
                            x = 20;
                            break;
@@ -1230,7 +1237,7 @@ function realizarBusqueda(){
                              prodHint = $("#productoStock").val();
                              tipMov = 'prodStock';
                              tipoConsulta = 'de stock del producto '+nombreSolo;
-                             campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-Stock-Alarma1-Alarma2-Comentarios-&Uacute;ltimo Movimiento";
+                             campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-Stock-Alarma1-Alarma2-Mensaje-&Uacute;ltimo Movimiento";
                              largos = "0.8-1.2-2.5-0.8-2-2.5-1-1-1-1-2-1";
                              mostrarCamposQuery = "1-1-1-1-1-1-1-1-0-0-1-1";;
                              x = 22;
@@ -1453,7 +1460,7 @@ function realizarBusqueda(){
           var tabla = '<form name="resultadoBusqueda" id="resultadoBusqueda" target="_blank" action="exportar.php" method="post" class="exportarForm">';
           tabla += '<table name="producto" class="tabla2">';
           switch(radio) {
-            case 'entidadStock':  tabla += '<tr><th class="tituloTabla" colspan="8">CONSULTA DE STOCK</th></tr>';
+            case 'entidadStock':  tabla += '<tr><th class="tituloTabla" colspan="9">CONSULTA DE STOCK</th></tr>';
                                   tabla += '<tr>\n\
                                               <th>Item</th>\n\
                                               <th>Entidad</th>\n\
@@ -1463,6 +1470,7 @@ function realizarBusqueda(){
                                               <th>Snapshot</th>\n\
                                               <th>&Uacute;ltimo Movimiento</th>\n\
                                               <th>Stock</th>\n\
+                                              <th>Mensaje</th>\n\
                                            </tr>';
                                   var indice = 1;
                                   var total = 0;
@@ -1479,7 +1487,21 @@ function realizarBusqueda(){
                                     if (ultimoMovimiento === null) {
                                       ultimoMovimiento = '';
                                     }
-                                    var claseResaltado = "";
+                                    var mensaje = datos[i]['prodcom'];
+                                    var claseComentario = "";
+                                    if ((mensaje === "undefined")||(mensaje === null)||(mensaje === "")) 
+                                      {
+                                      mensaje = "";
+                                      claseComentario = "";
+                                    }
+                                    else {
+                                      var patron = "dif";
+                                      var buscar = mensaje.search(new RegExp(patron, "i"));
+                                      if (buscar !== -1){
+                                        claseComentario = "alarma1";
+                                      }
+                                    }
+                                    var claseResaltado = "alarma1";
                                     if ((stock < alarma1) && (stock > alarma2)){
                                       claseResaltado = "alarma1";
                                     }
@@ -1504,11 +1526,12 @@ function realizarBusqueda(){
                                                 <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="76" width="120"></img></td>\n\
                                                 <td>'+ultimoMovimiento+'</td>\n\
                                                 <td class="'+claseResaltado+'" style="text-align: right">'+stock.toLocaleString()+'</td>\n\
+                                                <td class="'+claseComentario+'" >'+mensaje+'</td>\n\
                                               </tr>';
                                     indice++;
                                     total += stock;
                                   }
-                                  tabla += '<tr><th colspan="7" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td></tr>';
+                                  tabla += '<tr><th colspan="7" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td><th></th></tr>';
                                   
                                   tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
@@ -1522,7 +1545,7 @@ function realizarBusqueda(){
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                   </tr>';
                                   tabla += '<tr>\n\
-                                              <td class="pieTabla" colspan="8">\n\
+                                              <td class="pieTabla" colspan="9">\n\
                                                 <input type="button" id="1" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                               </td>\n\
                                             </tr>\n\
@@ -2115,7 +2138,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
                 </td>\n\
                 <th>Entidad:</th>\n\
                   <td colspan="3">\n\
-                    <select name="entidad" id="entidadStock" style="width: 100%">\n\
+                    <select name="entidad" id="entidadStock" tabindex="1" style="width: 100%">\n\
                       <option value="todos" selected="yes">---TODOS---</option>';
         for (var j in entidades) {
           tr += '<option value="'+entidades[j]+'">'+entidades[j]+'</option>';
@@ -2129,7 +2152,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
                 </td>\n\
                 <th>Producto:</th>\n\
                 <td align="center" colspan="3">\n\
-                  <input type="text" id="productoStock" name="producto" class="agrandar size="9" onkeyup=\'showHint(this.value, "#productoStock", "")\'>\n\
+                  <input type="text" id="productoStock" name="producto" class="agrandar size="9" tabindex="2" onkeyup=\'showHint(this.value, "#productoStock", "")\'>\n\
                 </td>\n\
               </tr>';
         tr += '<tr>\n\
@@ -2147,7 +2170,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
                 </td>\n\
                 <th>Entidad:</th>\n\
                   <td colspan="3">\n\
-                    <select name="entidad" id="entidadMovimiento" style="width: 100%">\n\
+                    <select name="entidad" id="entidadMovimiento" tabindex="3" style="width: 100%">\n\
                       <option value="todos" selected="yes">---TODOS---</option>';
         for (var j in entidades) {
           tr += '<option value="'+entidades[j]+'">'+entidades[j]+'</option>';
@@ -2161,7 +2184,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
                 </td>\n\
                 <th>Producto:</th>\n\
                 <td align="center" colspan="3">\n\
-                  <input type="text" id="productoMovimiento" name="producto" class="agrandar" size="9" onkeyup=\'showHint(this.value, "#productoMovimiento", "")\'>\n\
+                  <input type="text" id="productoMovimiento" name="producto" class="agrandar" size="9" tabindex="4" onkeyup=\'showHint(this.value, "#productoMovimiento", "")\'>\n\
                 </td>\n\
               </tr>';
         tr += '<tr>\n\
@@ -2170,11 +2193,11 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
                   </td>\n\
                   <th>Entre:</th>\n\
                   <td>\n\
-                    <input type="date" name="inicio" id="inicio" style="width:100%; text-align: center" min="2016-07-01">\n\
+                    <input type="date" name="inicio" id="inicio" tabindex="6" style="width:100%; text-align: center" min="2016-07-01">\n\
                   </td>\n\
                   <td>y:</td>\n\
                   <td>\n\
-                    <input type="date" name="fin" id="fin" style="width:100%; text-align: center" min="2016-10-01">\n\
+                    <input type="date" name="fin" id="fin" tabindex="7" style="width:100%; text-align: center" min="2016-10-01">\n\
                   </td>\n\
                 </tr>';
         tr += '<tr>\n\
@@ -2183,7 +2206,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
                 </td>\n\
                 <th>Mes:</th>\n\
                 <td>\n\
-                  <select id="mes" name="mes" style="width:100%">\n\
+                  <select id="mes" name="mes" tabindex="8" style="width:100%">\n\
                     <option value="todos" selected="yes">--Seleccionar--</option>\n\
                     <option value="01">Enero</option>\n\
                     <option value="02">Febrero</option>\n\
@@ -2201,7 +2224,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
                 </td>\n\
                 <th>Año:</th>\n\
                 <td>\n\
-                  <select id="año" name="año" style="width:100%">\n\
+                  <select id="año" name="año" tabindex="9" style="width:100%">\n\
                     <option value="2017">2017</option>\n\
                     <option value="2018" selected="yes">2018</option>\n\
                     <option value="2019">2019</option>\n\
@@ -2218,7 +2241,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
         tr += '<tr>\n\
                 <th>Tipo:</th>\n\
                 <td>\n\
-                  <select id="tipo" name="tipo" style="width:100%">\n\
+                  <select id="tipo" name="tipo" tabindex="10" style="width:100%">\n\
                     <option value="Todos" selected="yes">---TODOS---</option>\n\
                     <option value="Retiro">Retiro</option>\n\
                     <option value="Ingreso">Ingreso</option>\n\
@@ -2230,7 +2253,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
         tr += '<tr>\n\
                 <th>Usuario:</th>\n\
                 <td colspan="3">\n\
-                  <select name="usuario" id="usuario" style="width: 100%">\n\
+                  <select name="usuario" id="usuario" tabindex="11" style="width: 100%">\n\
                     <option value="todos">---TODOS---</option>';
         for (var j in nombresUsuarios) {
             tr += '<option value="'+idusers[j]+'">'+nombresUsuarios[j]+' '+apellidosUsuarios[j]+'</option>';
@@ -2240,7 +2263,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
               </tr>';
         tr += '<tr>\n\
                 <td colspan="5" class="pieTabla">\n\
-                  <input type="button" class="btn btn-success" name="consultar" id="realizarBusqueda" value="Consultar" align="center">\n\
+                  <input type="button" class="btn btn-success" name="consultar" id="realizarBusqueda" tabindex="12" value="Consultar" align="center">\n\
                 </td>\n\
               </tr>';
         tabla += tr;
@@ -2783,7 +2806,7 @@ function todo () {
   var parametros = jQuery(location).attr('search');
   var remplaza = /\+|%20/g; 
   if (parametros) {
-    parametros = unescape(parametros);
+    //parametros = unescape(parametros);
     parametros = parametros.replace(remplaza, " ");
   }
   ///Según en que url esté, es lo que se carga:
@@ -2903,11 +2926,16 @@ $(document).on("change focusin", "#hint", function (){
   
   $("#snapshot").remove();
   $("#stock").remove();
+  $("#ultimoMov").remove();
   var stock = $("#hint").find('option:selected').attr("stock");
   var alarma1 = $("#hint").find('option:selected').attr("alarma1");
   alarma1 = parseInt(alarma1, 10);
   var alarma2 = $("#hint").find('option:selected').attr("alarma2");
   alarma2 = parseInt(alarma2, 10);
+  var ultimoMovimiento = $("#hint").find('option:selected').attr("ultimomov");
+  if ((ultimoMovimiento === undefined) || (ultimoMovimiento === null)||(ultimoMovimiento === "null")){
+    ultimoMovimiento = 'NO HAY';
+  }
   if ((stock === 'undefined') || ($(this).find('option:selected').val() === 'NADA')) {
     stock = '';
   }
@@ -2928,16 +2956,18 @@ $(document).on("change focusin", "#hint", function (){
   }
   var mostrar = '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
   mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><b>Stock actual: <b><font class="'+resaltado+'" style="font-size:1.6em">'+stock.toLocaleString()+'</font></p>';
+  mostrar += '<p id="ultimoMov" name="ulitmoMov">Último Movimiento: <font class="'+resaltado+'" style="font-size:1.2em">'+ultimoMovimiento+'</font></p>';
   //$(this).css('background-color', '#efe473');
   $(this).css('background-color', '#9db7ef');
   //$(this).find('option:selected').css('background-color', '#79ea52');
   $("#hint").after(mostrar);
+  $(this).parent().prev().prev().children().prop("checked", true);
   });
   
 ///Disparar función al hacer CLICK con el mouse sobre alguna de las OPTION del select HINT ó al darle ENTER sobre los mismos. 
 ///Básicamente, la idea es que al presionar ENTER o al hacer CLICK, se ejecute la opción por defecto cosa de ahorrar tiempo.  
 ///En el caso de ser llamado desde MOVIMIENTOS, pasa al foco al campo CANTIDAD. Mientras que en el caso de BUSQUEDAS hace el SUBMIT.
-$(document).on("click keyup", "#hint", function (e){ 
+$(document).on("click keypress", "#hint", function (e){ 
   //close dropdown
   //alert('en el evento: '+e.which);
   //$("#hint").attr('size',0);
@@ -3201,8 +3231,9 @@ $(document).on("click", "#actualizarProducto", function (){
       if (confirmar) {
         var url = "data/updateQuery.php";
         var query = "update productos set nombre_plastico= '"+nombre+"', entidad = '"+entidad+"', codigo_emsa = '"+codigo_emsa+"', codigo_origen = '"+codigo_origen+"', contacto = '"+contacto+"', snapshot = '"+nombreFoto+"', bin = '"+bin+"', alarma1 = "+alarma1+", alarma2 = "+alarma2+", comentarios = '"+comentarios+"' where idprod = "+idProducto;
+        var log = "SI";
         //alert(query);
-        $.getJSON(url, {query: ""+query+""}).done(function(request) {
+        $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
           var resultado = request["resultado"];
           if (resultado === "OK") {
             //alert('Los datos del producto se actualizaron correctamente!.');
@@ -3279,8 +3310,9 @@ $(document).on("click", "#eliminarProducto", function (){
     if (confirmar) {
       var url = "data/updateQuery.php";
       var query = "update productos set estado = 'inactivo' where idprod = "+idProducto;
+      var log = "SI";
       
-      $.getJSON(url, {query: ""+query+""}).done(function(request) {
+      $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
         var resultado = request["resultado"];
         if (resultado === "OK") {
           alert('El producto '+nombre+' se dió de baja correctamente!.');
@@ -3371,10 +3403,11 @@ $(document).on("click", "#agregarProducto", function (){
       
       var url = "data/updateQuery.php";
       var query = "insert into productos (entidad, nombre_plastico, codigo_emsa, codigo_origen, contacto, snapshot, stock, bin, comentarios, alarma1, alarma2, estado) values ('"+entidad+"', '"+nombre+"', '"+codigo_emsa+"', '"+codigo_origen+"', '"+contacto+"', '"+nombreFoto+"', "+stock+", '"+bin+"', '"+comentarios+"', "+alarma1+", "+alarma2+", 'activo')";
+      var log = "SI";
       
       var confirmar = confirm("¿Confirma que desea agregar el producto con los siguientes datos: \n\nEntidad: "+entidad+"\nNombre: "+nombre+"\nCódigo Emsa: "+codigo_emsa+"\nCódigo Origen: "+codigo_origen+"\nContacto: "+contacto+"\nSnapshot: "+nombreFoto+"\nBin: "+bin+"\nStock Inicial: "+stock+"\nAlarma1: "+alarma1+"\nAlarma2: "+alarma2+"\nComentarios: "+comentarios+"\n?");
       if (confirmar) {
-        $.getJSON(url, {query: ""+query+""}).done(function(request){
+        $.getJSON(url, {query: ""+query+"", log: log}).done(function(request){
           var resultado = request["resultado"];
           if (resultado === "OK") {
             alert('El producto se ingresó correctamente!.');
@@ -3692,12 +3725,13 @@ $(document).on("keypress", "#pw2", function(e) {
 ///Disparar función al hacer enter estando en el elemento Producto.
 ///Básicamente, la idea es pasar el foco al select hint cosa de ahorrar tiempo en el ingreso.
 $(document).on("keypress", "#productoStock, #productoMovimiento", function(e) { 
+  //alert(e.which);
   if(e.which === 13) {
     //alert('enter');
     $("#hint").focus();
-  }  
+  }
 });      
-      
+       
 ///Disparar función al cambiar la entidad elegida en el select ENTIDAD. 
 ///Lo que hace es seleccionar automáticamente el radio button correspondiente.
 $(document).on("change", "[name=entidad]", function (){
