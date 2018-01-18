@@ -11,7 +11,7 @@
 ?>
   
 <script> 
-  alert('Ha cerrado correctamente su sesión');
+  //alert('Ha cerrado correctamente su sesión');
   window.location.href = "../controlstock/index.php";
 </script>
 

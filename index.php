@@ -87,7 +87,7 @@ if (empty($_SESSION['user_id']))
 ?>
     </h3>
     <br>
-    <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+    <form method="post" name="login" id="frmLogin" action="<?php echo $_SERVER['PHP_SELF']; ?>">
       <table class='tabla2' name='login'> 
         <th colspan="2" class="tituloTabla">INGRESO</th>
         <tr>
@@ -99,7 +99,7 @@ if (empty($_SESSION['user_id']))
             <td align='center'><input type='password' name='password' id="password" maxlength='15' size='9' class="agrandar" value=""></td>
         </tr>    
         <tr>
-            <td colspan="2" class="pieTabla"><input type="submit" value="LogIn" name="submit" class='boton' align='center'/></td>
+            <td colspan="2" class="pieTabla"><input type="submit" value="Log In" name="submit" id="login" class='boton' align='center'/></td>
         </tr>
       </table>
     </form>

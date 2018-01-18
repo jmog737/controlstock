@@ -170,7 +170,7 @@ $fechafinal1 = new DateTime($fechaFin);
 ///Calculo la diferencia entre las fechas y la paso a cantidad de meses:
 $diferencia = $fechainicial1->diff($fechafinal1);
 $totalMeses = ($diferencia->y*12) + $diferencia->m;
-
+//echo $totalMeses;
 ///Calculo el total de CONSUMOS para agregar el dato a las gráficas:
 $consumosTotal = $retirosTotal + $destruccionesTotal + $renosTotal;
 
@@ -199,7 +199,7 @@ foreach($meses as $valor){
 ///y en base a esto, elijo el tipo de gráfica a mostrar:
 $producto = strpos($mensaje, 'producto');
 if ($producto !== FALSE) {
-  graficarTorta($mensaje, $totales, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos);
+  //graficarTorta($mensaje, $totales, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos);
 }
 else {
   graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos);

@@ -165,6 +165,7 @@ function showHint(str, id, seleccionado) {
     $("#hint").remove();
     $("#snapshot").remove();
     $("#stock").remove();
+    $("#ultimoMov").remove();
     document.getElementById("producto").innerHTML = "";
     return;
   } else {
@@ -175,6 +176,7 @@ function showHint(str, id, seleccionado) {
       var sugerencias = request.resultado;
       var totalSugerencias = request.rows;
       $("[name='hint']").remove();
+      $("#ultimoMov").remove();
       
       var mostrar = '';
       
@@ -239,7 +241,7 @@ function showHint(str, id, seleccionado) {
       }
       
       if (totalSugerencias === 1){
-        $("#cantidad").focus();
+        $("#comentarios").focus();
       }      
     });
   }
@@ -257,11 +259,12 @@ function showHintProd(str, id, seleccionado) {
     $("#hintProd").remove();
     $("#snapshot").remove();
     $("#stock").remove();
+    $("#ultimoMov").remove();
     document.getElementById("producto").innerHTML = "";
     return;
   } else {
     var url = "data/selectQuery.php";
-    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2 from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') and estado='activo' order by productos.nombre_plastico asc";
+    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2, ultimoMovimiento from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') and estado='activo' order by productos.nombre_plastico asc";
     //alert(query);
     $.getJSON(url, {query: ""+query+""}).done(function(request) {
       var sugerencias = request.resultado;
@@ -293,7 +296,7 @@ function showHintProd(str, id, seleccionado) {
             sel = 'selected="yes"';
           }
           //mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+'>[' + sugerencias[i]["entidad"]+'] '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
-          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma1='+sugerencias[i]["alarma1"]+' alarma2='+sugerencias[i]["alarma2"]+' '+sel+ '>[' + sugerencias[i]["entidad"]+': '+codigo_emsa+'] --- '+sugerencias[i]["nombre_plastico"] + '</option>';
+          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma1='+sugerencias[i]["alarma1"]+' alarma2='+sugerencias[i]["alarma2"]+' ultimoMov="'+sugerencias[i]["ultimoMovimiento"]+'" '+sel+ '>[' + sugerencias[i]["entidad"]+': '+codigo_emsa+'] --- '+sugerencias[i]["nombre_plastico"] + '</option>';
         }
         mostrar += '</select>';
       }
@@ -1170,7 +1173,7 @@ function realizarBusqueda(){
     var entidadMovimiento = document.getElementById("entidadMovimiento").value;
     var idProd = $("#hint").val();
     var nombreProducto = $("#hint").find('option:selected').text( );
-    
+
     if ((nombreProducto !== "undefined") && (nombreProducto !== '') && (nombreProducto !== '--Seleccionar--')) {
       ///Separo en partes el nombreProducto que contiene [entidad: codigo] --- nombreProducto
       var tempo = nombreProducto.split("- ");
@@ -1283,7 +1286,7 @@ function realizarBusqueda(){
                                   }
                                   else {
                                     query += "idProd="+idProd;
-                                    consultaCSV += "idProd="+idProd;
+                                    consultaCSV += "and idProd="+idProd;
                                     validarFecha = true;
                                     validarTipo = true;
                                     validarUser = true;
@@ -2339,15 +2342,13 @@ function cargarProducto(idProd, selector){
     var resultado = request["resultado"];
     var total = request["rows"];
     if (total >= 1) {
-    var stock = parseInt(resultado[0]['stock'], 10);
-    var alarma1 = parseInt(resultado[0]['alarma1'], 10);
-    var alarma2 = parseInt(resultado[0]['alarma2'], 10);
-    var fecha = resultado[0]['ultimoMovimiento'];
-    var ultimoMovimiento = '';
-    if (fecha !== null) {
-      var temp = fecha.split('-');
-      ultimoMovimiento = temp[2]+"/"+temp[1]+"/"+temp[0];
-    }
+      var stock = parseInt(resultado[0]['stock'], 10);
+      var alarma1 = parseInt(resultado[0]['alarma1'], 10);
+      var alarma2 = parseInt(resultado[0]['alarma2'], 10);
+      var ultimoMovimiento = resultado[0]['ultimoMovimiento'];
+      if ((ultimoMovimiento === undefined) || (ultimoMovimiento === null)||(ultimoMovimiento === "null")){
+        ultimoMovimiento = 'NO HAY';
+      }
     }
     var mostrar = "";
     var formu = '<form method="post" id="productUpdate" name="productUpdate" action="producto.php">';
@@ -2673,65 +2674,88 @@ function cargarFormEstadisticas(selector){
           </tr>';
     tr += '<th colspan="5" class="centrado">FECHAS</th>';
     tr += '<tr>\n\
-            <th colspan="2">Inicio:</th>\n\
-            <td>\n\
-              <select id="mesInicio" name="mesInicio" style="width:100%">\n\
-                <option value="todos" selected="yes">--Seleccionar--</option>\n\
-                <option value="01">Enero</option>\n\
-                <option value="02">Febrero</option>\n\
-                <option value="03">Marzo</option>\n\
-                <option value="04">Abril</option>\n\
-                <option value="05">Mayo</option>\n\
-                <option value="06">Junio</option>\n\
-                <option value="07">Julio</option>\n\
-                <option value="08">Agosto</option>\n\
-                <option value="09">Setiembre</option>\n\
-                <option value="10">Octubre</option>\n\
-                <option value="11">Noviembre</option>\n\
-                <option value="12">Diciembre</option>\n\
-              </select>\n\
-            </td>\n\
-            <th>Año:</th>\n\
-            <td>\n\
-              <select id="añoInicio" name="añoInicio" style="width:100%">\n\
-                <option value="2017" selected="yes">2017</option>\n\
-                <option value="2018">2018</option>\n\
-                <option value="2019">2019</option>\n\
-                <option value="2020">2020</option>\n\
-                <option value="2021">2021</option>\n\
-              </select>\n\
-            </td>\n\
-          </tr>';
+                  <td class="fondoNaranja">\n\
+                    <input type="radio" name="criterioFecha" value="intervalo">\n\
+                  </td>\n\
+                  <th>Entre:</th>\n\
+                  <td>\n\
+                    <input type="date" name="diaInicio" id="diaInicio" tabindex="6" style="width:100%; text-align: center" min="2016-07-01">\n\
+                  </td>\n\
+                  <td>y:</td>\n\
+                  <td>\n\
+                    <input type="date" name="diaFin" id="diaFin" tabindex="7" style="width:100%; text-align: center" min="2016-10-01">\n\
+                  </td>\n\
+                </tr>';
+        tr += '<tr>\n\
+                <td class="fondoNaranja">\n\
+                  <input type="radio" name="criterioFecha" value="mes">\n\
+                </td>\n\
+                <th>Mes Inicial:</th>\n\
+                <td>\n\
+                  <select id="mesInicio" name="mesInicio" tabindex="8" style="width:100%">\n\
+                    <option value="todos" selected="yes">--Seleccionar--</option>\n\
+                    <option value="1">Enero</option>\n\
+                    <option value="2">Febrero</option>\n\
+                    <option value="3">Marzo</option>\n\
+                    <option value="4">Abril</option>\n\
+                    <option value="5">Mayo</option>\n\
+                    <option value="6">Junio</option>\n\
+                    <option value="7">Julio</option>\n\
+                    <option value="8">Agosto</option>\n\
+                    <option value="9">Setiembre</option>\n\
+                    <option value="10">Octubre</option>\n\
+                    <option value="11">Noviembre</option>\n\
+                    <option value="12">Diciembre</option>\n\
+                  </select>\n\
+                </td>\n\
+                <th>Año:</th>\n\
+                <td>\n\
+                  <select id="añoInicio" name="añoInicio" tabindex="9" style="width:100%">\n\
+                    <option value="2017">2017</option>\n\
+                    <option value="2018" selected="yes">2018</option>\n\
+                    <option value="2019">2019</option>\n\
+                    <option value="2020">2020</option>\n\
+                    <option value="2021">2021</option>\n\
+                  </select>\n\
+                </td>\n\
+              </tr>';
     tr += '<tr>\n\
-            <th colspan="2">Fin:</th>\n\
-            <td>\n\
-              <select id="mesFin" name="mesFin" style="width:100%">\n\
-                <option value="todos" selected="yes">--Seleccionar--</option>\n\
-                <option value="01">Enero</option>\n\
-                <option value="02">Febrero</option>\n\
-                <option value="03">Marzo</option>\n\
-                <option value="04">Abril</option>\n\
-                <option value="05">Mayo</option>\n\
-                <option value="06">Junio</option>\n\
-                <option value="07">Julio</option>\n\
-                <option value="08">Agosto</option>\n\
-                <option value="09">Setiembre</option>\n\
-                <option value="10">Octubre</option>\n\
-                <option value="11">Noviembre</option>\n\
-                <option value="12">Diciembre</option>\n\
-              </select>\n\
-            </td>\n\
-            <th>Año:</th>\n\
-            <td>\n\
-              <select id="añoFin" name="añoFin" style="width:100%">\n\
-                <option value="2017" selected="yes">2017</option>\n\
-                <option value="2018">2018</option>\n\
-                <option value="2019">2019</option>\n\
-                <option value="2020">2020</option>\n\
-                <option value="2021">2021</option>\n\
-              </select>\n\
-            </td>\n\
-          </tr>';
+                <td class="fondoNaranja">\n\
+                </td>\n\
+                <th>Mes Final:</th>\n\
+                <td>\n\
+                  <select id="mesFin" name="mesFin" tabindex="8" style="width:100%">\n\
+                    <option value="todos" selected="yes">--Seleccionar--</option>\n\
+                    <option value="1">Enero</option>\n\
+                    <option value="2">Febrero</option>\n\
+                    <option value="3">Marzo</option>\n\
+                    <option value="4">Abril</option>\n\
+                    <option value="5">Mayo</option>\n\
+                    <option value="6">Junio</option>\n\
+                    <option value="7">Julio</option>\n\
+                    <option value="8">Agosto</option>\n\
+                    <option value="9">Setiembre</option>\n\
+                    <option value="10">Octubre</option>\n\
+                    <option value="11">Noviembre</option>\n\
+                    <option value="12">Diciembre</option>\n\
+                  </select>\n\
+                </td>\n\
+                <th>Año:</th>\n\
+                <td>\n\
+                  <select id="añoFin" name="añoInicio" tabindex="9" style="width:100%">\n\
+                    <option value="2017">2017</option>\n\
+                    <option value="2018" selected="yes">2018</option>\n\
+                    <option value="2019">2019</option>\n\
+                    <option value="2020">2020</option>\n\
+                    <option value="2021">2021</option>\n\
+                  </select>\n\
+                </td>\n\
+              </tr>';
+        tr += '<tr>\n\
+                <td class="fondoNaranja">\n\
+                  <input type="radio" name="criterioFecha" value="todos" checked="checked">\n\
+                </td>\n\
+                <th>TODOS</th>';
     tr += '<tr>\n\
             <th colspan="2">Tipo:</th>\n\
             <td colspan="3">\n\
@@ -2901,14 +2925,15 @@ $(document).on("blur", ".agrandar", function (){
   $(this).css("color", "inherit");
 });
   
-///Disparar función al hacer enter estando en el elemento Producto.
-///Básicamente, la idea es pasar el foco al select hint cosa de ahorrar tiempo en el ingreso.
+///Disparar función al hacer enter estando en el elemento nombreUsuario.
+///Básicamente, la idea es pasar el foco al elemento password cosa de ahorrar tiempo en el ingreso.
 $(document).on("keypress", "#nombreUsuario", function(e) {
   if(e.which === 13) {
-    alert('REVISAR porque hace el SUBMIT directo');
+    e.preventDefault();
     $("#password").focus();
   }  
 });
+
 
 /***************************************************************************************************************************
 /// Comienzan las funciones que manejan los eventos relacionados a los MOVIMIENTOS como ser creación, edición y eliminación.
@@ -2967,25 +2992,33 @@ $(document).on("change focusin", "#hint", function (){
 ///Disparar función al hacer CLICK con el mouse sobre alguna de las OPTION del select HINT ó al darle ENTER sobre los mismos. 
 ///Básicamente, la idea es que al presionar ENTER o al hacer CLICK, se ejecute la opción por defecto cosa de ahorrar tiempo.  
 ///En el caso de ser llamado desde MOVIMIENTOS, pasa al foco al campo CANTIDAD. Mientras que en el caso de BUSQUEDAS hace el SUBMIT.
-$(document).on("click keypress", "#hint", function (e){ 
-  //close dropdown
-  //alert('en el evento: '+e.which);
-  //$("#hint").attr('size',0);
+///Además, si la tecla presionada es el TAB, se pasa el foco al siguiente elemento.
+$(document).on("click keydown", "#hint", function (e){
+  var keyCode = e.keyCode || e.which;
   var temp = "#"+$(this).prev().attr("id");
   var sel = $(this).find('option:selected').val();
-
+ 
   switch (temp) {
-    case "#producto": if ((sel !== 'NADA') && ((e.which === 1) ||(e.which === 13))) {
+    case "#producto": if ((sel !== 'NADA') && ((keyCode === 1) || (keyCode === 13) || (keyCode === 9))) {
+                        e.preventDefault();
                         $("#comentarios").focus();
                       }
                       break;
-    case "#productoStock": if ((sel !== 'NADA') && ((e.which === 1) || (e.which === 13))) {
-                            realizarBusqueda();
-                          } 
-                          break;
+    case "#productoStock":  if ((sel !== 'NADA') && ((e.which === 1) || (e.which === 13))) {
+                              realizarBusqueda();
+                            };
+                            if (keyCode == 9) {
+                              e.preventDefault();    
+                              $("#entidadMovimiento").focus();
+                            }
+                            break;
     case "#productoMovimiento": if ((sel !== 'NADA') && ((e.which === 1) || (e.which === 13))) {
                                   realizarBusqueda();
                                 } 
+                                if (keyCode == 9) {
+                                  e.preventDefault();    
+                                  $("#inicio").focus();
+                                }
                                 break;
     default: break;
   }  
@@ -3092,6 +3125,7 @@ $(document).on("change focusin", "#hintProd", function (){
   
   $("#snapshot").remove();
   $("#stock").remove();
+  $("#ultimoMov").remove();
   $("#stock").removeClass('alarma1');
   $("#stock").removeClass('alarma2');
   $("#stock").removeClass('resaltado');
@@ -3102,6 +3136,10 @@ $(document).on("change focusin", "#hintProd", function (){
   alarma1 = parseInt(alarma1, 10);
   var alarma2 = $("#hintProd").find('option:selected').attr("alarma2");
   alarma2 = parseInt(alarma2, 10);
+  var ultimoMovimiento = $("#hintProd").find('option:selected').attr("ultimomov");
+  if ((ultimoMovimiento === undefined) || (ultimoMovimiento === null)||(ultimoMovimiento === "null")){
+    ultimoMovimiento = 'NO HAY';
+  }
   if ((stock === 'undefined') || ($(this).find('option:selected').val() === 'NADA')) {
     stock = '';
   }
@@ -3123,6 +3161,7 @@ $(document).on("change focusin", "#hintProd", function (){
   
   var mostrar = '<img id="snapshot" name="hintProd" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
   mostrar += '<p id="stock" name="hintProd" style="padding-top: 10px"><b>Stock actual: <b><font class="'+resaltado+'" style="font-size:1.6em">'+stock.toLocaleString()+'</font></p>';
+  mostrar += '<p id="ultimoMov" name="ulitmoMov">Último Movimiento: <font class="'+resaltado+'" style="font-size:1.2em">'+ultimoMovimiento+'</font></p>';
   $(this).css('background-color', '#9db7ef');
   $("#hintProd").after(mostrar);
   if (idProd !== 'NADA') {
@@ -3739,7 +3778,6 @@ $(document).on("keydown", "#parametros input, #movimiento input", function(e) {
   var sel = $(this).attr("id");
   
   if ((sel === "productoStock")||(sel === "productoMovimiento")||(sel === "producto")){
-    
     if (keyCode == 9) { 
       e.preventDefault(); 
       var length = $('#hint> option').length;
@@ -3758,8 +3796,7 @@ $(document).on("keydown", "#parametros input, #movimiento input", function(e) {
         }
       }
     } 
-  }
-  
+  } 
 });      
        
 ///Disparar función al cambiar la entidad elegida en el select ENTIDAD. 
@@ -3948,10 +3985,99 @@ $(document).on("click", "#realizarGrafica", function (){
     }
     
     var tipo = $("#tipo").find('option:selected').val( );
-    var mesInicio = $("#mesInicio").val();
-    var añoInicio = $("#añoInicio").val();
-    var mesFin = $("#mesFin").val();
-    var añoFin = $("#añoFin").val();
+    
+    var criterioFecha = $('input:radio[name=criterioFecha]:checked').val();
+    var mensajeFecha = '';
+    var meses = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"];
+    switch (criterioFecha) {
+      case "intervalo": var diaInicio = $("#diaInicio").val();
+                        var diaFin = $("#diaFin").val();
+                        var inicioDate = new Date(diaInicio+" 00:00:00");
+                        var finDate = new Date(diaFin+" 00:00:00");
+                        if (finDate < inicioDate) {
+                          alert('ERROR. La fecha final NO puede ser anterior a la fecha inicial.\nPor favor verifique.');
+                          $("#diaInicio").focus();
+                        }
+                        else {
+                          var mesTemp = inicioDate.getUTCMonth()+1;
+                          if (mesTemp < 10) {
+                            mesTemp = "0"+mesTemp;
+                          }
+                          var dia1 = inicioDate.getUTCDate()+"/"+mesTemp.toString()+"/"+inicioDate.getUTCFullYear();
+                          
+                          mesTemp = finDate.getUTCMonth()+1;
+                          if (mesTemp < 10) {
+                            mesTemp = "0"+mesTemp;
+                          }
+                          var dia2 = finDate.getUTCDate()+"/"+mesTemp.toString()+"/"+finDate.getUTCFullYear();
+                          
+                          if (inicioDate = finDate) {
+                            mensajeFecha = "del día "+dia1;
+                          }
+                          else {
+                            mensajeFecha = "entre el "+dia1+" y el "+dia2;
+                          }
+                        }
+                        break;
+      case "mes": var mesInicio = $("#mesInicio").val();
+                  var añoInicio = parseInt($("#añoInicio").val(), 10);
+                  var mesFin = $("#mesFin").val();
+                  var añoFin = parseInt($("#añoFin").val(), 10);   
+                  if (mesInicio === 'todos'){
+                    mesInicio = 1;
+                  }
+                  else {
+                    mesInicio = parseInt(mesInicio, 10);
+                  }
+                  if (mesFin === 'todos'){
+                    mesFin = 12;
+                  }
+                  else {
+                    mesFin = parseInt(mesFin, 10);
+                  }
+                  ///Comienzo validación del rango elegido:
+                  if (añoFin < añoInicio) {
+                    alert('ERROR. El año final NO puede ser anterior al año inicial. \nPor favor verifique.');
+                    $("#añoInicio").focus();
+                  }
+                  else {
+                    ///Mismo año:
+                    if (añoInicio === añoFin){
+                      ///Mismo año y mes final anterior al inicial:
+                      if (mesFin < mesInicio) {
+                        alert('ERROR. El mes final NO puede ser anterior que el mes inicial.\nPor favor verifique.');
+                        $("#mesInicio").focus();
+                      }
+                      else {
+                        ///Mismo año y mismo mes, poner solo del mes y año tal:
+                        if (mesFin === mesInicio) {
+                          mensajeFecha = "de "+meses[mesInicio]+" de "+añoInicio;
+                        }
+                        ///Mismo año, pero meses distintos, entonces poner entre tal mes y tal mes del año tal:
+                        else {
+                          mensajeFecha = "entre "+meses[mesInicio]+" y "+meses[mesFin]+" de "+añoInicio;
+                        }
+                      }
+                    }
+                    ///Año final es necesariamente mayor al inicial por lo cual NO IMPORTAN los meses. Pongo rango completo:
+                    else {
+                      mensajeFecha = "entre "+meses[mesInicio]+"/"+añoInicio+" y "+meses[mesFin]+"/"+añoFin;
+                    }
+                    ///Sólo agrego un IF para el caso en que sea de enero a diciembre cosa que aparezca solo del año tal:
+                    if ((añoInicio === añoFin)&&(mesInicio === 1)&&(mesFin === 12)){
+                      mensajeFecha = "de "+añoInicio;
+                    }
+                    //alert(mensajeFecha);
+                    var inicioDate1 = new Date(añoInicio+"-"+mesInicio+"-01");
+                    //mesFin = mesFin + 1;
+                    var finDate1 = new Date(añoFin,mesFin,0);
+                    alert(inicioDate1+"\n"+finDate1+"\nmensaje: "+mensajeFecha);
+                  }
+                  break;
+      case "todos": break;
+      default: break;
+    }
+    ////*************************************************************************************************************************************************////////
     var rangoFecha = null;
     var tipoConsulta = '';
     var mensajeFecha = '';
@@ -3980,127 +4106,260 @@ $(document).on("click", "#realizarGrafica", function (){
                                   }
                                   tipoConsulta = 'del producto '+nombreSolo;
                                   break;
+      default: break;
     }
+    
     
     ///Comienzo la validación de las fechas:  
-    if (mesInicio === 'todos') {
-      inicio = añoInicio+"-01-01";
-      mesInicio = "01";
-      mensajeFecha += "entre Enero de "+añoInicio;
-      mesInicioMostrar = "Enero";
-    }
-    else {
-      var mes = parseInt(mesInicio, 10);
-      inicio = añoInicio+"-"+mesInicio+"-01";
-      var mesInicioMostrar = '';
-      switch (mesInicio) {
-        case '01': mesInicioMostrar = "Enero";
-                   break;
-        case '02': mesInicioMostrar = "Febrero";
-                   break;
-        case '03': mesInicioMostrar = "Marzo";
-                   break;
-        case '04': mesInicioMostrar = "Abril";
-                   break;
-        case '05': mesInicioMostrar = "Mayo";
-                   break;
-        case '06': mesInicioMostrar = "Junio";
-                   break;
-        case '07': mesInicioMostrar = "Julio";
-                   break;
-        case '08': mesInicioMostrar = "Agosto";
-                   break;
-        case '09': mesInicioMostrar = "Setiembre";
-                   break;
-        case '10': mesInicioMostrar = "Octubre";
-                   break;
-        case '11': mesInicioMostrar = "Noviembre";
-                   break;
-        case '12': mesInicioMostrar = "Diciembre";
-                   break;
-        default: break;         
-      }
-      mensajeFecha += "entre "+mesInicioMostrar+" de "+añoInicio;
-    }
-    
-    
-    if (mesFin === 'todos') {
-      var añoSiguiente = parseInt(añoFin, 10) + 1;
-      mesFin = "12";
-      fin = añoSiguiente+"-01-01";
-      mensajeFecha += " y Diciembre de "+añoFin;
-      mesFinMostrar = "Diciembre";
-    }
-    else { 
-      var mes = parseInt(mesFin, 10) + 1;
-      if (mes === 13) {
-        mes = 1;
-        añoSiguiente = parseInt(añoFin, 10) + 1;
-        fin = añoSiguiente+"-01-01";
-      }
-      else {
-        fin = añoFin+"-"+mes+"-01";
-      }
-      var mesFinMostrar = '';
-      switch (mesFin) {
-        case '01': mesFinMostrar = "Enero";
-                   break;
-        case '02': mesFinMostrar = "Febrero";
-                   break;
-        case '03': mesFinMostrar = "Marzo";
-                   break;
-        case '04': mesFinMostrar = "Abril";
-                   break;
-        case '05': mesFinMostrar = "Mayo";
-                   break;
-        case '06': mesFinMostrar = "Junio";
-                   break;
-        case '07': mesFinMostrar = "Julio";
-                   break;
-        case '08': mesFinMostrar = "Agosto";
-                   break;
-        case '09': mesFinMostrar = "Setiembre";
-                   break;
-        case '10': mesFinMostrar = "Octubre";
-                   break;
-        case '11': mesFinMostrar = "Noviembre";
-                   break;
-        case '12': mesFinMostrar = "Diciembre";
-                   break;
-        default: break;         
-      }
-      mensajeFecha += " y "+mesFinMostrar+" de "+añoFin;
-    }
-    
-    validado = true;
-    if (añoInicio > añoFin) {
-      alert('El año inicial NO puede ser poseterior al año final.\nPor favor verifique.');
-      validado = false;
-      $("#inicio").focus();
-    }
-    else {
-      if ((añoInicio === añoFin)&&(mesInicio > mesFin)&&((mesInicio !== 'todos')&&(mesFin !== 'todos'))) {
-        validado = false;
-        alert('El mes inicial NO puede ser posterior al mes final (del mismo año).\nPor favor verifique.');
-        $("#inicio").focus();
-      }
-      else {
-        if ((añoInicio===añoFin)&&(mesInicio===mesFin)&&(mesInicio!=='todos')){
-          mensajeFecha = "del mes de "+mesInicioMostrar+" de "+añoInicio;
-        }
-        else {
-          if ((añoInicio===añoFin)&&(mesInicio==='01')&&(mesFin==='12')){
-            mensajeFecha = "del año "+añoInicio;
-          }
-          else {
-            if (añoInicio===añoFin){
-              mensajeFecha = "entre "+mesInicioMostrar+" y "+mesFinMostrar+" de "+añoInicio;
-            }          
-          }
-        }
-      }
-      rangoFecha = "(fecha >='"+inicio+"') and (fecha<'"+fin+"')";
-    }
+//    if (mesInicio === 'todos') {
+//      inicio = añoInicio+"-01-01";
+//      mesInicio = "01";
+//      mensajeFecha += "entre Enero de "+añoInicio;
+//      mesInicioMostrar = "Enero";
+//    }
+//    else {
+//      var mes = parseInt(mesInicio, 10);
+//      inicio = añoInicio+"-"+mesInicio+"-01";
+//      var mesInicioMostrar = '';
+//      switch (mesInicio) {
+//        case '01': mesInicioMostrar = "Enero";
+//                   break;
+//        case '02': mesInicioMostrar = "Febrero";
+//                   break;
+//        case '03': mesInicioMostrar = "Marzo";
+//                   break;
+//        case '04': mesInicioMostrar = "Abril";
+//                   break;
+//        case '05': mesInicioMostrar = "Mayo";
+//                   break;
+//        case '06': mesInicioMostrar = "Junio";
+//                   break;
+//        case '07': mesInicioMostrar = "Julio";
+//                   break;
+//        case '08': mesInicioMostrar = "Agosto";
+//                   break;
+//        case '09': mesInicioMostrar = "Setiembre";
+//                   break;
+//        case '10': mesInicioMostrar = "Octubre";
+//                   break;
+//        case '11': mesInicioMostrar = "Noviembre";
+//                   break;
+//        case '12': mesInicioMostrar = "Diciembre";
+//                   break;
+//        default: break;         
+//      }
+//      mensajeFecha += "entre "+mesInicioMostrar+" de "+añoInicio;
+//    }
+//    
+//    var mesSiguiente = '';
+//    
+//    ///Recupero mes actual:
+//    var hoy = new Date();
+//    var mesHoy = (hoy.getUTCMonth() + 1);
+//    var mesSiguienteHoy = mesHoy + 1;
+//    var añoHoy = hoy.getFullYear();
+//
+//    if (mesHoy < 10){
+//      mesHoy = "0"+mesHoy;
+//    }
+//    if (mesSiguienteHoy < 10){
+//      mesSiguienteHoy = "0"+mesSiguienteHoy;
+//    }
+//    //alert("mes hoy: "+mesHoy+"\nmes siguiente: "+mesSiguienteHoy);
+//      
+//    ///Si se eligió TODOS, el mes final tiene que ser el mes actual:
+//    if (mesFin === 'todos') {
+//      if (añoFin === añoHoy) {
+//        mesFin = mesHoy;
+//        ///Recupero y acomodo mes siguiente para el rango de fechas:
+//        mesSiguiente = mesSiguienteHoy;
+//        //añoFin = hoy.getFullYear().toString();
+//      }
+//      else {
+//        mesFin = '12';
+//        mesSiguiente = '13';
+//      }
+//    }
+//    else {
+//      ///Recupero el mes pasado en el input:
+//      mesFin = parseInt(mesFin, 10);alert(mesFin);
+//      mesSiguiente = mesFin +1;
+//      if (mesSiguiente < 10){
+//        mesSiguiente = "0"+mesSiguiente;
+//      }
+//      if (mesFin < 10){
+//        mesFin = "0"+mesFin;
+//      }
+//      ///Si el mes pasado en el input es mayor a la fecha actual, el mes final tiene que ser la fecha actual:
+//      if ((mesHoy < mesFin)&&(añoFin === añoHoy)) {
+//        mesFin = mesHoy;
+//        mesSiguiente = mesSiguienteHoy;
+//      }
+//      alert("mes fin: "+mesFin+"\nmes siguiente: "+mesSiguiente);
+//    }  
+//    
+//    if (mesSiguiente === '13') {
+//      //mesSiguiente = 1;
+//      var añoSiguiente = parseInt(añoFin, 10) + 1;
+//      fin = añoSiguiente+"-01-01";
+//    }
+//    else {
+//      fin = añoFin+"-"+mesSiguiente+"-01";
+//    }
+//    alert("mesInicio: "+mesInicio+"/"+añoInicio+"\nmesFin: "+mesFin+"/"+añoFin+"\ninicio: "+inicio+"\nfin: "+fin);
+//    var mesFinMostrar = '';
+//    switch (mesFin) {
+//      case '01': mesFinMostrar = "Enero";
+//                 break;
+//      case '02': mesFinMostrar = "Febrero";
+//                 break;
+//      case '03': mesFinMostrar = "Marzo";
+//                 break;
+//      case '04': mesFinMostrar = "Abril";
+//                 break;
+//      case '05': mesFinMostrar = "Mayo";
+//                 break;
+//      case '06': mesFinMostrar = "Junio";
+//                 break;
+//      case '07': mesFinMostrar = "Julio";
+//                 break;
+//      case '08': mesFinMostrar = "Agosto";
+//                 break;
+//      case '09': mesFinMostrar = "Setiembre";
+//                 break;
+//      case '10': mesFinMostrar = "Octubre";
+//                 break;
+//      case '11': mesFinMostrar = "Noviembre";
+//                 break;
+//      case '12': mesFinMostrar = "Diciembre";
+//                 break;
+//      default: break;         
+//    }
+//    mensajeFecha += " y "+mesFinMostrar+" de "+añoFin;
+//    añoFin = parseInt(añoFin, 10);
+//    if (mesInicio === 'todos') {
+//      mesInicio = '01';
+//    }
+//    var mesFinReal = '';
+//    var añoFinReal = añoFin;
+//    if (mesFin === 'todos') {
+//      mesFin = '01';
+//      mesFinReal = '12';
+//      añoFin = añoFin + 1;
+//    }
+//    else {
+//      mesFin = parseInt(mesFin, 10);
+//      mesFinReal = mesFin.toString();
+//      if (mesFin < 10){
+//        mesFinReal = "0"+mesFinReal;
+//      }
+//      if (mesFin === 12){
+//        mesFin = 1;
+//        añoFin = parseInt(añoFin, 10) + 1;
+//      }
+//      else {
+//        mesFin = mesFin + 1;
+//      }
+//    }
+//    
+//    var hoy = new Date();
+//    var inicio = new Date(añoInicio+"/"+mesInicio+"/01 00:00:00");
+//    var fin = new Date(añoFin+"/"+mesFin+"/01 00:00:00");
+//    //alert("inicio: "+inicio+"\nfin: "+fin+"\nhoy: "+hoy);
+//    if (fin > hoy) {
+//      fin = hoy;
+//    }
+//    var mesFinMostrar = '';
+//    switch (mesFinReal) {
+//      case '01': mesFinMostrar = "Enero";
+//                 break;
+//      case '02': mesFinMostrar = "Febrero";
+//                 break;
+//      case '03': mesFinMostrar = "Marzo";
+//                 break;
+//      case '04': mesFinMostrar = "Abril";
+//                 break;
+//      case '05': mesFinMostrar = "Mayo";
+//                 break;
+//      case '06': mesFinMostrar = "Junio";
+//                 break;
+//      case '07': mesFinMostrar = "Julio";
+//                 break;
+//      case '08': mesFinMostrar = "Agosto";
+//                 break;
+//      case '09': mesFinMostrar = "Setiembre";
+//                 break;
+//      case '10': mesFinMostrar = "Octubre";
+//                 break;
+//      case '11': mesFinMostrar = "Noviembre";
+//                 break;
+//      case '12': mesFinMostrar = "Diciembre";
+//                 break;
+//      default: break;         
+//    }
+//    var mesInicioMostrar = '';
+//    switch (mesInicio) {
+//      case '01': mesInicioMostrar = "Enero";
+//                 break;
+//      case '02': mesInicioMostrar = "Febrero";
+//                 break;
+//      case '03': mesInicioMostrar = "Marzo";
+//                 break;
+//      case '04': mesInicioMostrar = "Abril";
+//                 break;
+//      case '05': mesInicioMostrar = "Mayo";
+//                 break;
+//      case '06': mesInicioMostrar = "Junio";
+//                 break;
+//      case '07': mesInicioMostrar = "Julio";
+//                 break;
+//      case '08': mesInicioMostrar = "Agosto";
+//                 break;
+//      case '09': mesInicioMostrar = "Setiembre";
+//                 break;
+//      case '10': mesInicioMostrar = "Octubre";
+//                 break;
+//      case '11': mesInicioMostrar = "Noviembre";
+//                 break;
+//      case '12': mesInicioMostrar = "Diciembre";
+//                 break;
+//      default: break;         
+//      }
+//
+//    alert("inicio: "+inicio+"\nfin: "+fin+"\nhoy: "+hoy+"\n\nInicio: "+mesInicioMostrar+"/"+añoInicio+"\nFin: "+mesFinMostrar+"/"+añoFinReal);
+//    
+//    ///Comienzo validación de las fechas:
+//    validado = true;
+//    if (inicio > fin) {
+//      alert('La fecha inicial NO puede ser posterior a la final.\nPor favor verifique.');
+//      validado = false;
+//    }
+//    else {
+//      if (añoInicio === añoFinReal) {
+//        if (mesInicio > mesFin) {
+//          validado = false;
+//          alert('El mes inicial NO puede ser posterior al mes final (del mismo año).\nPor favor verifique.');
+//          $("#inicio").focus();
+//        }
+//        else {
+//          if (mesInicio === mesFin){
+//            mensajeFecha = "del mes de "+mesInicioMostrar+" de "+añoInicio;
+//          }
+//          else {
+//            if ((añoInicio===añoFin)&&(mesInicio==='01')&&(mesFin==='12')){
+//              mensajeFecha = "del año "+añoInicio;
+//            }
+//            else {
+//              mensajeFecha = "entre "+mesInicioMostrar+" y "+mesFinMostrar+" de "+añoInicio;
+//            }
+//          }
+//        }
+//      }
+//      rangoFecha = "(fecha >='"+inicio+"') and (fecha<'"+fin+"')";
+//    }
+//    
+//    alert("rango: "+rangoFecha+"\nmensaje: "+mensajeFecha);
+    validado = false;
     
     if (validado) {
       query += rangoFecha;

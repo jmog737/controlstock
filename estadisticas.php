@@ -40,7 +40,7 @@ if ($_POST["hacerGrafica"] === "yes") {
     ?>
       <script> 
         alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-        window.location.href = "../controlstock/index.php";
+        window.location.href = "/controlstock/index.php";
       </script>  
     <?php
     }        

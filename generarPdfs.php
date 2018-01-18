@@ -582,6 +582,7 @@ class PDF extends PDF_MC_Table
       else {
         $this->MultiCell($cResto,$h, $ultimoMovimiento,1,'C', 0);
         } 
+      
       //Put the position to the right of the cell
       $this->SetXY($x,$y+$h0);
       
