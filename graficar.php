@@ -13,13 +13,73 @@ session_start();
 require_once("data/config.php");
 require_once("data/baseMysql.php");
 
-
 /** Include JPgraph files */
 require_once('../../jpgraph/jpgraph.php');
 require_once('../../jpgraph/jpgraph_pie.php');
 require_once('../../jpgraph/jpgraph_pie3d.php');
 require_once('../../jpgraph/jpgraph_bar.php');
 require_once ('../../jpgraph/jpgraph_line.php');
+
+///Función que calcula el total de díase entre el rango de fechas pasado como argumento.
+///Básicamente arma un array con todas las fechas que hay en medio (incluyendo ambos extremos).
+function DiasHabiles($fecha_inicial,$fecha_final) 
+  { 
+  list($year,$mes,$dia) = explode("-",$fecha_inicial);
+  $ini = mktime(0, 0, 0, $mes , $dia, $year); 
+  list($yearf,$mesf,$diaf) = explode("-",$fecha_final); 
+  $fin = mktime(0, 0, 0, $mesf , $diaf, $yearf); 
+  $newArray = array($ini);
+  $r = 1; 
+  while($ini != $fin) 
+    { 
+    $ini = mktime(0, 0, 0, $mes , $dia+$r, $year); 
+    array_push($newArray, $ini);
+    //$newArray[] = $ini;  
+    $r++; 
+  } 
+  return $newArray; 
+}
+
+///Función que calcula los días hábiles.
+///Recibe como parámetro un array con todas las fechas, y al mismo le descuenta los fines de semana y los feriados.
+function Evalua($arreglo) 
+  { 
+  ///Array con los feriados de 2018:
+  $feriados = array(
+    "1-1",  //  Año Nuevo (irrenunciable) 
+    "12-2",  // Carnaval 
+    "13-2",  //  Carnaval 
+    "28-3",  //  Viernes Santo (feriado religioso) 
+    "29-3",  //  Sábado Santo (feriado religioso) 
+    "1-5",  //  Día Nacional del Trabajo (irrenunciable) 
+    "23-5",  //  Batalla de las piedras 
+    "19-6",  // Natalicio de Artigas 
+    "18-7",  // Jura de la Constitución 
+    "15-10",  //  Aniversario del Descubrimiento de América 
+    "2-11",  //  Día de Todos los Santos (feriado religioso)  
+    "25-12"  //  Natividad del Señor (feriado religioso) (irrenunciable) 
+    ); 
+
+  $j= count($arreglo); 
+  $diasRestar = 0;
+  for($i=0;$i<=$j;$i++) 
+    { 
+    $dia = $arreglo[$i]; 
+
+    $fecha = getdate($dia); 
+    $feriado = $fecha['mday']."-".$fecha['mon']; 
+    if(($fecha["wday"] == 0) || ($fecha["wday"] == 6)) 
+      { 
+      $diasRestar++; 
+    } 
+    elseif(in_array($feriado,$feriados)) 
+      {    
+      $diasRestar++; 
+    } 
+  } 
+  $rlt = $j - $diasRestar; 
+  return $rlt;
+}
 
 ///********************************************************************** INICIO SETEO DE CARPETAS ************************************************************
 //// AHORA SE SETEAN EN EL CONFIG.PHP
@@ -30,11 +90,11 @@ require_once ('../../jpgraph/jpgraph_line.php');
 ///*********************************************************************** FIN SETEO DE CARPETAS **************************************************************
 
 /// Recupero la consulta a ejecutar y el mes inicial:
-
 $query = $_SESSION["consulta"];
 $fechaInicio = $_SESSION["fechaInicio"];
 $fechaFin = $_SESSION["fechaFin"];
 $mensaje = $_SESSION["mensaje"];
+$criterioFecha = $_SESSION["criterioFecha"];
 
 /*
 $query = $_POST["consulta"];
@@ -159,27 +219,44 @@ foreach ($datos as $index => $valor){
 ///****************************************************** FIN reacomodo de los datos por tipo *********************************************************************
 
 ///********************************************************** INICIO cálculos estadísticos ************************************************************************
-$añoInicio = substr($fechaInicio, 0, 4);
-$mesInicio = substr($fechaInicio, 4, 2);
-$fechaInicial = $añoInicio."-".$mesInicio."-01";
-
-///Instancio objetos del tipo DateTime para las fechas:
-$fechainicial1 = new DateTime($fechaInicial);
+/////Instancio objetos del tipo DateTime para las fechas:
+$fechainicial1 = new DateTime($fechaInicio);
 $fechafinal1 = new DateTime($fechaFin);
 
-///Calculo la diferencia entre las fechas y la paso a cantidad de meses:
-$diferencia = $fechainicial1->diff($fechafinal1);
-$totalMeses = ($diferencia->y*12) + $diferencia->m;
-//echo $totalMeses;
+
+switch ($criterioFecha) {
+  case "intervalo": $total = Evalua(DiasHabiles($fechaInicio, $fechaFin));
+                    if ($total == 1) {
+                      $tipo = "día hábil";
+                    }  
+                    else {
+                      $tipo = "días hábiles";
+                    }  
+                    break;
+  default:  ///Calculo la diferencia entre las fechas y la paso a cantidad de meses:
+            $diferencia = $fechainicial1->diff($fechafinal1);
+            $total = ($diferencia->y*12) + $diferencia->m + 1;
+            if ($total == 1) {
+              $tipo = "mes";
+            }  
+            else {
+              $tipo = "meses";
+            } 
+            break;
+}
+
+///TEST:
+//$totalMeses = $totalDiasHabiles;
+
 ///Calculo el total de CONSUMOS para agregar el dato a las gráficas:
 $consumosTotal = $retirosTotal + $destruccionesTotal + $renosTotal;
 
 ///Calculo los promedios según cada tipo:
-$avgRetiros = ceil($retirosTotal/$totalMeses);
-$avgIngresos = ceil($ingresosTotal/$totalMeses);
-$avgRenos = ceil($renosTotal/$totalMeses);
-$avgDestrucciones = ceil($destruccionesTotal/$totalMeses);
-$avgConsumos = ceil($consumosTotal/$totalMeses);
+$avgRetiros = ceil($retirosTotal/$total);
+$avgIngresos = ceil($ingresosTotal/$total);
+$avgRenos = ceil($renosTotal/$total);
+$avgDestrucciones = ceil($destruccionesTotal/$total);
+$avgConsumos = ceil($consumosTotal/$total);
 
 /*
 ///Genero los array con los datos de los promedios para cada tipo:
@@ -199,20 +276,20 @@ foreach($meses as $valor){
 ///y en base a esto, elijo el tipo de gráfica a mostrar:
 $producto = strpos($mensaje, 'producto');
 if ($producto !== FALSE) {
-  //graficarTorta($mensaje, $totales, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos);
+  graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos);
 }
 else {
-  graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos);
+  graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos);
 }
 
-function graficarBarras($subtitulo, $meses, $totales, $data1, $data2, $data3, $data4, $avg1, $avg2, $avg3, $avg4, $avg5){
+function graficarBarras($subtitulo, $meses, $totales, $data1, $data2, $data3, $data4, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg5){
   global $dirGrafica;
   
   // Create the graph. These two calls are always required
   $graph = new Graph(750,350);
   $graph->SetScale("textint");
   $graph->title->Set("MOVIMIENTOS DE STOCK");
-  $graph->subtitle->Set($subtitulo);
+  $graph->subtitle->Set($subtitulo." (".$totalRango." ".$tipoRango.").");
   $graph->img->SetMargin(80,190,65,20);
   $graph->SetBackgroundGradient('#e2bd6e','#023184:0.98',GRAD_HOR,BGRAD_MARGIN);
   //$graph->SetShadow();
@@ -403,7 +480,7 @@ function graficarBarras($subtitulo, $meses, $totales, $data1, $data2, $data3, $d
 
 }
 
-function graficarTorta($subtitulo, $data, $avg1, $avg2, $avg3, $avg4, $avg5){
+function graficarTorta($subtitulo, $data, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg5){
   global $dirGrafica;
   
   // A new pie graph
@@ -411,7 +488,7 @@ function graficarTorta($subtitulo, $data, $avg1, $avg2, $avg3, $avg4, $avg5){
   // Setup background
   
   $graph->title->Set("MOVIMIENTOS DE STOCK");
-  $graph->subtitle->Set($subtitulo);
+  $graph->subtitle->Set($subtitulo." (".$totalRango." ".$tipoRango.").");
   $graph->img->SetMargin(80,190,65,20);
   $graph->SetMargin(1,1,40,1);
   $graph->SetMarginColor('ivory3');

@@ -208,6 +208,7 @@ foreach($filas1 as $fila)
   $registros1[] = $fila;
 }
 
+///Según el ID, genero los PDFs correspondientes:
 switch ($id) {
   case "1": $pdfResumen->tablaStockEntidad($total, false);
             break;
@@ -224,12 +225,13 @@ switch ($id) {
 
 $timestamp = date('Ymd_His');
 $nombreArchivo = $nombreReporte.$timestamp.".pdf";
-$salida = $dir.$nombreArchivo;//echo $salida;
+$salida = $dir.$nombreArchivo;
 //phpinfo();
 ///Guardo el archivo en el disco, y además lo muestro en pantalla:
 $pdfResumen->Output($salida, 'F');
 $pdfResumen->Output($salida, 'I');
 
+///Según el ID, genero los listados en Excel:
 switch ($id) {
   case "1": $archivo = generarExcelStock($registros1, $total1);
             break;

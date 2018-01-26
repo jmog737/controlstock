@@ -2679,11 +2679,11 @@ function cargarFormEstadisticas(selector){
                   </td>\n\
                   <th>Entre:</th>\n\
                   <td>\n\
-                    <input type="date" name="diaInicio" id="diaInicio" tabindex="6" style="width:100%; text-align: center" min="2016-07-01">\n\
+                    <input type="date" name="diaInicio" id="diaInicio" tabindex="6" style="width:100%; text-align: center" min="2017-09-01">\n\
                   </td>\n\
                   <td>y:</td>\n\
                   <td>\n\
-                    <input type="date" name="diaFin" id="diaFin" tabindex="7" style="width:100%; text-align: center" min="2016-10-01">\n\
+                    <input type="date" name="diaFin" id="diaFin" tabindex="7" style="width:100%; text-align: center" min="2017-09-01">\n\
                   </td>\n\
                 </tr>';
         tr += '<tr>\n\
@@ -3984,42 +3984,88 @@ $(document).on("click", "#realizarGrafica", function (){
       //var nombreSolo = tempo2[0].trim();
     }
     
-    var tipo = $("#tipo").find('option:selected').val( );
-    
+    var tipo = $("#tipo").find('option:selected').val( ); 
     var criterioFecha = $('input:radio[name=criterioFecha]:checked').val();
+    
     var mensajeFecha = '';
+    var inicio = '';
+    var fin = '';
+    var rangoFecha = '';
+    var hoy = new Date();
     var meses = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"];
+ 
+    var validado = true;
+    
     switch (criterioFecha) {
-      case "intervalo": var diaInicio = $("#diaInicio").val();
-                        var diaFin = $("#diaFin").val();
+      case "intervalo": var diaInicio = '';
+                        var diaFin = '';
+                        if (diaInicio === ''){
+                          diaInicio = "2017-09-01";
+                        }
+                        else {
+                          diaInicio = $("#diaInicio").val();
+                        }
+                        if (diaFin === ''){
+                          diaFin = hoy.getFullYear()+"-"+hoy.getUTCMonth()+1+"-"+hoy.getDate();
+                        }
+                        else {
+                          diaFin = $("#diaFin").val();
+                        }
                         var inicioDate = new Date(diaInicio+" 00:00:00");
-                        var finDate = new Date(diaFin+" 00:00:00");
+                        var finDate = new Date(diaFin+" 23:59:59");//alert(inicioDate+"\n"+finDate);
                         if (finDate < inicioDate) {
                           alert('ERROR. La fecha final NO puede ser anterior a la fecha inicial.\nPor favor verifique.');
                           $("#diaInicio").focus();
+                          validado = false;
                         }
                         else {
                           var mesTemp = inicioDate.getUTCMonth()+1;
                           if (mesTemp < 10) {
                             mesTemp = "0"+mesTemp;
                           }
-                          var dia1 = inicioDate.getUTCDate()+"/"+mesTemp.toString()+"/"+inicioDate.getUTCFullYear();
-                          
-                          mesTemp = finDate.getUTCMonth()+1;
-                          if (mesTemp < 10) {
-                            mesTemp = "0"+mesTemp;
+                          var diaTemp = inicioDate.getDate();
+                          if (diaTemp < 10) {
+                            diaTemp = "0"+diaTemp;
                           }
-                          var dia2 = finDate.getUTCDate()+"/"+mesTemp.toString()+"/"+finDate.getUTCFullYear();
+                          var dia1 = diaTemp+"/"+mesTemp.toString()+"/"+inicioDate.getUTCFullYear();
+                          inicio = inicioDate.getUTCFullYear()+"-"+mesTemp.toString()+"-"+diaTemp;
                           
-                          if (inicioDate = finDate) {
+                          if (finDate > hoy){
+                            var mesTemp1 = hoy.getUTCMonth()+1;
+                            if (mesTemp1 < 10) {
+                              mesTemp1 = "0"+mesTemp1;
+                            }
+                            var diaTemp1 = hoy.getDate();
+                            if (diaTemp1 < 10) {
+                              diaTemp1 = "0"+diaTemp1;
+                            }
+                            fin = hoy.getUTCFullYear()+"-"+mesTemp1.toString()+"-"+diaTemp1;
+                            dia2 = diaTemp1+"/"+mesTemp1.toString()+"/"+hoy.getUTCFullYear();
+                          }
+                          else {
+                            var mesTemp2 = finDate.getUTCMonth()+1;
+                            if (mesTemp2 < 10) {
+                              mesTemp2 = "0"+mesTemp2;
+                            }
+                            var diaTemp2 = finDate.getDate();
+                            if (diaTemp2 < 10) {
+                              diaTemp2 = "0"+diaTemp2;
+                            }
+                            dia2 = diaTemp2+"/"+mesTemp2.toString()+"/"+finDate.getUTCFullYear();
+                            fin = finDate.getUTCFullYear()+"-"+mesTemp2.toString()+"-"+diaTemp2;
+                          }
+                          
+                          if (inicio == fin) {
                             mensajeFecha = "del día "+dia1;
                           }
                           else {
                             mensajeFecha = "entre el "+dia1+" y el "+dia2;
-                          }
+                          }                      
                         }
+                        rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin+"')";
                         break;
-      case "mes": var mesInicio = $("#mesInicio").val();
+      case "mes": ///Recupero valores pasados:
+                  var mesInicio = $("#mesInicio").val();
                   var añoInicio = parseInt($("#añoInicio").val(), 10);
                   var mesFin = $("#mesFin").val();
                   var añoFin = parseInt($("#añoFin").val(), 10);   
@@ -4035,10 +4081,59 @@ $(document).on("click", "#realizarGrafica", function (){
                   else {
                     mesFin = parseInt(mesFin, 10);
                   }
+                  ///Instancio dos objetos tipo Date con las fechas inicial y final:
+                  var finDate1 = new Date(añoFin,mesFin,0, 23,59,59);
+                  var inicioDate1 = new Date(añoInicio+"-"+mesInicio+"-01 00:00:00");
+
+                  var mes1 = '';
+                  var mes2 = '';
+                  var dia1 = '';
+                  var dia2 = '';
+
+                  var inicialMonth1 = parseInt(inicioDate1.getUTCMonth(), 10)+1;  
+                  if (inicialMonth1 < 10){
+                    mes1 = '0'+inicialMonth1.toString();
+                  }
+                  else {
+                    mes1 = inicialMonth1.toString();
+                  }
+                  if (inicioDate1.getDate() < 10){
+                    dia1 = '0'+inicioDate1.getDate();
+                  }
+                  else {
+                    dia1 = inicioDate1.getDate();
+                  }
+                  inicio = inicioDate1.getUTCFullYear()+"-"+mes1+"-"+dia1;
+                  
+                  ///Chequeo que la fecha final pasada no sea posterior a hoy:
+                  if (finDate1 > hoy){
+                    fin = hoy.getUTCFullYear()+"-"+hoy.getMonth()+1+"-"+hoy.getDate();
+                    añoFin = hoy.getUTCFullYear();
+                    mesFin = hoy.getMonth()+1;
+                    //dia2 = hoy.getDate()+"/"+hoy.getMonth()+1+"/"+hoy.getUTCFullYear();
+                  }
+                  else {
+                    var finalMonth1 = parseInt(finDate1.getMonth(), 10)+1;
+                    if (finalMonth1 < 10){
+                      mes2 = '0'+finalMonth1.toString();
+                    }
+                    else {
+                      mes2 = finalMonth1.toString();
+                    }
+                    if (finDate1.getDate() < 10){
+                      dia2 = '0'+finDate1.getDate();
+                    }
+                    else {
+                      dia2 = finDate1.getDate();
+                    }
+                    fin = finDate1.getFullYear()+"-"+mes2+"-"+dia2;
+                  }
+                       
                   ///Comienzo validación del rango elegido:
                   if (añoFin < añoInicio) {
                     alert('ERROR. El año final NO puede ser anterior al año inicial. \nPor favor verifique.');
                     $("#añoInicio").focus();
+                    validado = false;
                   }
                   else {
                     ///Mismo año:
@@ -4047,6 +4142,7 @@ $(document).on("click", "#realizarGrafica", function (){
                       if (mesFin < mesInicio) {
                         alert('ERROR. El mes final NO puede ser anterior que el mes inicial.\nPor favor verifique.');
                         $("#mesInicio").focus();
+                        validado = false;
                       }
                       else {
                         ///Mismo año y mismo mes, poner solo del mes y año tal:
@@ -4067,28 +4163,25 @@ $(document).on("click", "#realizarGrafica", function (){
                     if ((añoInicio === añoFin)&&(mesInicio === 1)&&(mesFin === 12)){
                       mensajeFecha = "de "+añoInicio;
                     }
-                    //alert(mensajeFecha);
-                    var inicioDate1 = new Date(añoInicio+"-"+mesInicio+"-01");
-                    //mesFin = mesFin + 1;
-                    var finDate1 = new Date(añoFin,mesFin,0);
-                    alert(inicioDate1+"\n"+finDate1+"\nmensaje: "+mensajeFecha);
-                  }
+                    
+                    rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin+"')";
+                  }    
                   break;
-      case "todos": break;
+      case "todos": rangoFecha = '';
+                    fin = hoy.getFullYear()+"-"+hoy.getUTCMonth()+1+"-"+hoy.getUTCDate();
+                    inicio = '2017-09-01';
+                    mensajeFecha = "entre "+meses[09]+"/"+"2017"+" y "+meses[hoy.getUTCMonth()+1]+"/"+hoy.getFullYear();
+                    break;
       default: break;
     }
     ////*************************************************************************************************************************************************////////
-    var rangoFecha = null;
     var tipoConsulta = '';
-    var mensajeFecha = '';
-    var validado = true;
-    var inicio = '';
-    var fin = '';
-    var query = "select productos.nombre_plastico, movimientos.cantidad, movimientos.tipo, fecha from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' and ";
+
+    var query = "select productos.nombre_plastico, movimientos.cantidad, movimientos.tipo, fecha from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
     
     switch (radio) {
       case 'entidadMovimiento': if (entidadGrafica !== 'todos') {
-                                  query += "entidad='"+entidadGrafica+"' and ";
+                                  query += "and entidad='"+entidadGrafica+"' ";
                                   tipoConsulta = 'de '+entidadGrafica;
                                 } 
                                 else {
@@ -4102,267 +4195,17 @@ $(document).on("click", "#realizarGrafica", function (){
                                     return false;
                                   }
                                   else {
-                                    query += "idProd="+idProd+' and ';
+                                    query += "and idProd="+idProd+' ';
                                   }
                                   tipoConsulta = 'del producto '+nombreSolo;
                                   break;
       default: break;
     }
     
-    
-    ///Comienzo la validación de las fechas:  
-//    if (mesInicio === 'todos') {
-//      inicio = añoInicio+"-01-01";
-//      mesInicio = "01";
-//      mensajeFecha += "entre Enero de "+añoInicio;
-//      mesInicioMostrar = "Enero";
-//    }
-//    else {
-//      var mes = parseInt(mesInicio, 10);
-//      inicio = añoInicio+"-"+mesInicio+"-01";
-//      var mesInicioMostrar = '';
-//      switch (mesInicio) {
-//        case '01': mesInicioMostrar = "Enero";
-//                   break;
-//        case '02': mesInicioMostrar = "Febrero";
-//                   break;
-//        case '03': mesInicioMostrar = "Marzo";
-//                   break;
-//        case '04': mesInicioMostrar = "Abril";
-//                   break;
-//        case '05': mesInicioMostrar = "Mayo";
-//                   break;
-//        case '06': mesInicioMostrar = "Junio";
-//                   break;
-//        case '07': mesInicioMostrar = "Julio";
-//                   break;
-//        case '08': mesInicioMostrar = "Agosto";
-//                   break;
-//        case '09': mesInicioMostrar = "Setiembre";
-//                   break;
-//        case '10': mesInicioMostrar = "Octubre";
-//                   break;
-//        case '11': mesInicioMostrar = "Noviembre";
-//                   break;
-//        case '12': mesInicioMostrar = "Diciembre";
-//                   break;
-//        default: break;         
-//      }
-//      mensajeFecha += "entre "+mesInicioMostrar+" de "+añoInicio;
-//    }
-//    
-//    var mesSiguiente = '';
-//    
-//    ///Recupero mes actual:
-//    var hoy = new Date();
-//    var mesHoy = (hoy.getUTCMonth() + 1);
-//    var mesSiguienteHoy = mesHoy + 1;
-//    var añoHoy = hoy.getFullYear();
-//
-//    if (mesHoy < 10){
-//      mesHoy = "0"+mesHoy;
-//    }
-//    if (mesSiguienteHoy < 10){
-//      mesSiguienteHoy = "0"+mesSiguienteHoy;
-//    }
-//    //alert("mes hoy: "+mesHoy+"\nmes siguiente: "+mesSiguienteHoy);
-//      
-//    ///Si se eligió TODOS, el mes final tiene que ser el mes actual:
-//    if (mesFin === 'todos') {
-//      if (añoFin === añoHoy) {
-//        mesFin = mesHoy;
-//        ///Recupero y acomodo mes siguiente para el rango de fechas:
-//        mesSiguiente = mesSiguienteHoy;
-//        //añoFin = hoy.getFullYear().toString();
-//      }
-//      else {
-//        mesFin = '12';
-//        mesSiguiente = '13';
-//      }
-//    }
-//    else {
-//      ///Recupero el mes pasado en el input:
-//      mesFin = parseInt(mesFin, 10);alert(mesFin);
-//      mesSiguiente = mesFin +1;
-//      if (mesSiguiente < 10){
-//        mesSiguiente = "0"+mesSiguiente;
-//      }
-//      if (mesFin < 10){
-//        mesFin = "0"+mesFin;
-//      }
-//      ///Si el mes pasado en el input es mayor a la fecha actual, el mes final tiene que ser la fecha actual:
-//      if ((mesHoy < mesFin)&&(añoFin === añoHoy)) {
-//        mesFin = mesHoy;
-//        mesSiguiente = mesSiguienteHoy;
-//      }
-//      alert("mes fin: "+mesFin+"\nmes siguiente: "+mesSiguiente);
-//    }  
-//    
-//    if (mesSiguiente === '13') {
-//      //mesSiguiente = 1;
-//      var añoSiguiente = parseInt(añoFin, 10) + 1;
-//      fin = añoSiguiente+"-01-01";
-//    }
-//    else {
-//      fin = añoFin+"-"+mesSiguiente+"-01";
-//    }
-//    alert("mesInicio: "+mesInicio+"/"+añoInicio+"\nmesFin: "+mesFin+"/"+añoFin+"\ninicio: "+inicio+"\nfin: "+fin);
-//    var mesFinMostrar = '';
-//    switch (mesFin) {
-//      case '01': mesFinMostrar = "Enero";
-//                 break;
-//      case '02': mesFinMostrar = "Febrero";
-//                 break;
-//      case '03': mesFinMostrar = "Marzo";
-//                 break;
-//      case '04': mesFinMostrar = "Abril";
-//                 break;
-//      case '05': mesFinMostrar = "Mayo";
-//                 break;
-//      case '06': mesFinMostrar = "Junio";
-//                 break;
-//      case '07': mesFinMostrar = "Julio";
-//                 break;
-//      case '08': mesFinMostrar = "Agosto";
-//                 break;
-//      case '09': mesFinMostrar = "Setiembre";
-//                 break;
-//      case '10': mesFinMostrar = "Octubre";
-//                 break;
-//      case '11': mesFinMostrar = "Noviembre";
-//                 break;
-//      case '12': mesFinMostrar = "Diciembre";
-//                 break;
-//      default: break;         
-//    }
-//    mensajeFecha += " y "+mesFinMostrar+" de "+añoFin;
-//    añoFin = parseInt(añoFin, 10);
-//    if (mesInicio === 'todos') {
-//      mesInicio = '01';
-//    }
-//    var mesFinReal = '';
-//    var añoFinReal = añoFin;
-//    if (mesFin === 'todos') {
-//      mesFin = '01';
-//      mesFinReal = '12';
-//      añoFin = añoFin + 1;
-//    }
-//    else {
-//      mesFin = parseInt(mesFin, 10);
-//      mesFinReal = mesFin.toString();
-//      if (mesFin < 10){
-//        mesFinReal = "0"+mesFinReal;
-//      }
-//      if (mesFin === 12){
-//        mesFin = 1;
-//        añoFin = parseInt(añoFin, 10) + 1;
-//      }
-//      else {
-//        mesFin = mesFin + 1;
-//      }
-//    }
-//    
-//    var hoy = new Date();
-//    var inicio = new Date(añoInicio+"/"+mesInicio+"/01 00:00:00");
-//    var fin = new Date(añoFin+"/"+mesFin+"/01 00:00:00");
-//    //alert("inicio: "+inicio+"\nfin: "+fin+"\nhoy: "+hoy);
-//    if (fin > hoy) {
-//      fin = hoy;
-//    }
-//    var mesFinMostrar = '';
-//    switch (mesFinReal) {
-//      case '01': mesFinMostrar = "Enero";
-//                 break;
-//      case '02': mesFinMostrar = "Febrero";
-//                 break;
-//      case '03': mesFinMostrar = "Marzo";
-//                 break;
-//      case '04': mesFinMostrar = "Abril";
-//                 break;
-//      case '05': mesFinMostrar = "Mayo";
-//                 break;
-//      case '06': mesFinMostrar = "Junio";
-//                 break;
-//      case '07': mesFinMostrar = "Julio";
-//                 break;
-//      case '08': mesFinMostrar = "Agosto";
-//                 break;
-//      case '09': mesFinMostrar = "Setiembre";
-//                 break;
-//      case '10': mesFinMostrar = "Octubre";
-//                 break;
-//      case '11': mesFinMostrar = "Noviembre";
-//                 break;
-//      case '12': mesFinMostrar = "Diciembre";
-//                 break;
-//      default: break;         
-//    }
-//    var mesInicioMostrar = '';
-//    switch (mesInicio) {
-//      case '01': mesInicioMostrar = "Enero";
-//                 break;
-//      case '02': mesInicioMostrar = "Febrero";
-//                 break;
-//      case '03': mesInicioMostrar = "Marzo";
-//                 break;
-//      case '04': mesInicioMostrar = "Abril";
-//                 break;
-//      case '05': mesInicioMostrar = "Mayo";
-//                 break;
-//      case '06': mesInicioMostrar = "Junio";
-//                 break;
-//      case '07': mesInicioMostrar = "Julio";
-//                 break;
-//      case '08': mesInicioMostrar = "Agosto";
-//                 break;
-//      case '09': mesInicioMostrar = "Setiembre";
-//                 break;
-//      case '10': mesInicioMostrar = "Octubre";
-//                 break;
-//      case '11': mesInicioMostrar = "Noviembre";
-//                 break;
-//      case '12': mesInicioMostrar = "Diciembre";
-//                 break;
-//      default: break;         
-//      }
-//
-//    alert("inicio: "+inicio+"\nfin: "+fin+"\nhoy: "+hoy+"\n\nInicio: "+mesInicioMostrar+"/"+añoInicio+"\nFin: "+mesFinMostrar+"/"+añoFinReal);
-//    
-//    ///Comienzo validación de las fechas:
-//    validado = true;
-//    if (inicio > fin) {
-//      alert('La fecha inicial NO puede ser posterior a la final.\nPor favor verifique.');
-//      validado = false;
-//    }
-//    else {
-//      if (añoInicio === añoFinReal) {
-//        if (mesInicio > mesFin) {
-//          validado = false;
-//          alert('El mes inicial NO puede ser posterior al mes final (del mismo año).\nPor favor verifique.');
-//          $("#inicio").focus();
-//        }
-//        else {
-//          if (mesInicio === mesFin){
-//            mensajeFecha = "del mes de "+mesInicioMostrar+" de "+añoInicio;
-//          }
-//          else {
-//            if ((añoInicio===añoFin)&&(mesInicio==='01')&&(mesFin==='12')){
-//              mensajeFecha = "del año "+añoInicio;
-//            }
-//            else {
-//              mensajeFecha = "entre "+mesInicioMostrar+" y "+mesFinMostrar+" de "+añoInicio;
-//            }
-//          }
-//        }
-//      }
-//      rangoFecha = "(fecha >='"+inicio+"') and (fecha<'"+fin+"')";
-//    }
-//    
-//    alert("rango: "+rangoFecha+"\nmensaje: "+mensajeFecha);
-    validado = false;
-    
     if (validado) {
-      query += rangoFecha;
+      if (criterioFecha !== 'todos'){
+        query += "and "+rangoFecha;
+      }
       var mensajeTipo = null;
       if (tipo !== 'Todos') 
         {
@@ -4393,24 +4236,22 @@ $(document).on("click", "#realizarGrafica", function (){
       mensajeConsulta += tipoConsulta+" "+mensajeFecha;
       
       var url = "data/selectQuery.php";
-
+      //alert(query);
       $.getJSON(url, {query: ""+query+""}).done(function(request){
         var totalDatos = request.rows;     
         if (totalDatos >= 1) {
           $("#consulta").val(query);
           $("#mensaje").val(mensajeConsulta);
-          $("#fechaInicio").val(añoInicio+mesInicio);
+          $("#fechaInicio").val(inicio);
           $("#fechaFin").val(fin);
           $("#hacerGrafica").val("yes");
-          $('#graficar').attr('action', 'estadisticas.php?g=1');
+          $('#graficar').attr('action', 'estadisticas.php?g=1');//alert("inicial: "+$("#fechaInicio").val()+"\nfin: "+$("#fechaFin").val());
           $("#graficar").submit();
         }
         else {
           alert("No existen registros que coincidan con esos parámetros.");
         }
-      });
-      
-      
+      }); 
     }  
   }
 });
@@ -4420,6 +4261,24 @@ $(document).on("click", "#realizarGrafica", function (){
 /// *************************************************** FIN GRAFICAS *****************************************************
 ***************************************************************************************************************************
 */
+
+$(window).scroll(function() {
+//alert('en el scroll');
+  if ($(this).scrollTop() > 100) {
+    $('.go-top').fadeIn(200);
+  } else {
+    $('.go-top').fadeOut(200);
+  }
+});
+
+// Animate the scroll to top
+$(document).on("click", ".go-top", function() {
+  //event.preventDefault();
+  //alert("en el evento");
+  //alert($(document).height());
+  $('html, body').animate({scrollTop:$(document).height()}, 'slow');
+        return false;
+});
 
 }
 

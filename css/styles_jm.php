@@ -617,6 +617,23 @@ a.detailObject:focus, a.detailObject:hover {
 }
 
 /************************* END MEDIA QUERIES ********************************/
+        
+.go-top {
+  position: fixed;
+  top: 2em;
+  right: 2em;
+  text-decoration: none;
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.3);
+  font-size: 12px;
+  padding: 1em;
+  display: none;
+}
+
+.go-top:hover {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
 FINCSS;
 ?>
 

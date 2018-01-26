@@ -8,6 +8,7 @@ if ($_POST["hacerGrafica"] === "yes") {
   $_SESSION["fechaInicio"] = $_POST["fechaInicio"];
   $_SESSION["fechaFin"] = $_POST["fechaFin"];
   $_SESSION["mensaje"] = $_POST["mensaje"];
+  $_SESSION["criterioFecha"] = $_POST["criterioFecha"];
 }
 
 /**
