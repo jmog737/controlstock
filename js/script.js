@@ -241,7 +241,8 @@ function showHint(str, id, seleccionado) {
       }
       
       if (totalSugerencias === 1){
-        $("#comentarios").focus();
+        //$("#comentarios").focus();
+        $("#cantidad").focus();
       }      
     });
   }
@@ -325,7 +326,6 @@ function showHintProd(str, id, seleccionado) {
 /// ********************************************** FIN FUNCIONES GENÉRICAS *********************************************
 ************************************************************************************************************************
 */
-
 
 
 /***********************************************************************************************************************
@@ -437,7 +437,7 @@ function validarMovimiento()
   @param {Integer} prod Integer con el id del producto.  
   @param {String} tipo String con el tipo de movimiento ingresado anteriormente.
 */
-function cargarMovimiento(selector, hint, prod, tipo){
+function cargarMovimiento(selector, hint, prod, tipo, fecha){
   var url = "data/selectQuery.php";
   var query = "select iduser, apellido, nombre from usuarios where (estado='activo' and (sector='Bóveda' or sector='Grabaciones')) order by nombre asc, apellido asc";
   
@@ -541,6 +541,10 @@ function cargarMovimiento(selector, hint, prod, tipo){
         $("#tipo option[value="+ tipo +"]").attr("selected",true);
       }
       
+      if ((fecha !== '') && (fecha !== undefined)){
+        $("#fecha").val(fecha);
+      }
+      
       if (prod !== "-1") {
         showHint(hint, "#producto", prod);
       }
@@ -557,108 +561,118 @@ function cargarMovimiento(selector, hint, prod, tipo){
  *        Se separó del evento agregarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento cantidad.
  */
 function agregarMovimiento(){
-  var fecha = $("#fecha").val();
-  var idProd = $("#hint").val();
-  var busqueda = $("#producto").val();
-  var stockActual = parseInt($("#hint").find('option:selected').attr("stock"), 10);
-  var alarma1 = parseInt($("#hint").find('option:selected').attr("alarma1"), 10);
-  var alarma2 = parseInt($("#hint").find('option:selected').attr("alarma2"), 10);
-  var tipo = $("#tipo").val();
-  var cantidad = parseInt($("#cantidad").val(), 10);
-  var comentarios = $("#comentarios").val();
-  //var idUserBoveda = $("#usuarioBoveda").val();
-  //var idUserGrabaciones = $("#usuarioGrabaciones").val();
-  var tempDate = new Date();
-  var hora = tempDate.getHours()+":"+tempDate.getMinutes();
-  var nuevoStock = stockActual;
-
-  /// Elimino el pop up de confirmación a pedido de Diego: 
-  /// Esto elimina también la necesidad de chequear la variable confirmar en el if más abajo
-  //var confirmar = confirm("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fechaMostrar+"\nProducto: "+nombreProducto+"\nTipo: "+tipo+"\nCantidad: "+cantidad+"\nControl 1: "+userBoveda+"\nControl 2: "+userGrabaciones+"\nComentarios: "+comentarios);
-
-  /// Si el movimiento NO es una devolución, calculo el nuevo stock. De serlo, NO se quita de stock pues las tarjetas se reponen.
-  if (tipo !== 'Ingreso') {
-    nuevoStock = stockActual - cantidad;
-  }
-  if (tipo === 'Ingreso') {
-    nuevoStock = stockActual + cantidad;
-  }
-
-  var avisarAlarma1 = false;
-  var avisarAlarma2 = false;
-  var avisarInsuficiente = false;
-
-  /// Si el nuevoStock es menor a 0, siginifica que no hay stock suficiente. Se alerta y se descuenta sólo la cantidad disponible.
-  /// CAMBIO: La política actual es DEJAR en suspenso el movimiento hasta que haya stock suficiente. NO HAY QUE HACER EL MOVIMIENTO!!
-  var seguir = true;
-  if (nuevoStock <0) {
-    //cantidad = stockActual;
-    avisarInsuficiente = true;
-    seguir = false;
-    //nuevoStock = 0;
+  var timestamp = Math.round(Date.now() / 1000);
+      
+  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
+    window.location.href = "../controlstock/index.php";
   }
   else {
-    if ((nuevoStock < alarma1) && (nuevoStock > alarma2)) {
-      avisarAlarma1 = true;
-    }
-    if (nuevoStock < alarma2) {
-      avisarAlarma2 = true;
-    }
-  }
+    verificarSesion();
+  
+    var fecha = $("#fecha").val();
+    var idProd = $("#hint").val();
+    var busqueda = $("#producto").val();
+    var stockActual = parseInt($("#hint").find('option:selected').attr("stock"), 10);
+    var alarma1 = parseInt($("#hint").find('option:selected').attr("alarma1"), 10);
+    var alarma2 = parseInt($("#hint").find('option:selected').attr("alarma2"), 10);
+    var tipo = $("#tipo").val();
+    var cantidad = parseInt($("#cantidad").val(), 10);
+    var comentarios = $("#comentarios").val();
+    //var idUserBoveda = $("#usuarioBoveda").val();
+    //var idUserGrabaciones = $("#usuarioGrabaciones").val();
+    var tempDate = new Date();
+    var hora = tempDate.getHours()+":"+tempDate.getMinutes();
+    var nuevoStock = stockActual;
 
-  if (seguir) {
-    /// Agrego el movimiento según los datos pasados:
-    var url = "data/updateQuery.php";
-    var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+2+", "+3+", '"+comentarios+"')";
-    //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
-    var log = "SI";
-    $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
-      var resultado = request["resultado"];
-      /// Si el agregado es exitoso, actualizo el stock y la fecha de la última modificación en la tabla Productos:
-      if (resultado === "OK") {
-        /***** AGREGADO PARA CONOCER ULTIMO ID INGRESADO: ********************************/
-        var query = "SELECT MAX(idmov) AS id FROM movimientos where idprod="+idProd;
-        /* FIN AGREGADO */
-        var url = "data/updateQuery.php";
-        var fechaTemp = fecha.split("-");
-        var fechaMostrar = fechaTemp[2]+"/"+fechaTemp[1]+"/"+fechaTemp[0];
-        var ultimoMovimiento = fechaMostrar+" "+hora+" - "+tipo+": "+cantidad;
-        var query = "update productos set stock="+nuevoStock+", ultimoMovimiento='"+ultimoMovimiento+"' where idprod="+idProd;
-        log = "SI";
-        $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
-          var resultado = request["resultado"];
-          if (resultado === "OK") {
-            if (avisarAlarma1) {
-              //alert('El stock quedó por debajo de la alarma1 definida!. \n\nStock actual: ' + nuevoStock);
-            }
-            else {
-              if (avisarAlarma2) {
-                //alert('El stock quedó por debajo de la alarma2 definida!. \n\nStock actual: ' + nuevoStock);
+    /// Elimino el pop up de confirmación a pedido de Diego: 
+    /// Esto elimina también la necesidad de chequear la variable confirmar en el if más abajo
+    //var confirmar = confirm("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fechaMostrar+"\nProducto: "+nombreProducto+"\nTipo: "+tipo+"\nCantidad: "+cantidad+"\nControl 1: "+userBoveda+"\nControl 2: "+userGrabaciones+"\nComentarios: "+comentarios);
+
+    /// Si el movimiento NO es una devolución, calculo el nuevo stock. De serlo, NO se quita de stock pues las tarjetas se reponen.
+    if (tipo !== 'Ingreso') {
+      nuevoStock = stockActual - cantidad;
+    }
+    if (tipo === 'Ingreso') {
+      nuevoStock = stockActual + cantidad;
+    }
+
+    var avisarAlarma1 = false;
+    var avisarAlarma2 = false;
+    var avisarInsuficiente = false;
+
+    /// Si el nuevoStock es menor a 0, siginifica que no hay stock suficiente. Se alerta y se descuenta sólo la cantidad disponible.
+    /// CAMBIO: La política actual es DEJAR en suspenso el movimiento hasta que haya stock suficiente. NO HAY QUE HACER EL MOVIMIENTO!!
+    var seguir = true;
+    if (nuevoStock <0) {
+      //cantidad = stockActual;
+      avisarInsuficiente = true;
+      seguir = false;
+      //nuevoStock = 0;
+    }
+    else {
+      if ((nuevoStock < alarma1) && (nuevoStock > alarma2)) {
+        avisarAlarma1 = true;
+      }
+      if (nuevoStock < alarma2) {
+        avisarAlarma2 = true;
+      }
+    }
+
+    if (seguir) {
+      /// Agrego el movimiento según los datos pasados:
+      var url = "data/updateQuery.php";
+      var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+2+", "+3+", '"+comentarios+"')";
+      //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
+      var log = "SI";
+      $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
+        var resultado = request["resultado"];
+        /// Si el agregado es exitoso, actualizo el stock y la fecha de la última modificación en la tabla Productos:
+        if (resultado === "OK") {
+          /***** AGREGADO PARA CONOCER ULTIMO ID INGRESADO: ********************************/
+          var query = "SELECT MAX(idmov) AS id FROM movimientos where idprod="+idProd;
+          /* FIN AGREGADO */
+          var url = "data/updateQuery.php";
+          var fechaTemp = fecha.split("-");
+          var fechaMostrar = fechaTemp[2]+"/"+fechaTemp[1]+"/"+fechaTemp[0];
+          var ultimoMovimiento = fechaMostrar+" "+hora+" - "+tipo+": "+cantidad;
+          var query = "update productos set stock="+nuevoStock+", ultimoMovimiento='"+ultimoMovimiento+"' where idprod="+idProd;
+          log = "SI";
+          $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
+            var resultado = request["resultado"];
+            if (resultado === "OK") {
+              if (avisarAlarma1) {
+                //alert('El stock quedó por debajo de la alarma1 definida!. \n\nStock actual: ' + nuevoStock);
               }
               else {
-                if (avisarInsuficiente) {
-                  //alert('Stock insuficiente!. \nSe descuenta sólo la cantidad existente. \n\nStock 0!!.');
+                if (avisarAlarma2) {
+                  //alert('El stock quedó por debajo de la alarma2 definida!. \n\nStock actual: ' + nuevoStock);
                 }
                 else {
-                  //alert('Registro agregado correctamente!. \n\nStock actual: '+nuevoStock);
+                  if (avisarInsuficiente) {
+                    //alert('Stock insuficiente!. \nSe descuenta sólo la cantidad existente. \n\nStock 0!!.');
+                  }
+                  else {
+                    //alert('Registro agregado correctamente!. \n\nStock actual: '+nuevoStock);
+                  }
                 }
               }
+              var tipo1 = encodeURI(tipo);
+              window.location.href = "../controlstock/movimiento.php?h="+busqueda+"&id="+idProd+"&t="+tipo1+"&f="+fecha;
             }
-            var tipo1 = encodeURI(tipo);
-            window.location.href = "../controlstock/movimiento.php?h="+busqueda+"&id="+idProd+"&t="+tipo1;
-          }
-          else {
-            alert('Hubo un error en la actualizacion del producto. Por favor verifique.');
-          }
-        });
-      }
-      else {
-        alert('Hubo un error en el agregado del movimiento. Por favor verifique.');
-      }
-    });  
-  }
-  else {
-    alert('No hay stock suficiente del producto como para realizar el retiro.\n\n NO SE REALIZA!.');
+            else {
+              alert('Hubo un error en la actualizacion del producto. Por favor verifique.');
+            }
+          });
+        }
+        else {
+          alert('Hubo un error en el agregado del movimiento. Por favor verifique.');
+        }
+      });  
+    }
+    else {
+      alert('No hay stock suficiente del producto como para realizar el retiro.\n\n NO SE REALIZA!.');
+    }
   }
 }
 
@@ -667,36 +681,45 @@ function agregarMovimiento(){
  *        Se separó del evento actualizarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento comentarios.
  */
 function actualizarMovimiento(){
-  var idmov = $("input[name='idMov']").val();
-  var comentarios = $("#comentarios").val();
-  
-  ///Se comenta la validación del movimiento pues por el momento SÓLO se puede EDITAR el comentario el cual es opcional.
-  ///De en un futuro querer editar algo más habrá que crear la función validarMovimiento. Se setea la variable validar a TRUE
-  //var validar = validarMovimiento();
-  var validar = true;
-  
-  if (validar) {
-    //var confirmar = confirm('¿Confirma la modificación del movimiento con los siguientes datos?\n\nFecha: '+fecha+'\nHora: '+hora+'\nProducto: '+nombre+'\nTipo: '+tipo+'\nCantidad: '+cantidad+'\nComentarios: '+comentarios+"\n?");
-    var confirmar = true;
-    if (confirmar) {
-      var url = "data/updateQuery.php";
-      var query = 'update movimientos set comentarios="'+comentarios+'" where idmov='+idmov;
-      var log = "SI";
-      //alert(query);
-      $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
-        var resultado = request["resultado"];
-        if (resultado === "OK") {
-          //alert('Los datos del movimiento se actualizaron correctamente!.');
-          cargarEditarMovimiento(idmov, "main-content");
-          inhabilitarMovimiento();
-        }
-        else {
-          alert('Hubo un problema en la actualización. Por favor verifique.');
-        }
-      });
-    }
-    else {
-      alert('Se optó por no actualizar el movimiento!.');
+  var timestamp = Math.round(Date.now() / 1000);
+      
+  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
+    window.location.href = "../controlstock/index.php";
+  }
+  else {
+    verificarSesion();
+    var idmov = $("input[name='idMov']").val();
+    var comentarios = $("#comentarios").val();
+
+    ///Se comenta la validación del movimiento pues por el momento SÓLO se puede EDITAR el comentario el cual es opcional.
+    ///De en un futuro querer editar algo más habrá que crear la función validarMovimiento. Se setea la variable validar a TRUE
+    //var validar = validarMovimiento();
+    var validar = true;
+
+    if (validar) {
+      //var confirmar = confirm('¿Confirma la modificación del movimiento con los siguientes datos?\n\nFecha: '+fecha+'\nHora: '+hora+'\nProducto: '+nombre+'\nTipo: '+tipo+'\nCantidad: '+cantidad+'\nComentarios: '+comentarios+"\n?");
+      var confirmar = true;
+      if (confirmar) {
+        var url = "data/updateQuery.php";
+        var query = 'update movimientos set comentarios="'+comentarios+'" where idmov='+idmov;
+        var log = "SI";
+        //alert(query);
+        $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
+          var resultado = request["resultado"];
+          if (resultado === "OK") {
+            //alert('Los datos del movimiento se actualizaron correctamente!.');
+            cargarEditarMovimiento(idmov, "main-content");
+            inhabilitarMovimiento();
+          }
+          else {
+            alert('Hubo un problema en la actualización. Por favor verifique.');
+          }
+        });
+      }
+      else {
+        alert('Se optó por no actualizar el movimiento!.');
+      }
     }
   }
 }
@@ -814,7 +837,8 @@ function cargarEditarMovimiento(idMov, selector){
       $("#cantidad").val(cantidad.toLocaleString());
       $("#comentarios").val(comentarios);
     }
-    $("#comentarios").focus();
+    //$("#comentarios").focus();
+    $("#cantidad").focus();
   }); 
 }
 
@@ -1162,7 +1186,8 @@ function realizarBusqueda(){
   var timestamp = Math.round(Date.now() / 1000);
       
   if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-    window.location.href = "../consultastock/index.php";
+    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
+    window.location.href = "../controlstock/index.php";
   }
   else {
     verificarSesion();
@@ -1258,8 +1283,8 @@ function realizarBusqueda(){
                                 consultaCSV = "select DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
                                 if (entidadMovimiento !== 'todos') {
                                   ent = entidadMovimiento;
-                                  query += "and entidad='"+entidadMovimiento+"' ";
-                                  consultaCSV += "and entidad='"+entidadMovimiento+"' ";
+                                  query += "and entidad='"+entidadMovimiento+"'";
+                                  consultaCSV += "and entidad='"+entidadMovimiento+"'";
                                   tipoConsulta = 'de los movimientos de '+entidadMovimiento;
                                 } 
                                 else {
@@ -1398,7 +1423,7 @@ function realizarBusqueda(){
                       mensajeFecha = "del mes de "+mesMostrar+" de "+año;
                     }
                     validado = true;
-                    rangoFecha = "and (fecha >='"+inicio+"') and (fecha<'"+fin+"')";
+                    rangoFecha = " and (fecha >='"+inicio+"') and (fecha<'"+fin+"')";
                     break;
         case 'todos': rangoFecha = '';
                       break;
@@ -2790,6 +2815,7 @@ function cargarFormEstadisticas(selector){
     formu += '</form><br>';
     mostrar += titulo;
     mostrar += formu;
+    $("#nombreGrafica").val("");
     $(selector).html(mostrar);
   });
 }
@@ -2801,10 +2827,14 @@ function cargarFormEstadisticas(selector){
 function cargarGrafica(selector){
   var mostrar = '';
   var titulo = '<h2 id="titulo" class="encabezado">RESULTADO ESTAD&Iacute;STICAS</h2>';
-  var grafica = '<img src="graficar.php" width="750px" height="350px">';
+  var formuInicio = '<form name="exportarGraph" id="exportarGraph" target="_blank" action="generarGrafica.php" method="POST">';
+  var formuFin = "</form>";
+  var grafica = '<img src="graficar.php" id="grafiquita" width="750px" height="350px">';
   var volver = '<a href="estadisticas.php">Volver</a>';
   mostrar += titulo;
+  mostrar += formuInicio;
   mostrar += grafica;
+  mostrar += formuFin;
   mostrar += '<br><br>';
   mostrar += volver;
   mostrar += '<br><br>';
@@ -2842,13 +2872,15 @@ function todo () {
                                           var temp2 = temp1[0].split('=');
                                           var temp3 = temp1[1].split('=');
                                           var temp4 = temp1[2].split('=');
+                                          var temp5 = temp1[3].split('=');
                                           var h = temp2[1]; 
                                           var tipo = decodeURI(temp4[1]);
+                                          var fecha = decodeURI(temp5[1]);
                                           var idprod = parseInt(temp3[1], 10);
-                                          setTimeout(function(){cargarMovimiento("#main-content", h, idprod, tipo)}, 100);                                          
+                                          setTimeout(function(){cargarMovimiento("#main-content", h, idprod, tipo, fecha)}, 100);                                          
                                         }
                                         else {
-                                          setTimeout(function(){cargarMovimiento("#main-content", "", "-1", "")}, 100);
+                                          setTimeout(function(){cargarMovimiento("#main-content", "", "-1", "", "")}, 100);
                                         }
                                         break;    
                                       }
@@ -3001,7 +3033,8 @@ $(document).on("click keydown", "#hint", function (e){
   switch (temp) {
     case "#producto": if ((sel !== 'NADA') && ((keyCode === 1) || (keyCode === 13) || (keyCode === 9))) {
                         e.preventDefault();
-                        $("#comentarios").focus();
+                        //$("#comentarios").focus();
+                        $("#cantidad").focus();
                       }
                       break;
     case "#productoStock":  if ((sel !== 'NADA') && ((e.which === 1) || (e.which === 13))) {
@@ -3210,115 +3243,111 @@ $(document).on("keypress", "#productoBusqueda", function(e) {
 
 ///Dispara función para realizar los cambios con las modificaciones para el producto (luego de validar los datos obviamente).
 $(document).on("click", "#actualizarProducto", function (){
-  var entidad = $("#entidad").val();
-  var nombre = $("#nombre").val();
-  var alarma1 = $("#alarma1").val();
-  var alarma2 = $("#alarma2").val();
-  var codigo_emsa = $("#codigo_emsa").val();
-  var contacto = $("#contacto").val();
-  var nombreFoto = $("#nombreFoto").val();
-  var codigo_origen = $("#codigo_origen").val();
-  var idProducto = $("#hintProd").val();
-  var comentarios = $("#comentarios").val();
-  var bin = $("#bin").val();
-  var stock = $("#stockProducto").val();
-  
-  if ((idProducto === 'NADA')||($("#hintProd").length === 0)) {
-    alert('Se debe seleccionar un producto para poder actualizar. Por favor verifique.');
-    $("#producto").focus();
+  var timestamp = Math.round(Date.now() / 1000);
+      
+  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
+    window.location.href = "../controlstock/index.php";
   }
   else {
-    var validar = validarProducto(false);
-    if (validar) {
-      /*
-      var entero = validarEntero(alarma1);
-      if (entero) {
-        alarma1 = parseInt(alarma1, 10);
-        if (alarma1 < 0) {
-          alert('El valor para la alarma1 del producto debe ser un entero mayor o igual a 0. Por favor verifique.');
+    verificarSesion();
+    var entidad = $("#entidad").val();
+    var nombre = $("#nombre").val();
+    var alarma1 = $("#alarma1").val();
+    var alarma2 = $("#alarma2").val();
+    var codigo_emsa = $("#codigo_emsa").val();
+    var contacto = $("#contacto").val();
+    var nombreFoto = $("#nombreFoto").val();
+    var codigo_origen = $("#codigo_origen").val();
+    var idProducto = $("#hintProd").val();
+    var comentarios = $("#comentarios").val();
+    var bin = $("#bin").val();
+    var stock = $("#stockProducto").val();
+
+    if ((idProducto === 'NADA')||($("#hintProd").length === 0)) {
+      alert('Se debe seleccionar un producto para poder actualizar. Por favor verifique.');
+      $("#producto").focus();
+    }
+    else {
+      var validar = validarProducto(false);
+      if (validar) {
+        /*
+        var entero = validarEntero(alarma1);
+        if (entero) {
+          alarma1 = parseInt(alarma1, 10);
+          if (alarma1 < 0) {
+            alert('El valor para la alarma1 del producto debe ser un entero mayor o igual a 0. Por favor verifique.');
+            $("#alarma1").val('');
+            $("#alarma1").focus();
+            return false;
+          }
+        }
+        else {
+          alert('El valor para la alarma1 del producto debe ser un entero. Por favor verifique.');
           $("#alarma1").val('');
           $("#alarma1").focus();
           return false;
         }
-      }
-      else {
-        alert('El valor para la alarma1 del producto debe ser un entero. Por favor verifique.');
-        $("#alarma1").val('');
-        $("#alarma1").focus();
-        return false;
-      }
-      var entero1 = validarEntero(alarma2);
-      if (entero1) {
-        alarma2 = parseInt(alarma2, 10);
-        if (alarma2 < 0) {
-          alert('El valor para la alarma2 del producto debe ser un entero mayor o igual a 0. Por favor verifique.');
+        var entero1 = validarEntero(alarma2);
+        if (entero1) {
+          alarma2 = parseInt(alarma2, 10);
+          if (alarma2 < 0) {
+            alert('El valor para la alarma2 del producto debe ser un entero mayor o igual a 0. Por favor verifique.');
+            $("#alarma2").val('');
+            $("#alarma2").focus();
+            return false;
+          }
+        }
+        else {
+          alert('El valor para la alarma2 del producto debe ser un entero. Por favor verifique.');
           $("#alarma2").val('');
           $("#alarma2").focus();
           return false;
         }
-      }
-      else {
-        alert('El valor para la alarma2 del producto debe ser un entero. Por favor verifique.');
-        $("#alarma2").val('');
-        $("#alarma2").focus();
-        return false;
-      }
-      */
-      ///Por ahora se anula el pedido de confirmación y se hace el update igual a pedido de Diego:
-      //var confirmar = confirm('¿Confirma la modificación del producto con los siguientes datos?\n\nEntidad: '+entidad+'\nNombre: '+nombre+'\nCódigo Emsa: '+codigo_emsa+'\nCódigo Origen: '+codigo_origen+'\nContacto: '+contacto+'\nSnapshot: '+nombreFoto+'\nBin: '+bin+'\nAlarma1: '+alarma1+'\nAlarma2: '+alarma2+'\nComentarios: '+comentarios+"\n?");
-      var confirmar = true;
-      if (confirmar) {
-        var url = "data/updateQuery.php";
-        var query = "update productos set nombre_plastico= '"+nombre+"', entidad = '"+entidad+"', codigo_emsa = '"+codigo_emsa+"', codigo_origen = '"+codigo_origen+"', contacto = '"+contacto+"', snapshot = '"+nombreFoto+"', bin = '"+bin+"', alarma1 = "+alarma1+", alarma2 = "+alarma2+", comentarios = '"+comentarios+"' where idprod = "+idProducto;
-        var log = "SI";
-        //alert(query);
-        $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
-          var resultado = request["resultado"];
-          if (resultado === "OK") {
-            //alert('Los datos del producto se actualizaron correctamente!.');
-            //showHintProd($("#producto").val(), "#producto", idProducto);
-            //$("#hintProd option[value='"+idProducto+"']").attr("selected","selected");
-            $("#stockProducto").removeClass('alarma1');
-            $("#stockProducto").removeClass('alarma2');
-            $("#stockProducto").removeClass('resaltado');
-            if ((stock < alarma1) && (stock > alarma2)) {
-              $("#stockProducto").addClass('alarma1');
-            }
-            else {
-              if (stock < alarma2) {
-                $("#stockProducto").addClass('alarma2');
+        */
+        ///Por ahora se anula el pedido de confirmación y se hace el update igual a pedido de Diego:
+        //var confirmar = confirm('¿Confirma la modificación del producto con los siguientes datos?\n\nEntidad: '+entidad+'\nNombre: '+nombre+'\nCódigo Emsa: '+codigo_emsa+'\nCódigo Origen: '+codigo_origen+'\nContacto: '+contacto+'\nSnapshot: '+nombreFoto+'\nBin: '+bin+'\nAlarma1: '+alarma1+'\nAlarma2: '+alarma2+'\nComentarios: '+comentarios+"\n?");
+        var confirmar = true;
+        if (confirmar) {
+          var url = "data/updateQuery.php";
+          var query = "update productos set nombre_plastico= '"+nombre+"', entidad = '"+entidad+"', codigo_emsa = '"+codigo_emsa+"', codigo_origen = '"+codigo_origen+"', contacto = '"+contacto+"', snapshot = '"+nombreFoto+"', bin = '"+bin+"', alarma1 = "+alarma1+", alarma2 = "+alarma2+", comentarios = '"+comentarios+"' where idprod = "+idProducto;
+          var log = "SI";
+          //alert(query);
+          $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
+            var resultado = request["resultado"];
+            if (resultado === "OK") {
+              //alert('Los datos del producto se actualizaron correctamente!.');
+              //showHintProd($("#producto").val(), "#producto", idProducto);
+              //$("#hintProd option[value='"+idProducto+"']").attr("selected","selected");
+              $("#stockProducto").removeClass('alarma1');
+              $("#stockProducto").removeClass('alarma2');
+              $("#stockProducto").removeClass('resaltado');
+              if ((stock < alarma1) && (stock > alarma2)) {
+                $("#stockProducto").addClass('alarma1');
               }
               else {
-                $("#stockProducto").addClass('resaltado');
+                if (stock < alarma2) {
+                  $("#stockProducto").addClass('alarma2');
+                }
+                else {
+                  $("#stockProducto").addClass('resaltado');
+                }
               }
+              var productoBusqueda = $("#productoBusqueda").val();
+              var elegido = $("#hintProd").find('option:selected').val();
+              showHintProd(productoBusqueda, "#productoBusqueda", elegido);
+              inhabilitarProducto();
+              $("#productoBusqueda").focus();
             }
-            var productoBusqueda = $("#productoBusqueda").val();
-            var elegido = $("#hintProd").find('option:selected').val();
-            showHintProd(productoBusqueda, "#productoBusqueda", elegido);
-            /*
-            $("#entidad").val('');
-            $("#nombre").val('');
-            $("#codigo_emsa").val('');
-            $("#codigo_origen").val('');
-            $("#stockProducto").val('');
-            $("#comentarios").val('');
-            $("#alarma").val('');
-            $("#ultimoMovimiento").val('');
-            $("#bin").val('');
-            $("#producto").val('');
-            $("#producto").focus();
-            */
-            inhabilitarProducto();
-            $("#productoBusqueda").focus();
-          }
-          else {
-            alert('Hubo un problema en la actualización. Por favor verifique.');
-          }
-        });
-    }
-      else {
-      alert('Se optó por no actualizar el producto!.');
-    }
+            else {
+              alert('Hubo un problema en la actualización. Por favor verifique.');
+            }
+          });
+      }
+        else {
+        alert('Se optó por no actualizar el producto!.');
+      }
+      }
     }
   }
 });
@@ -3385,12 +3414,21 @@ $(document).on("click", "#eliminarProducto", function (){
 ///Disparar función al hacer click en el botón de EDITAR del form para los productos.
 ///Cambia entre habilitar o deshabilitar los input del form cosa de poder hacer la edición del producto.
 $(document).on("click", "#editarProducto", function (){
-  var nombre = $(this).val();
-  if (nombre === 'EDITAR') {
-    habilitarProducto();
+  var timestamp = Math.round(Date.now() / 1000);
+      
+  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
+    window.location.href = "../controlstock/index.php";
   }
   else {
-    inhabilitarProducto();
+    verificarSesion();
+    var nombre = $(this).val();
+    if (nombre === 'EDITAR') {
+      habilitarProducto();
+    }
+    else {
+      inhabilitarProducto();
+    }
   }
 });
 
@@ -3786,7 +3824,8 @@ $(document).on("keydown", "#parametros input, #movimiento input", function(e) {
       }
       else {
         switch (sel) {
-          case "producto":  $("#comentarios").focus();
+          case "producto":  //$("#comentarios").focus();
+                            $("#cantidad").focus();
                             break;
           case "productoStock":  $("#entidadMovimiento").focus();
                             break;
@@ -3872,16 +3911,18 @@ $(document).on("click", ".exportar", function (){
   var mostrar = $("#mostrar").val();
   var tipoConsulta = $("#tipoConsulta").val();
     
-  var param = "id:"+id+"&x:"+x+"&largos:"+largos+"&campos:"+campos+"&query:"+query+"&consultaCSV:"+consultaCSV+"&mostrar:"+mostrar+"&tipoConsulta:"+tipoConsulta;
-  
+  //var param = "id:"+id+"&x:"+x+"&largos:"+largos+"&campos:"+campos+"&query:"+query+"&consultaCSV:"+consultaCSV+"&mostrar:"+mostrar+"&tipoConsulta:"+tipoConsulta;
+  var param = "id:"+id;//"+"&x:"+x+"&largos:"+largos+"&campos:"+campos+"&mostrar:"+mostrar;
   var criterioFecha = $("#criterioFecha").val();
-  if (criterioFecha === 'intervalo') {
-    var inicio = $("#inicio").val();
-    var fin = $("#fin").val();
-  }
-  else {
-    var mes = $("#mes").val();
-    var año = $("#año").val();
+  switch (criterioFecha) {
+    case "intervalo": var inicio = $("#inicio").val();
+                      var fin = $("#fin").val();
+                      break;
+    case "mes": var mes = $("#mes").val();
+                var año = $("#año").val();                 
+                break;
+    case "todos": break;
+    default: break;
   }
   var entidad = $("#entidad").val();
   var idProd = $("#idProd").val();
@@ -3916,7 +3957,6 @@ $(document).on("click", ".exportar", function (){
     //alert('Se optó por no enviar el mail. Se sigue con el guardado en disco y muestra en pantalla.');
   }
  
- 
   ///En base al id, veo si es necesario o no enviar parámetros:
   switch (id) {
     case "1": param += '&entidad:'+entidad+'&nombreProducto:'+nombreProducto;
@@ -3924,28 +3964,33 @@ $(document).on("click", ".exportar", function (){
     case "2": param += '&idProd:'+idProd+'&nombreProducto:'+nombreProducto;
               break;
     case "3": break;
-    case "4": param += '&entidad:'+entidad+'&tipo:'+tipo+'&usuario:'+usuario;
-              if (criterioFecha === 'intervalo') {
-                param += '&inicio:'+inicio+'&fin:'+fin;
-              }
-              else {
-                param += '&mes:'+mes+'&año:'+año;
+    case "4": //param += '&entidad:'+entidad+'&tipo:'+tipo+'&usuario:'+usuario;
+      //param += '&tipo:'+tipo+'&usuario:'+usuario;
+              switch (criterioFecha){
+                case "intervalo": param += '&inicio:'+inicio+'&fin:'+fin;
+                                  break;
+                case "mes": param += '&mes:'+mes+'&año:'+año;
+                            break;
+                case "todos": break;
+                default: break;
               }
               break;
     case "5": param += '&idProd:'+idProd+'&tipo:'+tipo+'&usuario:'+usuario+'&nombreProducto:'+nombreProducto;
-              if (criterioFecha === 'intervalo') {
-                param += '&inicio:'+inicio+'&fin:'+fin;
-              }
-              else {
-                param += '&mes:'+mes+'&año:'+año;
-              }              
+              switch (criterioFecha){
+                case "intervalo": param += '&inicio:'+inicio+'&fin:'+fin;
+                                  break;
+                case "mes": param += '&mes:'+mes+'&año:'+año;
+                            break;
+                case "todos": break;
+                default: break;
+              }            
               break;
     default: break;
   }
   $("#param").val(param);
   
-  //alert($("#param").val());
-  
+  alert("Parametros: \n"+$("#param").val());
+  //alert(param);
   $(".exportarForm").submit();
 });//*** fin del click .exportar ***
 
@@ -4256,27 +4301,32 @@ $(document).on("click", "#realizarGrafica", function (){
   }
 });
 
-
 /**************************************************************************************************************************
 /// *************************************************** FIN GRAFICAS *****************************************************
 ***************************************************************************************************************************
 */
 
+///Función que muestra/oculta las flechas para subir y bajar la página según el scroll:
 $(window).scroll(function() {
 //alert('en el scroll');
-  if ($(this).scrollTop() > 100) {
-    $('.go-top').fadeIn(200);
+  if ($(this).scrollTop() > 80) {
+    $('.arrow').fadeIn(50);
   } else {
-    $('.go-top').fadeOut(200);
+    $('.arrow').fadeOut(400);
   }
 });
 
-// Animate the scroll to top
-$(document).on("click", ".go-top", function() {
+///Función que desplaza el foco hacia el final de la página:
+$(document).on("click", ".arrow-bottom", function() {
   //event.preventDefault();
-  //alert("en el evento");
-  //alert($(document).height());
-  $('html, body').animate({scrollTop:$(document).height()}, 'slow');
+  $('html, body').animate({scrollTop:$(document).height()}, '1000');
+        return false;
+});
+
+///Función que desplaza el foco hacia el comienzo de la página:
+$(document).on("click", ".arrow-top", function() {
+  //event.preventDefault();
+  $('html, body').animate({scrollTop:10}, '1000');
         return false;
 });
 

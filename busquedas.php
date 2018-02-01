@@ -54,11 +54,10 @@ require_once("data/sesiones.php");
       
       <div id='fila' class='row col-md-12 col-sm-12'>
       </div>
-      
     </div>
     
     <?php 
-            }
+    }
     else {
     ?>
     

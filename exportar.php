@@ -2,7 +2,6 @@
 //Reanudamos la sesión:
 session_start();
 require_once("data/sesiones.php");
-
 require_once('data/baseMysql.php');
 require_once('generarExcel.php');
 require_once('generarPdfs.php');
@@ -24,9 +23,10 @@ $copiaListados['Juan Martín Ortega'] = "juanortega@emsa.com.uy";
 //***************************************************************************************************************************************************
 
 //********************************************* Defino tamaño de la celda base: c1, y el número ************************************************
-$pag = 1;
 $c1 = 18;
-$h = 7;
+$h = 6;
+$hHeader = 3;
+$hFooter = 10;
 //******************************************************** FIN tamaños de celdas ***************************************************************
 
 //******************************************************** INICIO Hora y título ****************************************************************
@@ -35,9 +35,9 @@ $hora = date('H:i');
 //********************************************************** FIN Hora y título *****************************************************************
 
 //RECUPERO ID PASADO con el tipo de dato a exportar y sus parámetros:
-$param = $_POST["param"];
+$param = $_POST["param"];echo "param: $param<br>";
 $temp1 = explode("&", $param);
-//echo $param;
+
 foreach ($temp1 as $valor) {
   $temp2 = explode(":", $valor);
   switch ($temp2[0]) {
@@ -104,7 +104,7 @@ foreach ($temp1 as $valor) {
   }
 }
 // *** FIN RECUPERACIÓN DE PARÁMETROS *******************************
-
+echo $query;
 $largoCampos = array();
 $largoTotal = 0;
 $i = 0;
@@ -117,8 +117,6 @@ foreach ($temp as $valor) {
   $i++;
 }
 array_push($largoCampos, $largoTotal);
-//echo "largos: ".sizeof($largoCampos)."<br>campos: ".sizeof($campos)."<br>mostrar: ".sizeof($mostrar)."<br>largototal: ".$largoCampos[sizeof($campos)];
-//echo "id: ".$id."<br>query: ".$query."<br>largos: ".$largos."<br>campos: ".$campos1."<br>mostrar: ".$mostrar1."<br>x: ".$x."<br>iduser: ".$iduser."<br>tipo: ".$tipo."<br>inicio: ".$inicio."<br>fin: ".$fin."<br>mes: ".$mes."<br>año: ".$año."<br>FIN<br>";
 
 switch ($id) {
   case "1": $tituloTabla = "LISTADO DE STOCK";
@@ -167,18 +165,15 @@ switch ($id) {
 
 //Instancio objeto de la clase:
 $pdfResumen = new PDF();
-//Agrego una página al documento:
 $pdfResumen->AddPage();
-//$pdfResumen->SetAutoPageBreak(true, 18);
+
 $totalCampos = sizeof($campos);
 $pdfResumen->SetWidths($largoCampos);
-
-//echo $query."<br>-------------------------------<br>".$consultaCSV."<br>******<br>";
 
 // Conectar con la base de datos
 $con = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 $resultado1 = consultarBD($query, $con);
-
+echo "query: $query<br>";
 /// Ejecuto la consulta:
 $filas = obtenerResultadosArray($resultado1);
 $registros = array();
@@ -226,7 +221,7 @@ switch ($id) {
 $timestamp = date('Ymd_His');
 $nombreArchivo = $nombreReporte.$timestamp.".pdf";
 $salida = $dir.$nombreArchivo;
-//phpinfo();
+
 ///Guardo el archivo en el disco, y además lo muestro en pantalla:
 $pdfResumen->Output($salida, 'F');
 $pdfResumen->Output($salida, 'I');
@@ -254,7 +249,7 @@ $resultado2 = consultarBD($exportarCSV, $con);
 //echo $exportarCSV;
 */
 
-//************ GENERACION ZIP FILE *************************************************************************************    
+///************************************************************ GENERACION ZIP FILE *********************************************************
 $zip = new ZipArchive;
 $nombreZip = "lista".$timestamp.".zip";
 $fileDir = $dir.$nombreZip;
@@ -270,9 +265,9 @@ $zip->addFile($salida, $nombreArchivo);
 $zip->addFile($excel, $archivo);
 
 $zip->close();
-//***********************************************************************************************************************  
+///********************************************************** FIN GENERACION ZIP FILE *******************************************************
 
-/// Envío de mails:
+///************************************************************** ENVÍO DE MAILS ************************************************************
 if (isset($mails)){
   $destinatarios = explode(",", $mails);
   foreach ($destinatarios as $valor){
@@ -284,5 +279,6 @@ if (isset($mails)){
   $respuesta = enviarMail($para, '', '', $asunto, $cuerpo, "REPORTE", $nombreZip, $fileDir);
   echo $respuesta;
 }
+///************************************************************ FIN ENVÍO DE MAILS **********************************************************
 
 ?>

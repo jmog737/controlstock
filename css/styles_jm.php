@@ -618,21 +618,30 @@ a.detailObject:focus, a.detailObject:hover {
 
 /************************* END MEDIA QUERIES ********************************/
         
-.go-top {
+.arrow {
   position: fixed;
-  top: 2em;
-  right: 2em;
   text-decoration: none;
   color: #fff;
-  background-color: rgba(0, 0, 0, 0.3);
-  font-size: 12px;
+  
+  font-size: 16px;
   padding: 1em;
   display: none;
+  opacity: 1;
 }
 
-.go-top:hover {
-  background-color: rgba(0, 0, 0, 0.6);
+.arrow:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+}  
+  
+.arrow-bottom {
+  top: 2em;
+  right: 0em;      
 }
+        
+.arrow-top {
+  bottom: 9em;
+  right: 0em;
+}  
 
 FINCSS;
 ?>

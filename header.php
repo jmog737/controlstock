@@ -51,17 +51,11 @@
             
           </li>
           <?php
-            }
+          }
           ?>  
         </ul><!-- #nav-list -->
       </div><!-- .collapse .navbar-collapse -->
     </div><!-- .container -->
-    <p>
-      <input id="usuarioSesion" name="usuarioSesion" type="text" value="" style="color: black; display: none">
-      <input id="userID" name="userID" type="text" value="" style="color: black; display: none">
-      <input id="timestampSesion" name="timestampSesion" type="text" value="" style="color: black; display: none">
-      <input id="duracionSesion" name="duracionSesion" type="text" value="<?php echo DURACION?>" style="color: black; display: none">
-    </p>
   </nav><!-- #header-nav -->
   <script>verificarSesion();</script>
   

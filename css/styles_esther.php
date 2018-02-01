@@ -617,6 +617,32 @@ a.detailObject:focus, a.detailObject:hover {
 }
 
 /************************* END MEDIA QUERIES ********************************/
+        
+.arrow {
+  position: fixed;
+  text-decoration: none;
+  color: #fff;
+  
+  font-size: 16px;
+  padding: 1em;
+  display: none;
+  opacity: 1;
+}
+
+.arrow:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+}  
+  
+.arrow-bottom {
+  top: 2em;
+  right: 0em;      
+}
+        
+.arrow-top {
+  bottom: 9em;
+  right: 0em;
+}        
+        
 FINCSS;
 ?>
 

@@ -23,15 +23,13 @@ else {
 $unidad = "D:";
 
 
-//var_dump($_SERVER);
-//echo "ip: ".$_SERVER["REMOTE_ADDR"];
-
-//$dir = $unidad.":/PROCESOS/PDFS";
 $dir = "//".$ip."/Reportes/";
+//$dir = "//".$hostname."/Reportes/";
 
-$dirGrafica = $dir;
 $dirExcel = $dir;
-$dirLog = $dir;
+$dirLog = $dir."Logs/";
+$dirGraficas = $dir."/graficas/";
+$rutaFotos = "images/snapshots";
 
 if (!file_exists($unidad)) {
   $unidad = "C:";
@@ -40,8 +38,3 @@ if (!file_exists($unidad)) {
 if (!file_exists($dir)){
   echo "No existe la carpeta: $dir. <br>Por favor verifique.";
 }
-
-$rutaFotos = "$unidad/Servidor/disenos/controlstock/images/snapshots";
-
-
-

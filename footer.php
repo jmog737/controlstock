@@ -1,5 +1,5 @@
-<a class="go-top" href="#">Bajar</a>
-
+<a href='#' class="arrow arrow-bottom"><img border='0'  src="images/arrowDown1.png" height="35" width="35" title="BAJAR" /></a>
+<a href='#' class="arrow arrow-top"><img border='0'  src="images/arrowUp1.png" height="35" width="35"  title="SUBIR" /></a>
 <footer class='panel-footer'>
   <div class='container'>
     <div class='row'>
@@ -27,7 +27,7 @@
       <section id='address' class='col-sm-4 hidden-xs'>
         <span>Dirección:</span><br>
         Buenos Aires 486<br>
-        Montevideo, Uruguay<br>v.1.0.1<br>
+        Montevideo, Uruguay<br>v.1.2.1<br>
         &copy; Copyright EMSA SERV. TEC. 2017
         <hr class='visible-xs'>
       </section>
@@ -37,5 +37,12 @@
         <hr class='visible-xs'>
       </section>
     </div>
+    <p>
+      <input id="usuarioSesion" name="usuarioSesion" type="text" value="" style="color: black; display: none">
+      <input id="userID" name="userID" type="text" value="" style="color: black; display: none">
+      <input id="timestampSesion" name="timestampSesion" type="text" value="" style="color: black; display: none">
+      <input id="duracionSesion" name="duracionSesion" type="text" value="<?php echo DURACION?>" style="color: black; display: none">
+      <input id="nombreGrafica" name="nombreGrafica" type="text" value="<?php echo $_SESSION["nombreGrafica"]?>" style="color: black; display: none">
+    </p>
   </div>
 </footer>
