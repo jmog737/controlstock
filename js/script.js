@@ -242,7 +242,7 @@ function showHint(str, id, seleccionado) {
       
       if (totalSugerencias === 1){
         //$("#comentarios").focus();
-        $("#cantidad").focus();
+        //$("#cantidad").focus();
       }      
     });
   }
@@ -436,6 +436,7 @@ function validarMovimiento()
   @param {String} hint String con la palabra o palabras a buscar como sugerencia de productos.
   @param {Integer} prod Integer con el id del producto.  
   @param {String} tipo String con el tipo de movimiento ingresado anteriormente.
+  @param {String} fecha String con la fecha del movimiento ingresado anteriormente.
 */
 function cargarMovimiento(selector, hint, prod, tipo, fecha){
   var url = "data/selectQuery.php";
@@ -1192,10 +1193,8 @@ function realizarBusqueda(){
   else {
     verificarSesion();
     var radio = $('input:radio[name=criterio]:checked').val();
-    var inicio = document.getElementById("inicio").value;
-    var fin = document.getElementById("fin").value;
     var entidadStock = $("#entidadStock").find('option:selected').val( );
-    var entidadMovimiento = document.getElementById("entidadMovimiento").value;
+    var entidadMovimiento = $("#entidadMovimiento").find('option:selected').val( );
     var idProd = $("#hint").val();
     var nombreProducto = $("#hint").find('option:selected').text( );
 
@@ -1211,6 +1210,8 @@ function realizarBusqueda(){
     var idUser = $("#usuario").val();
     var nombreUsuario = $("#usuario").find('option:selected').text( );
     var radioFecha = $('input:radio[name=criterioFecha]:checked').val();
+    var inicio = $("#inicio").val();
+    var fin = $("#fin").val();
     var mes = $("#mes").val();
     var año = $("#año").val();
     var rangoFecha = null;
@@ -1222,8 +1223,8 @@ function realizarBusqueda(){
     var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
     var tipoConsulta = '';
     var mensajeFecha = '';
-    var campos;
-    var largos;
+    var campos = '';
+    var largos = '';
     var mostrarCamposQuery = "1-1-1-1-1-1-1-1-0-0";;
     var x = 55;
     
@@ -1272,7 +1273,7 @@ function realizarBusqueda(){
                              break;
       case 'totalStock':  query = "select entidad, sum(stock) as subtotal from productos where estado='activo' group by entidad";
                           consultaCSV = "select entidad as Entidad, sum(stock) as Subtotal from productos where estado='activo' group by entidad";
-                          tipoConsulta = 'del total de plásticos en bóveda';
+                          tipoConsulta = 'del total de plásticos en bóveda.';
                           campos = 'Id-Entidad-Stock';
                           largos = '1-3.0-1.8';
                           mostrarCamposQuery = "1-1-1";
@@ -1283,12 +1284,12 @@ function realizarBusqueda(){
                                 consultaCSV = "select DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
                                 if (entidadMovimiento !== 'todos') {
                                   ent = entidadMovimiento;
-                                  query += "and entidad='"+entidadMovimiento+"'";
-                                  consultaCSV += "and entidad='"+entidadMovimiento+"'";
+                                  query += "and productos.entidad='"+entidadMovimiento+"'";
+                                  consultaCSV += "and productos.entidad='"+entidadMovimiento+"'";
                                   tipoConsulta = 'de los movimientos de '+entidadMovimiento;
                                 } 
                                 else {
-                                  tipoConsulta = 'de los movimientos de todas las entidades';
+                                  tipoConsulta = 'de los movimientos de todas las entidades.';
                                 }
                                 validarFecha = true;
                                 validarTipo = true;
@@ -1373,7 +1374,7 @@ function realizarBusqueda(){
                               var inicioMostrar = inicioTemp[2]+"/"+inicioTemp[1]+"/"+inicioTemp[0];
                               var finTemp = fin.split('-');
                               var finMostrar = finTemp[2]+"/"+finTemp[1]+"/"+finTemp[0];
-                              rangoFecha = "and (fecha >='"+inicio+"') and (fecha<='"+fin+"')";
+                              rangoFecha = " and (fecha >='"+inicio+"') and (fecha<='"+fin+"')";
                               mensajeFecha = "entre las fechas: "+inicioMostrar+" y "+finMostrar;
                             }
                           } /// FIN validación de las fechas.
@@ -1425,12 +1426,13 @@ function realizarBusqueda(){
                     validado = true;
                     rangoFecha = " and (fecha >='"+inicio+"') and (fecha<'"+fin+"')";
                     break;
-        case 'todos': rangoFecha = '';
-                      break;
+        case 'todos': break;
         default: break;
       }
-      query += rangoFecha;
-      consultaCSV += rangoFecha;
+      if (rangoFecha !== null) {
+        query += rangoFecha;
+        consultaCSV += rangoFecha;
+      } 
     }
     
     if (validado) 
@@ -1457,7 +1459,7 @@ function realizarBusqueda(){
       }
       
       if (ordenFecha) {
-        query += " order by entidad asc, nombre_plastico asc, movimientos.fecha desc, hora desc,  idprod";
+       query += " order by entidad asc, nombre_plastico asc, movimientos.fecha desc, hora desc,  idprod";
         consultaCSV += " order by entidad asc, nombre_plastico asc, movimientos.fecha desc, hora desc, idprod";
       }
       else {
@@ -1475,7 +1477,7 @@ function realizarBusqueda(){
       }
       var mostrar = "<h2>Resultado de la búsqueda</h2>";
       mostrar += "<h3>"+mensajeConsulta+"</h3>";
-
+//query += " LIMIT 950";
       var url = "data/selectQuery.php";
       //alert(query);
       $.getJSON(url, {query: ""+query+""}).done(function(request){
@@ -1485,7 +1487,7 @@ function realizarBusqueda(){
         if (totalDatos >= 1) 
           {
           $("#main-content").empty();  
-          var tabla = '<form name="resultadoBusqueda" id="resultadoBusqueda" target="_blank" action="exportar.php" method="post" class="exportarForm">';
+          var tabla = '<form name="resultadoBusqueda" id="resultadoBusqueda" target="_blank" action="exportar.php" method="POST" class="exportarForm">';
           tabla += '<table name="producto" class="tabla2">';
           switch(radio) {
             case 'entidadStock':  tabla += '<tr><th class="tituloTabla" colspan="9">CONSULTA DE STOCK</th></tr>';
@@ -1561,17 +1563,17 @@ function realizarBusqueda(){
                                   }
                                   tabla += '<tr><th colspan="7" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td><th></th></tr>';
                                   
-                                  tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
+                                  tabla += '<tr><td style="display:none"><input type="text" id="query" name="query" value="'+query+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="1"></td>\n\
                                                 <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                    <td style="display:none"><input type="text" id="entidad" value="'+entidadStock+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
-                                                  </tr>';
+                                                <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                                <td style="display:none"><input type="text" id="entidad" name="entidad" value="'+entidadStock+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                              </tr>';
                                   tabla += '<tr>\n\
                                               <td class="pieTabla" colspan="9">\n\
                                                 <input type="button" id="1" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
@@ -1591,7 +1593,7 @@ function realizarBusqueda(){
                                   var stock = parseInt(datos[0]['stock'], 10);
                                   var snapshot = datos[0]['snapshot'];
                                   var ultimoMovimiento = datos[0]['ultimoMovimiento'];
-                                    if (ultimoMovimiento === null) {
+                                  if (ultimoMovimiento === null) {
                                       ultimoMovimiento = '';
                                     }
                                   var contacto = datos[0]['contacto'];
@@ -1628,17 +1630,18 @@ function realizarBusqueda(){
                                   tabla += '<tr><th style="text-align:left">Comentarios:</th><td>'+prodcom+'</td></tr>';
                                   tabla += '<tr><th style="text-align:left">&Uacute;ltimo Movimiento:</th><td>'+ultimoMovimiento+'</td></tr>';
                                   tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
-                                  tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
+                                  tabla += '<tr><td style="display:none"><input type="text" id="query" name="query" value="'+query+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="2"></td>\n\
                                                 <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                    <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProd+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
-                                                  </tr>';
+                                                <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                                <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProd+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                              </tr>';
                                   tabla += '<tr>\n\
                                               <td class="pieTabla" colspan="2">\n\
                                                 <input type="button" id="2" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
@@ -1678,15 +1681,16 @@ function realizarBusqueda(){
                                   total += subtotal;
                                 }
                                 tabla += '<tr><th colspan="2" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td></tr>';
-                                tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
-                                              <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
-                                                  </tr>';
+                                tabla += '<tr><td style="display:none"><input type="text" id="query" name="query" value="'+query+'"></td>\n\
+                                            <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="3"></td>\n\
+                                            <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
+                                            <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
+                                            <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
+                                            <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
+                                            <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                            <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
+                                            <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                          </tr>';
                                 tabla += '<tr>\n\
                                             <td class="pieTabla" colspan="3">\n\
                                               <input type="button" id="3" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
@@ -1878,21 +1882,21 @@ function realizarBusqueda(){
                                       
                                       tabla += '<th colspan="11">&nbsp;\n\
                                                 </th>';
-                                      tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
+                                      tabla += '<tr><td style="display:none"><input type="text" id="query" name="query" value="'+query+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="4"></td>\n\
                                                     <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
                                                     <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="usuario" name="usuario" value="'+idUser+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="criterioFecha" name="criterioFecha" value="'+radioFecha+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="inicio" name="inicio" value="'+inicio+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="fin" name="fin" value="'+fin+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="mes" name="mes" value="'+mes+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="año" name="año" value="'+año+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="entidad" value="'+entidadMovimiento+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="entidad" name="entidad" value="'+entidadMovimiento+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                   </tr>';
@@ -1906,7 +1910,7 @@ function realizarBusqueda(){
                                             </form>';  
                                       break;
             case 'productoMovimiento':  var bin = datos[0]['bin'];
-                                        var produ = datos[0]['produ'];
+                                        //var produ = datos[0]['produ'];
                                         var ultimoMovimiento = datos[0]['ultimoMovimiento'];
                                         if (ultimoMovimiento === null) {
                                           ultimoMovimiento = '';
@@ -2061,21 +2065,22 @@ function realizarBusqueda(){
                                             subtotalIngreso = 0;
                                           }
                                           
-                                          tabla += '<tr><td style="display:none"><input type="text" id="query" name="consulta" value="'+query+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
+                                          tabla += '<tr><td style="display:none"><input type="text" id="query" name="query" value="'+query+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="5"></td>\n\
+                                                      <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
                                                       <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                       <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                       <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
                                                       <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
                                                       <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombreProducto+'"></td>\n\
-                                                      <td style="display:none"><input type="text" id="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
                                                       <td style="display:none"><input type="text" id="criterioFecha" name="criterioFecha" value="'+radioFecha+'"></td>\n\
                                                       <td style="display:none"><input type="text" id="inicio" name="inicio" value="'+inicio+'"></td>\n\
                                                       <td style="display:none"><input type="text" id="fin" name="fin" value="'+fin+'"></td>\n\
                                                       <td style="display:none"><input type="text" id="mes" name="mes" value="'+mes+'"></td>\n\
                                                       <td style="display:none"><input type="text" id="año" name="año" value="'+año+'"></td>\n\
                                                       <td style="display:none"><input type="text" id="usuario" name="usuario" value="'+idUser+'"></td>\n\
-                                                      <td style="display:none"><input type="text" id="idProd" name="largos" value="'+idProd+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProd+'"></td>\n\
                                                       <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
                                                       <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                     </tr>';
@@ -2095,6 +2100,7 @@ function realizarBusqueda(){
           alert("NO existen registros que coincidan con los criterios de búsqueda establecidos. Por favor verifique.");
           return false;
         }                     
+        delete(datos);
         
         mostrar += "<h3>Total de registros afectados: <font class='naranja'>"+totalDatos+"</font></h3>";
         mostrar += tabla;
@@ -2119,9 +2125,9 @@ function realizarBusqueda(){
  * @param {String} hint String con la sugerencia pasada.
  * @param {String} tipo String que indica si la consulta es de stock o de movimientos.
  * @param {String} idProd String con el identificador del producto previamente seleccionado (si corresponde).
- * @param {String} entidad String con de la entidad previamente seleccionada (si corresponde).
+ * @param {String} entidadSeleccionada String con de la entidad previamente seleccionada (si corresponde).
  */
-function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
+function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
   var url = "data/selectQuery.php";
   var consultarProductos = "select idprod, nombre_plastico as nombre from productos order by nombre_plastico asc";
   
@@ -2169,7 +2175,8 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
                     <select name="entidad" id="entidadStock" tabindex="1" style="width: 100%">\n\
                       <option value="todos" selected="yes">---TODOS---</option>';
         for (var j in entidades) {
-          tr += '<option value="'+entidades[j]+'">'+entidades[j]+'</option>';
+          var entidad = entidades[j].trim();
+          tr += '<option value="'+entidad+'">'+entidad+'</option>';
         }  
         tr += '   </select>\n\
                 </td>\n\
@@ -2201,7 +2208,8 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
                     <select name="entidad" id="entidadMovimiento" tabindex="3" style="width: 100%">\n\
                       <option value="todos" selected="yes">---TODOS---</option>';
         for (var j in entidades) {
-          tr += '<option value="'+entidades[j]+'">'+entidades[j]+'</option>';
+          var entidad1 = entidades[j].trim();
+          tr += '<option value="'+entidad1+'">'+entidad1+'</option>';
         }   
         tr += '   </select>\n\
                 </td>\n\
@@ -2221,11 +2229,11 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
                   </td>\n\
                   <th>Entre:</th>\n\
                   <td>\n\
-                    <input type="date" name="inicio" id="inicio" tabindex="6" style="width:100%; text-align: center" min="2016-07-01">\n\
+                    <input type="date" name="inicio" id="inicio" tabindex="6" style="width:100%; text-align: center" min="2017-10-01">\n\
                   </td>\n\
                   <td>y:</td>\n\
                   <td>\n\
-                    <input type="date" name="fin" id="fin" tabindex="7" style="width:100%; text-align: center" min="2016-10-01">\n\
+                    <input type="date" name="fin" id="fin" tabindex="7" style="width:100%; text-align: center" min="2017-10-01">\n\
                   </td>\n\
                 </tr>';
         tr += '<tr>\n\
@@ -2324,11 +2332,11 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidad){
         else {
           var sel = '';
           if (tipo === 'entStock') {
-            $('#entidadStock option[value="'+entidad+'"]').attr("selected", true);
+            $('#entidadStock option[value="'+entidadSeleccionada+'"]').attr("selected", true);
             sel = '#entidadStock';
           }
           else {
-            $('#entidadMovimiento option[value="'+entidad+'"]').attr("selected", true);
+            $('#entidadMovimiento option[value="'+entidadSeleccionada+'"]').attr("selected", true);
             sel = '#entidadMovimiento';
           }
           $(sel).parent().prev().prev().children().prop("checked", true);
@@ -2704,11 +2712,11 @@ function cargarFormEstadisticas(selector){
                   </td>\n\
                   <th>Entre:</th>\n\
                   <td>\n\
-                    <input type="date" name="diaInicio" id="diaInicio" tabindex="6" style="width:100%; text-align: center" min="2017-09-01">\n\
+                    <input type="date" name="diaInicio" id="diaInicio" tabindex="6" style="width:100%; text-align: center" min="2017-10-01">\n\
                   </td>\n\
                   <td>y:</td>\n\
                   <td>\n\
-                    <input type="date" name="diaFin" id="diaFin" tabindex="7" style="width:100%; text-align: center" min="2017-09-01">\n\
+                    <input type="date" name="diaFin" id="diaFin" tabindex="7" style="width:100%; text-align: center" min="2017-10-01">\n\
                   </td>\n\
                 </tr>';
         tr += '<tr>\n\
@@ -3900,9 +3908,10 @@ $(document).on("click", ".exportar", function (){
   /// 1- stock por entidad.
   /// 2- stock por producto.
   /// 3- stock de plásticos en bóveda.
-  /// 4- movimientos por enttidad.
+  /// 4- movimientos por entidad.
   /// 5- movimientos por producto.
   var id = $(this).attr("id");
+  
   var x = $("#x").val();
   var query = $("#query").val();
   var consultaCSV = $("#consultaCSV").val();
@@ -3910,10 +3919,28 @@ $(document).on("click", ".exportar", function (){
   var campos = $("#campos").val();
   var mostrar = $("#mostrar").val();
   var tipoConsulta = $("#tipoConsulta").val();
-    
-  //var param = "id:"+id+"&x:"+x+"&largos:"+largos+"&campos:"+campos+"&query:"+query+"&consultaCSV:"+consultaCSV+"&mostrar:"+mostrar+"&tipoConsulta:"+tipoConsulta;
-  var param = "id:"+id;//"+"&x:"+x+"&largos:"+largos+"&campos:"+campos+"&mostrar:"+mostrar;
-  var criterioFecha = $("#criterioFecha").val();
+  
+  switch (id) {
+    case "1": var entidad = $("#entidad").val();
+              break;
+    case "2": var idProd = $("#idProd").val();
+              var nombreProducto = $("#nombreProducto").val();
+              break;
+    case "3": break;
+    case "4": var criterioFecha = $("#criterioFecha").val();
+              var entidad = $("#entidad").val();
+              var tipo = $("#tipo").val();
+              var usuario = $("#usuario").val();
+              break;
+    case "5": var criterioFecha = $("#criterioFecha").val();
+              var idProd = $("#idProd").val();
+              var nombreProducto = $("#nombreProducto").val();
+              var tipo = $("#tipo").val();
+              var usuario = $("#usuario").val();
+              
+    default: break;
+  }
+  
   switch (criterioFecha) {
     case "intervalo": var inicio = $("#inicio").val();
                       var fin = $("#fin").val();
@@ -3924,12 +3951,8 @@ $(document).on("click", ".exportar", function (){
     case "todos": break;
     default: break;
   }
-  var entidad = $("#entidad").val();
-  var idProd = $("#idProd").val();
-  var tipo = $("#tipo").val();
-  var usuario = $("#usuario").val();
-  var nombreProducto = $("#nombreProducto").val();
   
+  var param = "id:"+id+"&x:"+x+"&largos:"+largos+"&campos:"+campos+"&query:"+query+"&consultaCSV:"+consultaCSV+"&mostrar:"+mostrar+"&tipoConsulta:"+tipoConsulta;
   
   //var enviarMail = confirm('¿Desea enviar por correo electrónico el pdf?');
   
@@ -3959,13 +3982,12 @@ $(document).on("click", ".exportar", function (){
  
   ///En base al id, veo si es necesario o no enviar parámetros:
   switch (id) {
-    case "1": param += '&entidad:'+entidad+'&nombreProducto:'+nombreProducto;
+    case "1": param += '&entidad:'+entidad;//+'&nombreProducto:'+nombreProducto;
               break;
     case "2": param += '&idProd:'+idProd+'&nombreProducto:'+nombreProducto;
               break;
     case "3": break;
-    case "4": //param += '&entidad:'+entidad+'&tipo:'+tipo+'&usuario:'+usuario;
-      //param += '&tipo:'+tipo+'&usuario:'+usuario;
+    case "4": param += '&entidad:'+entidad+'&tipo:'+tipo+'&usuario:'+usuario;
               switch (criterioFecha){
                 case "intervalo": param += '&inicio:'+inicio+'&fin:'+fin;
                                   break;
@@ -3987,10 +4009,8 @@ $(document).on("click", ".exportar", function (){
               break;
     default: break;
   }
-  $("#param").val(param);
-  
-  alert("Parametros: \n"+$("#param").val());
-  //alert(param);
+  //$("#param").val(param);
+
   $(".exportarForm").submit();
 });//*** fin del click .exportar ***
 
@@ -4037,13 +4057,22 @@ $(document).on("click", "#realizarGrafica", function (){
     var fin = '';
     var rangoFecha = '';
     var hoy = new Date();
+    var tempMonth = parseInt(hoy.getMonth(), 10)+1;
+    var tempDia = hoy.getDate();
+    var tempAño = hoy.getUTCFullYear();
+    if (tempMonth < 10){
+      tempMonth = "0"+tempMonth;
+    }
+    if (tempDia < 10){
+      tempDia = "0"+tempDia;
+    }
     var meses = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"];
  
     var validado = true;
     
     switch (criterioFecha) {
-      case "intervalo": var diaInicio = '';
-                        var diaFin = '';
+      case "intervalo": var diaInicio = $("#diaInicio").val();
+                        var diaFin = $("#diaFin").val();
                         if (diaInicio === ''){
                           diaInicio = "2017-09-01";
                         }
@@ -4057,7 +4086,7 @@ $(document).on("click", "#realizarGrafica", function (){
                           diaFin = $("#diaFin").val();
                         }
                         var inicioDate = new Date(diaInicio+" 00:00:00");
-                        var finDate = new Date(diaFin+" 23:59:59");//alert(inicioDate+"\n"+finDate);
+                        var finDate = new Date(diaFin+" 23:59:59");
                         if (finDate < inicioDate) {
                           alert('ERROR. La fecha final NO puede ser anterior a la fecha inicial.\nPor favor verifique.');
                           $("#diaInicio").focus();
@@ -4152,7 +4181,7 @@ $(document).on("click", "#realizarGrafica", function (){
                   
                   ///Chequeo que la fecha final pasada no sea posterior a hoy:
                   if (finDate1 > hoy){
-                    fin = hoy.getUTCFullYear()+"-"+hoy.getMonth()+1+"-"+hoy.getDate();
+                    fin = tempAño+"-"+tempMonth.toString()+"-"+tempDia;
                     añoFin = hoy.getUTCFullYear();
                     mesFin = hoy.getMonth()+1;
                     //dia2 = hoy.getDate()+"/"+hoy.getMonth()+1+"/"+hoy.getUTCFullYear();
@@ -4173,7 +4202,7 @@ $(document).on("click", "#realizarGrafica", function (){
                     }
                     fin = finDate1.getFullYear()+"-"+mes2+"-"+dia2;
                   }
-                       
+                       alert(fin);
                   ///Comienzo validación del rango elegido:
                   if (añoFin < añoInicio) {
                     alert('ERROR. El año final NO puede ser anterior al año inicial. \nPor favor verifique.');
@@ -4223,7 +4252,7 @@ $(document).on("click", "#realizarGrafica", function (){
     var tipoConsulta = '';
 
     var query = "select productos.nombre_plastico, movimientos.cantidad, movimientos.tipo, fecha from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
-    
+    alert("rango: "+rangoFecha+"\nquery:"+query);
     switch (radio) {
       case 'entidadMovimiento': if (entidadGrafica !== 'todos') {
                                   query += "and entidad='"+entidadGrafica+"' ";

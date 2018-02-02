@@ -9,12 +9,12 @@ require_once('enviarMails.php');
 require_once('data/config.php');
 
 //***************************** DESTINATARIOS CORREOS ***********************************************************************************************
-$paraListados = array();
-$copiaListados = array();
-$ocultosListados = array();
+//$paraListados = array();
+//$copiaListados = array();
+//$ocultosListados = array();
 
 //**************** PRUEBAS ************************************************************
-$copiaListados['Juan Martín Ortega'] = "juanortega@emsa.com.uy";
+//$copiaListados['Juan Martín Ortega'] = "juanortega@emsa.com.uy";
 //**************** FIN PRUEBAS ********************************************************
 
 //****************************************************IMPORTANTE:************************************************************************************
@@ -33,78 +33,134 @@ $hFooter = 10;
 $fecha = date('d/m/Y');
 $hora = date('H:i');
 //********************************************************** FIN Hora y título *****************************************************************
-
+//$baseMemory = round(memory_get_usage()/1024, 2);echo $baseMemory."KB<br>";
+//gc_collect_cycles();
+//$baseMemory = round(memory_get_usage()/1024, 2);echo $baseMemory."KB<br>";
+//
+//var_dump($_POST);
 //RECUPERO ID PASADO con el tipo de dato a exportar y sus parámetros:
-$param = $_POST["param"];echo "param: $param<br>";
-$temp1 = explode("&", $param);
 
-foreach ($temp1 as $valor) {
-  $temp2 = explode(":", $valor);
-  switch ($temp2[0]) {
-    case 'id': $id = $temp2[1];
-               break;
-    case 'query': $query = $temp2[1];
-                  if (isset($temp2[2])) {
-                    $query = $query.':'.$temp2[2];
-                  }  
-                  break;
-    case 'consultaCSV': $consultaCSV = $temp2[1];
-                        if (isset($temp2[2])) {
-                          $consultaCSV = $consultaCSV.':'.$temp2[2];
-                        } 
-                        break;            
-    case 'largos': $largos = $temp2[1];
-                   $temp = explode('-', $largos);
-                   break;
-    case 'campos': $campos1 = utf8_decode($temp2[1]);
-                   $campos = preg_split("/-/", $campos1);
-                   break;
-    case 'idProd': $idslot = $temp2[1];
-                   break;
-    case 'nombreProducto':  $nombreProducto1 = $temp2[1];
-                            $sep = explode("[", $nombreProducto1);
-                            $entidad0 = trim($sep[1]);
-                            $nom2 = $temp2[2];
-                            $tempo = explode("]", $nom2);
-                            $codigo = trim($tempo[0]);
-                            $entidad1 = explode("-", $tempo[1]);
-                            $nombreProducto = trim($entidad1[3]);
-                   break; 
-    case 'entidad': $entidad = $temp2[1];
-                    if ($entidad === 'todos') {
-                      $entidad = 'todas las entidades.';
-                    }
-                    break;             
-    case 'x': $x = $temp2[1];
-              break;
-    case 'tipo': $tipo = $temp2[1];
-                  break;
-    case 'inicio': $inicio = $temp2[1];
-                   break;  
-    case 'fin': $fin = $temp2[1];
-                 break;   
-    case 'mes': $mes = $temp2[1];
-                 break;  
-    case 'año': $año = $temp2[1];
-                 break;            
-    case 'idUser': $iduser = $temp2[1];
-                   break;
-    case 'mails': $mails = $temp2[1];
-                  //$mails = preg_split("/,/", $mails1);
-                  break;
-    case 'tipoConsulta': $tipoConsulta = $temp2[1];
-                         if ((($id === "4")||($id === "5")) && (isset($temp2[2]))) {
-                           $tipoConsulta = $tipoConsulta.":".$temp2[2];
-                         }  
-                         break;            
-    case 'mostrar': $mostrar1 = utf8_decode($temp2[1]);
-                    $mostrar = preg_split("/-/", $mostrar1);
-                    break;
-    default: break;                
-  }
-}
+//$temp1 = explode("&", $parametros);
+
+//foreach ($temp1 as $valor) {
+//  $temp2 = explode(":", $valor);
+//  switch ($temp2[0]) {
+//    case 'id': $id = $temp2[1];
+//               break;
+//    case 'query': $query = $temp2[1];
+//                  if (isset($temp2[2])) {
+//                    $query = $query.':'.$temp2[2];
+//                  }  
+//                  break;
+//    case 'consultaCSV': $consultaCSV = $temp2[1];
+//                        if (isset($temp2[2])) {
+//                          $consultaCSV = $consultaCSV.':'.$temp2[2];
+//                        } 
+//                        break;            
+//    case 'largos': $largos = $temp2[1];
+//                   $temp = explode('-', $largos);
+//                   break;
+//    case 'campos': $campos1 = utf8_decode($temp2[1]);
+//                   $campos = preg_split("/-/", $campos1);
+//                   break;
+//    case 'idProd': $idslot = $temp2[1];
+//                   break;
+//    case 'nombreProducto':  $nombreProducto1 = $temp2[1];
+//                            $sep = explode("[", $nombreProducto1);
+//                            $entidad0 = trim($sep[1]);
+//                            $nom2 = $temp2[2];
+//                            $tempo = explode("]", $nom2);
+//                            $codigo = trim($tempo[0]);
+//                            $entidad1 = explode("-", $tempo[1]);
+//                            $nombreProducto = trim($entidad1[3]);
+//                   break; 
+//    case 'entidad': $entidad = $temp2[1];
+//                    if ($entidad === 'todos') {
+//                      $entidad = 'todas las entidades.';
+//                    }
+//                    break;             
+//    case 'x': $x = $temp2[1];
+//              break;
+//    case 'tipo': $tipo = $temp2[1];
+//                  break;
+//    case 'inicio': $inicio = $temp2[1];
+//                   break;  
+//    case 'fin': $fin = $temp2[1];
+//                 break;   
+//    case 'mes': $mes = $temp2[1];
+//                 break;  
+//    case 'año': $año = $temp2[1];
+//                 break;            
+//    case 'idUser': $iduser = $temp2[1];
+//                   break;
+//    case 'mails': $mails = $temp2[1];
+//                  //$mails = preg_split("/,/", $mails1);
+//                  break;
+//    case 'tipoConsulta': $tipoConsulta = $temp2[1];
+//                         if ((($id === "4")||($id === "5")) && (isset($temp2[2]))) {
+//                           $tipoConsulta = $tipoConsulta.":".$temp2[2];
+//                         }  
+//                         break;            
+//    case 'mostrar': $mostrar1 = utf8_decode($temp2[1]);
+//                    $mostrar = preg_split("/-/", $mostrar1);
+//                    break;
+//    default: break;                
+//  }
+//}
 // *** FIN RECUPERACIÓN DE PARÁMETROS *******************************
-echo $query;
+
+$query = $_POST["query"];
+
+$id = $_POST["idTipo"];
+
+$consultaCSV = $_POST["consultaCSV"];
+
+$campos1 = utf8_decode($_POST["campos"]);
+$campos = preg_split("/-/", $campos1);
+
+$largos = $_POST["largos"];
+$temp = explode('-', $largos);
+
+$idProd = $_POST["idProd"];
+
+$nombreProducto1 = $_POST["nombreProducto"];
+$sep = explode("[", $nombreProducto1);
+$entidad0 = trim($sep[1]);
+$nom2 = explode(":", $entidad0);
+$entidad = $nom2[0];
+$tempo = explode("]", $nom2[1]);
+$codigo = trim($tempo[0]);
+$entidad1 = explode("-", $tempo[1]);
+$nombreProducto = trim($entidad1[3]);
+
+if (isset($_POST["entidad"])){
+  $entidad = $_POST["entidad"];
+}
+;
+if ($entidad === 'todos') {
+  $entidad = 'todas las entidades.';
+}
+
+$x = $_POST["x"];
+
+$inicio = $_POST["inicio"];
+$fin = $_POST["fin"];
+
+$año = $_POST["año"];
+$mes = $_POST["mes"];
+
+$tipo = $_POST["tipo"];
+
+$idUser = $_POST["usuario"];
+
+$tipoConsulta = $_POST["tipoConsulta"];
+
+$mostrar1 = utf8_decode($_POST["mostrar"]);
+$mostrar = preg_split("/-/", $mostrar1);
+
+//echo "id: $id<br>query: $query<br>consultaCSV: $consultaCSV<br>campos: $campos1<br>largos: $largos<br>mostrar: $mostrar1<br>tipoConsulta: $tipoConsulta<br>idProd: $idProd<br>nombreProducto: $nombreProducto<br>entidad: $entidad"
+//        . "<br>x: $x<br>inicio: $inicio<br>fin: $fin<br>mes: $mes<br>año: $año<br>tipo: $tipo<br>usuario: $idUser<br>";
+
 $largoCampos = array();
 $largoTotal = 0;
 $i = 0;
@@ -173,7 +229,7 @@ $pdfResumen->SetWidths($largoCampos);
 // Conectar con la base de datos
 $con = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 $resultado1 = consultarBD($query, $con);
-echo "query: $query<br>";
+
 /// Ejecuto la consulta:
 $filas = obtenerResultadosArray($resultado1);
 $registros = array();
@@ -203,7 +259,7 @@ foreach($filas1 as $fila)
   $registros1[] = $fila;
 }
 
-///Según el ID, genero los PDFs correspondientes:
+//Según el ID, genero los PDFs correspondientes:
 switch ($id) {
   case "1": $pdfResumen->tablaStockEntidad($total, false);
             break;

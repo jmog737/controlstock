@@ -644,7 +644,7 @@ foreach ($datos as $index => $valor){
 $fechainicial1 = new DateTime($fechaInicio);
 $fechafinal1 = new DateTime($fechaFin);
 
-
+//echo "inicio: $fechainicio<br>fin: $fechaFin<br>";
 switch ($criterioFecha) {
   case "intervalo": $total = Evalua(DiasHabiles($fechaInicio, $fechaFin));
                     if ($total == 1) {

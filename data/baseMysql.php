@@ -51,6 +51,7 @@ function consultarBD($consulta, $mysqli)
     $salida = $mysqli->error;
   }
   //$resultado->close();
+  $mysqli->refresh();
   return $salida;
   }
 
