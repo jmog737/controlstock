@@ -5,9 +5,9 @@ require_once("data/sesiones.php");
 require_once('data/baseMysql.php');
 require_once('generarExcel.php');
 require_once('generarPdfs.php');
-require_once('enviarMails.php');
+//require_once('enviarMails.php');
 require_once('data/config.php');
-
+//phpinfo();
 //***************************** DESTINATARIOS CORREOS ***********************************************************************************************
 //$paraListados = array();
 //$copiaListados = array();
@@ -33,11 +33,7 @@ $hFooter = 10;
 $fecha = date('d/m/Y');
 $hora = date('H:i');
 //********************************************************** FIN Hora y título *****************************************************************
-//$baseMemory = round(memory_get_usage()/1024, 2);echo $baseMemory."KB<br>";
-//gc_collect_cycles();
-//$baseMemory = round(memory_get_usage()/1024, 2);echo $baseMemory."KB<br>";
-//
-//var_dump($_POST);
+
 //RECUPERO ID PASADO con el tipo de dato a exportar y sus parámetros:
 
 //$temp1 = explode("&", $parametros);

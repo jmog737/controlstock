@@ -1,12 +1,12 @@
 <a href='#' class="arrow arrow-bottom"><img border='0'  src="images/arrowDown1.png" height="35" width="35" title="BAJAR" /></a>
 <a href='#' class="arrow arrow-top"><img border='0'  src="images/arrowUp1.png" height="35" width="35"  title="SUBIR" /></a>
 <footer class='panel-footer'>
-  <div class='container'>
+  <div class='container-fluid'>
     <div class='row'>
       <section id='hours' class='col-sm-4'>
         <span>Horario:</span>
         <br>Lunes a Viernes: 09:00 - 18:00<br>
-        <hr class='visible-xs'>
+        <hr class='d-block d-sm-none'>
         <?php
           if (!empty($_SESSION['user_id']))
             {
@@ -24,17 +24,17 @@
             }
         ?>
       </section>
-      <section id='address' class='col-sm-4 hidden-xs'>
+      <section id='address' class='col-sm-4 d-none d-sm-block'>
         <span>Dirección:</span><br>
         Buenos Aires 486<br>
         Montevideo, Uruguay<br>v.1.2.1<br>
         &copy; Copyright EMSA SERV. TEC. 2017
-        <hr class='visible-xs'>
+        <hr class='d-block d-sm-none'>
       </section>
       <section id='testimonials' class='col-sm-4'>
         <span>Teléfonos:</span>
         <br>29153304 / 29160318 / 29154195
-        <hr class='visible-xs'>
+        <hr class='d-block d-sm-none'>
       </section>
     </div>
     <p>

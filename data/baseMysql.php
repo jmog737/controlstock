@@ -50,8 +50,6 @@ function consultarBD($consulta, $mysqli)
     {
     $salida = $mysqli->error;
   }
-  //$resultado->close();
-  $mysqli->refresh();
   return $salida;
   }
 
@@ -62,7 +60,8 @@ function obtenerResultados($resultado)
       {
       $salida[$i] = $obj;
       $i++;
-      }   
+      }  
+  $resultado->close();    
   return $salida;
   }
   

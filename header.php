@@ -1,8 +1,8 @@
 <header>
-  <nav id='header-nav' class='navbar navbar-default'>
-    <div class='container'>
+  <nav id='header-nav' class='navbar navbar-nav'>
+    <div class='container-fluid'>
       <div class='navbar-header'>
-        <a href='index.php' class='pull-left visible-xs visible-sm visible-md visible-lg'>
+        <a href='index.php' class='float-left '>
           <div id='logo-img'></div>
         </a>
 
@@ -10,44 +10,42 @@
           <a href='index.php'><h1>STOCK MANAGEMENT</h1></a>
         </div>
 
-        <button id='navbarToggle' type='button' class='navbar-toggle collapsed' data-toggle='collapse' data-target='#collapsable-nav'>
-          <span class='sr-only'>Toggle navigation</span>
-          <span class='icon-bar'></span>
-          <span class='icon-bar'></span>
+        <button id='navbarToggle' type='button' class='navbar-toggler' data-toggle='collapse' data-target='#collapsable-nav'>  
+          <span class="navbar-toggler-icon"></span>
         </button>
       </div>
 
       <div id='collapsable-nav' class='collapse navbar-collapse'>
-        <ul id='nav-list' class='nav navbar-nav navbar-right'>
-          <li id='navHomeButton' class='hidden-xs' >
-            <a href='movimiento.php'>
-              <span class='glyphicon glyphicon-home'></span> Home
+        <ul id='nav-list' class='navbar-nav'>
+          <li id='navHomeButton' class='nav-item active' >
+            <a class="nav-link" href='movimiento.php'>
+              Home
             </a>
           </li>
           <?php
           if (isset($_SESSION['user_id'])) 
             {
           ?>  
-          <li id='navMenuButton' class="dropdown">            
-            <a href="#" class="dropdown-toggle hidden-xs" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-              <span class='glyphicon glyphicon-align-justify'></span><br class='hidden-xs'> Menu
+          <li id='navMenuButton' class="nav-item dropdown">            
+            <a href="#" class="nav-link dropdown-toggle d-inline" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <span class=''></span><br class=''> Menu
             </a>
-            <ul class="dropdown-menu menu hidden-xs">
-              <li><a href="movimiento.php">Movimientos</a></li>
-              <li><a href="producto.php">Productos</a></li>
-              <li><a href="busquedas.php">Consultas</a></li>
-              <li role="separator" class="divider"></li>
-              <li><a href="estadisticas.php">Estadisticas</a></li>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="movimiento.php">Movimientos</a></li>
+              <li><a class="dropdown-item" href="producto.php">Productos</a></li>
+              <li><a class="dropdown-item" href="busquedas.php">Consultas</a></li>
+              <li role="separator" class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="estadisticas.php">Estadisticas</a></li>
 <!--              <li role="separator" class="divider"></li>
               <li><a href="#">Administrar</a></li>-->
             </ul>
             
-            <li class='visible-xs'><a href="movimiento.php">Movimientos</a></li>
-            <li class='visible-xs'><a href="producto.php">Productos</a></li>
-            <li class='visible-xs'><a href="busquedas.php">Consultas</a></li>
-            <li class='visible-xs'><a href="estadisticas.php">Estadisticas</a></li>
-<!--            <li role="separator" class="divider visible-xs"></li>
-            <li class='visible-xs'><a href="#">Administrar</a></li>-->
+            <li class='d-block d-sm-none'><a href="movimiento.php">Movimientos</a></li>
+            <li class='d-block d-sm-none'><a href="producto.php">Productos</a></li>
+            <li class='d-block d-sm-none'><a href="busquedas.php">Consultas</a></li>
+            <li class='d-block d-sm-none'><a href="estadisticas.php">Estadisticas</a></li>
+<!--            <li role="separator" class="divider d-block d-sm-none"></li>
+            <li class='d-block d-sm-none'><a href="#">Administrar</a></li>-->
             
           </li>
           <?php

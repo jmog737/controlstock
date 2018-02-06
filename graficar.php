@@ -258,7 +258,7 @@ class PDF extends PDF_MC_Table
     $graph->legend->SetShadow('#e2bd6e@1',1);
     $graph->legend->SetPos(0.5,0.95,'center','bottom');
     $graph->legend->SetPos(0.015,0.18,'right','top');
-    $graph->legend->SetLayout(LEGEND_VER);
+    //$graph->legend->SetLayout(LEGEND_VER);
     $graph->legend->SetColumns(1);
 
     if ($destino === 'pdf'){
@@ -557,6 +557,7 @@ while (($fila = $result->fetch_array(MYSQLI_BOTH)) != NULL) {
     else {
       array_splice($datos,$indice, 1);
     }
+    $datos[$indiceFila] = new \stdClass();
     $datos[$indiceFila]->retiros = 0;
     $datos[$indiceFila]->ingresos = 0;
     $datos[$indiceFila]->renos = 0;

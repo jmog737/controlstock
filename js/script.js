@@ -40,102 +40,6 @@ function vaciarContent (id) {
 }
 
 /**
-  \brief Función que habilita o deshabilita los botones según el caso en el que se esté.
-*/
-function cambiarEdicion()
-  {
-  var fuente = document.getElementById("fuente").value;
-  var editar = "";
-  switch (fuente) {
-    case "actividad": editar = document.getElementById("editarActividad").value;
-                      break;
-    case "referencia": editar = document.getElementById("editarReferencia").value;
-                       break;
-    case "llave": editar = document.getElementById("editarLlave").value;
-                  break;
-    case "certificado": editar = document.getElementById("editarCertificado").value;
-                        break;
-    case "usuario": editar = document.getElementById("editarUsuario").value;
-                        break;    
-    case "slot": editar = document.getElementById("editarSlot").value;
-                        break;                    
-    default: break;
-  }
-  
-  if (editar === 'EDITAR') {
-    accion = 'habilitar';
-  }
-  else {
-    accion = 'deshabilitar';
-  }
-  
-  switch (fuente)
-    {
-    case "llave":
-                 if (accion === "habilitar")
-                    {
-                    habilitarLlave();
-                  }
-                 else
-                    {
-                    inhabilitarLlave(); 
-                  }
-                 break;
-    case "certificado":
-                      if (accion === "habilitar")
-                        {
-                        habilitarCertificado();
-                      }
-                      else
-                        {
-                        inhabilitarCertificado();      
-                      }
-                      break;
-    case "actividad":
-                    if (accion === "habilitar")
-                      {
-                      habilitarActividad(); 
-                    }
-                    else
-                      {
-                      inhabilitarActividad();
-                    }
-                    break;
-    case "referencia":
-                      if (accion === "habilitar")
-                        {
-                        habilitarReferencia();
-                      }
-                      else
-                        {
-                        inhabilitarReferencia(); 
-                      }
-                      break;
-    case "usuario":
-                      if (accion === "habilitar")
-                        {
-                        habilitarUsuario();
-                      }
-                      else
-                        {
-                        inhabilitarUsuario();
-                      }
-                      break;
-    case "slot":
-                      if (accion === "habilitar")
-                        {
-                        habilitarSlot();
-                      }
-                      else
-                        {
-                        inhabilitarSlot(); 
-                      }
-                      break;                  
-    default: break;                  
-  }  
-}
-
-/**
   \brief Función que valida que el parámetro pasado sea un entero.
   @param valor Dato a validar.                  
 */
@@ -170,7 +74,7 @@ function showHint(str, id, seleccionado) {
     return;
   } else {
     var url = "data/selectQuery.php";
-    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2, ultimoMovimiento from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') and estado='activo' order by productos.entidad asc, productos.nombre_plastico asc";
+    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2, comentarios, ultimoMovimiento from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') and estado='activo' order by productos.entidad asc, productos.nombre_plastico asc";
     //alert(query);
     $.getJSON(url, {query: ""+query+""}).done(function(request) {
       var sugerencias = request.resultado;
@@ -203,7 +107,7 @@ function showHint(str, id, seleccionado) {
             sel = 'selected="yes"';
           }
           //mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+' '+sel+ '>[' + sugerencias[i]["entidad"]+'] '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
-          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma1='+sugerencias[i]["alarma1"]+' alarma2='+sugerencias[i]["alarma2"]+' ultimoMov="'+sugerencias[i]["ultimoMovimiento"]+'" '+sel+ '>[' + sugerencias[i]["entidad"]+': '+codigo_emsa+'] --- '+sugerencias[i]["nombre_plastico"] + '</option>';
+          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma1='+sugerencias[i]["alarma1"]+' alarma2='+sugerencias[i]["alarma2"]+' comentarios="'+sugerencias[i]["comentarios"]+'" ultimoMov="'+sugerencias[i]["ultimoMovimiento"]+'" '+sel+ '>[' + sugerencias[i]["entidad"]+': '+codigo_emsa+'] --- '+sugerencias[i]["nombre_plastico"] + '</option>';
         }
         mostrar += '</select>';
       }
@@ -241,6 +145,7 @@ function showHint(str, id, seleccionado) {
       }
       
       if (totalSugerencias === 1){
+        ///Comentado por ahora pues Diego prefiere que NO salte de forma automática:
         //$("#comentarios").focus();
         //$("#cantidad").focus();
       }      
@@ -621,10 +526,19 @@ function agregarMovimiento(){
     }
 
     if (seguir) {
+      var userSesion = $("#userID").val();
+      var userControl;
+      if (userSesion === 2){
+        userControl = 3;
+      }
+      else {
+        userControl = 2;
+      }
       /// Agrego el movimiento según los datos pasados:
       var url = "data/updateQuery.php";
-      var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+2+", "+3+", '"+comentarios+"')";
+      var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+userSesion+", "+userControl+", '"+comentarios+"');";
       //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
+
       var log = "SI";
       $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
         var resultado = request["resultado"];
@@ -1289,7 +1203,7 @@ function realizarBusqueda(){
                                   tipoConsulta = 'de los movimientos de '+entidadMovimiento;
                                 } 
                                 else {
-                                  tipoConsulta = 'de los movimientos de todas las entidades.';
+                                  tipoConsulta = 'de los movimientos de todas las entidades';
                                 }
                                 validarFecha = true;
                                 validarTipo = true;
@@ -1829,7 +1743,6 @@ function realizarBusqueda(){
                                         }
                                         
                                         tabla += '<tr>\n\
-                                                    <td style="display:none"><input type="text" name="idmov" value="'+idmov+'"></td>\n\
                                                     <td>'+indice+'</td>\n\
                                                     <td>'+fecha+'</td>\n\
                                                     <td>'+hora+'</td>\n\
@@ -2018,7 +1931,6 @@ function realizarBusqueda(){
                                           }
                                           
                                           tabla += '<tr>\n\
-                                                      <td style="display:none"><input type="text" name="idmov" value="'+idmov+'"></td>\n\
                                                       <td>'+indice+'</td>\n\
                                                       <td>'+fecha+'</td>\n\
                                                       <td>'+hora+'</td>\n\
@@ -2992,7 +2904,9 @@ $(document).on("change focusin", "#hint", function (){
   $("#snapshot").remove();
   $("#stock").remove();
   $("#ultimoMov").remove();
+  $("#comentarios").remove();
   var stock = $("#hint").find('option:selected').attr("stock");
+  var comentarios = $("#hint").find('option:selected').attr("comentarios");
   var alarma1 = $("#hint").find('option:selected').attr("alarma1");
   alarma1 = parseInt(alarma1, 10);
   var alarma2 = $("#hint").find('option:selected').attr("alarma2");
@@ -3022,6 +2936,9 @@ $(document).on("change focusin", "#hint", function (){
   var mostrar = '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
   mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><b>Stock actual: <b><font class="'+resaltado+'" style="font-size:1.6em">'+stock.toLocaleString()+'</font></p>';
   mostrar += '<p id="ultimoMov" name="ulitmoMov">Último Movimiento: <font class="'+resaltado+'" style="font-size:1.2em">'+ultimoMovimiento+'</font></p>';
+  if ((comentarios !== '')&&(comentarios !== "null")&&(comentarios !== ' ')&&(comentarios !== undefined)){
+    mostrar += '<p id="comentarios" name="comentarios">Comentarios: <font class="alarma1" style="font-size:1.4em">'+comentarios+'</font></p>';
+  }
   //$(this).css('background-color', '#efe473');
   $(this).css('background-color', '#9db7ef');
   //$(this).find('option:selected').css('background-color', '#79ea52');
@@ -4202,7 +4119,7 @@ $(document).on("click", "#realizarGrafica", function (){
                     }
                     fin = finDate1.getFullYear()+"-"+mes2+"-"+dia2;
                   }
-                       alert(fin);
+                       
                   ///Comienzo validación del rango elegido:
                   if (añoFin < añoInicio) {
                     alert('ERROR. El año final NO puede ser anterior al año inicial. \nPor favor verifique.');
@@ -4241,9 +4158,9 @@ $(document).on("click", "#realizarGrafica", function (){
                     rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin+"')";
                   }    
                   break;
-      case "todos": rangoFecha = '';
-                    fin = hoy.getFullYear()+"-"+hoy.getUTCMonth()+1+"-"+hoy.getUTCDate();
+      case "todos": var fin1 = tempAño+"-"+tempMonth+"-"+tempDia;
                     inicio = '2017-09-01';
+                    rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin1+"')";
                     mensajeFecha = "entre "+meses[09]+"/"+"2017"+" y "+meses[hoy.getUTCMonth()+1]+"/"+hoy.getFullYear();
                     break;
       default: break;
@@ -4252,7 +4169,7 @@ $(document).on("click", "#realizarGrafica", function (){
     var tipoConsulta = '';
 
     var query = "select productos.nombre_plastico, movimientos.cantidad, movimientos.tipo, fecha from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
-    alert("rango: "+rangoFecha+"\nquery:"+query);
+    //alert("rango: "+rangoFecha+"\nquery:"+query);
     switch (radio) {
       case 'entidadMovimiento': if (entidadGrafica !== 'todos') {
                                   query += "and entidad='"+entidadGrafica+"' ";
