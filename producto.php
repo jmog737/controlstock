@@ -23,8 +23,9 @@ require_once("data/sesiones.php");
     ?>
     
     <div id='main-content' class='container-fluid'>
+      <h2 id="titulo" class="encabezado">PRODUCTOS</h2>
       <div id='fila' class='row'>
-        <h2 id="titulo" class="encabezado">PRODUCTOS</h2>
+        
         <div id='selector' class='col-md-6 col-sm-12'></div>
         <div id='content' class='col-md-6 col-sm-12'></div>
       </div>

@@ -88,15 +88,12 @@ body {
 .navbar-brand a:hover, .navbar-brand a:focus {
   text-decoration: none;
 }
-#nav-list {
-  margin-top: 20px;
-}
-#nav-list a {
-  color: #ccce8b;
-  text-align: center;
+#drop{
   background-color: #023184;
 }
-#nav-list ul {
+
+#nav-list a {
+  color: #ccce8b;
   background-color: #023184;
 }
 #nav-list a:hover {
@@ -473,7 +470,30 @@ a.detailObject:focus, a.detailObject:hover {
     to {opacity:1 ;}
 }
 
+.arrow {
+  position: fixed;
+  text-decoration: none;
+  color: #fff;
+  
+  font-size: 16px;
+  padding: 1em;
+  display: none;
+  opacity: 1;
+}
 
+.arrow:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+}  
+  
+.arrow-bottom {
+  top: 2em;
+  right: 0em;      
+}
+        
+.arrow-top {
+  bottom: 9em;
+  right: 0em;
+}  
 
 
 /************************* MEDIA QUERIES *************************************/
@@ -554,8 +574,16 @@ a.detailObject:focus, a.detailObject:hover {
   }
   .navbar-brand h1 { /* Restaurant name */
     padding-top: 20px;
-    font-size: 3.5vw; /* 1vw = 1% of viewport width */
+    font-size: 3.6vw; /* 1vw = 1% of viewport width */
   }
+
+  #logo-img {
+  background: url('../images/logo-emsa150.png') no-repeat;
+  width: 150px;
+  height: 100px;
+  margin: 20px 10px 10px 0;
+  }
+
   .divider {
         height: 1px;
         margin: 9px 0;
@@ -597,11 +625,25 @@ a.detailObject:focus, a.detailObject:hover {
 
 
 /********** Super extra small devices Only :-) (e.g., iPhone 4) **********/
-@media (max-width: 479px) {
+@media (max-width: 576px) {
   /* Header */
+  .navbar-brand {
+    padding-top: 10px;
+    height: 100px;
+    margin-top: 10px
+  }
   .navbar-brand h1 { /* Restaurant name */
-    padding-top: 5px;
-    font-size: 6vw;
+    padding-top: 15px;
+    font-size: 3.5vw;
+  }
+  #logo-img {
+    background: url('../images/logo-emsa150.png') no-repeat;
+    width: 150px;
+    height: 100px;
+    margin: 20px 10px 10px 0;
+  }
+  #nav-list  {
+    font-size: 1.9vw;
   }
   /* End Header */
   
@@ -617,32 +659,6 @@ a.detailObject:focus, a.detailObject:hover {
 }
 
 /************************* END MEDIA QUERIES ********************************/
-        
-.arrow {
-  position: fixed;
-  text-decoration: none;
-  color: #fff;
-  
-  font-size: 16px;
-  padding: 1em;
-  display: none;
-  opacity: 1;
-}
 
-.arrow:hover {
-  background-color: rgba(0, 0, 0, 0.4);
-}  
-  
-.arrow-bottom {
-  top: 2em;
-  right: 0em;      
-}
-        
-.arrow-top {
-  bottom: 9em;
-  right: 0em;
-}        
-        
 FINCSS;
 ?>
-

@@ -372,18 +372,18 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
       var tr = '<th colspan="2" class="tituloTabla">MOVIMIENTO</th>';
       tr += '<tr>\n\
               <th><font class="negra">Fecha:</font></th>\n\
-              <td align="center"><input type="date" name="fecha" id="fecha" style="width:100%; text-align: center" min="2017-09-01" value="'+hoy+'"></td>\n\
+              <td align="center"><input type="date" name="fecha" id="fecha" title="Ingresar la fecha del movimiento" style="width:100%; text-align: center" min="2017-09-01" value="'+hoy+'"></td>\n\
             </tr>';
       tr += '<tr>\n\
               <th align="left"><font class="negra">Producto:</font></th>\n\
               <td align="center">\n\
-                <input type="text" id="producto" name="producto" size="9" class="agrandar" tabindex="1" onkeyup=\'showHint(this.value, "#producto", "")\' value="'+hint+'">\n\
+                <input type="text" id="producto" name="producto" placeholder="Producto" title="Ingresar el producto" size="9" class="agrandar" tabindex="1" onkeyup=\'showHint(this.value, "#producto", "")\' value="'+hint+'">\n\
               </td>\n\
             </tr>';
       tr += '<tr>\n\
               <th align="left"><font class="negra">Tipo:</font></th>\n\
               <td align="center">\n\
-                <select id="tipo" name="tipo" tabindex="4" style="width:100%">\n\
+                <select id="tipo" name="tipo" tabindex="4" style="width:100%" title="Seleccionar el tipo de movimiento" >\n\
                   <option value="Retiro" selected="yes">Retiro</option>\n\
                   <option value="Ingreso">Ingreso</option>\n\
                   <option value="Renovaci&oacute;n">Renovaci&oacute;n</option>\n\
@@ -393,7 +393,7 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
             </tr>';
       tr += '<tr>\n\
               <th align="left"><font class="negra">Cantidad:</font></th>\n\
-              <td align="center"><input type="text" id="cantidad" name="cantidad" class="agrandar" tabindex="3" maxlength="35" size="9"></td>\n\
+              <td align="center"><input type="text" id="cantidad" name="cantidad" placeholder="Cantidad" title="Ingresar la cantidad" class="agrandar" tabindex="3" maxlength="35" size="9"></td>\n\
             </tr>';
 //      tr += '<tr>\n\
 //              <th align="left"><font class="negra">Repetir Cantidad:</font></th>\n\
@@ -401,7 +401,7 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
 //            </tr>';
       tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center"><input type="textarea" id="comentarios" name="comMov" tabindex="2" class="agrandar" maxlength="150" size="9"></td>\n\
+              <td align="center"><input type="textarea" id="comentarios" name="comMov" placeholder="Comentarios" title="Ingresar un comentario" tabindex="2" class="agrandar" maxlength="150" size="9"></td>\n\
             </tr>';
 //      tr += '<th colspan="2" class="centrado">CONTROL</th>';
 //      tr += '<tr>\n\
@@ -430,7 +430,7 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
 //          </tr>';
       tr += '<tr>\n\
               <td colspan="2" class="pieTabla">\n\
-                <input type="button" value="ACEPTAR" id="agregarMovimiento" name="agregarMovimiento" tabindex="5" class="btn btn-success" align="center"/>\n\
+                <input type="button" value="ACEPTAR" id="agregarMovimiento" name="agregarMovimiento" title="Ejecutar la consulta" tabindex="5" class="btn btn-success" align="center"/>\n\
               </td>\n\
               <td style="display:none">\n\
                 <input type="text" id="idPasado" name="idPasado" value="<?php echo $idPasado ?>">\n\
@@ -675,7 +675,7 @@ function habilitarMovimiento(){
 */
 function cargarEditarMovimiento(idMov, selector){
   var url = "data/selectQuery.php";
-  var query = 'select movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.comentarios, movimientos.tipo, productos.nombre_plastico from movimientos inner join productos on movimientos.producto=productos.idprod where movimientos.idmov='+idMov;
+  var query = 'select movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.comentarios, movimientos.tipo, productos.entidad, productos.codigo_emsa, productos.nombre_plastico from movimientos inner join productos on movimientos.producto=productos.idprod where movimientos.idmov='+idMov;
   
   $.getJSON(url, {query: ""+query+""}).done(function(request) {
     var resultado = request["resultado"];
@@ -695,6 +695,8 @@ function cargarEditarMovimiento(idMov, selector){
         hora = temp[0]+":"+temp[1];
       }
       var tipo = resultado[0]['tipo'];
+      var codigo = resultado[0]['codigo_emsa'];
+      var entidad = resultado[0]['entidad'];
       var comentarios = resultado[0]['comentarios'];
       var producto = resultado[0]['nombre_plastico'];
     }
@@ -706,31 +708,39 @@ function cargarEditarMovimiento(idMov, selector){
 
     tr += '<tr>\n\
             <th align="left" width="15"><font class="negra">Fecha:</font></th>\n\
-            <td align="center" colspan="2"><input type="text" name="fecha" id="fecha" class="agrandar" style="width:100%; text-align: center" disabled></td>\n\
+            <td align="center" colspan="2"><input type="text" name="fecha" id="fecha" title="Elegir fecha del movimiento\n(NO editable)" placeholder="Fecha" class="agrandar" style="width:100%; text-align: center" disabled></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Hora:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" name="hora" id="hora" class="agrandar" maxlength="35" style="width:100%; text-align: center" disabled></td>\n\
+              <td align="center" colspan="2"><input type="text" name="hora" id="hora" title="Elegir la hora del movimiento\n(NO editable)" placeholder="Hora" class="agrandar" maxlength="35" style="width:100%; text-align: center" disabled></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Entidad:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" name="entidad" id="entidad" title="Ingresar la entidad del producto\n(NO editable)" placeholder="Entidad" class="agrandar" maxlength="75" style="width:100%; text-align: center" disabled></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Nombre:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" name="nombre" id="nombre" class="agrandar" maxlength="75" style="width:100%; text-align: center" disabled></td>\n\
+              <td align="center" colspan="2"><input type="text" name="nombre" id="nombre" title="Ingresar el nombre del producto\n(NO editable)" placeholder="Producto" class="agrandar" maxlength="75" style="width:100%; text-align: center" disabled></td>\n\
+          </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">C&oacute;digo:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" name="codigo" id="codigo" title="Ingresar el código del producto\n(NO editable)" placeholder="Código" class="agrandar" maxlength="75" style="width:100%; text-align: center" disabled></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Tipo:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" name="tipo" id="tipo" class="agrandar" maxlength="35" style="width:100%; text-align: center" disabled></td>\n\
+              <td align="center" colspan="2"><input type="text" name="tipo" id="tipo" title="Ingresar el tipo de movimiento realizado\n(NO editable)" placeholder="Tipo de movimiento" class="agrandar" maxlength="35" style="width:100%; text-align: center" disabled></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Cantidad:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="cantidad" name="cantidad" class="agrandar" maxlength="35" size="9" disabled></td>\n\
+              <td align="center" colspan="2"><input type="text" id="cantidad" name="cantidad" title="Ingresar la cantidad" placeholder="Cantidad" class="agrandar" maxlength="35" size="9" disabled></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comEditMov" tabindex="1" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comEditMov" title="Ingresar los comentarios del movimiento" placeholder="Comentarios" tabindex="1" class="agrandar" maxlength="35" size="9"></td>\n\
           </tr>';
     tr += '<tr>\n\
-              <td class="pieTablaIzquierdo" style="width: 50%;border-right: 0px;"><input type="button" value="BLOQUEAR" id="editarMovimiento" name="editarMovimiento" class="btn btn-primary" align="center"/></td>\n\
-              <td class="pieTablaDerecho" style="width: 50%;border-left: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarMovimiento" name="actualizarMovimiento" tabindex="2" class="btn btn-warning" align="center"/></td>\n\
+              <td class="pieTablaIzquierdo" style="width: 50%;border-right: 0px;"><input type="button" value="BLOQUEAR" id="editarMovimiento" name="editarMovimiento" title="Habilitar/Deshabilitar la edición del movimiento" class="btn btn-primary" align="center"/></td>\n\
+              <td class="pieTablaDerecho" style="width: 50%;border-left: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarMovimiento" name="actualizarMovimiento" title="Realizar la edición del movimiento" tabindex="2" class="btn btn-warning" align="center"/></td>\n\
               <td style="display:none"><input type="text" name="idMov" value="'+idMov+'"></td>\n\
           </tr>';
     tabla += tr;
@@ -740,19 +750,22 @@ function cargarEditarMovimiento(idMov, selector){
     formu += '</form>';
     mostrar += titulo;
     mostrar += formu;
-    var volver = '<br><a href="../controlstock/busquedas.php" name="volver" id="volverEdicionMovimiento" >Volver</a><br><br>';
+    var volver = '<br><a href="../controlstock/busquedas.php" name="volver" id="volverEdicionMovimiento" title="Volver a BÚSQUEDAS">Volver</a><br><br>';
     mostrar += volver;
     $(selector).html(mostrar);
   
     if (total >=1) {
       $("#fecha").val(fecha);
       $("#hora").val(hora);
+      $("#entidad").val(entidad);
       $("#tipo").val(tipo);
       $("#nombre").val(producto);
+      $("#codigo").val(codigo);
       $("#cantidad").val(cantidad.toLocaleString());
       $("#comentarios").val(comentarios);
     }
     //$("#comentarios").focus();
+    $("#cantidad").attr("autofocus", true);
     $("#cantidad").focus();
   }); 
 }
@@ -2020,7 +2033,7 @@ function realizarBusqueda(){
         if (idProd === undefined) {
           idProd = '';
         }
-        var volver = '<br><a href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&id='+idProd+'&ent='+ent+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&id='+idProd+'&ent='+ent+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         $("#main-content").append(mostrar);
       });    
@@ -2080,11 +2093,11 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
                   </tr>';
         tr += '<tr>\n\
                 <td class="fondoVerde">\n\
-                  <input type="radio" name="criterio" value="entidadStock" checked="checked">\n\
+                  <input type="radio" name="criterio" title="Elegir el tipo de consulta a realizar\nSeleccionar si se quiere conocer el stock de una entidad" value="entidadStock" checked="checked">\n\
                 </td>\n\
                 <th>Entidad:</th>\n\
                   <td colspan="3">\n\
-                    <select name="entidad" id="entidadStock" tabindex="1" style="width: 100%">\n\
+                    <select name="entidad" id="entidadStock" tabindex="1" style="width: 100%" title="Seleccionar la entidad">\n\
                       <option value="todos" selected="yes">---TODOS---</option>';
         for (var j in entidades) {
           var entidad = entidades[j].trim();
@@ -2095,16 +2108,16 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
               </tr>';
         tr += '<tr>\n\
                 <td class="fondoVerde">\n\
-                  <input type="radio" name="criterio" value="productoStock">\n\
+                  <input type="radio" name="criterio" title="Elegir el tipo de consulta a realizar\nSeleccionar si se quiere conocer el stock de un producto" value="productoStock">\n\
                 </td>\n\
                 <th>Producto:</th>\n\
                 <td align="center" colspan="3">\n\
-                  <input type="text" id="productoStock" name="producto" class="agrandar size="9" tabindex="2" onkeyup=\'showHint(this.value, "#productoStock", "")\'>\n\
+                  <input type="text" id="productoStock" name="producto" placeholder="Producto" title="Ingresar el producto" class="agrandar size="9" tabindex="2" onkeyup=\'showHint(this.value, "#productoStock", "")\'>\n\
                 </td>\n\
               </tr>';
         tr += '<tr>\n\
                 <td class="fondoVerde">\n\
-                  <input type="radio" name="criterio" value="totalStock">\n\
+                  <input type="radio" name="criterio" title="Elegir el tipo de consulta a realizar\nSeleccionar si se quiere conocer el stock total de plásticos" value="totalStock">\n\
                 </td>\n\
                 <td colspan="4" class="negrita" style="text-align: left">Total de plásticos en bóveda</td>\n\
               </tr>';
@@ -2113,11 +2126,11 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
               </tr>';
         tr += '<tr>\n\
                 <td class="fondoVerde">\n\
-                  <input type="radio" name="criterio" value="entidadMovimiento">\n\
+                  <input type="radio" name="criterio" title="Elegir el tipo de consulta a realizar\nSeleccionar si se quieren conocer los movimientos de una entidad" value="entidadMovimiento">\n\
                 </td>\n\
                 <th>Entidad:</th>\n\
                   <td colspan="3">\n\
-                    <select name="entidad" id="entidadMovimiento" tabindex="3" style="width: 100%">\n\
+                    <select name="entidad" id="entidadMovimiento" title="Seleccionar la entidad" tabindex="3" style="width: 100%">\n\
                       <option value="todos" selected="yes">---TODOS---</option>';
         for (var j in entidades) {
           var entidad1 = entidades[j].trim();
@@ -2128,33 +2141,33 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
               </tr>';
         tr += '<tr>\n\
                 <td class="fondoVerde">\n\
-                  <input type="radio" name="criterio" value="productoMovimiento">\n\
+                  <input type="radio" name="criterio" title="Elegir el tipo de consulta a realizar\nSeleccionar si se quieren conocer los movimientos de un producto" value="productoMovimiento">\n\
                 </td>\n\
                 <th>Producto:</th>\n\
                 <td align="center" colspan="3">\n\
-                  <input type="text" id="productoMovimiento" name="producto" class="agrandar" size="9" tabindex="4" onkeyup=\'showHint(this.value, "#productoMovimiento", "")\'>\n\
+                  <input type="text" id="productoMovimiento" name="producto" placeholder="Producto" title="Ingresar el producto" class="agrandar" size="9" tabindex="4" onkeyup=\'showHint(this.value, "#productoMovimiento", "")\'>\n\
                 </td>\n\
               </tr>';
         tr += '<tr>\n\
                   <td class="fondoNaranja">\n\
-                    <input type="radio" name="criterioFecha" value="intervalo">\n\
+                    <input type="radio" name="criterioFecha" title="Elegir el período a buscar\nSeleccionar si se quiere buscar por fechas" value="intervalo">\n\
                   </td>\n\
                   <th>Entre:</th>\n\
                   <td>\n\
-                    <input type="date" name="inicio" id="inicio" tabindex="6" style="width:100%; text-align: center" min="2017-10-01">\n\
+                    <input type="date" name="inicio" id="inicio" title="Elegir la fecha de inicio\n(Sólo si se optó por una consulta por fechas)" tabindex="6" style="width:100%; text-align: center" min="2017-10-01">\n\
                   </td>\n\
                   <td>y:</td>\n\
                   <td>\n\
-                    <input type="date" name="fin" id="fin" tabindex="7" style="width:100%; text-align: center" min="2017-10-01">\n\
+                    <input type="date" name="fin" id="fin" title="Elegir la fecha de finalización\n(Sólo si se optó por una consulta por fechas)" tabindex="7" style="width:100%; text-align: center" min="2017-10-01">\n\
                   </td>\n\
                 </tr>';
         tr += '<tr>\n\
                 <td class="fondoNaranja">\n\
-                  <input type="radio" name="criterioFecha" value="mes">\n\
+                  <input type="radio" name="criterioFecha" title="Elegir el período a buscar\nSeleccionar si se quiere buscar por meses" value="mes">\n\
                 </td>\n\
                 <th>Mes:</th>\n\
                 <td>\n\
-                  <select id="mes" name="mes" tabindex="8" style="width:100%">\n\
+                  <select id="mes" name="mes" title="Elegir el mes a buscar\n(Sólo si se optó por una consulta por mes)" tabindex="8" style="width:100%">\n\
                     <option value="todos" selected="yes">--Seleccionar--</option>\n\
                     <option value="01">Enero</option>\n\
                     <option value="02">Febrero</option>\n\
@@ -2172,7 +2185,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
                 </td>\n\
                 <th>Año:</th>\n\
                 <td>\n\
-                  <select id="año" name="año" tabindex="9" style="width:100%">\n\
+                  <select id="año" name="año" title="Elegir el año\n(Sólo si se optó por una consulta por mes)" tabindex="9" style="width:100%">\n\
                     <option value="2017">2017</option>\n\
                     <option value="2018" selected="yes">2018</option>\n\
                     <option value="2019">2019</option>\n\
@@ -2183,13 +2196,13 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
               </tr>';
         tr += '<tr>\n\
                 <td class="fondoNaranja">\n\
-                  <input type="radio" name="criterioFecha" value="todos" checked="checked">\n\
+                  <input type="radio" name="criterioFecha" title="Elegir el período a buscar\nSeleccionar si se quieren TODOS los movimientos" value="todos" checked="checked">\n\
                 </td>\n\
                 <th>TODOS</th>';
         tr += '<tr>\n\
                 <th>Tipo:</th>\n\
                 <td>\n\
-                  <select id="tipo" name="tipo" tabindex="10" style="width:100%">\n\
+                  <select id="tipo" name="tipo" title="Elegir el tipo de consulta a buscar" tabindex="10" style="width:100%">\n\
                     <option value="Todos" selected="yes">---TODOS---</option>\n\
                     <option value="Retiro">Retiro</option>\n\
                     <option value="Ingreso">Ingreso</option>\n\
@@ -2201,7 +2214,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
         tr += '<tr>\n\
                 <th>Usuario:</th>\n\
                 <td colspan="3">\n\
-                  <select name="usuario" id="usuario" tabindex="11" style="width: 100%">\n\
+                  <select name="usuario" id="usuario" title="Elegir un usuario" tabindex="11" style="width: 100%">\n\
                     <option value="todos">---TODOS---</option>';
         for (var j in nombresUsuarios) {
             tr += '<option value="'+idusers[j]+'">'+nombresUsuarios[j]+' '+apellidosUsuarios[j]+'</option>';
@@ -2211,7 +2224,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
               </tr>';
         tr += '<tr>\n\
                 <td colspan="5" class="pieTabla">\n\
-                  <input type="button" class="btn btn-success" name="consultar" id="realizarBusqueda" tabindex="12" value="Consultar" align="center">\n\
+                  <input type="button" class="btn btn-success" name="consultar" id="realizarBusqueda" title="Ejecutar la consulta" tabindex="12" value="Consultar" align="center">\n\
                 </td>\n\
               </tr>';
         tabla += tr;
@@ -2301,59 +2314,59 @@ function cargarProducto(idProd, selector){
     var tr = '<th colspan="3" class="centrado tituloTabla">DATOS DEL PRODUCTO</th>';
 
     tr += '<tr>\n\
-            <th align="left"><font class="negra">Entidad:</font></th><td align="center" colspan="2"><input type="text" name="entidad" id="entidad" tabindex="4" class="agrandar" style="width:100%; text-align: center"></td>\n\
+            <th align="left"><font class="negra">Entidad:</font></th><td align="center" colspan="2"><input type="text" name="entidad" id="entidad" title="Ingresar la entidad" placeholder="Entidad" tabindex="4" class="agrandar" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Nombre:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" name="nombre" id="nombre" tabindex="5" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+              <td align="center" colspan="2"><input type="text" name="nombre" id="nombre" title="Ingresar el nombre del producto" placeholder="Nombre" tabindex="5" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Código EMSA:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" name="codigo_emsa" id="codigo_emsa" tabindex="6" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+              <td align="center" colspan="2"><input type="text" name="codigo_emsa" id="codigo_emsa" title="Ingresar el código de EMSA" placeholder="C&oacute;digo EMSA" tabindex="6" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Código Origen:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" name="codigo_origen" id="codigo_origen" tabindex="7" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+              <td align="center" colspan="2"><input type="text" name="codigo_origen" id="codigo_origen" title="Ingresar el código de origen" placeholder="C&oacute;digo Origen" tabindex="7" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Contacto:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="contacto" name="contacto2" tabindex="8" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="text" id="contacto" name="contacto2" title="Ingresar el contacto" placeholder="Contacto" tabindex="8" class="agrandar" maxlength="35" size="9"></td>\n\
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Foto:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="nombreFoto" name="nombreFoto" tabindex="9" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="text" id="nombreFoto" name="nombreFoto" title="Ingresar el nombre de la foto" placeholder="Nombre de la foto" tabindex="9" class="agrandar" maxlength="35" size="9"></td>\n\
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">BIN:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" name="bin" id="bin" tabindex="10" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+              <td align="center" colspan="2"><input type="text" name="bin" id="bin" title="Ingresar el BIN del producto" placeholder="BIN" tabindex="10" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Stock:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="stockProducto" name="stockProducto" tabindex="-1" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="text" id="stockProducto" name="stockProducto" title="Stock del producto.\nSólo editable en un producto nuevo" placeholder="Stock" tabindex="-1" class="agrandar" maxlength="35" size="9"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Alarma 1:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="alarma1" name="alarma1" tabindex="11" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="text" id="alarma1" name="alarma1" title="Cantidad de plásticos para disparar el primer nivel de alarma" placeholder="Nivel de advertencia" tabindex="11" class="agrandar" maxlength="35" size="9"></td>\n\
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Alarma 2:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="alarma2" name="alarma2" tabindex="12" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="text" id="alarma2" name="alarma2" title="Cantidad de plásticos para disparar el nivel crítico de alarma" placeholder="Nivel Crítico" tabindex="12" class="agrandar" maxlength="35" size="9"></td>\n\
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Último Movimiento:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="ultimoMovimiento" name="ultimoMovimiento" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="text" id="ultimoMovimiento" name="ultimoMovimiento" title="Último movimiento realizado.\nNO editable; se actualiza de forma automática" placeholder="&Uacute;ltimo Movimiento" class="agrandar" maxlength="35" size="9"></td>\n\
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comProd" tabindex="13" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comProd"  title="Ingresar un comentario" placeholder="Comentarios" tabindex="13" class="agrandar" maxlength="35" size="9"></td>\n\
           </tr>';
     tr += '<tr>\n\
-              <td style="width: 33%;border-right: 0px;"><input type="button" value="EDITAR" id="editarProducto" name="editarProducto" tabindex="3" class="btn btn-primary" align="center"/></td>\n\
-              <td style="width: 33%;border-left: 0px;border-right: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarProducto" name="actualizarProducto" tabindex="14" class="btn btn-warning" align="center"/></td>\n\
-              <td style="width: 33%;border-left: 0px;"><input type="button" value="ELIMINAR" id="eliminarProducto" name="eliminarProducto" class="btn btn-danger" align="center"/></td>\n\
+              <td style="width: 33%;border-right: 0px;"><input type="button" value="EDITAR" id="editarProducto" name="editarProducto" title="Habilitar la edición del producto" tabindex="3" class="btn btn-primary" align="center"/></td>\n\
+              <td style="width: 33%;border-left: 0px;border-right: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarProducto" name="actualizarProducto" title="Realizar la actualización" tabindex="14" class="btn btn-warning" align="center"/></td>\n\
+              <td style="width: 33%;border-left: 0px;"><input type="button" value="ELIMINAR" id="eliminarProducto" name="eliminarProducto" title="Dar de baja el producto" class="btn btn-danger" align="center"/></td>\n\
           </tr>';
     tr += '<tr>\n\
-              <td colspan="3" class="pieTabla"><input type="button" value="NUEVO" id="agregarProducto" name="agregarProducto" class="btn btn-success" align="center"/></td>\n\
+              <td colspan="3" class="pieTabla"><input type="button" value="NUEVO" id="agregarProducto" name="agregarProducto" title="Agregar un nuevo producto" class="btn btn-success" align="center"/></td>\n\
           </tr>';
     tabla += tr;
     tabla += '</table>';
@@ -2405,7 +2418,7 @@ function cargarBusquedaProductos(selector) {
                   <th align="left" class="tituloTabla" colspan="5"><font class="negra">BUSCAR:</font></th>\n\
                 </tr>\n\
                 <tr>\n\
-                  <td align="center" colspan="5" class="pieTabla"><input type="text" id="productoBusqueda" name="productoBusqueda" tabindex="1" class="agrandar" size="9" onkeyup=\'showHintProd(this.value, "#productoBusqueda", ""), ""\'></td>\n\
+                  <td align="center" colspan="5" class="pieTabla"><input type="text" id="productoBusqueda" name="productoBusqueda" placeholder="Producto" title="Ingresar el producto" tabindex="1" class="agrandar" size="9" onkeyup=\'showHintProd(this.value, "#productoBusqueda", ""), ""\'></td>\n\
                 </tr>\n\
               </table><br>';
   mostrar += tabla;
@@ -2601,10 +2614,10 @@ function cargarFormEstadisticas(selector){
                 <th colspan="5" class="centrado tituloTabla">CRITERIOS</th>\n\
               </tr>';
     tr += '<tr>\n\
-            <td class="fondoVerde"><input type="radio" name="criterio" value="entidadMovimiento" checked="true"></td>\n\
+            <td class="fondoVerde"><input type="radio" name="criterio" title="Elegir el criterio a consultar\nSeleccionar si se quiere la estadística de una entidad" value="entidadMovimiento" checked="true"></td>\n\
             <th>Entidad:</th>\n\
             <td colspan="3">\n\
-              <select name="entidad" id="entidadGrafica" style="width: 100%">\n\
+              <select name="entidad" id="entidadGrafica" title="Seleccionar la entidad" style="width: 100%">\n\
                 <option value="todos" selected="yes">---TODOS---</option>';
     for (var i in entidades) {
       tr += '<option value="'+entidades[i]['entidad']+'">'+entidades[i]['entidad']+'</option>';
@@ -2613,31 +2626,31 @@ function cargarFormEstadisticas(selector){
             </td>\n\
           </tr>';
     tr += '<tr>\n\
-            <td class="fondoVerde"><input type="radio" name="criterio" value="productoMovimiento"></td>\n\
+            <td class="fondoVerde"><input type="radio" name="criterio" title="Elegir el criterio a consultar\nSeleccionar si se quiere la estadística de un producto" value="productoMovimiento"></td>\n\
             <th>Producto:</th>\n\
-            <td align="center" colspan="3"><input type="text" id="productoMovimiento" name="producto" class="agrandar" size="9" onkeyup="showHint(this.value, \'#productoMovimiento\', \'\')"></td>\n\
+            <td align="center" colspan="3"><input type="text" id="productoMovimiento" name="producto" title="Ingresar el producto" placeholder="Producto" class="agrandar" size="9" onkeyup="showHint(this.value, \'#productoMovimiento\', \'\')"></td>\n\
           </tr>';
     tr += '<th colspan="5" class="centrado">FECHAS</th>';
     tr += '<tr>\n\
                   <td class="fondoNaranja">\n\
-                    <input type="radio" name="criterioFecha" value="intervalo">\n\
+                    <input type="radio" name="criterioFecha" title="Elegir el período a buscar\nSeleccionar si se quiere consultar por fechas" value="intervalo">\n\
                   </td>\n\
                   <th>Entre:</th>\n\
                   <td>\n\
-                    <input type="date" name="diaInicio" id="diaInicio" tabindex="6" style="width:100%; text-align: center" min="2017-10-01">\n\
+                    <input type="date" name="diaInicio" id="diaInicio" title="Elegir la fecha de inicio\n(Sólo si se busca por fechas)" tabindex="6" style="width:100%; text-align: center" min="2017-10-01">\n\
                   </td>\n\
                   <td>y:</td>\n\
                   <td>\n\
-                    <input type="date" name="diaFin" id="diaFin" tabindex="7" style="width:100%; text-align: center" min="2017-10-01">\n\
+                    <input type="date" name="diaFin" id="diaFin" title="Elegir la fecha de finalización\n(Sólo si se busca por fechas)" tabindex="7" style="width:100%; text-align: center" min="2017-10-01">\n\
                   </td>\n\
                 </tr>';
         tr += '<tr>\n\
                 <td class="fondoNaranja">\n\
-                  <input type="radio" name="criterioFecha" value="mes">\n\
+                  <input type="radio" name="criterioFecha" title="Elegir el período a buscar\nSeleccionar si se quiere consultar por meses" value="mes">\n\
                 </td>\n\
                 <th>Mes Inicial:</th>\n\
                 <td>\n\
-                  <select id="mesInicio" name="mesInicio" tabindex="8" style="width:100%">\n\
+                  <select id="mesInicio" name="mesInicio" title="Elegir el mes de inicio\n(Sólo si se busca por meses)" tabindex="8" style="width:100%">\n\
                     <option value="todos" selected="yes">--Seleccionar--</option>\n\
                     <option value="1">Enero</option>\n\
                     <option value="2">Febrero</option>\n\
@@ -2655,7 +2668,7 @@ function cargarFormEstadisticas(selector){
                 </td>\n\
                 <th>Año:</th>\n\
                 <td>\n\
-                  <select id="añoInicio" name="añoInicio" tabindex="9" style="width:100%">\n\
+                  <select id="añoInicio" title="Elegir el año de inicio\n(Sólo si se busca por meses)" name="añoInicio" tabindex="9" style="width:100%">\n\
                     <option value="2017">2017</option>\n\
                     <option value="2018" selected="yes">2018</option>\n\
                     <option value="2019">2019</option>\n\
@@ -2669,7 +2682,7 @@ function cargarFormEstadisticas(selector){
                 </td>\n\
                 <th>Mes Final:</th>\n\
                 <td>\n\
-                  <select id="mesFin" name="mesFin" tabindex="8" style="width:100%">\n\
+                  <select id="mesFin" name="mesFin" title="Elegir el mes de finalización\n(Sólo si se busca por meses)" tabindex="8" style="width:100%">\n\
                     <option value="todos" selected="yes">--Seleccionar--</option>\n\
                     <option value="1">Enero</option>\n\
                     <option value="2">Febrero</option>\n\
@@ -2687,7 +2700,7 @@ function cargarFormEstadisticas(selector){
                 </td>\n\
                 <th>Año:</th>\n\
                 <td>\n\
-                  <select id="añoFin" name="añoInicio" tabindex="9" style="width:100%">\n\
+                  <select id="añoFin" name="añoInicio" title="Elegir el año de finalización\n(Sólo si se busca por meses)" tabindex="9" style="width:100%">\n\
                     <option value="2017">2017</option>\n\
                     <option value="2018" selected="yes">2018</option>\n\
                     <option value="2019">2019</option>\n\
@@ -2698,13 +2711,13 @@ function cargarFormEstadisticas(selector){
               </tr>';
         tr += '<tr>\n\
                 <td class="fondoNaranja">\n\
-                  <input type="radio" name="criterioFecha" value="todos" checked="checked">\n\
+                  <input type="radio" name="criterioFecha" title="Elegir el período a buscar\nSeleccionar si se quieren TODOS los movimientos" value="todos" checked="checked">\n\
                 </td>\n\
                 <th>TODOS</th>';
     tr += '<tr>\n\
             <th colspan="2">Tipo:</th>\n\
             <td colspan="3">\n\
-              <select id="tipo" name="tipo" style="width:100%">\n\
+              <select id="tipo" name="tipo" title="Elegir el tipo de movimiento a buscar" style="width:100%">\n\
                 <option value="Todos" selected="yes">---TODOS---</option>\n\
                 <option value="Retiro">Retiro</option>\n\
                 <option value="Ingreso">Ingreso</option>\n\
@@ -2722,7 +2735,7 @@ function cargarFormEstadisticas(selector){
 //            </td>\n\
 //          </tr>';
     tr += '<tr>\n\
-            <td colspan="5" class="pieTabla"><input type="button" class="btn btn-success" name="realizarGrafica" id="realizarGrafica" value="Consultar" align="center"></td>\n\
+            <td colspan="5" class="pieTabla"><input type="button" class="btn btn-success" title="Realizar la gráfica" name="realizarGrafica" id="realizarGrafica" value="Consultar" align="center"></td>\n\
             <td style="display:none"><input type="text" id="consulta" name="consulta" value=""></td>\n\
             <td style="display:none"><input type="text" id="fechaInicio" name="fechaInicio" value=""></td>\n\
             <td style="display:none"><input type="text" id="fechaFin" name="fechaFin" value=""></td>\n\
@@ -2750,7 +2763,7 @@ function cargarGrafica(selector){
   var formuInicio = '<form name="exportarGraph" id="exportarGraph" target="_blank" action="generarGrafica.php" method="POST">';
   var formuFin = "</form>";
   var grafica = '<img src="graficar.php" id="grafiquita" width="750px" height="350px">';
-  var volver = '<a href="estadisticas.php">Volver</a>';
+  var volver = '<a title="Volver a ESTADÍSTICAS" href="estadisticas.php">Volver</a>';
   mostrar += titulo;
   mostrar += formuInicio;
   mostrar += grafica;
@@ -2847,10 +2860,10 @@ function todo () {
                                                   var temp = parametros.split('?');
                                                   var temp1 = temp[1].split('=');
                                                   var idmov = temp1[1];
-                                                  setTimeout(function(){cargarEditarMovimiento(idmov, "#main-content")}, 100);
+                                                  setTimeout(function(){cargarEditarMovimiento(idmov, "#main-content")}, 30);
                                                 }
                                                 else {
-                                                  setTimeout(function(){cargarEditarMovimiento(1, "#main-content")}, 100);
+                                                  setTimeout(function(){cargarEditarMovimiento(-1, "#main-content")}, 1000);
                                                 }  
                                               break;                                       
     default: break;
@@ -2904,7 +2917,7 @@ $(document).on("change focusin", "#hint", function (){
   $("#snapshot").remove();
   $("#stock").remove();
   $("#ultimoMov").remove();
-  $("#comentarios").remove();
+  $("#comentHint").remove();
   var stock = $("#hint").find('option:selected').attr("stock");
   var comentarios = $("#hint").find('option:selected').attr("comentarios");
   var alarma1 = $("#hint").find('option:selected').attr("alarma1");
@@ -2937,7 +2950,7 @@ $(document).on("change focusin", "#hint", function (){
   mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><b>Stock actual: <b><font class="'+resaltado+'" style="font-size:1.6em">'+stock.toLocaleString()+'</font></p>';
   mostrar += '<p id="ultimoMov" name="ulitmoMov">Último Movimiento: <font class="'+resaltado+'" style="font-size:1.2em">'+ultimoMovimiento+'</font></p>';
   if ((comentarios !== '')&&(comentarios !== "null")&&(comentarios !== ' ')&&(comentarios !== undefined)){
-    mostrar += '<p id="comentarios" name="comentarios">Comentarios: <font class="alarma1" style="font-size:1.4em">'+comentarios+'</font></p>';
+    mostrar += '<p id="comentHint" name="comentHint">Comentarios: <font class="alarma1" style="font-size:1.4em">'+comentarios+'</font></p>';
   }
   //$(this).css('background-color', '#efe473');
   $(this).css('background-color', '#9db7ef');
@@ -3689,6 +3702,7 @@ $(document).on("shown.bs.modal", "#modalPwd", function() {
   $("#pw1").val('');
   $("#pw2").val('');
   $("#pw1").attr("autofocus", true);
+  $("#pw1").focus();
 });
 
 ///Disparar función al hacer click en el botón de ACTUALIZAR que está en el MODAL.

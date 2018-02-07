@@ -15,11 +15,11 @@
         <font class='naranja'>
         <?php
             // Confirm the successful log-in
-            echo "<a href='#modalPwd' class='naranja' id='user'>".strtoupper($_SESSION['username'])."</a>";
+            echo "<a href='#modalPwd' title='Cambiar contraseña de acceso' class='naranja' id='user'>".strtoupper($_SESSION['username'])."</a>";
         ?>
         </font>
         <br>
-        <font><a href="salir.php">Salir</a></font>
+        <font><a title="Salir del programa" href="salir.php">Salir</a></font>
         <?php
             }
         ?>

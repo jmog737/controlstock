@@ -87,19 +87,19 @@ if (empty($_SESSION['user_id']))
 ?>
     </h3>
     <br>
-    <form method="post" name="login" id="frmLogin" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+    <form method='post' name='login' id='frmLogin' action="<?php echo $_SERVER['PHP_SELF']; ?>">
       <table class='tabla2' name='login'> 
-        <th colspan="2" class="tituloTabla">INGRESO</th>
+        <th colspan='2' class="tituloTabla">INGRESO</th>
         <tr>
             <th align='left'><font class='negra'>Usuario:</font></th>
-            <td align='center'><input type='text' name='usuario' id="nombreUsuario" maxlength='15' size='9' autofocus="true" class="agrandar" value=" "></td>
+            <td align='center'><input type='text' name='usuario' title='Ingresar el nombre del usuario' placeholder='Nombre de Usuario' id='nombreUsuario' maxlength='15' size='9' autofocus='true' class='agrandar' value=''></td>
         </tr>
         <tr>
             <th align='left'><font class='negra'>Password:</font></th>
-            <td align='center'><input type='password' name='password' id="password" maxlength='15' size='9' class="agrandar" value=""></td>
+            <td align='center'><input type='password' name='password' id='password' placeholder="Contraseña" title='Ingresar la contraseña para el usuario' maxlength='15' size='9' class='agrandar' value=''></td>
         </tr>    
         <tr>
-            <td colspan="2" class="pieTabla"><input type="submit" value="Log In" name="submit" id="login" class='boton' align='center'/></td>
+            <td colspan='2' class='pieTabla'><input type='submit' value='Log In' name='submit' title='Ingresar al sistema' id='login' class='boton' align='center'/></td>
         </tr>
       </table>
     </form>

@@ -104,8 +104,8 @@ class PDF extends PDF_MC_Table
     $graph->xaxis->title->Set('Mes');
     $graph->xaxis->title->SetColor('white');
     $graph->xaxis->SetColor('white'); 
-    $graph->xaxis->SetTitlemargin(15);
-    $graph->xaxis->SetLabelMargin(15);
+    $graph->xaxis->SetTitlemargin(5);
+    $graph->xaxis->SetLabelMargin(8);
     // Setup Y-axis title
     $graph->yaxis->title->Set('Cantidad');
     $graph->yaxis->title->SetColor('white');
@@ -204,7 +204,7 @@ class PDF extends PDF_MC_Table
 
     ///******************************************************** INICIO Textos con los promedios: ********************************************
     $separacion = 0.07;
-    $posPrimero = 0.56;
+    $posPrimero = 0.50;
 
     $txt = new Text("PROMEDIOS"); 
     $txt->SetFont(FF_FONT1,FS_BOLD); 
@@ -247,10 +247,10 @@ class PDF extends PDF_MC_Table
     $graph->AddText($txt4); 
 
     $avg5 = number_format($avg5, 0, ',', '.');
-    $txt5 = new Text("Consumos: ".$avg5." (Total ".$consumos.")"); 
+    $txt5 = new Text("Consumos: ".$avg5."\n(Total ".$consumos.")"); 
     $txt5->SetFont(FF_FONT1,FS_BOLD); 
     $txt5->SetColor('#023184:0.98');
-    $txt5->SetPos(0.98,$posPrimero+5*$separacion,'right','center');
+    $txt5->SetPos(0.98,$posPrimero+5.25*$separacion,'right','center');
     $txt5->SetBox('navajowhite1','white'); 
     $graph->AddText($txt5);
     ///************************************************************ FIN Textos con los promedios: *******************************************
