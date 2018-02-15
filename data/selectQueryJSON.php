@@ -14,14 +14,21 @@ else {
 //$dbc = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 $dbc = crearConexion(DB_HOST, $userDB, $pwDB, DB_NAME);
 
-$query = $_GET["query"];
+$query = array();
+$query = (array) json_decode($_GET["query"],true);
 
-$result = consultarBD($query, $dbc);
+///Comento escritura en el log para evitar sobrecargar el archivo.
+//escribirLog($query);
 
 $datos = array();
-$datos['rows'] = $result->num_rows;
-while (($fila = $result->fetch_array(MYSQLI_ASSOC)) != NULL) { 
-  $datos['resultado'][] = $fila;
+for ($i = 0; $i < count($query); $i++){
+  $result = consultarBD($query[$i], $dbc);
+
+  $datos["$i"]['rows'] = $result->num_rows;
+  while (($fila = $result->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+    $datos["$i"]['resultado'][] = $fila;
+  }
+  
 }
 
 $json = json_encode($datos);

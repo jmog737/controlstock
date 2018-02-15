@@ -21,15 +21,15 @@ require_once("data/sesiones.php");
     if (isset($_SESSION['user_id'])) 
       {
     ?>
-    
-    <div id='main-content' class='container-fluid'>
-      <div id='fila' class='row'>
-        <h2 id="titulo" class="encabezado">MOVIMIENTOS</h2>
-        <div id='selector' class='col-md-6 col-sm-12'></div>
-        <div id='content' class='col-md-6 col-sm-12'></div>
+    <main>
+      <div id='main-content' class='container-fluid'>
+        <div id='fila' class='row'>
+          <h2 id="titulo" class="encabezado">MOVIMIENTOS</h2>
+          <div id='selector' class='col-md-6 col-sm-12'></div>
+          <div id='content' class='col-md-6 col-sm-12'></div>
+        </div>
       </div>
-    </div>
-    
+    </main>
     <?php 
     }
     else {

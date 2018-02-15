@@ -4,7 +4,7 @@
   if (!isset($_SESSION["username"])||(!file_exists("css/".$estilos))){
     $estilos = 'styles.php';
   }
-  //$estilos = "styles.css";
+  $estilos = "styles.css";
 //  switch ($user) {
 //    case 'jm':  $estilos = 'styles'.$user.'.php';
 //                //$colores = 'css/colores.php';
@@ -31,8 +31,7 @@
   <link rel='stylesheet' href='css/bootstrap.css'>
   <link rel='stylesheet' href='css/<?php echo $estilos ?>'>
   <script src="js/jquery-3.3.1.min.js"></script>
-  <script src="https://code.jquery.com/jquery-migrate-3.0.1.js"></script>
-  <script src='js/bootstrap.bundle.min.js'></script>
+  <script src='js/bootstrap.bundle.min.js'></script>  
   <script src='js/script.js' type="text/javaScript"></script>
 </head>
 <?php 

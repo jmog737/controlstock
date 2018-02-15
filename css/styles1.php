@@ -265,6 +265,11 @@ a.detailObject:focus, a.detailObject:hover {
   border-radius: 25px;
   max-width: 60%;
 }
+.tabla2 caption {
+  display: table-caption;
+  text-align: center;
+  caption-side: bottom;
+}   
 .tabla2 th {
   background-color: #0066cc;
   color: #ffff00;
@@ -417,7 +422,7 @@ a.detailObject:focus, a.detailObject:hover {
 }
 .tblModal {
   color: #000;
-}
+}      
 /************************* END HOME PAGE *************************************/
 
 /* Popup container */

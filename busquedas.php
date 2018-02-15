@@ -47,15 +47,15 @@ require_once("data/sesiones.php");
       }
       
     ?>
-    
-    <div id='main-content' class='container-fluid'>
-      <h2 id="titulo" class="encabezado">BÚSQUEDAS</h2>
-      <h3>Seleccione el tipo de consulta a ejecutar.</h3>
-      
-      <div id='fila' class='row col-md-12 col-sm-12'>
+    <main>
+      <div id='main-content' class='container-fluid'>
+          <h2 id="titulo" class="encabezado">BÚSQUEDAS</h2>
+          <h3>Seleccione el tipo de consulta a ejecutar.</h3>
+
+          <div id='fila' class='row col-md-12 col-sm-12'>
+          </div>
       </div>
-    </div>
-    
+    </main>
     <?php 
     }
     else {

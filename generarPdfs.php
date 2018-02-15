@@ -23,6 +23,13 @@ require_once('..\..\fpdf\mc_table.php');
 ///Resaltado TOTAL:
 ///$this->SetFillColor(0, 255, 255);
 
+///Retiros, Renovaciones y Destrucciones:
+///$this->SetFillColor(137, 216, 255);
+///Consumos:
+///$this->SetFillColor(2, 185, 240);
+///Ingresos: 
+///$this->SetFillColor(95, 243, 137);
+
 ///*************************** FIN COLORES USADOS PARA LAS TABLAS ****************************************************************
 
 class PDF extends PDF_MC_Table
@@ -922,8 +929,9 @@ class PDF extends PDF_MC_Table
           $this->Cell($tamTextoSubtotal,$h, "Total Retiros:",1,0,'C', false);
 
           $this->SetFont('Courier', 'BI', 14);
-          $this->setFillColor(165, 156, 149);
-          $this->setFillColor(200, 202, 212);
+          //$this->setFillColor(165, 156, 149);
+          //$this->setFillColor(200, 202, 212);
+          $this->setFillColor(137, 216, 255);
           $this->SetTextColor(0);  
           $this->Cell($tamSubTotal,$h, $subtotalRetiroMostrar,1,1,'C', true);
           
@@ -939,8 +947,9 @@ class PDF extends PDF_MC_Table
           $this->Cell($tamTextoSubtotal,$h, "Total Renovaciones:",1,0,'C', false);
 
           $this->SetFont('Courier', 'BI', 14);
-          $this->setFillColor(165, 156, 149);
-          $this->setFillColor(200, 202, 212);
+          //$this->setFillColor(165, 156, 149);
+          //$this->setFillColor(200, 202, 212);
+          $this->setFillColor(137, 216, 255);
           $this->SetTextColor(0);  
           $this->Cell($tamSubTotal,$h, $subtotalRenoMostrar,1,1,'C', true);
           
@@ -956,8 +965,9 @@ class PDF extends PDF_MC_Table
           $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total Destrucciones:"),1,0,'C', false);
 
           $this->SetFont('Courier', 'BI', 14);
-          $this->setFillColor(165, 156, 149);
-          $this->setFillColor(200, 202, 212);
+          //$this->setFillColor(165, 156, 149);
+          //$this->setFillColor(200, 202, 212);
+          $this->setFillColor(137, 216, 255);
           $this->SetTextColor(0);  
           $this->Cell($tamSubTotal,$h, $subtotalDestruccionMostrar,1,1,'C', true);
           
@@ -973,8 +983,8 @@ class PDF extends PDF_MC_Table
           $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total de Consumos:"),1,0,'C', false);
 
           $this->SetFont('Courier', 'BI', 14);
-          $this->setFillColor(220, 223, 232);
-          $this->setFillColor(239, 165, 105);
+          //$this->setFillColor(220, 223, 232);
+          $this->setFillColor(2, 185, 240);
           $this->SetTextColor(0);  
           $this->Cell($tamSubTotal,$h, $totalConsumosMostrar,1,1,'C', true);
           
@@ -990,8 +1000,9 @@ class PDF extends PDF_MC_Table
           $this->Cell($tamTextoSubtotal,$h, "Total de Ingresos:",1,0,'C', false);
 
           $this->SetFont('Courier', 'BI', 14);
-          $this->setFillColor(220, 223, 232);
-          $this->setFillColor(127, 128, 129);
+          //$this->setFillColor(220, 223, 232);
+          //$this->setFillColor(127, 128, 129);
+          $this->setFillColor(95, 243, 137);
           $this->SetTextColor(0);  
           $this->Cell($tamSubTotal,$h, $subtotalIngresoMostrar,1,1,'C', true);
           
@@ -1770,8 +1781,9 @@ class PDF extends PDF_MC_Table
           $this->Cell($tamTextoSubtotal,$h, "Total Retiros:",1,0,'C', false);
 
           $this->SetFont('Courier', 'BI', 14);
-          $this->setFillColor(165, 156, 149);
-          $this->setFillColor(200, 202, 212);
+          //$this->setFillColor(165, 156, 149);
+          //$this->setFillColor(200, 202, 212);
+          $this->setFillColor(137, 216, 255);
           $this->SetTextColor(0);  
           $this->Cell($tamSubTotal,$h, $subtotalRetiroMostrar,1,1,'C', true);
           
@@ -1787,8 +1799,9 @@ class PDF extends PDF_MC_Table
       $this->Cell($tamTextoSubtotal,$h, "Total Renovaciones:",1,0,'C', false);
 
       $this->SetFont('Courier', 'BI', 14);
-      $this->setFillColor(165, 156, 149);
-      $this->setFillColor(200, 202, 212);
+      //$this->setFillColor(165, 156, 149);
+      //$this->setFillColor(200, 202, 212);
+      $this->setFillColor(137, 216, 255);
       $this->SetTextColor(0);  
       $this->Cell($tamSubTotal,$h, $subtotalRenoMostrar,1,1,'C', true);
 
@@ -1804,8 +1817,9 @@ class PDF extends PDF_MC_Table
       $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total Destrucciones:"),1,0,'C', false);
 
       $this->SetFont('Courier', 'BI', 14);
-      $this->setFillColor(165, 156, 149);
-      $this->setFillColor(200, 202, 212);
+      //$this->setFillColor(165, 156, 149);
+      //$this->setFillColor(200, 202, 212);
+      $this->setFillColor(137, 216, 255);
       $this->SetTextColor(0);  
       $this->Cell($tamSubTotal,$h, $subtotalDestruccionMostrar,1,1,'C', true);
 
@@ -1821,8 +1835,9 @@ class PDF extends PDF_MC_Table
       $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total de Consumos:"),1,0,'C', false);
 
       $this->SetFont('Courier', 'BI', 14);
-      $this->setFillColor(220, 223, 232);
-      $this->setFillColor(239, 165, 105);
+      //$this->setFillColor(220, 223, 232);
+      //$this->setFillColor(239, 165, 105);
+      $this->setFillColor(2, 185, 240);
       $this->SetTextColor(0);  
       $this->Cell($tamSubTotal,$h, $totalConsumosMostrar,1,1,'C', true);
 
@@ -1838,8 +1853,9 @@ class PDF extends PDF_MC_Table
       $this->Cell($tamTextoSubtotal,$h, "Total de Ingresos:",1,0,'C', false);
 
       $this->SetFont('Courier', 'BI', 14);
-      $this->setFillColor(220, 223, 232);
-      $this->setFillColor(127, 128, 129);
+      //$this->setFillColor(220, 223, 232);
+      //$this->setFillColor(127, 128, 129);
+      $this->setFillColor(95, 243, 137);
       $this->SetTextColor(0);  
       $this->Cell($tamSubTotal,$h, $subtotalIngresoMostrar,1,1,'C', true);
 

@@ -262,6 +262,11 @@ a.detailObject:focus, a.detailObject:hover {
   border-radius: 25px;
   max-width: 60%;
 }
+.tabla2 caption {
+  display: table-caption;
+  text-align: center;
+  caption-side: bottom;
+}   
 .tabla2 th {
   background-color: #0066cc;
   color: #ffff00;
@@ -414,7 +419,7 @@ a.detailObject:focus, a.detailObject:hover {
 }
 .tblModal {
   color: #000;
-}
+}      
 /************************* END HOME PAGE *************************************/
 
 /* Popup container */
@@ -545,7 +550,7 @@ a.detailObject:focus, a.detailObject:hover {
   padding-right: 10px;
   }
   #logo-img {
-    background: url('../images/logo-emsa75.png') no-repeat;
+    background: url('../images/logo-emsa150.png') no-repeat;
     width: 225px;
     height: 100px;
     margin: 10px 10px 10px 0;

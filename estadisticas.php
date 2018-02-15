@@ -30,11 +30,11 @@ if ($_POST["hacerGrafica"] === "yes") {
     if (isset($_SESSION['user_id'])) 
       {
     ?>
-    
-    <div id='main-content' class='container-fluid'>
-       
-    </div>
-    
+    <main>
+      <div id='main-content' class='container-fluid'>
+
+      </div>
+    </main>
     <?php 
     }
     else {
