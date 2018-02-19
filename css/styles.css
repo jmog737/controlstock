@@ -125,6 +125,7 @@ h2 {
   font-weight: bold;
   text-decoration: underline;
   margin: 20px;
+  margin-top: 0px;
 }
 h3 h4{
   color:#fff;
@@ -143,10 +144,15 @@ input[type=checkbox] {
   text-align: center;
   background-color: #ffff99;/* agregardo durante el desarrollo para diferenciar!!!*/
   background-color: #61122f;
-  /*padding: 15px;*/
   margin: auto;
   position: relative;
-  
+  padding: 0px;
+  padding-top: 20px;
+  height: 100%;
+  min-height: 600px !important;
+}
+#main {
+  min-height: 600px !important;
 }
 #fila {
   background-color: #61122f;
@@ -183,6 +189,30 @@ a.detailObject:focus, a.detailObject:hover {
   padding: 0px;
 }
 
+#pills-tab {
+  margin-bottom: 0px !important;
+  margin-top: -20px !important;
+}
+
+#pills-tab li {
+  background-color: #c5c5c5;
+  padding-bottom: 0;
+  margin-left: 1.2px;
+  margin-right: 1.2px;
+  margin-bottom: 0;
+}
+.tab-content {
+  background-color: #523a43;
+  height: 100%;
+  min-height: 580px !important;
+}
+hr {
+  background-color: white;
+  height: 5px;
+}
+.tab-pane {
+  height: 100%;
+}
 /* TABLAS */
 .tituloTabla {
   border-radius: 25px 25px 0 0;

@@ -52,11 +52,7 @@
     </div><!-- .container -->
   </nav><!-- #header-nav -->
   <script>verificarSesion();</script>
-  
-</header>
-
-
-<!-- Modal para cambiar la contraseña -->
+  <!-- Modal para cambiar la contraseña -->
 <div class="modal fade" id="modalPwd" tabindex="-1" role="dialog" aria-labelledby="Modal" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document"> 
     <!-- Modal content-->
@@ -94,3 +90,6 @@
     </div>   
   </div>
 </div><!-- FIN Modal para cambiar la contraseña -->
+</header>
+
+

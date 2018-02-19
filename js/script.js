@@ -1,3 +1,5 @@
+var limiteSeleccion = 8;
+
 /**
 ///  \file script.js
 ///  \brief Archivo que contiene todas las funciones de Javascript.
@@ -85,7 +87,12 @@ function showHint(str, id, seleccionado) {
       var mostrar = '';
       
       if (totalSugerencias >= 1) {
-        mostrar = '<select name="hint" id="hint" class="hint" multiple size="5">';
+        if (($("#productoGrafica").length > 0)||($("#producto").length > 0)){
+          mostrar = '<select name="hint" id="hint" class="hint" size="15">';
+        }
+        else {
+          mostrar = '<select name="hint" id="hint" class="hint" multiple size="15">';
+        }
         if (totalSugerencias > 1) {
           mostrar += '<option value="NADA" name="NADA" selected>--Seleccionar--</option>';
         }
@@ -107,7 +114,7 @@ function showHint(str, id, seleccionado) {
             sel = 'selected="yes"';
           }
           //mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+' '+sel+ '>[' + sugerencias[i]["entidad"]+'] '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
-          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma1='+sugerencias[i]["alarma1"]+' alarma2='+sugerencias[i]["alarma2"]+' comentarios="'+sugerencias[i]["comentarios"]+'" ultimoMov="'+sugerencias[i]["ultimoMovimiento"]+'" '+sel+ '>[' + sugerencias[i]["entidad"]+': '+codigo_emsa+'] --- '+sugerencias[i]["nombre_plastico"] + '</option>';
+          mostrar += '<option data-toggle="popover" title="Popover Header" data-content="Some content inside the popover" value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma1='+sugerencias[i]["alarma1"]+' alarma2='+sugerencias[i]["alarma2"]+' comentarios="'+sugerencias[i]["comentarios"]+'" ultimoMov="'+sugerencias[i]["ultimoMovimiento"]+'" '+sel+ '>[' + sugerencias[i]["entidad"]+': '+codigo_emsa+'] --- '+sugerencias[i]["nombre_plastico"] + '</option>';
         }
         mostrar += '</select>';
       }
@@ -118,8 +125,8 @@ function showHint(str, id, seleccionado) {
       
       /// Agregado a pedido de Diego para que se abra el select automáticamente:
       var length = $('#hint> option').length;
-      if (length > 10) {
-        length = 10;
+      if (length > 16) {
+        length = 16;
       }
       else {
         length++;
@@ -1124,8 +1131,15 @@ function realizarBusqueda(){
   else {
     verificarSesion();
     var radio = $('input:radio[name=criterio]:checked').val();
-    var entidadMovimiento = $("#entidadMovimiento").find('option:selected').val( );
-    var entidadStock = $("#entidadStock").find('option:selected').val( );
+    var entidadesStock = new Array();
+    $("#entidadStock option:selected").each(function() {
+      entidadesStock.push($(this).val());
+    });
+    var entidadesMovimiento = new Array();
+    $("#entidadMovimiento option:selected").each(function() {
+      entidadesMovimiento.push($(this).val());
+    });
+    var todos = false;
     var idProds = new Array();
     var nombresProductos = new Array();
     var nombres = new Array();
@@ -1156,7 +1170,7 @@ function realizarBusqueda(){
     var rangoFecha = null;
     var prodHint = '';
     var tipMov = '';
-    var ent = '';
+    var ent = new Array();
     
     var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
     var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
@@ -1175,28 +1189,52 @@ function realizarBusqueda(){
     var rutaFoto = 'images/snapshots/';
     
     switch (radio) {
-      case 'entidadStock': if (entidadStock !== 'todos') {
-                             ent = entidadStock;
-                             query += " from productos where entidad='"+entidadStock+"' and estado='activo'";
-                             queries[0] = query;
-                             consultaCSV += " from productos where entidad='"+entidadStock+"' and estado='activo'";
-                             consultasCSV[0] = consultaCSV;
-                             tipoConsulta = 'del stock de '+entidadStock;
-                           } 
-                           else {
-                             query += " from productos where estado='activo'";
-                             consultaCSV += " from productos where estado='activo'";
-                             tipoConsulta = 'del stock de todas las entidades';
-                           }
-                           campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje";
-                           largos = "0.8-1.2-2.5-0.8-2-1-1-1.2-1.2-1-2-1.7";
-                           mostrarCamposQuery = "1-1-1-0-1-0-0-1-1-0-0-1";
-                           tipMov = 'entStock';
-                           x = 20;
+      case 'entidadStock':  delete nombres;
+                            var nombres = new Array();
+                            for (var i in entidadesStock){
+                              delete (query);
+                              delete (consultaCSV);
+                              delete (tipoConsulta);
+                              var tipoConsulta = '';
+                              var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                              var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
+                              if (entidadesStock[i] !== 'todos') {
+                                ent.push(entidadesStock[i]);
+                                query += " from productos where entidad='"+entidadesStock[i]+"' and estado='activo'";
+                                consultaCSV += " from productos where entidad='"+entidadesStock[i]+"' and estado='activo'";
+                                tipoConsulta = 'del stock de '+entidadesStock[i];
+                              } 
+                              else {
+                                query += " from productos where estado='activo'";
+                                consultaCSV += " from productos where estado='activo'";
+                                tipoConsulta = 'del stock de todas las entidades';
+                                todos = true;
+                              }
+                              queries.push(query);
+                              consultasCSV.push(consultaCSV);
+                              tipoConsultas.push(tipoConsulta);
+                              idProds.push(entidadesStock[i]);
+                              nombres.push(entidadesStock[i]);
+                            }
+                            if (todos && (entidadesStock.length > 1)){
+                              alert('No se puede consultar "TODOS" junto con otras entidades. Por favor verifique.');
+                              $("#entidadStock").focus();
+                              return;
+                            }
+                            if (entidadesStock.length > limiteSeleccion) {
+                              alert("Se superó el máximo de "+limiteSeleccion+" opciones elegidas. Por favor verifique.");
+                              $("#entidadStock").focus();
+                              return;
+                            }
+                            campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje";
+                            largos = "0.8-1.2-2.5-0.8-2-1-1-1.2-1.2-1-2-1.7";
+                            mostrarCamposQuery = "1-1-1-0-1-0-0-1-1-0-0-1";
+                            tipMov = 'entStock';
+                            x = 20;
                            break;
       case 'productoStock': for (var i in idProds){
                               if ((idProds[i] === 'NADA') || (nombresProductos[i] === '')){
-                                alert('Debe seleccionar un producto. Por favor verifique.');
+                                alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
                                 document.getElementById("productoStock").focus();
                                 validado = false;
                                 return false;
@@ -1226,24 +1264,48 @@ function realizarBusqueda(){
                           consultaCSV = "select entidad as Entidad, sum(stock) as Subtotal from productos where estado='activo' group by entidad";
                           consultasCSV[0] = consultaCSV;
                           tipoConsulta = 'del total de plásticos en bóveda.';
+                          tipoConsultas[0] = tipoConsulta;
+                          idProds[0] = 1;
+                          delete nombres;
+                          var nombres = new Array();
+                          nombres[0] = "Stock en Bóveda";
                           campos = 'Id-Entidad-Stock';
                           largos = '1-3.0-1.8';
                           mostrarCamposQuery = "1-1-1";
                           tipMov = 'totalStock';
                           x = 60;
                           break;                    
-      case 'entidadMovimiento': query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
-                                queries[0] = query;
-                                consultaCSV = "select DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
-                                consultasCSV[0] = consultaCSV;
-                                if (entidadMovimiento !== 'todos') {
-                                  ent = entidadMovimiento;
-                                  query += "and productos.entidad='"+entidadMovimiento+"'";
-                                  consultaCSV += "and productos.entidad='"+entidadMovimiento+"'";
-                                  tipoConsulta = 'de los movimientos de '+entidadMovimiento;
-                                } 
-                                else {
-                                  tipoConsulta = 'de los movimientos de todas las entidades';
+      case 'entidadMovimiento': delete nombres;
+                                var nombres = new Array();
+                                for (var i in entidadesMovimiento){
+                                  query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                                  query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
+                                  consultaCSV = "select DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
+                                  if (entidadesMovimiento[i] !== 'todos') {
+                                    ent = entidadesMovimiento[i];
+                                      query += "and productos.entidad='"+entidadesMovimiento[i]+"'";
+                                      consultaCSV += "and productos.entidad='"+entidadesMovimiento[i]+"'";
+                                      tipoConsulta = 'de los movimientos de '+entidadesMovimiento[i];
+                                  } 
+                                  else {
+                                    tipoConsulta = 'de los movimientos de todas las entidades';
+                                    todos = true;
+                                  }
+                                  queries.push(query);
+                                  consultasCSV.push(consultaCSV);
+                                  tipoConsultas.push(tipoConsulta);
+                                  idProds.push(entidadesMovimiento[i]);
+                                  nombres.push(entidadesMovimiento[i]);
+                                }
+                                if (todos && (entidadesMovimiento.length > 1)){
+                                  alert('No se puede consultar "TODOS" junto con otras entidades. Por favor verifique.');
+                                  $("#entidadMovimiento").focus();
+                                  return;
+                                }
+                                if (entidadesMovimiento.length > limiteSeleccion) {
+                                  alert("Se superó el máximo de "+limiteSeleccion+" opciones elegidas. Por favor verifique.");
+                                  $("#entidadMovimiento").focus();
+                                  return;
                                 }
                                 validarFecha = true;
                                 validarTipo = true;
@@ -1262,7 +1324,7 @@ function realizarBusqueda(){
                                     consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
                                     consultaCSV = "select DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";                                 
                                     if ((idProds[k] === 'NADA') || (nombresProductos[k] === '')){
-                                      alert('Debe seleccionar un producto. Por favor verifique.');
+                                      alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
                                       document.getElementById("productoMovimiento").focus();
                                       validado = false;
                                       return false;
@@ -1435,43 +1497,54 @@ function realizarBusqueda(){
       $("#main-content").empty();
       
       var mostrarGlobal = '<ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">';
+      var activo = '';
       
       for (var n in queries){
-        mostrarGlobal += '<li class="nav-item">\n\
-                            <a class="nav-link" id="pills-'+idProds[n]+'-tab" data-toggle="pill" href="#'+idProds[n]+'" role="tab" aria-controls="'+nombres[n]+'" aria-selected="true">'+nombres[n]+'</a>\n\
+        if (n == 0) {
+          activo = 'active';
+        }
+        else {
+          activo = '';
+        }
+        mostrarGlobal += '<li class="nav-item  rounded-right rounded-left">\n\
+                            <a class="nav-link '+activo+'" id="pills-'+idProds[n]+'-tab" data-toggle="pill" href="#'+idProds[n]+'" role="tab" aria-controls="'+nombres[n]+'" aria-selected="true">'+nombres[n]+'</a>\n\
                           </li>'; 
       }
       mostrarGlobal += '</ul>';
-      mostrarGlobal += '<div class="tab-content" id="pills-tabContent">';
+      mostrarGlobal += '<div class="tab-content rounded-right" id="pills-tabContent">';
       
       var jsonQuery = JSON.stringify(queries);
 
       $.getJSON(url, {query: ""+jsonQuery+""}).done(function(request){
-        //alert(request["1"].rows);
         for (var j in request){
           var datos = request[j].resultado;
           var totalDatos = request[j].rows;
-
+          if (j == 0) {
+            activo = 'fade show active';
+          }
+          else {
+            activo = 'fade';
+          }
+          var divi = '<div class="tab-pane '+activo+' rounded-right" id="'+idProds[j]+'" role="tabpanel" aria-labelledby="pills-home-tab">'; 
+          var mostrar = '';
+          mostrar += divi;
+          var titulo = "<h2>Resultado de la búsqueda</h2>";
+          mostrar += titulo;
+          var mensajeConsulta = "Consulta "+tipoConsultas[j];
+          if (mensajeTipo !== null) {
+            mensajeConsulta += " "+mensajeTipo;
+          }
+          mensajeConsulta += " "+mensajeFecha;
+          if (mensajeUsuario !== null) {
+            mensajeConsulta += mensajeUsuario;
+          } 
+          mostrar += "<h3>"+mensajeConsulta+"</h3>";
+          
           if (totalDatos >= 1) 
             {
-            var mensajeConsulta = "Consulta "+tipoConsultas[j];
-            if (mensajeTipo !== null) {
-              mensajeConsulta += " "+mensajeTipo;
-            }
-            mensajeConsulta += " "+mensajeFecha;
-            if (mensajeUsuario !== null) {
-              mensajeConsulta += mensajeUsuario;
-            }  
-            //$("#main-content").empty();
-            var mostrar = '';
-            var divi = '<div class="tab-pane fade show" id="'+idProds[j]+'" role="tabpanel" aria-labelledby="pills-home-tab">'; 
-            mostrar += divi;
-            var titulo = "<h2>Resultado de la búsqueda</h2>";
-            mostrar += titulo;
-            mostrar += "<h3>"+mensajeConsulta+"</h3>";
-            var formu = '<form name="resultadoBusqueda" id="resultadoBusqueda" target="_blank" action="exportar.php" method="POST" class="exportarForm">';
-            var tabla = '<table name="producto" class="tabla2">\n\
-                        <caption>Resultado de la consulta</caption>';
+            var formu = '<form name="resultadoBusqueda" id="resultadoBusqueda_'+j+'" target="_blank" action="exportar.php" method="POST" class="exportarForm">';
+            var tabla = '<table name="producto" class="tabla2">';
+                        
             switch(radio) {
               case 'entidadStock':  tabla += '<tr><th class="tituloTabla" colspan="9">CONSULTA DE STOCK</th></tr>';
                                     tabla += '<tr>\n\
@@ -1544,22 +1617,29 @@ function realizarBusqueda(){
                                       indice++;
                                       total += stock;
                                     }
+                                    if (entidadesStock[0] !== 'todos'){
+                                      tabla += '<caption>Stock de la entidad: '+entidad+'</caption>';
+                                    }
+                                    else {
+                                      tabla += '<caption>Stock de todas las entidades</caption>';
+                                    }
                                     tabla += '<tr><th colspan="7" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td><th></th></tr>';
 
-                                    tabla += '<tr><td style="display:none"><input type="text" id="query" name="query" value="'+query+'"></td>\n\
+                                    tabla += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
                                                   <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="1"></td>\n\
-                                                  <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
+                                                  <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                                  <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
                                                   <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                   <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                   <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                  <td style="display:none"><input type="text" id="entidad" name="entidad" value="'+entidadStock+'"></td>\n\
+                                                  <td style="display:none"><input type="text" id="entidad_'+j+'" name="entidad_'+j+'" value="'+entidadesStock[j]+'"></td>\n\
                                                   <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                  <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
+                                                  <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+tipoConsultas[j]+'"></td>\n\
                                                   <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                 </tr>';
                                     tabla += '<tr>\n\
                                                 <td class="pieTabla" colspan="9">\n\
-                                                  <input type="button" id="1" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                                  <input type="button" id="1" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                                 </td>\n\
                                               </tr>\n\
                                             </table>';
@@ -1600,6 +1680,7 @@ function realizarBusqueda(){
                                         claseResaltado = "resaltado italica";
                                       }
                                     } 
+                                    tabla += '<caption>Stock del producto: '+datos[0]['nombre_plastico']+'</caption>';
                                     tabla += '<tr>\n\
                                                 <th colspan="2" class="tituloTabla">DETALLES</th>\n\
                                              </tr>';                       
@@ -1612,26 +1693,28 @@ function realizarBusqueda(){
                                     tabla += '<tr><th style="text-align:left">Comentarios:</th><td>'+prodcom+'</td></tr>';
                                     tabla += '<tr><th style="text-align:left">&Uacute;ltimo Movimiento:</th><td>'+ultimoMovimiento+'</td></tr>';
                                     tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
-                                    tabla += '<tr><td style="display:none"><input type="text" id="query" name="query" value="'+query+'"></td>\n\
+                                    tabla += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
                                                   <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="2"></td>\n\
-                                                  <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
+                                                  <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                                  <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
                                                   <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                   <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                   <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombresProductos[j]+'"></td>\n\
                                                   <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
                                                     <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProds[j]+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                   </tr>';
                                       tabla += '<tr>\n\
                                                   <td class="pieTabla" colspan="2">\n\
-                                                    <input type="button" id="2" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                                    <input type="button" id="2" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                                   </td>\n\
                                                 </tr>\n\
                                               </table>';
                                       break;
-                case 'totalStock':  tabla += '<tr>\n\
+                case 'totalStock':  tabla += '<caption>Stock total en b&oacute;veda.</caption>';
+                                    tabla += '<tr>\n\
                                                 <th colspan="3" class="tituloTabla">DETALLES</th>\n\
                                               </tr>';
                                     tabla += '<tr>\n\
@@ -1662,19 +1745,20 @@ function realizarBusqueda(){
                                       total += subtotal;
                                     }
                                     tabla += '<tr><th colspan="2" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td></tr>';
-                                    tabla += '<tr><td style="display:none"><input type="text" id="query" name="query" value="'+query+'"></td>\n\
+                                    tabla += '<tr><td style="display:none"><input type="text" id="query_0" name="query_0" value="'+queries[j]+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="3"></td>\n\
-                                                <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                                <td style="display:none"><input type="text" id="consultaCSV_0" name="consultaCSV_0" value="'+consultasCSV[j]+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="tipoConsulta_0" name="tipoConsulta_0" value="'+mensajeConsulta+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                               </tr>';
                                     tabla += '<tr>\n\
                                                 <td class="pieTabla" colspan="3">\n\
-                                                  <input type="button" id="3" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                                  <input type="button" id="3" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                                 </td>\n\
                                               </tr>\n\
                                             </table>';              
@@ -1858,12 +1942,20 @@ function realizarBusqueda(){
                                                       </tr>';
                                             subtotalIngreso = 0;
                                           }
-
+                                          
+                                          
+                                          if (entidadesMovimiento[0] !== 'todos'){
+                                            tabla += '<caption>Movimientos de la entidad: '+entidad+'</caption>';
+                                          }
+                                          else {
+                                            tabla += '<caption>Movimientos de todas las entidades</caption>';
+                                          }
                                           tabla += '<th colspan="11">&nbsp;\n\
                                                     </th>';
-                                          tabla += '<tr><td style="display:none"><input type="text" id="query" name="query" value="'+query+'"></td>\n\
+                                          tabla += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
                                                         <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="4"></td>\n\
-                                                        <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                                        <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
                                                         <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                         <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                         <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
@@ -1875,14 +1967,14 @@ function realizarBusqueda(){
                                                         <td style="display:none"><input type="text" id="fin" name="fin" value="'+fin+'"></td>\n\
                                                         <td style="display:none"><input type="text" id="mes" name="mes" value="'+mes+'"></td>\n\
                                                         <td style="display:none"><input type="text" id="año" name="año" value="'+año+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="entidad" name="entidad" value="'+entidadMovimiento+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="entidad_'+j+'" name="entidad_'+j+'" value="'+entidadesMovimiento[j]+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
                                                         <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                       </tr>';
 
                                           tabla += '<tr>\n\
                                                       <td class="pieTabla" colspan="11">\n\
-                                                        <input type="button" id="4" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                                        <input type="button" id="4" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                                       </td>\n\
                                                     </tr>\n\
                                                   </table>';  
@@ -1922,7 +2014,7 @@ function realizarBusqueda(){
                                                 claseResaltado = "resaltado italica";
                                               }
                                             } 
-
+                                            tabla += '<caption>Detalles del producto: '+datos[0]['nombre_plastico']+'</caption>';
                                             tabla += '<tr>\n\
                                                         <th colspan="2" class="tituloTabla">PRODUCTO</th>\n\
                                                      </tr>';                       
@@ -1939,6 +2031,7 @@ function realizarBusqueda(){
 
                                             tabla += '<br>';
                                             tabla += '<table name="movimientos" class="tabla2">';
+                                            tabla += '<caption>Movimientos del producto: '+datos[0]['nombre_plastico']+'</caption>';
                                             tabla += '<tr><th class="tituloTabla" colspan="6">CONSULTA DE MOVIMIENTOS</th></tr>';
                                             tabla += '<tr>\n\
                                                         <th>Item</th>\n\
@@ -2042,9 +2135,10 @@ function realizarBusqueda(){
                                                 subtotalIngreso = 0;
                                               }
 
-                                              tabla += '<tr><td style="display:none"><input type="text" id="query" name="query" value="'+query+'"></td>\n\
+                                              tabla += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
                                                           <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="5"></td>\n\
-                                                          <td style="display:none"><input type="text" id="consultaCSV" name="consultaCSV" value="'+consultaCSV+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                                          <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
                                                           <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                           <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                           <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
@@ -2058,13 +2152,13 @@ function realizarBusqueda(){
                                                           <td style="display:none"><input type="text" id="año" name="año" value="'+año+'"></td>\n\
                                                           <td style="display:none"><input type="text" id="usuario" name="usuario" value="'+idUser+'"></td>\n\
                                                           <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProds[j]+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="tipoConsulta" name="tipoConsulta" value="'+mensajeConsulta+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
                                                           <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                         </tr>';
 
                                               tabla += '<tr>\n\
                                                           <td class="pieTabla" colspan="6">\n\
-                                                            <input type="button" id="5" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                                            <input type="button" id="5" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                                           </td>\n\
                                                         </tr>\n\
                                                       </table>';
@@ -2079,20 +2173,20 @@ function realizarBusqueda(){
             if (idProds[j] === undefined) {
               idProds[j] = '';
             }
-
-            var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&id='+idProds[j]+'&ent='+ent+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+            var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&id='+idProds[j]+'&ent='+ent[j]+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
             mostrar += volver;
             mostrar += '</div>';
-            $("#pills-tabContent").append(mostrar); 
+            $("#pills-tabContent").append(mostrar);
             delete(totalDatos);
             delete(datos);  
             }/// FIN del if de totalDatos>1  
           else {
-            alert("NO existen registros que coincidan con los criterios de búsqueda establecidos. Por favor verifique.");
-            //return false;
-          }                     
-          //delete(datos);
-          
+            mostrar += "<br><hr><h3>No existen registros para la consulta realizada.</h3><hr>";
+            var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&id='+idProds[j]+'&ent='+ent[j]+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+            mostrar += volver;
+            mostrar += '</div>';
+            $("#pills-tabContent").append(mostrar);
+          }         
         }
       });
         
@@ -2160,7 +2254,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
                 </td>\n\
                 <th>Entidad:</th>\n\
                   <td colspan="3">\n\
-                    <select name="entidad" id="entidadStock" tabindex="1" style="width: 100%" title="Seleccionar la entidad">\n\
+                    <select name="entidad" id="entidadStock" tabindex="1" style="width: 100%" multiple title="Seleccionar la entidad" size="10">\n\
                       <option value="todos" selected="yes">---TODOS---</option>';
         for (var j in entidades) {
           var entidad = entidades[j].trim();
@@ -2193,7 +2287,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
                 </td>\n\
                 <th>Entidad:</th>\n\
                   <td colspan="3">\n\
-                    <select name="entidad" id="entidadMovimiento" title="Seleccionar la entidad" tabindex="3" style="width: 100%">\n\
+                    <select name="entidad" id="entidadMovimiento" title="Seleccionar la entidad" tabindex="3" multiple style="width: 100%" size="10">\n\
                       <option value="todos" selected="yes">---TODOS---</option>';
         for (var j in entidades) {
           var entidad1 = entidades[j].trim();
@@ -2694,7 +2788,7 @@ function cargarFormEstadisticas(selector){
     tr += '<tr>\n\
             <td class="fondoVerde"><input type="radio" name="criterio" title="Elegir el criterio a consultar\nSeleccionar si se quiere la estadística de un producto" value="productoMovimiento"></td>\n\
             <th>Producto:</th>\n\
-            <td align="center" colspan="3"><input type="text" id="productoMovimiento" name="producto" title="Ingresar el producto" placeholder="Producto" class="agrandar" size="9" onkeyup="showHint(this.value, \'#productoMovimiento\', \'\')"></td>\n\
+            <td align="center" colspan="3"><input type="text" id="productoGrafica" name="producto" title="Ingresar el producto" placeholder="Producto" class="agrandar" size="9" onkeyup="showHint(this.value, \'#productoGrafica\', \'\')"></td>\n\
           </tr>';
     tr += '<th colspan="5" class="centrado">FECHAS</th>';
     tr += '<tr>\n\
@@ -2841,6 +2935,311 @@ function cargarGrafica(selector){
   mostrar += volver;
   mostrar += '<br><br>';
   $(selector).html(mostrar);
+}
+
+/**
+  \brief Función que se encarga de realizar la gráfica.
+*/
+function realizarGrafica(){
+  var timestamp = Math.round(Date.now() / 1000);
+      
+  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+    window.location.href = "../consultastock/index.php";
+  }
+  else {
+    verificarSesion();
+    var radio = $('input:radio[name=criterio]:checked').val();
+    var entidadGrafica = document.getElementById("entidadGrafica").value;
+    var idProd = $("#hint").val();
+    var nombreProducto = $("#hint").find('option:selected').text( );
+    
+    if ((nombreProducto !== "undefined") && (nombreProducto !== '')) {
+      ///Separo en partes el nombreProducto que contiene [entidad: codigo] --- nombreProducto
+      var tempo = nombreProducto.split("- ");
+      var nombreSolo = tempo[1].trim();
+      //var tempo2 = tempo1.split("{");
+      //var nombreSolo = tempo2[0].trim();
+    }
+    
+    var tipo = $("#tipo").find('option:selected').val( ); 
+    var criterioFecha = $('input:radio[name=criterioFecha]:checked').val();
+    
+    var mensajeFecha = '';
+    var inicio = '';
+    var fin = '';
+    var rangoFecha = '';
+    var hoy = new Date();
+    var tempMonth = parseInt(hoy.getMonth(), 10)+1;
+    var tempDia = hoy.getDate();
+    var tempAño = hoy.getUTCFullYear();
+    if (tempMonth < 10){
+      tempMonth = "0"+tempMonth;
+    }
+    if (tempDia < 10){
+      tempDia = "0"+tempDia;
+    }
+    var meses = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"];
+ 
+    var validado = true;
+    
+    switch (criterioFecha) {
+      case "intervalo": var diaInicio = $("#diaInicio").val();
+                        var diaFin = $("#diaFin").val();
+                        if (diaInicio === ''){
+                          diaInicio = "2017-09-01";
+                        }
+                        else {
+                          diaInicio = $("#diaInicio").val();
+                        }
+                        if (diaFin === ''){
+                          diaFin = hoy.getFullYear()+"-"+hoy.getUTCMonth()+1+"-"+hoy.getDate();
+                        }
+                        else {
+                          diaFin = $("#diaFin").val();
+                        }
+                        var inicioDate = new Date(diaInicio+" 00:00:00");
+                        var finDate = new Date(diaFin+" 23:59:59");
+                        if (finDate < inicioDate) {
+                          alert('ERROR. La fecha final NO puede ser anterior a la fecha inicial.\nPor favor verifique.');
+                          $("#diaInicio").focus();
+                          validado = false;
+                        }
+                        else {
+                          var mesTemp = inicioDate.getUTCMonth()+1;
+                          if (mesTemp < 10) {
+                            mesTemp = "0"+mesTemp;
+                          }
+                          var diaTemp = inicioDate.getDate();
+                          if (diaTemp < 10) {
+                            diaTemp = "0"+diaTemp;
+                          }
+                          var dia1 = diaTemp+"/"+mesTemp.toString()+"/"+inicioDate.getUTCFullYear();
+                          inicio = inicioDate.getUTCFullYear()+"-"+mesTemp.toString()+"-"+diaTemp;
+                          
+                          if (finDate > hoy){
+                            var mesTemp1 = hoy.getUTCMonth()+1;
+                            if (mesTemp1 < 10) {
+                              mesTemp1 = "0"+mesTemp1;
+                            }
+                            var diaTemp1 = hoy.getDate();
+                            if (diaTemp1 < 10) {
+                              diaTemp1 = "0"+diaTemp1;
+                            }
+                            fin = hoy.getUTCFullYear()+"-"+mesTemp1.toString()+"-"+diaTemp1;
+                            dia2 = diaTemp1+"/"+mesTemp1.toString()+"/"+hoy.getUTCFullYear();
+                          }
+                          else {
+                            var mesTemp2 = finDate.getUTCMonth()+1;
+                            if (mesTemp2 < 10) {
+                              mesTemp2 = "0"+mesTemp2;
+                            }
+                            var diaTemp2 = finDate.getDate();
+                            if (diaTemp2 < 10) {
+                              diaTemp2 = "0"+diaTemp2;
+                            }
+                            dia2 = diaTemp2+"/"+mesTemp2.toString()+"/"+finDate.getUTCFullYear();
+                            fin = finDate.getUTCFullYear()+"-"+mesTemp2.toString()+"-"+diaTemp2;
+                          }
+                          
+                          if (inicio == fin) {
+                            mensajeFecha = "del día "+dia1;
+                          }
+                          else {
+                            mensajeFecha = "entre el "+dia1+" y el "+dia2;
+                          }                      
+                        }
+                        rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin+"')";
+                        break;
+      case "mes": ///Recupero valores pasados:
+                  var mesInicio = $("#mesInicio").val();
+                  var añoInicio = parseInt($("#añoInicio").val(), 10);
+                  var mesFin = $("#mesFin").val();
+                  var añoFin = parseInt($("#añoFin").val(), 10);   
+                  if (mesInicio === 'todos'){
+                    mesInicio = 1;
+                  }
+                  else {
+                    mesInicio = parseInt(mesInicio, 10);
+                  }
+                  if (mesFin === 'todos'){
+                    mesFin = 12;
+                  }
+                  else {
+                    mesFin = parseInt(mesFin, 10);
+                  }
+                  ///Instancio dos objetos tipo Date con las fechas inicial y final:
+                  var finDate1 = new Date(añoFin,mesFin,0, 23,59,59);
+                  var inicioDate1 = new Date(añoInicio+"-"+mesInicio+"-01 00:00:00");
+
+                  var mes1 = '';
+                  var mes2 = '';
+                  var dia1 = '';
+                  var dia2 = '';
+
+                  var inicialMonth1 = parseInt(inicioDate1.getUTCMonth(), 10)+1;  
+                  if (inicialMonth1 < 10){
+                    mes1 = '0'+inicialMonth1.toString();
+                  }
+                  else {
+                    mes1 = inicialMonth1.toString();
+                  }
+                  if (inicioDate1.getDate() < 10){
+                    dia1 = '0'+inicioDate1.getDate();
+                  }
+                  else {
+                    dia1 = inicioDate1.getDate();
+                  }
+                  inicio = inicioDate1.getUTCFullYear()+"-"+mes1+"-"+dia1;
+                  
+                  ///Chequeo que la fecha final pasada no sea posterior a hoy:
+                  if (finDate1 > hoy){
+                    fin = tempAño+"-"+tempMonth.toString()+"-"+tempDia;
+                    añoFin = hoy.getUTCFullYear();
+                    mesFin = hoy.getMonth()+1;
+                    //dia2 = hoy.getDate()+"/"+hoy.getMonth()+1+"/"+hoy.getUTCFullYear();
+                  }
+                  else {
+                    var finalMonth1 = parseInt(finDate1.getMonth(), 10)+1;
+                    if (finalMonth1 < 10){
+                      mes2 = '0'+finalMonth1.toString();
+                    }
+                    else {
+                      mes2 = finalMonth1.toString();
+                    }
+                    if (finDate1.getDate() < 10){
+                      dia2 = '0'+finDate1.getDate();
+                    }
+                    else {
+                      dia2 = finDate1.getDate();
+                    }
+                    fin = finDate1.getFullYear()+"-"+mes2+"-"+dia2;
+                  }
+                       
+                  ///Comienzo validación del rango elegido:
+                  if (añoFin < añoInicio) {
+                    alert('ERROR. El año final NO puede ser anterior al año inicial. \nPor favor verifique.');
+                    $("#añoInicio").focus();
+                    validado = false;
+                  }
+                  else {
+                    ///Mismo año:
+                    if (añoInicio === añoFin){
+                      ///Mismo año y mes final anterior al inicial:
+                      if (mesFin < mesInicio) {
+                        alert('ERROR. El mes final NO puede ser anterior que el mes inicial.\nPor favor verifique.');
+                        $("#mesInicio").focus();
+                        validado = false;
+                      }
+                      else {
+                        ///Mismo año y mismo mes, poner solo del mes y año tal:
+                        if (mesFin === mesInicio) {
+                          mensajeFecha = "de "+meses[mesInicio]+" de "+añoInicio;
+                        }
+                        ///Mismo año, pero meses distintos, entonces poner entre tal mes y tal mes del año tal:
+                        else {
+                          mensajeFecha = "entre "+meses[mesInicio]+" y "+meses[mesFin]+" de "+añoInicio;
+                        }
+                      }
+                    }
+                    ///Año final es necesariamente mayor al inicial por lo cual NO IMPORTAN los meses. Pongo rango completo:
+                    else {
+                      mensajeFecha = "entre "+meses[mesInicio]+"/"+añoInicio+" y "+meses[mesFin]+"/"+añoFin;
+                    }
+                    ///Sólo agrego un IF para el caso en que sea de enero a diciembre cosa que aparezca solo del año tal:
+                    if ((añoInicio === añoFin)&&(mesInicio === 1)&&(mesFin === 12)){
+                      mensajeFecha = "de "+añoInicio;
+                    }
+                    
+                    rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin+"')";
+                  }    
+                  break;
+      case "todos": var fin1 = tempAño+"-"+tempMonth+"-"+tempDia;
+                    inicio = '2017-09-01';
+                    rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin1+"')";
+                    mensajeFecha = "entre "+meses[09]+"/"+"2017"+" y "+meses[hoy.getUTCMonth()+1]+"/"+hoy.getFullYear();
+                    break;
+      default: break;
+    }
+    ////*************************************************************************************************************************************************////////
+    var tipoConsulta = '';
+
+    var query = "select productos.nombre_plastico, movimientos.cantidad, movimientos.tipo, fecha from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
+    //alert("rango: "+rangoFecha+"\nquery:"+query);
+    switch (radio) {
+      case 'entidadMovimiento': if (entidadGrafica !== 'todos') {
+                                  query += "and entidad='"+entidadGrafica+"' ";
+                                  tipoConsulta = 'de '+entidadGrafica;
+                                } 
+                                else {
+                                  tipoConsulta = 'de todas las entidades';
+                                }
+                                break;                       
+      case 'productoMovimiento':  if ((idProd === 'NADA') || (nombreProducto === '')){
+                                    alert('Debe seleccionar un producto. Por favor verifique.');
+                                    document.getElementById("productoMovimiento").focus();
+                                    validado = false;
+                                    return false;
+                                  }
+                                  else {
+                                    query += "and idProd="+idProd+' ';
+                                  }
+                                  tipoConsulta = 'del producto '+nombreSolo;
+                                  break;
+      default: break;
+    }
+    
+    if (validado) {
+      if (criterioFecha !== 'todos'){
+        query += "and "+rangoFecha;
+      }
+      var mensajeTipo = null;
+      if (tipo !== 'Todos') 
+        {
+        query += " and tipo='"+tipo+"'";
+        var tipo1 = '';
+        switch (tipo) {
+          case "Retiro": tipo1 = "Retiros";
+                                  break;
+          case "Ingreso": tipo1 = "Ingresos";
+                                  break;
+          case "Renovación": tipo1 = "Renovaciones";
+                                  break;
+          case "Destrucción": tipo1 = "Destrucciones";
+                                  break;
+          default: break;
+        }
+        mensajeTipo = tipo1+" ";
+      }
+      else {
+        mensajeTipo = "Movimientos ";
+      };
+      
+      query += " order by fecha asc, hora desc, entidad asc, nombre_plastico asc,  idprod";
+      var mensajeConsulta = "";
+      if (mensajeTipo !== null) {
+        mensajeConsulta += mensajeTipo;
+      }
+      mensajeConsulta += tipoConsulta+" "+mensajeFecha;
+      
+      var url = "data/selectQuery.php";
+      //alert(query);
+      $.getJSON(url, {query: ""+query+""}).done(function(request){
+        var totalDatos = request.rows;     
+        if (totalDatos >= 1) {
+          $("#consulta").val(query);
+          $("#mensaje").val(mensajeConsulta);
+          $("#fechaInicio").val(inicio);
+          $("#fechaFin").val(fin);
+          $("#hacerGrafica").val("yes");
+          $('#graficar').attr('action', 'estadisticas.php?g=1');//alert("inicial: "+$("#fechaInicio").val()+"\nfin: "+$("#fechaFin").val());
+          $("#graficar").submit();
+        }
+        else {
+          alert("No existen registros que coincidan con esos parámetros.");
+        }
+      }); 
+    }  
+  }
 }
 
 /**************************************************************************************************************************
@@ -3028,38 +3427,106 @@ $(document).on("change focusin", "#hint", function (){
   $(this).parent().prev().prev().children().prop("checked", true);
   });
   
-///Disparar función al hacer CLICK con el mouse sobre alguna de las OPTION del select HINT ó al darle ENTER sobre los mismos. 
-///Básicamente, la idea es que al presionar ENTER o al hacer CLICK, se ejecute la opción por defecto cosa de ahorrar tiempo.  
+///Disparar función al hacer ENTER sobre alguna de las OPTION del select HINT.
+///Básicamente, la idea es que al presionar ENTER, se ejecute la opción por defecto cosa de ahorrar tiempo.  
 ///En el caso de ser llamado desde MOVIMIENTOS, pasa al foco al campo CANTIDAD. Mientras que en el caso de BUSQUEDAS hace el SUBMIT.
 ///Además, si la tecla presionada es el TAB, se pasa el foco al siguiente elemento.
-$(document).on("click keydown", "#hint", function (e){
+$(document).on("keydown", "#hint", function (e){
   var keyCode = e.keyCode || e.which;
   var temp = "#"+$(this).prev().attr("id");
-  var sel = $(this).find('option:selected').val();
- 
+  
   switch (temp) {
-    case "#producto": if ((sel !== 'NADA') && ((keyCode === 1) || (keyCode === 13) || (keyCode === 9))) {
-                        e.preventDefault();
-                        //$("#comentarios").focus();
-                        $("#cantidad").focus();
+    case "#producto": var sel = $(this).find('option:selected').val();
+                      var productos = new Array();
+                      $('option:selected',this).each(function() {
+                        productos.push($(this).val());
+                      });
+                      var totalProductos = productos.length;
+                      if (totalProductos > 1){
+                        alert("Los movimientos hay que agregarlos por cada producto. Por favor verifique.");
+                      }
+                      else {
+                        if ((sel !== 'NADA') && ((keyCode === 1) || (keyCode === 13) || (keyCode === 9))) {
+                          e.preventDefault();
+                          //$("#comentarios").focus();
+                          $("#cantidad").focus();
+                        }
                       }
                       break;
-    case "#productoStock":  if ((sel !== 'NADA') && ((e.which === 1) || (e.which === 13))) {
-                              realizarBusqueda();
-                            };
+    case "#productoStock":  var productosStock = new Array();
+                            $('option:selected',this).each(function() {
+                              productosStock.push($(this).val());
+                            });
+                            var totalProductosStock = productosStock.length;
+                            var seguir = true;  
+                            for (var i in productosStock) {
+                              if (productosStock[i] === 'NADA'){
+                                seguir = false;
+                              }
+                            }
+                            if (e.which === 13){
+                              if (seguir){
+                                if (totalProductosStock > limiteSeleccion){
+                                  alert("Se superó el máximo de "+limiteSeleccion+" opciones elegidas. Por favor verifique.");
+                                }
+                                else {
+                                  realizarBusqueda();
+                                }
+                              }
+                              else {
+                                alert('--Seleccionar-- NO debe de estar marcado. Por favor verifique.');
+                              }
+                            }
                             if (keyCode == 9) {
                               e.preventDefault();    
                               $("#entidadMovimiento").focus();
                             }
                             break;
-    case "#productoMovimiento": if ((sel !== 'NADA') && ((e.which === 1) || (e.which === 13))) {
-                                  realizarBusqueda();
-                                } 
+    case "#productoMovimiento": var productosMovimiento = new Array();
+                                $('option:selected',this).each(function() {
+                                  productosMovimiento.push($(this).val());
+                                });
+                                var totalProductosMovimiento = productosMovimiento.length;
+                                var seguir = true;
+                                //alert(entidadesStock);  
+                                for (var i in productosMovimiento) {
+                                  if (productosMovimiento[i] === 'NADA'){
+                                    seguir = false;
+                                  }
+                                }
+                                if (e.which === 13){
+                                  if (seguir){
+                                    if (totalProductosMovimiento > limiteSeleccion){
+                                      alert("Se superó el máximo de "+limiteSeleccion+" opciones elegidas. Por favor verifique.");
+                                    }
+                                    else {
+                                      realizarBusqueda();
+                                    }
+                                  }
+                                  else {
+                                    alert('--Seleccionar-- NO debe de estar marcado. Por favor verifique.');
+                                  }
+                                }   
                                 if (keyCode == 9) {
                                   e.preventDefault();    
                                   $("#inicio").focus();
                                 }
                                 break;
+    case "#productoGrafica":  var sel = $("#hint").find('option:selected').val(); 
+                              if (((keyCode === 1) || (keyCode === 13))){
+                                if (sel !== 'NADA') {
+                                  realizarGrafica();
+                                }
+                                else {
+                                  alert('Se debe elegir un producto del cual consultar las estadísticas. Por favor verifique.');
+                                  $("#hint").focus();
+                                }
+                              }
+                              if (keyCode == 9) {
+                                e.preventDefault();    
+                                $("#diaInicio").focus();
+                              }
+                              break;                            
     default: break;
   }  
 }); 
@@ -3809,7 +4276,7 @@ $(document).on("keypress", "#pw2", function(e) {
 
 ///Disparar función al hacer enter estando en el elemento Producto.
 ///Básicamente, la idea es pasar el foco al select hint cosa de ahorrar tiempo en el ingreso.
-$(document).on("keypress", "#productoStock, #productoMovimiento", function(e) { 
+$(document).on("keypress", "#productoStock, #productoMovimiento, #productoGrafica", function(e) { 
   if(e.which === 13) {
     //alert('enter');
     $("#hint").focus();
@@ -3887,15 +4354,58 @@ $(document).on("click", "#realizarBusqueda", function () {
   realizarBusqueda();
 });
 
+$(document).on("click", "#hint", function (){
+  var prod = $(this).val();
+  var url = "data/selectQuery.php";
+  var query = "select DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo from movimientos inner join productos on productos.idprod=movimientos.producto where productos.idprod="+prod+" order by fecha desc, hora desc limit 5";
+  $.getJSON(url, {query: ""+query+""}).done(function(request){
+    var datos = request.resultado;
+    var totalDatos = request.rows;
+    if (totalDatos > 1){
+      var mostrar = '';
+      for (var i in datos){
+        mostrar += datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["tipo"]+": "+datos[i]["cantidad"]+"\n";
+      }
+      alert(mostrar);
+      $('[data-toggle="popover"]').popover();
+    }
+    else {
+      ///ver si avisar que no hay movimientos.
+    }
+  });        
+});
+
 ///Disparar función darle ENTER sobre los select ENTIDADSTOCK o ENTIDADMOVIMIENTO. 
 ///Básicamente, la idea es que al presionar ENTER se haga directamente el submit cosa de ahorrar tiempo.  
 $(document).on("keypress", "#entidadStock, #entidadMovimiento", function (e){ 
   //close dropdown
   //$("#hint").attr('size',0);
   var temp = "#"+$(this).attr("id");
-  var sel = $(temp).find('option:selected').val();
-  if ((sel !== 'todos') && ((e.which === 1) || (e.which === 13))) {
-    realizarBusqueda();
+  //var sel = $(temp).find('option:selected').val();
+  var entidades = new Array();
+  $('option:selected',this).each(function() {
+    entidades.push($(this).val());
+  });
+  var totalEntidades = entidades.length;
+  var todos = false;
+  for (var i in entidades) {
+    if (entidades[i] === 'todos'){
+      todos = true;
+    }
+  }
+
+  if ((e.which === 1) || (e.which === 13)) {
+    if (todos && (totalEntidades > 1)){
+      alert('No se puede consultar "TODOS" junto con otras entidades. Por favor verifique.');
+    }
+    else {
+      if (totalEntidades > limiteSeleccion){
+        alert("Se superó el máximo de "+limiteSeleccion+" opciones elegidas. Por favor verifique.");
+      }
+      else {
+        realizarBusqueda();
+      }
+    }
   }  
 }); 
 
@@ -3911,17 +4421,18 @@ $(document).on("click", ".exportar", function (){
   /// 4- movimientos por entidad.
   /// 5- movimientos por producto.
   var id = $(this).attr("id");
-  
+  var indice = $(this).attr("indice");
+  $("input[name='indice']" ).val(indice);
   var x = $("#x").val();
-  var query = $("#query").val();
-  var consultaCSV = $("#consultaCSV").val();
+  var query = $("#query_"+indice+"").val();
+  var consultaCSV = $("#consultaCSV_"+indice+"").val();
   var largos = $("#largos").val();
   var campos = $("#campos").val();
   var mostrar = $("#mostrar").val();
-  var tipoConsulta = $("#tipoConsulta").val();
-  
+  var tipoConsulta = $("#tipoConsulta_"+indice+"").val();
+  //alert(query);
   switch (id) {
-    case "1": var entidad = $("#entidad").val();
+    case "1": var entidad = $("#entidad_"+indice+"").val();
               break;
     case "2": var idProd = $("#idProd").val();
               var nombreProducto = $("#nombreProducto").val();
@@ -4010,8 +4521,7 @@ $(document).on("click", ".exportar", function (){
     default: break;
   }
   //$("#param").val(param);
-
-  $(".exportarForm").submit();
+  $("#resultadoBusqueda_"+indice).submit();
 });//*** fin del click .exportar ***
 
 /**************************************************************************************************************************
@@ -4025,309 +4535,9 @@ $(document).on("click", ".exportar", function (){
 */
 
 ///Disparar función al hacer click en el botón CONSULTAR del form graficar
-///Arma la consulta acorde a los parámetros pasados, setea variables de sesión con la misma,  la fecha de inicio, y con el mensaje de la consulta
-///También ambia el atributo ACTION del form (agrega un g=1) cosa de indicar a estadisticas.php que hay que mostrar la gráfica.
-///Finalmente, hace el submit del form.
+///Básicamente, se llama a la función realizarGrafica()
 $(document).on("click", "#realizarGrafica", function (){
- var timestamp = Math.round(Date.now() / 1000);
-      
-  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-    window.location.href = "../consultastock/index.php";
-  }
-  else {
-    verificarSesion();
-    var radio = $('input:radio[name=criterio]:checked').val();
-    var entidadGrafica = document.getElementById("entidadGrafica").value;
-    var idProd = $("#hint").val();
-    var nombreProducto = $("#hint").find('option:selected').text( );
-    
-    if ((nombreProducto !== "undefined") && (nombreProducto !== '')) {
-      ///Separo en partes el nombreProducto que contiene [entidad: codigo] --- nombreProducto
-      var tempo = nombreProducto.split("- ");
-      var nombreSolo = tempo[1].trim();
-      //var tempo2 = tempo1.split("{");
-      //var nombreSolo = tempo2[0].trim();
-    }
-    
-    var tipo = $("#tipo").find('option:selected').val( ); 
-    var criterioFecha = $('input:radio[name=criterioFecha]:checked').val();
-    
-    var mensajeFecha = '';
-    var inicio = '';
-    var fin = '';
-    var rangoFecha = '';
-    var hoy = new Date();
-    var tempMonth = parseInt(hoy.getMonth(), 10)+1;
-    var tempDia = hoy.getDate();
-    var tempAño = hoy.getUTCFullYear();
-    if (tempMonth < 10){
-      tempMonth = "0"+tempMonth;
-    }
-    if (tempDia < 10){
-      tempDia = "0"+tempDia;
-    }
-    var meses = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"];
- 
-    var validado = true;
-    
-    switch (criterioFecha) {
-      case "intervalo": var diaInicio = $("#diaInicio").val();
-                        var diaFin = $("#diaFin").val();
-                        if (diaInicio === ''){
-                          diaInicio = "2017-09-01";
-                        }
-                        else {
-                          diaInicio = $("#diaInicio").val();
-                        }
-                        if (diaFin === ''){
-                          diaFin = hoy.getFullYear()+"-"+hoy.getUTCMonth()+1+"-"+hoy.getDate();
-                        }
-                        else {
-                          diaFin = $("#diaFin").val();
-                        }
-                        var inicioDate = new Date(diaInicio+" 00:00:00");
-                        var finDate = new Date(diaFin+" 23:59:59");
-                        if (finDate < inicioDate) {
-                          alert('ERROR. La fecha final NO puede ser anterior a la fecha inicial.\nPor favor verifique.');
-                          $("#diaInicio").focus();
-                          validado = false;
-                        }
-                        else {
-                          var mesTemp = inicioDate.getUTCMonth()+1;
-                          if (mesTemp < 10) {
-                            mesTemp = "0"+mesTemp;
-                          }
-                          var diaTemp = inicioDate.getDate();
-                          if (diaTemp < 10) {
-                            diaTemp = "0"+diaTemp;
-                          }
-                          var dia1 = diaTemp+"/"+mesTemp.toString()+"/"+inicioDate.getUTCFullYear();
-                          inicio = inicioDate.getUTCFullYear()+"-"+mesTemp.toString()+"-"+diaTemp;
-                          
-                          if (finDate > hoy){
-                            var mesTemp1 = hoy.getUTCMonth()+1;
-                            if (mesTemp1 < 10) {
-                              mesTemp1 = "0"+mesTemp1;
-                            }
-                            var diaTemp1 = hoy.getDate();
-                            if (diaTemp1 < 10) {
-                              diaTemp1 = "0"+diaTemp1;
-                            }
-                            fin = hoy.getUTCFullYear()+"-"+mesTemp1.toString()+"-"+diaTemp1;
-                            dia2 = diaTemp1+"/"+mesTemp1.toString()+"/"+hoy.getUTCFullYear();
-                          }
-                          else {
-                            var mesTemp2 = finDate.getUTCMonth()+1;
-                            if (mesTemp2 < 10) {
-                              mesTemp2 = "0"+mesTemp2;
-                            }
-                            var diaTemp2 = finDate.getDate();
-                            if (diaTemp2 < 10) {
-                              diaTemp2 = "0"+diaTemp2;
-                            }
-                            dia2 = diaTemp2+"/"+mesTemp2.toString()+"/"+finDate.getUTCFullYear();
-                            fin = finDate.getUTCFullYear()+"-"+mesTemp2.toString()+"-"+diaTemp2;
-                          }
-                          
-                          if (inicio == fin) {
-                            mensajeFecha = "del día "+dia1;
-                          }
-                          else {
-                            mensajeFecha = "entre el "+dia1+" y el "+dia2;
-                          }                      
-                        }
-                        rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin+"')";
-                        break;
-      case "mes": ///Recupero valores pasados:
-                  var mesInicio = $("#mesInicio").val();
-                  var añoInicio = parseInt($("#añoInicio").val(), 10);
-                  var mesFin = $("#mesFin").val();
-                  var añoFin = parseInt($("#añoFin").val(), 10);   
-                  if (mesInicio === 'todos'){
-                    mesInicio = 1;
-                  }
-                  else {
-                    mesInicio = parseInt(mesInicio, 10);
-                  }
-                  if (mesFin === 'todos'){
-                    mesFin = 12;
-                  }
-                  else {
-                    mesFin = parseInt(mesFin, 10);
-                  }
-                  ///Instancio dos objetos tipo Date con las fechas inicial y final:
-                  var finDate1 = new Date(añoFin,mesFin,0, 23,59,59);
-                  var inicioDate1 = new Date(añoInicio+"-"+mesInicio+"-01 00:00:00");
-
-                  var mes1 = '';
-                  var mes2 = '';
-                  var dia1 = '';
-                  var dia2 = '';
-
-                  var inicialMonth1 = parseInt(inicioDate1.getUTCMonth(), 10)+1;  
-                  if (inicialMonth1 < 10){
-                    mes1 = '0'+inicialMonth1.toString();
-                  }
-                  else {
-                    mes1 = inicialMonth1.toString();
-                  }
-                  if (inicioDate1.getDate() < 10){
-                    dia1 = '0'+inicioDate1.getDate();
-                  }
-                  else {
-                    dia1 = inicioDate1.getDate();
-                  }
-                  inicio = inicioDate1.getUTCFullYear()+"-"+mes1+"-"+dia1;
-                  
-                  ///Chequeo que la fecha final pasada no sea posterior a hoy:
-                  if (finDate1 > hoy){
-                    fin = tempAño+"-"+tempMonth.toString()+"-"+tempDia;
-                    añoFin = hoy.getUTCFullYear();
-                    mesFin = hoy.getMonth()+1;
-                    //dia2 = hoy.getDate()+"/"+hoy.getMonth()+1+"/"+hoy.getUTCFullYear();
-                  }
-                  else {
-                    var finalMonth1 = parseInt(finDate1.getMonth(), 10)+1;
-                    if (finalMonth1 < 10){
-                      mes2 = '0'+finalMonth1.toString();
-                    }
-                    else {
-                      mes2 = finalMonth1.toString();
-                    }
-                    if (finDate1.getDate() < 10){
-                      dia2 = '0'+finDate1.getDate();
-                    }
-                    else {
-                      dia2 = finDate1.getDate();
-                    }
-                    fin = finDate1.getFullYear()+"-"+mes2+"-"+dia2;
-                  }
-                       
-                  ///Comienzo validación del rango elegido:
-                  if (añoFin < añoInicio) {
-                    alert('ERROR. El año final NO puede ser anterior al año inicial. \nPor favor verifique.');
-                    $("#añoInicio").focus();
-                    validado = false;
-                  }
-                  else {
-                    ///Mismo año:
-                    if (añoInicio === añoFin){
-                      ///Mismo año y mes final anterior al inicial:
-                      if (mesFin < mesInicio) {
-                        alert('ERROR. El mes final NO puede ser anterior que el mes inicial.\nPor favor verifique.');
-                        $("#mesInicio").focus();
-                        validado = false;
-                      }
-                      else {
-                        ///Mismo año y mismo mes, poner solo del mes y año tal:
-                        if (mesFin === mesInicio) {
-                          mensajeFecha = "de "+meses[mesInicio]+" de "+añoInicio;
-                        }
-                        ///Mismo año, pero meses distintos, entonces poner entre tal mes y tal mes del año tal:
-                        else {
-                          mensajeFecha = "entre "+meses[mesInicio]+" y "+meses[mesFin]+" de "+añoInicio;
-                        }
-                      }
-                    }
-                    ///Año final es necesariamente mayor al inicial por lo cual NO IMPORTAN los meses. Pongo rango completo:
-                    else {
-                      mensajeFecha = "entre "+meses[mesInicio]+"/"+añoInicio+" y "+meses[mesFin]+"/"+añoFin;
-                    }
-                    ///Sólo agrego un IF para el caso en que sea de enero a diciembre cosa que aparezca solo del año tal:
-                    if ((añoInicio === añoFin)&&(mesInicio === 1)&&(mesFin === 12)){
-                      mensajeFecha = "de "+añoInicio;
-                    }
-                    
-                    rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin+"')";
-                  }    
-                  break;
-      case "todos": var fin1 = tempAño+"-"+tempMonth+"-"+tempDia;
-                    inicio = '2017-09-01';
-                    rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin1+"')";
-                    mensajeFecha = "entre "+meses[09]+"/"+"2017"+" y "+meses[hoy.getUTCMonth()+1]+"/"+hoy.getFullYear();
-                    break;
-      default: break;
-    }
-    ////*************************************************************************************************************************************************////////
-    var tipoConsulta = '';
-
-    var query = "select productos.nombre_plastico, movimientos.cantidad, movimientos.tipo, fecha from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
-    //alert("rango: "+rangoFecha+"\nquery:"+query);
-    switch (radio) {
-      case 'entidadMovimiento': if (entidadGrafica !== 'todos') {
-                                  query += "and entidad='"+entidadGrafica+"' ";
-                                  tipoConsulta = 'de '+entidadGrafica;
-                                } 
-                                else {
-                                  tipoConsulta = 'de todas las entidades';
-                                }
-                                break;                       
-      case 'productoMovimiento':  if ((idProd === 'NADA') || (nombreProducto === '')){
-                                    alert('Debe seleccionar un producto. Por favor verifique.');
-                                    document.getElementById("productoMovimiento").focus();
-                                    validado = false;
-                                    return false;
-                                  }
-                                  else {
-                                    query += "and idProd="+idProd+' ';
-                                  }
-                                  tipoConsulta = 'del producto '+nombreSolo;
-                                  break;
-      default: break;
-    }
-    
-    if (validado) {
-      if (criterioFecha !== 'todos'){
-        query += "and "+rangoFecha;
-      }
-      var mensajeTipo = null;
-      if (tipo !== 'Todos') 
-        {
-        query += " and tipo='"+tipo+"'";
-        var tipo1 = '';
-        switch (tipo) {
-          case "Retiro": tipo1 = "Retiros";
-                                  break;
-          case "Ingreso": tipo1 = "Ingresos";
-                                  break;
-          case "Renovación": tipo1 = "Renovaciones";
-                                  break;
-          case "Destrucción": tipo1 = "Destrucciones";
-                                  break;
-          default: break;
-        }
-        mensajeTipo = tipo1+" ";
-      }
-      else {
-        mensajeTipo = "Movimientos ";
-      };
-      
-      query += " order by fecha asc, hora desc, entidad asc, nombre_plastico asc,  idprod";
-      var mensajeConsulta = "";
-      if (mensajeTipo !== null) {
-        mensajeConsulta += mensajeTipo;
-      }
-      mensajeConsulta += tipoConsulta+" "+mensajeFecha;
-      
-      var url = "data/selectQuery.php";
-      //alert(query);
-      $.getJSON(url, {query: ""+query+""}).done(function(request){
-        var totalDatos = request.rows;     
-        if (totalDatos >= 1) {
-          $("#consulta").val(query);
-          $("#mensaje").val(mensajeConsulta);
-          $("#fechaInicio").val(inicio);
-          $("#fechaFin").val(fin);
-          $("#hacerGrafica").val("yes");
-          $('#graficar').attr('action', 'estadisticas.php?g=1');//alert("inicial: "+$("#fechaInicio").val()+"\nfin: "+$("#fechaFin").val());
-          $("#graficar").submit();
-        }
-        else {
-          alert("No existen registros que coincidan con esos parámetros.");
-        }
-      }); 
-    }  
-  }
+  realizarGrafica();
 });
 
 /**************************************************************************************************************************

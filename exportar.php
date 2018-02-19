@@ -105,11 +105,16 @@ $hora = date('H:i');
 //}
 // *** FIN RECUPERACIÓN DE PARÁMETROS *******************************
 
-$query = $_POST["query"];
-
 $id = $_POST["idTipo"];
+$indice = $_POST["indice"];
 
-$consultaCSV = $_POST["consultaCSV"];
+$query = $_POST["query_$indice"];
+$consultaCSV = $_POST["consultaCSV_$indice"];
+
+$tipoConsulta = $_POST["tipoConsulta_$indice"];
+
+$mostrar1 = utf8_decode($_POST["mostrar"]);
+$mostrar = preg_split("/-/", $mostrar1);
 
 $campos1 = utf8_decode($_POST["campos"]);
 $campos = preg_split("/-/", $campos1);
@@ -117,42 +122,45 @@ $campos = preg_split("/-/", $campos1);
 $largos = $_POST["largos"];
 $temp = explode('-', $largos);
 
-$idProd = $_POST["idProd"];
-
-$nombreProducto1 = $_POST["nombreProducto"];
-$sep = explode("[", $nombreProducto1);
-$entidad0 = trim($sep[1]);
-$nom2 = explode(":", $entidad0);
-$entidad = $nom2[0];
-$tempo = explode("]", $nom2[1]);
-$codigo = trim($tempo[0]);
-$entidad1 = explode("-", $tempo[1]);
-$nombreProducto = trim($entidad1[3]);
-
-if (isset($_POST["entidad"])){
-  $entidad = $_POST["entidad"];
-}
-;
-if ($entidad === 'todos') {
-  $entidad = 'todas las entidades.';
-}
-
 $x = $_POST["x"];
-
-$inicio = $_POST["inicio"];
-$fin = $_POST["fin"];
-
-$año = $_POST["año"];
-$mes = $_POST["mes"];
 
 $tipo = $_POST["tipo"];
 
 $idUser = $_POST["usuario"];
 
-$tipoConsulta = $_POST["tipoConsulta"];
+if (isset($_POST["idProd"])){
+  $idProd = $_POST["idProd"];
+}
+if (isset($_POST["nombreProducto"])){
+  $nombreProducto1 = $_POST["nombreProducto"];
+  $sep = explode("[", $nombreProducto1);
+  $entidad0 = trim($sep[1]);
+  $nom2 = explode(":", $entidad0);
+  $entidad = $nom2[0];
+  $tempo = explode("]", $nom2[1]);
+  $codigo = trim($tempo[0]);
+  $entidad1 = explode("-", $tempo[1]);
+  $nombreProducto = trim($entidad1[3]);
+}
+if (isset($_POST["entidad_$indice"])){
+  $entidad = $_POST["entidad_$indice"];
 
-$mostrar1 = utf8_decode($_POST["mostrar"]);
-$mostrar = preg_split("/-/", $mostrar1);
+  if ($entidad === 'todos') {
+    $entidad = 'todas las entidades.';
+  }
+}
+if (isset($_POST["inicio"])){
+$inicio = $_POST["inicio"];
+}
+if (isset($_POST["fin"])){
+$fin = $_POST["fin"];
+}
+if (isset($_POST["año"])){
+$año = $_POST["año"];
+}
+if (isset($_POST["mes"])){
+$mes = $_POST["mes"];
+}
 
 //echo "id: $id<br>query: $query<br>consultaCSV: $consultaCSV<br>campos: $campos1<br>largos: $largos<br>mostrar: $mostrar1<br>tipoConsulta: $tipoConsulta<br>idProd: $idProd<br>nombreProducto: $nombreProducto<br>entidad: $entidad"
 //        . "<br>x: $x<br>inicio: $inicio<br>fin: $fin<br>mes: $mes<br>año: $año<br>tipo: $tipo<br>usuario: $idUser<br>";
