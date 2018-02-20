@@ -142,6 +142,7 @@ h2 {
   font-weight: bold;
   text-decoration: underline;
   margin: 20px;
+  margin-top: 0px;
 }
 h3 h4{
   color:#fff;
@@ -160,10 +161,15 @@ input[type=checkbox] {
   text-align: center;
   background-color: #ffff99;/* agregardo durante el desarrollo para diferenciar!!!*/
   background-color: $colorFondo;
-  /*padding: 15px;*/
   margin: auto;
   position: relative;
-  
+  padding: 0px;
+  padding-top: 20px;
+  height: 100%;
+  min-height: 600px !important;
+}
+#main {
+  min-height: 600px !important;
 }
 #fila {
   background-color: $colorFondo;
@@ -199,6 +205,45 @@ a.detailObject:focus, a.detailObject:hover {
   position: relative;
   padding: 0px;
 }
+
+/* TABS */
+#pills-tab {
+  margin-bottom: 0px !important;
+  margin-top: -20px !important;
+}
+#pills-tab li {
+  background-color: #c5c5c5;
+  padding-bottom: 0;
+  margin-left: 1.3px;
+  margin-right: 1.3px;
+  margin-bottom: 0;
+}
+.tab-content {
+  background-color: #523a43;
+  background-color: #40383b;
+  height: 100%;
+  min-height: 580px !important;
+}
+hr {
+  background-color: white;
+  height: 5px;
+}
+.tab-pane {
+  height: 100%;
+}
+/* FIN TABS*/
+
+/* POPOVERS */
+.historial {
+  
+}
+.popover-header{
+  background-color: #c12929;
+}
+.popover-body{
+  background-color: #cccccc;
+}
+/* FIN POPOVERS */
 
 /* TABLAS */
 .tituloTabla {
@@ -266,7 +311,9 @@ a.detailObject:focus, a.detailObject:hover {
   display: table-caption;
   text-align: center;
   caption-side: bottom;
-}   
+  color: #ccce8b;
+  font-size: 1.1em;
+} 
 .tabla2 th {
   background-color: #0066cc;
   color: #ffff00;
@@ -415,11 +462,11 @@ a.detailObject:focus, a.detailObject:hover {
 }
 
 .tituloModal {
-  background-color: #0c2c93;
+  background-color: #023184;
 }
 .tblModal {
   color: #000;
-}      
+}
 /************************* END HOME PAGE *************************************/
 
 /* Popup container */
@@ -550,7 +597,7 @@ a.detailObject:focus, a.detailObject:hover {
   padding-right: 10px;
   }
   #logo-img {
-    background: url('../images/logo-emsa150.png') no-repeat;
+    background: url('../images/logo-emsa75.png') no-repeat;
     width: 225px;
     height: 100px;
     margin: 10px 10px 10px 0;

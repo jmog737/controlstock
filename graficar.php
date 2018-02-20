@@ -204,9 +204,9 @@ class PDF extends PDF_MC_Table
 
     ///******************************************************** INICIO Textos con los promedios: ********************************************
     $separacion = 0.07;
-    $posPrimero = 0.50;
+    $posPrimero = 0.5;
 
-    $txt = new Text("PROMEDIOS"); 
+    $txt = new Text("PROMEDIOS:"); 
     $txt->SetFont(FF_FONT1,FS_BOLD); 
     $txt->Align('right');
     $txt->SetColor('red');
@@ -218,7 +218,7 @@ class PDF extends PDF_MC_Table
     $txt1 = new Text("Retiros: ".$avg1); 
     $txt1->SetFont(FF_FONT1,FS_BOLD); 
     $txt1->SetColor('#023184:0.98');
-    $txt1->SetPos(0.98,$posPrimero+$separacion,'right','center');
+    $txt1->SetPos(0.98,$posPrimero+0.8*$separacion,'right','center');
     $txt1->SetBox('navajowhite1','white'); 
     $graph->AddText($txt1); 
 
@@ -226,7 +226,7 @@ class PDF extends PDF_MC_Table
     $txt2 = new Text("Ingresos: ".$avg2); 
     $txt2->SetFont(FF_FONT1,FS_BOLD); 
     $txt2->SetColor('#023184:0.98');
-    $txt2->SetPos(0.98,$posPrimero+2*$separacion,'right','center');
+    $txt2->SetPos(0.98,$posPrimero+1.8*$separacion,'right','center');
     $txt2->SetBox('navajowhite1','white'); 
     $graph->AddText($txt2); 
 
@@ -234,7 +234,7 @@ class PDF extends PDF_MC_Table
     $txt3 = new Text("Renos: ".$avg3); 
     $txt3->SetFont(FF_FONT1,FS_BOLD); 
     $txt3->SetColor('#023184:0.98');
-    $txt3->SetPos(0.98,$posPrimero+3*$separacion,'right','center');
+    $txt3->SetPos(0.98,$posPrimero+2.8*$separacion,'right','center');
     $txt3->SetBox('navajowhite1','white'); 
     $graph->AddText($txt3); 
 
@@ -242,7 +242,7 @@ class PDF extends PDF_MC_Table
     $txt4 = new Text("Destrucciones: ".$avg4); 
     $txt4->SetFont(FF_FONT1,FS_BOLD); 
     $txt4->SetColor('#023184:0.98');
-    $txt4->SetPos(0.98,$posPrimero+4*$separacion,'right','center');
+    $txt4->SetPos(0.98,$posPrimero+3.8*$separacion,'right','center');
     $txt4->SetBox('navajowhite1','white'); 
     $graph->AddText($txt4); 
 
@@ -250,7 +250,7 @@ class PDF extends PDF_MC_Table
     $txt5 = new Text("Consumos: ".$avg5."\n(Total ".$consumos.")"); 
     $txt5->SetFont(FF_FONT1,FS_BOLD); 
     $txt5->SetColor('#023184:0.98');
-    $txt5->SetPos(0.98,$posPrimero+5.25*$separacion,'right','center');
+    $txt5->SetPos(0.98,$posPrimero+5.05*$separacion,'right','center');
     $txt5->SetBox('navajowhite1','white'); 
     $graph->AddText($txt5);
     ///************************************************************ FIN Textos con los promedios: *******************************************
@@ -354,7 +354,7 @@ class PDF extends PDF_MC_Table
     $separacion = 0.07;
     $posPrimero = 0.45;
 
-    $txt = new Text("PROMEDIOS"); 
+    $txt = new Text("PROMEDIOS:"); 
     $txt->SetFont(FF_FONT1,FS_BOLD); 
     $txt->Align('right');
     $txt->SetColor('red');

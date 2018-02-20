@@ -72,9 +72,11 @@ function showHint(str, id, seleccionado) {
     $("#snapshot").remove();
     $("#stock").remove();
     $("#ultimoMov").remove();
+    $("#historial").remove();
     document.getElementById("producto").innerHTML = "";
     return;
-  } else {
+  } 
+  else {
     var url = "data/selectQuery.php";
     var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2, comentarios, ultimoMovimiento from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') and estado='activo' order by productos.entidad asc, productos.nombre_plastico asc";
     //alert(query);
@@ -83,6 +85,7 @@ function showHint(str, id, seleccionado) {
       var totalSugerencias = request.rows;
       $("[name='hint']").remove();
       $("#ultimoMov").remove();
+      $("#historial").remove();
       
       var mostrar = '';
       
@@ -125,8 +128,8 @@ function showHint(str, id, seleccionado) {
       
       /// Agregado a pedido de Diego para que se abra el select automáticamente:
       var length = $('#hint> option').length;
-      if (length > 16) {
-        length = 16;
+      if (length > 11) {
+        length = 11;
       }
       else {
         length++;
@@ -161,6 +164,45 @@ function showHint(str, id, seleccionado) {
 }
 
 /**
+ * \brief Función que muestra en pantalla el botón para disparar el popover con el historial
+ *        Básicamente, hace la consulta del historial para el producto y arma el botón con el popover.
+ * @param {String} prod String con el id del producto a consultar.
+*/
+function mostrarHistorial(prod){
+  if ($("#historial").length > 0){
+    $("#historial").remove();
+  }
+  var limite = 3;
+  var url = "data/selectQuery.php";
+  var query = "select productos.nombre_plastico as nombre, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo from movimientos inner join productos on productos.idprod=movimientos.producto where productos.idprod="+prod+" order by movimientos.fecha desc, movimientos.hora desc limit "+limite+"";
+  //alert(query);
+  $.getJSON(url, {query: ""+query+""}).done(function(request){
+    var datos = request.resultado;
+    var totalDatos = request.rows;
+    if (totalDatos > 0){
+      var mostrar = '';
+      var j = 0;
+      for (var i in datos){
+        j = parseInt(i, 10)+1;
+        mostrar += j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["tipo"]+": <b>"+datos[i]["cantidad"]+"</b><br>";
+      }
+      var popover = '<a role="button" tabindex="0" id="historial" class="btn btn-danger historial" title="Historial de '+datos[i]["nombre"]+'" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="'+mostrar+'">Historial</a>';
+      
+      if ($("#comentHint").length > 0) {
+        $("#comentHint").after(popover);
+      }
+      else {
+        $("#ultimoMov").after(popover);
+      } 
+      $("#historial").popover({html:true});
+    }
+    else {
+      ///ver si avisar que no hay movimientos.
+    }
+  });
+}
+
+/**
  * 
  * @param {String} str String con la cadena de texto a buscar como parte del producto.
  * @param {String} id String con el id del campo luego del cual se tienen que agregar los datos.
@@ -173,6 +215,7 @@ function showHintProd(str, id, seleccionado) {
     $("#snapshot").remove();
     $("#stock").remove();
     $("#ultimoMov").remove();
+    $("#historial").remove();
     document.getElementById("producto").innerHTML = "";
     return;
   } else {
@@ -747,7 +790,7 @@ function cargarEditarMovimiento(idMov, selector){
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comEditMov" title="Ingresar los comentarios del movimiento" placeholder="Comentarios" tabindex="1" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2" nowrap><input type="textarea" id="comentarios" name="comEditMov" title="Ingresar los comentarios del movimiento" placeholder="Comentarios" tabindex="1" class="agrandar" maxlength="35" size="9"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <td class="pieTablaIzquierdo" style="width: 50%;border-right: 0px;"><input type="button" value="BLOQUEAR" id="editarMovimiento" name="editarMovimiento" title="Habilitar/Deshabilitar la edición del movimiento" class="btn btn-primary" align="center"/></td>\n\
@@ -775,9 +818,9 @@ function cargarEditarMovimiento(idMov, selector){
       $("#cantidad").val(cantidad.toLocaleString());
       $("#comentarios").val(comentarios);
     }
-    //$("#comentarios").focus();
-    $("#cantidad").attr("autofocus", true);
-    $("#cantidad").focus();
+    
+    $("#comentarios").attr("autofocus", true);
+    
   }); 
 }
 
@@ -2242,7 +2285,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
           apellidosUsuarios.push(resultadoUsuarios[i]["apellido"]);
           nombresUsuarios.push(resultadoUsuarios[i]["nombre"]);
         }
-        
+                 
         var tabla = '<table id="parametros" name="parametros" class="tabla2">\n\
                       <caption>Formulario para realizar las consultas</caption>';
         var tr = '<tr>\n\
@@ -2254,7 +2297,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
                 </td>\n\
                 <th>Entidad:</th>\n\
                   <td colspan="3">\n\
-                    <select name="entidad" id="entidadStock" tabindex="1" style="width: 100%" multiple title="Seleccionar la entidad" size="10">\n\
+                    <select name="entidad" id="entidadStock" tabindex="1" style="width: 100%" multiple title="Seleccionar la entidad" size="6">\n\
                       <option value="todos" selected="yes">---TODOS---</option>';
         for (var j in entidades) {
           var entidad = entidades[j].trim();
@@ -2287,7 +2330,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
                 </td>\n\
                 <th>Entidad:</th>\n\
                   <td colspan="3">\n\
-                    <select name="entidad" id="entidadMovimiento" title="Seleccionar la entidad" tabindex="3" multiple style="width: 100%" size="10">\n\
+                    <select name="entidad" id="entidadMovimiento" title="Seleccionar la entidad" tabindex="3" multiple style="width: 100%" size="6">\n\
                       <option value="todos" selected="yes">---TODOS---</option>';
         for (var j in entidades) {
           var entidad1 = entidades[j].trim();
@@ -2387,14 +2430,13 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
         tabla += tr;
         tabla += '</table>';
         
-        var mostrar = '';
+        var mostrar = '';   
         //var volver = '<a href="estadisticas.php">Volver</a>';
         mostrar += tabla;
         mostrar += '<br><br>';
         //mostrar += volver;
         mostrar += '<br><br>';
         $(selector).html(mostrar);
-        
         if (hint !== '') {
           if (tipo === 'prodStock') {
             $("#productoStock").val(hint);
@@ -2428,6 +2470,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
           $("[name=criterio]").val(["totalStock"]);
           $("#realizarBusqueda").focus();
         }
+        
       });  
     });  
   });
@@ -3376,9 +3419,10 @@ $(document).on("keypress", "#nombreUsuario", function(e) {
 ///Disparar funcion al cambiar el elemento elegido en el select con las sugerencias para los productos.
 ///Cambia el color de fondo para resaltarlo, carga un snapshot del plástico si está disponible, y muestra
 ///el stock actual.
-$(document).on("change focusin", "#hint", function (){
+$(document).on("change focusin", "#hint", function (e){
   var rutaFoto = 'images/snapshots/';
   var nombreFoto = $(this).find('option:selected').attr("name");
+  var prod = $(this).find('option:selected').val();
   $(this).css('background-color', '#ffffff');
   //$(this).find('option:selected').css('background-color', '#ffffff');
   
@@ -3386,6 +3430,7 @@ $(document).on("change focusin", "#hint", function (){
   $("#stock").remove();
   $("#ultimoMov").remove();
   $("#comentHint").remove();
+  $("#historial").remove();
   var stock = $("#hint").find('option:selected').attr("stock");
   var comentarios = $("#hint").find('option:selected').attr("comentarios");
   var alarma1 = $("#hint").find('option:selected').attr("alarma1");
@@ -3425,7 +3470,21 @@ $(document).on("change focusin", "#hint", function (){
   //$(this).find('option:selected').css('background-color', '#79ea52');
   $("#hint").after(mostrar);
   $(this).parent().prev().prev().children().prop("checked", true);
+  //setTimeout(function(){mostrarHistorial(prod)}, 100);
+  mostrarHistorial(prod);
   });
+  
+/// ****** COMENTO EVENTO CLICK POR SER REDUNDANTE CON EL CHANGE ***************************  
+/////Disparar función al hacer CLICK en alguna de las option del select #hint.
+//$(document).on("click", "#hint", function (){
+//  $("#historial").remove();
+//  var prod = $(this).val();
+//  if ($("#historial").length > 0){
+//    $("#historial").remove();
+//  }
+//  setTimeout(function(){mostrarHistorial(prod)}, 200);       
+//});
+/// **************************** FIN EVENTO CLICK ******************************************* 
   
 ///Disparar función al hacer ENTER sobre alguna de las OPTION del select HINT.
 ///Básicamente, la idea es que al presionar ENTER, se ejecute la opción por defecto cosa de ahorrar tiempo.  
@@ -3633,6 +3692,7 @@ $(document).on("change focusin", "#hintProd", function (){
   $("#snapshot").remove();
   $("#stock").remove();
   $("#ultimoMov").remove();
+  $("#historial").remove();
   $("#stock").removeClass('alarma1');
   $("#stock").removeClass('alarma2');
   $("#stock").removeClass('resaltado');
@@ -4352,27 +4412,6 @@ $(document).on("change", "#fin", function (){
 ///el cual permite hacer la exportación a PDF de la búsqueda realizada.
 $(document).on("click", "#realizarBusqueda", function () {
   realizarBusqueda();
-});
-
-$(document).on("click", "#hint", function (){
-  var prod = $(this).val();
-  var url = "data/selectQuery.php";
-  var query = "select DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo from movimientos inner join productos on productos.idprod=movimientos.producto where productos.idprod="+prod+" order by fecha desc, hora desc limit 5";
-  $.getJSON(url, {query: ""+query+""}).done(function(request){
-    var datos = request.resultado;
-    var totalDatos = request.rows;
-    if (totalDatos > 1){
-      var mostrar = '';
-      for (var i in datos){
-        mostrar += datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["tipo"]+": "+datos[i]["cantidad"]+"\n";
-      }
-      alert(mostrar);
-      $('[data-toggle="popover"]').popover();
-    }
-    else {
-      ///ver si avisar que no hay movimientos.
-    }
-  });        
 });
 
 ///Disparar función darle ENTER sobre los select ENTIDADSTOCK o ENTIDADMOVIMIENTO. 
