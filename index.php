@@ -21,7 +21,7 @@ if (!isset($_SESSION['user_id']))
     if (!empty($user_username) && !empty($user_password)) 
       {
       //Busco usuario y password en la base de datos para ver si existen:
-      $query = "SELECT id_usuario, user FROM appusers WHERE user = '$user_username' AND password = SHA('$user_password')";
+      $query = "SELECT id_usuario, user FROM appusers WHERE user = '$user_username' AND password = SHA('$user_password') limit 1";
       $data = consultarBD($query, $dbc);
       $registros = $data->num_rows;
       $filas = obtenerResultados($data);

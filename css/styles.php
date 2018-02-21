@@ -119,7 +119,7 @@ body {
   position: absolute;
   bottom: 0;
   width: 100%;
-  max-height: 140px;
+  max-height: 150px;
 }
 .panel-footer div.row {
   margin-bottom: 15px;

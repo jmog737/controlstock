@@ -119,7 +119,7 @@ body {
   position: absolute;
   bottom: 0;
   width: 100%;
-  max-height: 140px;
+  max-height: 150px;
 }
 .panel-footer div.row {
   margin-bottom: 15px;
@@ -227,6 +227,8 @@ a.detailObject:focus, a.detailObject:hover {
 hr {
   background-color: white;
   height: 5px;
+  width: 50%;
+  margin: auto;
 }
 .tab-pane {
   height: 100%;

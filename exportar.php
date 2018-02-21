@@ -124,10 +124,6 @@ $temp = explode('-', $largos);
 
 $x = $_POST["x"];
 
-$tipo = $_POST["tipo"];
-
-$idUser = $_POST["usuario"];
-
 if (isset($_POST["idProd"])){
   $idProd = $_POST["idProd"];
 }
@@ -149,6 +145,7 @@ if (isset($_POST["entidad_$indice"])){
     $entidad = 'todas las entidades.';
   }
 }
+/*
 if (isset($_POST["inicio"])){
 $inicio = $_POST["inicio"];
 }
@@ -161,7 +158,13 @@ $año = $_POST["año"];
 if (isset($_POST["mes"])){
 $mes = $_POST["mes"];
 }
-
+if (isset($_POST["tipo"])){
+  $tipo = $_POST["tipo"];
+}
+if (isset($_POST["usuario"])){
+  $idUser = $_POST["usuario"];
+}
+*/
 //echo "id: $id<br>query: $query<br>consultaCSV: $consultaCSV<br>campos: $campos1<br>largos: $largos<br>mostrar: $mostrar1<br>tipoConsulta: $tipoConsulta<br>idProd: $idProd<br>nombreProducto: $nombreProducto<br>entidad: $entidad"
 //        . "<br>x: $x<br>inicio: $inicio<br>fin: $fin<br>mes: $mes<br>año: $año<br>tipo: $tipo<br>usuario: $idUser<br>";
 

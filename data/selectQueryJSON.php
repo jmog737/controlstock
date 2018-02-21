@@ -10,6 +10,8 @@ else {
   $pwDB = DB_PASSWORD;
 }
 
+$tamPage = 40;
+
 //Conexión con la base de datos:
 //$dbc = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 $dbc = crearConexion(DB_HOST, $userDB, $pwDB, DB_NAME);
@@ -22,15 +24,23 @@ $query = (array) json_decode($_GET["query"],true);
 
 $datos = array();
 for ($i = 0; $i < count($query); $i++){
+  ///Ejecuto consulta "total" para concer el total de datos a devolver:
+  $result1 = consultarBD($query[$i], $dbc);
+  $datos["$i"]['totalRows'] = $result1->num_rows;
+  
+  ///Recupero primera página para mostrar:
+  $query[$i] = $query[$i]." limit ".$tamPage;
   $result = consultarBD($query[$i], $dbc);
 
-  $datos["$i"]['rows'] = $result->num_rows;
+  //$datos["$i"]['rows'] = $result->num_rows;
+  
   while (($fila = $result->fetch_array(MYSQLI_ASSOC)) != NULL) { 
     $datos["$i"]['resultado'][] = $fila;
   }
   
 }
 
+///Devuelvo total de registros y datos SOLO de la primera página:
 $json = json_encode($datos);
 echo $json;
 ?>

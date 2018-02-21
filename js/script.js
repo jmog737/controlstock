@@ -1,4 +1,5 @@
 var limiteSeleccion = 8;
+var tamPagina = 40;
 
 /**
 ///  \file script.js
@@ -170,8 +171,11 @@ function showHint(str, id, seleccionado) {
 */
 function mostrarHistorial(prod){
   if ($("#historial").length > 0){
+    $("#historial").popover('hide');
     $("#historial").remove();
   }
+  $("#historial").popover('hide');
+    $("#historial").remove();
   var limite = 3;
   var url = "data/selectQuery.php";
   var query = "select productos.nombre_plastico as nombre, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo from movimientos inner join productos on productos.idprod=movimientos.producto where productos.idprod="+prod+" order by movimientos.fecha desc, movimientos.hora desc limit "+limite+"";
@@ -598,7 +602,7 @@ function agregarMovimiento(){
         /// Si el agregado es exitoso, actualizo el stock y la fecha de la última modificación en la tabla Productos:
         if (resultado === "OK") {
           /***** AGREGADO PARA CONOCER ULTIMO ID INGRESADO: ********************************/
-          var query = "SELECT MAX(idmov) AS id FROM movimientos where idprod="+idProd;
+          var query = "SELECT MAX(idmov) AS id FROM movimientos where idprod="+idProd+' limit 1';
           /* FIN AGREGADO */
           var url = "data/updateQuery.php";
           var fechaTemp = fecha.split("-");
@@ -790,7 +794,7 @@ function cargarEditarMovimiento(idMov, selector){
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center" colspan="2" nowrap><input type="textarea" id="comentarios" name="comEditMov" title="Ingresar los comentarios del movimiento" placeholder="Comentarios" tabindex="1" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comEditMov" title="Ingresar los comentarios del movimiento" placeholder="Comentarios" tabindex="1" class="agrandar" maxlength="35" size="9"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <td class="pieTablaIzquierdo" style="width: 50%;border-right: 0px;"><input type="button" value="BLOQUEAR" id="editarMovimiento" name="editarMovimiento" title="Habilitar/Deshabilitar la edición del movimiento" class="btn btn-primary" align="center"/></td>\n\
@@ -906,7 +910,7 @@ function cargarUsuarios(selector, user){
 */
 function cargarDetalleUsuario(user) {
   var url = "data/selectQuery.php"; 
-  var query = "select nombre, apellido, empresa, mail, telefono, observaciones from usuarios where idusuarios='"+user+"'";
+  var query = "select nombre, apellido, empresa, mail, telefono, observaciones from usuarios where idusuarios='"+user+"' limit 1";
   
   $.getJSON(url, {query: ""+query+""}).done(function(request) {
     var usuario = request.resultado[0];
@@ -1161,6 +1165,755 @@ function validarBusqueda() {
   
 }
 
+function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha){
+  var url = "data/selectQueryJSON.php";
+
+  $("#main-content").empty();
+
+  var mostrarGlobal = '<ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">';
+  var activo = '';
+  var campos = '';
+  var largos = '';
+  var mostrarCamposQuery = '';
+  var x = 55;
+  var tipMov = '';
+  var rutaFoto = 'images/snapshots/';
+  
+  for (var n in queries){
+    if (n == 0) {
+      activo = 'active';
+    }
+    else {
+      activo = '';
+    }
+    mostrarGlobal += '<li class="nav-item  rounded-right rounded-left">\n\
+                        <a class="nav-link '+activo+'" id="pills-'+idProds[n]+'-tab" data-toggle="pill" href="#'+idProds[n]+'" role="tab" aria-controls="'+nombres[n]+'" aria-selected="true">'+nombres[n]+'</a>\n\
+                      </li>'; 
+  }
+  mostrarGlobal += '</ul>';
+  mostrarGlobal += '<div class="tab-content rounded-right" id="pills-tabContent">';
+
+  var jsonQuery = JSON.stringify(queries);
+
+  $.getJSON(url, {query: ""+jsonQuery+""}).done(function(request){
+    for (var j in request){
+      var datos = request[j].resultado;
+      var totalDatos = request[j].totalRows;
+      if (j == 0) {
+        activo = 'fade show active';
+      }
+      else {
+        activo = 'fade';
+      }
+      var divi = '<div class="tab-pane '+activo+' rounded-right" id="'+idProds[j]+'" role="tabpanel" aria-labelledby="pills-home-tab">'; 
+      var mostrar = '';
+      mostrar += divi;
+      var titulo = "<h2>Resultado de la búsqueda</h2>";
+      mostrar += titulo;
+      var mensajeConsulta = "Consulta "+tipoConsultas[j];
+      if (mensajeTipo !== null) {
+        mensajeConsulta += " "+mensajeTipo;
+      }
+      mensajeConsulta += " "+mensajeFecha;
+      if (mensajeUsuario !== null) {
+        mensajeConsulta += mensajeUsuario;
+      } 
+      mostrar += "<h3>"+mensajeConsulta+"</h3>";
+
+      if (totalDatos >= 1) 
+        {
+        var formu = '<form name="resultadoBusqueda" id="resultadoBusqueda_'+j+'" target="_blank" action="exportar.php" method="POST" class="exportarForm">';
+        var tabla = '<table name="producto" class="tabla2">';
+
+        switch(radio) {
+          case 'entidadStock':  campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje";
+                                largos = "0.8-1.2-2.5-0.8-2-1-1-1.2-1.2-1-2-1.7";
+                                mostrarCamposQuery = "1-1-1-0-1-0-0-1-1-0-0-1";
+                                x = 20;
+                                tipMov = 'entStock';
+                                tabla += '<tr><th class="tituloTabla" colspan="9">CONSULTA DE STOCK</th></tr>';
+                                tabla += '<tr>\n\
+                                            <th>Item</th>\n\
+                                            <th>Entidad</th>\n\
+                                            <th>Nombre</th>\n\
+                                            <th>BIN</th>\n\
+                                            <th>Código</th>\n\
+                                            <th>Snapshot</th>\n\
+                                            <th>&Uacute;ltimo Movimiento</th>\n\
+                                            <th>Stock</th>\n\
+                                            <th>Mensaje</th>\n\
+                                         </tr>';
+                                var indice = 1;
+                                var total = 0;
+                                for (var i in datos) { 
+                                  var entidad = datos[i]["entidad"];
+                                  var nombre = datos[i]['nombre_plastico'];
+                                  var bin = datos[i]['bin'];
+                                  var snapshot = datos[i]['snapshot'];
+                                  var codigo_emsa = datos[i]['codigo_emsa'];
+                                  var stock = parseInt(datos[i]['stock'], 10);
+                                  var alarma1 = parseInt(datos[i]['alarma1'], 10);
+                                  var alarma2 = parseInt(datos[i]['alarma2'], 10);
+                                  var ultimoMovimiento = datos[i]['ultimoMovimiento'];
+                                  if (ultimoMovimiento === null) {
+                                    ultimoMovimiento = '';
+                                  }
+                                  var mensaje = datos[i]['prodcom'];
+                                  var claseComentario = "";
+                                  if ((mensaje === "undefined")||(mensaje === null)||(mensaje === "")) 
+                                    {
+                                    mensaje = "";
+                                    claseComentario = "";
+                                  }
+                                  else {
+                                    var patron = "dif";
+                                    var buscar = mensaje.search(new RegExp(patron, "i"));
+                                    if (buscar !== -1){
+                                      claseComentario = "alarma1";
+                                    }
+                                  }
+                                  var claseResaltado = "alarma1";
+                                  if ((stock < alarma1) && (stock > alarma2)){
+                                    claseResaltado = "alarma1";
+                                  }
+                                  else {
+                                    if (stock < alarma2) {
+                                      claseResaltado = "alarma2";
+                                    }
+                                    else {
+                                      claseResaltado = "resaltado italica";
+                                    }
+                                  }  
+                                  if ((bin === 'SIN BIN')||(bin === null)) 
+                                    {
+                                    bin = 'N/D o N/C';
+                                  }
+                                  tabla += '<tr>\n\
+                                              <td>'+indice+'</td>\n\
+                                              <td style="text-align: left">'+entidad+'</td>\n\
+                                              <td>'+nombre+'</td>\n\
+                                              <td nowrap>'+bin+'</td>\n\
+                                              <td>'+codigo_emsa+'</td>\n\
+                                              <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="76" width="120"></img></td>\n\
+                                              <td>'+ultimoMovimiento+'</td>\n\
+                                              <td class="'+claseResaltado+'" style="text-align: right">'+stock.toLocaleString()+'</td>\n\
+                                              <td class="'+claseComentario+'" >'+mensaje+'</td>\n\
+                                            </tr>';
+                                  indice++;
+                                  total += stock;
+                                }
+                                if (entidadesStock[0] !== 'todos'){
+                                  tabla += '<caption>Stock de la entidad: '+entidad+'</caption>';
+                                }
+                                else {
+                                  tabla += '<caption>Stock de todas las entidades</caption>';
+                                }
+                                tabla += '<tr><th colspan="7" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td><th></th></tr>';
+
+                                tabla += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
+                                              <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="1"></td>\n\
+                                              <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                              <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
+                                              <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
+                                              <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
+                                              <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                              <td style="display:none"><input type="text" id="entidad_'+j+'" name="entidad_'+j+'" value="'+entidadesStock[j]+'"></td>\n\
+                                              <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
+                                              <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+tipoConsultas[j]+'"></td>\n\
+                                              <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                            </tr>';
+                                tabla += '<tr>\n\
+                                            <td class="pieTabla" colspan="9">\n\
+                                              <input type="button" id="1" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                            </td>\n\
+                                          </tr>\n\
+                                        </table>';
+                                break;
+          case 'productoStock': campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-Stock-Alarma1-Alarma2-Mensaje-&Uacute;ltimo Movimiento";
+                                largos = "0.8-1.2-2.5-0.8-2-2.5-1-1-1-1-2-1";
+                                mostrarCamposQuery = "1-1-1-1-1-1-1-1-0-0-1-1";;
+                                x = 22;
+                                tipMov = 'prodStock';
+                                var bin = datos[0]['bin'];
+                                //var produ = datos[0]["idProd"];
+                                if ((bin === 'SIN BIN')||(bin === null)) 
+                                    {
+                                    bin = 'N/D o N/C';
+                                  }
+                                var alarma1 = parseInt(datos[0]['alarma1'], 10);
+                                var alarma2 = parseInt(datos[0]['alarma2'], 10);
+                                var stock = parseInt(datos[0]['stock'], 10);
+                                var snapshot = datos[0]['snapshot'];
+                                var ultimoMovimiento = datos[0]['ultimoMovimiento'];
+                                if (ultimoMovimiento === null) {
+                                    ultimoMovimiento = '';
+                                  }
+                                var contacto = datos[0]['contacto'];
+                                if (contacto === null) 
+                                    {
+                                    contacto = '';
+                                  }
+                                var prodcom = datos[0]['prodcom'];
+                                if (prodcom === null) 
+                                    {
+                                    prodcom = '';
+                                  }
+                                var claseResaltado = "italica";
+                                if ((stock < alarma1) && (stock > alarma2)){
+                                  claseResaltado = "alarma1";
+                                }
+                                else {
+                                  if (stock < alarma2) {
+                                    claseResaltado = "alarma2";
+                                  }
+                                  else {
+                                    claseResaltado = "resaltado italica";
+                                  }
+                                } 
+                                tabla += '<caption>Stock del producto: '+datos[0]['nombre_plastico']+'</caption>';
+                                tabla += '<tr>\n\
+                                            <th colspan="2" class="tituloTabla">DETALLES</th>\n\
+                                         </tr>';                       
+                                tabla += '<tr><th style="text-align:left">Nombre:</th><td>'+datos[0]['nombre_plastico']+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">C&oacute;digo:</th><td>'+datos[0]['codigo_emsa']+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">BIN:</th><td nowrap>'+bin+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
+                                tabla += '<tr><th style="text-align:left">Contacto:</th><td>'+contacto+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">Comentarios:</th><td>'+prodcom+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">&Uacute;ltimo Movimiento:</th><td>'+ultimoMovimiento+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
+                                tabla += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
+                                              <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="2"></td>\n\
+                                              <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                              <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
+                                              <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
+                                              <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
+                                              <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombresProductos[j]+'"></td>\n\
+                                              <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                                <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProds[j]+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                              </tr>';
+                                  tabla += '<tr>\n\
+                                              <td class="pieTabla" colspan="2">\n\
+                                                <input type="button" id="2" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                              </td>\n\
+                                            </tr>\n\
+                                          </table>';
+                                  break;
+            case 'totalStock':  campos = 'Id-Entidad-Stock';
+                                largos = '1-3.0-1.8';
+                                mostrarCamposQuery = "1-1-1";
+                                x = 60;
+                                tipMov = 'totalStock';
+                                tabla += '<caption>Stock total en b&oacute;veda.</caption>';
+                                tabla += '<tr>\n\
+                                            <th colspan="3" class="tituloTabla">DETALLES</th>\n\
+                                          </tr>';
+                                tabla += '<tr>\n\
+                                              <th>Item</th>\n\
+                                              <th>Entidad</th>\n\
+                                              <th>Stock</th>\n\
+                                           </tr>';          
+                                var indice = 1;
+                                var total = 0;
+                                for (var k in datos) { 
+                                  //var produ = datos[i]["idProd"];
+                                  var entidad = datos[k]["entidad"];
+                                  //var nombre = datos[i]['nombre_plastico'];
+                                  var bin = datos[k]['bin'];
+                                  var codigo_emsa = datos[k]['codigo_emsa'];
+                                  var stock = datos[k]['stock'];
+                                  var subtotal = parseInt(datos[k]['subtotal'], 10);
+                                  if ((bin === 'SIN BIN')||(bin === null)) 
+                                    {
+                                    bin = 'N/D o N/C';
+                                  }
+                                  tabla += '<tr>\n\
+                                              <td>'+indice+'</td>\n\
+                                              <td style="text-align: left">'+entidad+'</td>\n\
+                                              <td class="resaltado italica" style="text-align: right">'+subtotal.toLocaleString()+'</td>\n\
+                                            </tr>';
+                                  indice++;  
+                                  total += subtotal;
+                                }
+                                tabla += '<tr><th colspan="2" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td></tr>';
+                                tabla += '<tr><td style="display:none"><input type="text" id="query_0" name="query_0" value="'+queries[j]+'"></td>\n\
+                                            <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="3"></td>\n\
+                                            <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                            <td style="display:none"><input type="text" id="consultaCSV_0" name="consultaCSV_0" value="'+consultasCSV[j]+'"></td>\n\
+                                            <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
+                                            <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
+                                            <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
+                                            <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                            <td style="display:none"><input type="text" id="tipoConsulta_0" name="tipoConsulta_0" value="'+mensajeConsulta+'"></td>\n\
+                                            <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                          </tr>';
+                                tabla += '<tr>\n\
+                                            <td class="pieTabla" colspan="3">\n\
+                                              <input type="button" id="3" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                            </td>\n\
+                                          </tr>\n\
+                                        </table>';              
+                                break;
+            case 'entidadMovimiento': campos = 'Id-Entidad-Nombre-BIN-Código-Contacto-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-&Uacute;ltimo Movimiento-Fecha-Hora-Cantidad-Tipo-Comentarios';
+                                      //Orden de la consulta: entidad - nombre - bin - codigo - contacto - snapshot - stock - alarma1 - alarma2 - prodcom - fecha - hora - cantidad - tipo - comentarios
+                                      largos = '0.6-1.6-1.9-1-1-1-1-1-1-1-1.1-1.5-1.5-0.8-1.2-1.4-2';
+                                      mostrarCamposQuery = '1-1-1-0-0-0-0-0-0-0-0-0-1-1-1-1-1';
+                                      x = 40;
+                                      tipMov = 'entMov';
+                                      tabla += '<tr><th class="tituloTabla" colspan="11">CONSULTA DE MOVIMIENTOS</th></tr>';
+                                      tabla += '<tr>\n\
+                                                  <th>Item</th>\n\
+                                                  <th>Fecha</th>\n\
+                                                  <th>Hora</th>\n\
+                                                  <th>Entidad</th>\n\
+                                                  <th>Nombre</th>\n\
+                                                  <th>BIN</th>\n\
+                                                  <th>Código</th>\n\
+                                                  <th>Snapshot</th>\n\
+                                                  <th>Tipo</th>\n\
+                                                  <th>Cantidad</th>\n\
+                                                  <th>Comentarios</th>\n\
+                                               </tr>';
+                                      var indice = 1;
+                                      var productoViejo = datos[0]['nombre_plastico'];
+                                      var subtotalRetiro = 0;
+                                      var subtotalIngreso = 0;
+                                      var subtotalReno = 0;
+                                      var subtotalDestruccion = 0;
+                                      var totalConsumos = 0;
+
+                                      for (var i in datos) { 
+                                        //var produ = datos[i]["idProd"];
+                                        var idmov = datos[i]["idmov"];
+                                        var entidad = datos[i]["entidad"];
+                                        var nombre = datos[i]['nombre_plastico'];
+                                        var cantidad = parseInt(datos[i]['cantidad'], 10);
+                                        var bin = datos[i]['bin'];
+                                        var codigo_emsa = datos[i]['codigo_emsa'];
+                                        var tipo1 = datos[i]['tipo'];
+                                        var snapshot = datos[i]['snapshot'];
+                                        var fecha = datos[i]['fecha'];
+                                        var hora = datos[i]["hora"];    
+
+                                        var alarma1 = parseInt(datos[i]['alarma1'], 10);
+                                        var alarma2 = parseInt(datos[i]['alarma2'], 10);
+                                        var stock = parseInt(datos[i]['stock'], 10);
+                                        var claseResaltado = '';
+                                        if ((stock < alarma1) && (stock > alarma2)){
+                                          claseResaltado = "alarma1";
+                                        }
+                                        else {
+                                          if (stock < alarma2) {
+                                            claseResaltado = "alarma2";
+                                          }
+                                          else {
+                                            claseResaltado = "resaltado";
+                                          }
+                                        }  
+                                        var comentarios = datos[i]['comentarios'];
+                                        if ((comentarios === "undefined")||(comentarios === null)) {
+                                            comentarios = "";
+                                          }
+                                        if ((bin === 'SIN BIN')||(bin === null)) 
+                                          {
+                                          bin = 'N/D o N/C';
+                                        }
+
+                                        if (productoViejo !== nombre) {
+                                          productoViejo = nombre;
+                                          if (subtotalRetiro > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="9" class="negrita">Total Retiros:</td>\n\
+                                                        <td class="subtotal" colspan="2">'+subtotalRetiro.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalRetiro = 0;
+                                          }
+                                          if (subtotalReno > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="9" class="negrita">Total Renovaciones:</td>\n\
+                                                        <td class="subtotal" colspan="2">'+subtotalReno.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalReno = 0;
+                                          }
+                                          if (subtotalDestruccion > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="9" class="negrita">Total Destrucciones:</td>\n\
+                                                        <td class="subtotal" colspan="2">'+subtotalDestruccion.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalDestruccion = 0;
+                                          }
+                                          if (totalConsumos > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="9" class="negrita">Total de Consumos:</td>\n\
+                                                        <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            totalConsumos = 0;
+                                          }
+                                          if (subtotalIngreso > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="9" class="negrita">Total de Ingresos:</td>\n\
+                                                        <td class="totalIngresos" colspan="2">'+subtotalIngreso.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalIngreso = 0;
+                                          }
+
+                                          tabla += '<th colspan="11">&nbsp;\n\
+                                                    </th>';
+                                          switch (tipo1){
+                                            case "Retiro": subtotalRetiro = cantidad;
+                                                           break;
+                                            case "Ingreso": subtotalIngreso = cantidad;
+                                                            break;
+                                            case "Renovación": subtotalReno = cantidad;
+                                                                break;
+                                            case "Destrucción": subtotalDestruccion = cantidad;
+                                                                break;
+                                            default: break;
+                                          }
+                                          totalConsumos = subtotalRetiro + subtotalReno + subtotalDestruccion;
+                                        }
+                                        else {
+                                          switch (tipo1){
+                                            case "Retiro": subtotalRetiro = subtotalRetiro + cantidad;
+                                                           break;
+                                            case "Ingreso": subtotalIngreso = subtotalIngreso + cantidad;
+                                                            break;
+                                            case "Renovación": subtotalReno = subtotalReno + cantidad;
+                                                                break;
+                                            case "Destrucción": subtotalDestruccion = subtotalDestruccion + cantidad;
+                                                                break;
+                                            default: break;
+                                          }
+                                          if (tipo1 !== 'Ingreso') {
+                                            totalConsumos = totalConsumos + cantidad;
+                                          }
+                                        }
+
+                                        tabla += '<tr>\n\
+                                                    <td>'+indice+'</td>\n\
+                                                    <td>'+fecha+'</td>\n\
+                                                    <td>'+hora+'</td>\n\
+                                                    <td>'+entidad+'</td>\n\
+                                                    <td>'+nombre+'</td>\n\
+                                                    <td nowrap>'+bin+'</td>\n\
+                                                    <td>'+codigo_emsa+'</td>\n\
+                                                    <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="75" width="120"></img></td>\n\
+                                                    <td>'+tipo1+'</td>\n\
+                                                    <td class="'+claseResaltado+'"><a href="editarMovimiento.php?id='+idmov+'" target="_blank">'+cantidad.toLocaleString()+'</a></td>\n\
+                                                    <td>'+comentarios+'</td>\n\
+                                                  </tr>';        
+                                        indice++;  
+                                      }
+                                      if (subtotalRetiro > 0) {
+                                        tabla += '<tr>\n\
+                                                    <td colspan="9" class="negrita">Total Retiros:</td>\n\
+                                                    <td class="subtotal" colspan="2">'+subtotalRetiro.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        subtotalRetiro = 0;
+                                      }
+                                      if (subtotalReno > 0) {
+                                        tabla += '<tr>\n\
+                                                    <td colspan="9" class="negrita">Total Renovaciones:</td>\n\
+                                                    <td class="subtotal" colspan="2">'+subtotalReno.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        subtotalReno = 0;
+                                      }
+                                      if (subtotalDestruccion > 0) {
+                                        tabla += '<tr>\n\
+                                                    <td colspan="9" class="negrita">Total Destrucciones:</td>\n\
+                                                    <td class="subtotal" colspan="2">'+subtotalDestruccion.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        subtotalDestruccion = 0;  
+                                      }
+                                      if (totalConsumos > 0) {
+                                        tabla += '<tr>\n\
+                                                    <td colspan="9" class="negrita">Total de Consumos:</td>\n\
+                                                    <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        totalConsumos = 0;  
+                                      }
+                                      if (subtotalIngreso > 0) {
+                                        tabla += '<tr>\n\
+                                                    <td colspan="9" class="negrita">Total de Ingresos:</td>\n\
+                                                    <td class="totalIngresos" colspan="2">'+subtotalIngreso.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        subtotalIngreso = 0;
+                                      }
+
+
+                                      if (entidadesMovimiento[0] !== 'todos'){
+                                        tabla += '<caption>Movimientos de la entidad: '+entidad+'</caption>';
+                                      }
+                                      else {
+                                        tabla += '<caption>Movimientos de todas las entidades</caption>';
+                                      }
+                                      tabla += '<th colspan="11">&nbsp;\n\
+                                                </th>';
+                                      tabla += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="4"></td>\n\
+                                                    <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                                    <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                                    <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="entidad_'+j+'" name="entidad_'+j+'" value="'+entidadesMovimiento[j]+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                                  </tr>';
+
+                                      tabla += '<tr>\n\
+                                                  <td class="pieTabla" colspan="11">\n\
+                                                    <input type="button" id="4" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                                  </td>\n\
+                                                </tr>\n\
+                                              </table>';  
+                                      break;
+            case 'productoMovimiento':  campos = 'Id-Entidad-Nombre-BIN-Código-Contacto-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-&Uacute;ltimo Movimiento-Fecha-Hora-Cantidad-Tipo-Comentarios';
+                                        //Orden de la consulta: entidad - nombre - bin - codigo - snapshot - stock - alarma - prodcom - fecha - hora - cantidad - tipo - comentarios
+                                        largos = '0.4-1.5-1.8-1-1-1-1-1-1-1-1.1-1.5-1.5-0.8-1.2-1.4-2';
+                                        mostrarCamposQuery = '1-0-0-0-0-0-0-0-0-0-0-0-1-1-1-1-1';
+                                        x = 40;
+                                        tipMov = 'prodMov';
+                                        var bin = datos[0]['bin'];
+                                        //var produ = datos[0]['produ'];
+                                        var ultimoMovimiento = datos[0]['ultimoMovimiento'];
+                                        if (ultimoMovimiento === null) {
+                                          ultimoMovimiento = '';
+                                        }
+                                        var contacto = datos[0]['contacto'];
+                                        if (contacto === null) 
+                                            {
+                                            contacto = '';
+                                          }
+                                        var comentarios = datos[0]['prodcom'];
+                                        if (comentarios === null) 
+                                            {
+                                            comentarios = '';
+                                          }  
+                                        if ((bin === 'SIN BIN')||(bin === null)) 
+                                            {
+                                            bin = 'N/D o N/C';
+                                          }
+                                        var snapshot = datos[0]['snapshot'];
+                                        var alarma1 = parseInt(datos[0]['alarma1'], 10);
+                                        var alarma2 = parseInt(datos[0]['alarma2'], 10);
+                                        var stock = parseInt(datos[0]['stock'],10);
+                                        if ((stock < alarma1) && (stock > alarma2)){
+                                          claseResaltado = "alarma1";
+                                        }
+                                        else {
+                                          if (stock < alarma2) {
+                                            claseResaltado = "alarma2";
+                                          }
+                                          else {
+                                            claseResaltado = "resaltado italica";
+                                          }
+                                        } 
+                                        tabla += '<caption>Detalles del producto: '+datos[0]['nombre_plastico']+'</caption>';
+                                        tabla += '<tr>\n\
+                                                    <th colspan="2" class="tituloTabla">PRODUCTO</th>\n\
+                                                 </tr>';                       
+                                        tabla += '<tr><th>Nombre:</th><td>'+datos[0]['nombre_plastico']+'</td></tr>';
+                                        tabla += '<tr><th>Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
+                                        tabla += '<tr><th>C&oacute;digo:</th><td>'+datos[0]['codigo_emsa']+'</td></tr>';
+                                        tabla += '<tr><th>BIN:</th><td nowrap>'+bin+'</td></tr>';
+                                        tabla += '<tr><th>Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
+                                        tabla += '<tr><th>Contacto:</th><td>'+contacto+'</td></tr>';
+                                        tabla += '<tr><th>Comentarios:</th><td>'+comentarios+'</td></tr>';
+                                        tabla += '<tr><th>&Uacute;ltimo Moviemiento:</th><td>'+ultimoMovimiento+'</td></tr>';
+                                        tabla += '<tr><th>Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
+                                        tabla += '<tr><th colspan="2" class="pieTabla centrado">FIN</th></tr></table>';
+
+                                        tabla += '<br>';
+                                        tabla += '<table name="movimientos" class="tabla2">';
+                                        tabla += '<caption>Movimientos del producto: '+datos[0]['nombre_plastico']+'</caption>';
+                                        tabla += '<tr><th class="tituloTabla" colspan="6">CONSULTA DE MOVIMIENTOS</th></tr>';
+                                        tabla += '<tr>\n\
+                                                    <th>Item</th>\n\
+                                                    <th>Fecha</th>\n\
+                                                    <th>Hora</th>\n\
+                                                    <th>Tipo</th>\n\
+                                                    <th>Cantidad</th>\n\
+                                                    <th>Comentarios</th>\n\
+                                                 </tr>';
+                                        var indice = 1;
+                                        var subtotalRetiro = 0;
+                                        var subtotalIngreso = 0;
+                                        var subtotalReno = 0;
+                                        var subtotalDestruccion = 0;
+                                        var totalConsumos = 0;
+
+                                        for (var i in datos) { 
+                                          var tipo2 = datos[i]['tipo'];
+                                          var fecha = datos[i]['fecha'];
+                                          var hora = datos[i]["hora"];
+                                          var idmov = datos[i]["idmov"];
+                                          var cantidad = parseInt(datos[i]['cantidad'], 10);
+                                          var alarma1 = parseInt(datos[i]['alarma1'], 10);
+                                          var alarma2 = parseInt(datos[i]['alarma2'], 10);
+                                          var stock = parseInt(datos[i]['stock'], 10);
+                                          var claseResaltado = '';
+                                          if ((stock < alarma1) && (stock > alarma2)){
+                                            claseResaltado = "alarma1";
+                                          }
+                                          else {
+                                            if (stock < alarma2) {
+                                              claseResaltado = "alarma2";
+                                            }
+                                            else {
+                                              claseResaltado = "resaltado";
+                                            }
+                                          } 
+                                          var comentarios = datos[i]['comentarios'];
+                                          if ((comentarios === "undefined")||(comentarios === null)) {
+                                            comentarios = "";
+                                          }
+                                          switch (tipo2){
+                                            case "Retiro": subtotalRetiro = subtotalRetiro + cantidad;
+                                                           break;
+                                            case "Ingreso": subtotalIngreso = subtotalIngreso + cantidad;
+                                                            break;
+                                            case "Renovación": subtotalReno = subtotalReno + cantidad;
+                                                                break;
+                                            case "Destrucción": subtotalDestruccion = subtotalDestruccion + cantidad;
+                                                                break;
+                                            default: break;
+                                          }
+                                          if (tipo2 !== 'Ingreso') {
+                                            totalConsumos = totalConsumos + cantidad;
+                                          }
+
+                                          tabla += '<tr>\n\
+                                                      <td>'+indice+'</td>\n\
+                                                      <td>'+fecha+'</td>\n\
+                                                      <td>'+hora+'</td>\n\
+                                                      <td>'+tipo2+'</td>\n\
+                                                      <td class="'+claseResaltado+'"><a href="editarMovimiento.php?id='+idmov+'">'+cantidad.toLocaleString()+'</a></td>\n\
+                                                      <td>'+comentarios+'</td>\n\
+                                                    </tr>';
+                                          indice++;  
+                                          }
+
+                                          if (subtotalRetiro > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="4" class="negrita">Total Retiros:</td>\n\
+                                                        <td class="subtotal" colspan="2">'+subtotalRetiro.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalRetiro = 0;
+                                          }
+                                          if (subtotalReno > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="4" class="negrita">Total Renovaciones:</td>\n\
+                                                        <td class="subtotal" colspan="2">'+subtotalReno.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalReno = 0;
+                                          }
+                                          if (subtotalDestruccion > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="4" class="negrita">Total Destrucciones:</td>\n\
+                                                        <td class="subtotal" colspan="2">'+subtotalDestruccion.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalDestruccion = 0;  
+                                          }
+                                          if (totalConsumos > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="4" class="negrita">Total de Consumos:</td>\n\
+                                                        <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            totalConsumos = 0;  
+                                          }
+                                          if (subtotalIngreso > 0) {
+                                            tabla += '<tr>\n\
+                                                        <td colspan="4" class="negrita">Total de Ingresos:</td>\n\
+                                                        <td class="totalIngresos" colspan="2">'+subtotalIngreso.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            subtotalIngreso = 0;
+                                          }
+
+                                          tabla += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="5"></td>\n\
+                                                      <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                                      <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                                      <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombresProductos[j]+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProds[j]+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
+                                                      <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                                    </tr>';
+
+                                          tabla += '<tr>\n\
+                                                      <td class="pieTabla" colspan="6">\n\
+                                                        <input type="button" id="5" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                                      </td>\n\
+                                                    </tr>\n\
+                                                  </table>';
+                                          break;
+            default: break;
+          }   
+        formu += tabla;
+        formu += '</form>'
+        mostrar += "<h3>Total de registros afectados: <font class='naranja'>"+totalDatos+"</font></h3>";
+        mostrar += formu;
+
+        var page = 1;
+        var totalPaginas = Math.ceil(totalDatos/tamPagina);
+        if (totalPaginas > 1) {
+          var paginas = '<div class="pagination" id="paginas">\n\
+                          <ul>';
+          if (page !== 1) {
+            paginas += '<li><a class="paginate" i='+j+' data="'+(page-1)+'">Anterior</a></li>';
+          }  
+          for (var k=1;k<=totalPaginas;k++) {
+            if (page === k) {
+            //si muestro el índice de la página actual, no coloco enlace
+              paginas += '<li><a class="paginate" i='+j+'>'+k+'</a></li>';
+            }  
+            else {
+            //si el índice no corresponde con la página mostrada actualmente,
+            //coloco el enlace para ir a esa página
+              paginas += '<li><a class="paginate" i='+j+' data="'+k+'">'+k+'</a></li>';
+            }
+          }  
+          if (page !== totalPaginas){
+            paginas += '<li><a class="paginate" i='+j+' data="'+(page+1)+'">Siguiente</a></li>';
+            paginas += '</ul>';
+            paginas += '</div>';
+          }
+          mostrar += paginas;
+        }
+
+        if (idProds[j] === undefined) {
+          idProds[j] = '';
+        }
+        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&id='+idProds[j]+'&ent='+ent[j]+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        mostrar += volver;
+        mostrar += '</div>';
+        $("#pills-tabContent").append(mostrar);
+        delete(totalDatos);
+        delete(datos);  
+        }/// FIN del if de totalDatos>1  
+      else {
+        mostrar += "<br><hr><h3>No existen registros para la consulta realizada.</h3><hr>";
+        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&id='+idProds[j]+'&ent='+ent[j]+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        mostrar += volver;
+        mostrar += '</div>';
+        $("#pills-tabContent").append(mostrar);
+      }         
+    }
+  });
+
+  mostrarGlobal += '</div>';
+  $("#main-content").append(mostrarGlobal);
+  }
+
 /**
  * \brief Función que ejecuta la búsqueda y muestra el resultado.
  */
@@ -1212,25 +1965,19 @@ function realizarBusqueda(){
     var año = $("#año").val();
     var rangoFecha = null;
     var prodHint = '';
-    var tipMov = '';
     var ent = new Array();
     
     var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
     var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
     var tipoConsulta = '';
     var mensajeFecha = '';
-    var campos = '';
-    var largos = '';
-    var mostrarCamposQuery = "1-1-1-1-1-1-1-1-0-0";;
-    var x = 55;
     
     var validado = true;
     var validarFecha = false;
     var validarTipo = false;
     var validarUser = false;
     var ordenFecha = false;
-    var rutaFoto = 'images/snapshots/';
-    
+        
     switch (radio) {
       case 'entidadStock':  delete nombres;
                             var nombres = new Array();
@@ -1269,11 +2016,6 @@ function realizarBusqueda(){
                               $("#entidadStock").focus();
                               return;
                             }
-                            campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje";
-                            largos = "0.8-1.2-2.5-0.8-2-1-1-1.2-1.2-1-2-1.7";
-                            mostrarCamposQuery = "1-1-1-0-1-0-0-1-1-0-0-1";
-                            tipMov = 'entStock';
-                            x = 20;
                            break;
       case 'productoStock': for (var i in idProds){
                               if ((idProds[i] === 'NADA') || (nombresProductos[i] === '')){
@@ -1292,15 +2034,9 @@ function realizarBusqueda(){
                                 consultasCSV.push(consultaCSV);
                                 tipoConsultas.push(tipoConsulta);
                               }
-                              
                               prodHint = $("#productoStock").val();
                             }  
-                            tipMov = 'prodStock';
-
-                            campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-Stock-Alarma1-Alarma2-Mensaje-&Uacute;ltimo Movimiento";
-                            largos = "0.8-1.2-2.5-0.8-2-2.5-1-1-1-1-2-1";
-                            mostrarCamposQuery = "1-1-1-1-1-1-1-1-0-0-1-1";;
-                            x = 22;
+                            
                             break;
       case 'totalStock':  query = "select entidad, sum(stock) as subtotal from productos where estado='activo' group by entidad";
                           queries[0] = query;
@@ -1312,11 +2048,6 @@ function realizarBusqueda(){
                           delete nombres;
                           var nombres = new Array();
                           nombres[0] = "Stock en Bóveda";
-                          campos = 'Id-Entidad-Stock';
-                          largos = '1-3.0-1.8';
-                          mostrarCamposQuery = "1-1-1";
-                          tipMov = 'totalStock';
-                          x = 60;
                           break;                    
       case 'entidadMovimiento': delete nombres;
                                 var nombres = new Array();
@@ -1354,12 +2085,6 @@ function realizarBusqueda(){
                                 validarTipo = true;
                                 validarUser = true;
                                 ordenFecha = true;
-                                tipMov = 'entMov';
-                                campos = 'Id-Entidad-Nombre-BIN-Código-Contacto-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-&Uacute;ltimo Movimiento-Fecha-Hora-Cantidad-Tipo-Comentarios';
-                                //Orden de la consulta: entidad - nombre - bin - codigo - contacto - snapshot - stock - alarma1 - alarma2 - prodcom - fecha - hora - cantidad - tipo - comentarios
-                                largos = '0.6-1.6-1.9-1-1-1-1-1-1-1-1.1-1.5-1.5-0.8-1.2-1.4-2';
-                                mostrarCamposQuery = '1-1-1-0-0-0-0-0-0-0-0-0-1-1-1-1-1';
-                                x = 40;
                                 break;                       
       case 'productoMovimiento':  for (var k in idProds){
                                     query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
@@ -1386,11 +2111,6 @@ function realizarBusqueda(){
                                     tipoConsultas.push(tipoConsulta);
                                     prodHint = $("#productoMovimiento").val();
                                   }
-                                  tipMov = 'prodMov';
-                                  campos = 'Id-Entidad-Nombre-BIN-Código-Contacto-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-&Uacute;ltimo Movimiento-Fecha-Hora-Cantidad-Tipo-Comentarios';
-                                  //Orden de la consulta: entidad - nombre - bin - codigo - snapshot - stock - alarma - prodcom - fecha - hora - cantidad - tipo - comentarios
-                                  largos = '0.4-1.5-1.8-1-1-1-1-1-1-1-1.1-1.5-1.5-0.8-1.2-1.4-2';
-                                  mostrarCamposQuery = '1-0-0-0-0-0-0-0-0-0-0-0-1-1-1-1-1';
                                   break;
       default: break;
     }
@@ -1458,6 +2178,10 @@ function realizarBusqueda(){
                         mesSiguiente = 1;
                         añoFin = parseInt(año, 10) + 1;
                       }
+                      if (mesSiguiente < 10) 
+                        {
+                        mesSiguiente = '0'+mesSiguiente;
+                      }
                       fin = añoFin+"-"+mesSiguiente+"-01";
                       var mesMostrar = '';
                       switch (mes) {
@@ -1495,747 +2219,46 @@ function realizarBusqueda(){
         case 'todos': break;
         default: break;
       }
-      if (rangoFecha !== null) {
-        query += rangoFecha;
-        consultaCSV += rangoFecha;
-      } 
     }
     
     if (validado) 
       {
-      var mensajeTipo = null;  
-      if (validarTipo) {    
-        if (tipo !== 'Todos') {
-          query += " and tipo='"+tipo+"'";
-          consultaCSV += " and tipo='"+tipo+"'";
-          mensajeTipo = "del tipo "+tipo;
-        }
-        else {
-          mensajeTipo = "de todos los tipos";
-        };
-      }
-      
-      var mensajeUsuario = null;
-      if (validarUser) {
-        if (idUser !== 'todos') {
-          query += " and (control1="+idUser+" or control2="+idUser+")";
-          consultaCSV += " and (control1="+idUser+" or control2="+idUser+")";
-          mensajeUsuario = " en los que está involucrado el usuario "+nombreUsuario;
-        }
-      }
-      
-      if (ordenFecha) {
-       query += " order by entidad asc, nombre_plastico asc, movimientos.fecha desc, hora desc,  idprod";
-        consultaCSV += " order by entidad asc, nombre_plastico asc, movimientos.fecha desc, hora desc, idprod";
-      }
-      else {
-        query += " order by entidad asc, nombre_plastico asc, idprod asc";
-        consultaCSV += " order by entidad asc, nombre_plastico asc, idprod asc";
-      }
-      //consultaCSV += ")";
-            
-//query += " LIMIT 950";
-      var url = "data/selectQueryJSON.php";
-      
-      $("#main-content").empty();
-      
-      var mostrarGlobal = '<ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">';
-      var activo = '';
-      
       for (var n in queries){
-        if (n == 0) {
-          activo = 'active';
+        if (rangoFecha !== null) {
+          queries[n] += rangoFecha;
+          consultasCSV[n] += rangoFecha; 
+        }
+        var mensajeTipo = null;  
+        if (validarTipo) {   
+          if (tipo !== 'Todos') {
+            queries[n] += " and tipo='"+tipo+"'";
+            consultasCSV[n] += " and tipo='"+tipo+"'";
+            mensajeTipo = "del tipo "+tipo;
+          }
+          else {
+            mensajeTipo = "de todos los tipos";
+          };
+        }
+
+        var mensajeUsuario = null;
+        if (validarUser) {
+          if (idUser !== 'todos') {
+            queries[n] += " and (control1="+idUser+" or control2="+idUser+")";
+            consultasCSV[n] += " and (control1="+idUser+" or control2="+idUser+")";
+            mensajeUsuario = " en los que está involucrado el usuario "+nombreUsuario;
+          }
+        }
+
+        if (ordenFecha) {
+          queries[n] += " order by entidad asc, nombre_plastico asc, movimientos.fecha desc, hora desc,  idprod";
+          consultasCSV[n] += " order by entidad asc, nombre_plastico asc, movimientos.fecha desc, hora desc, idprod";
         }
         else {
-          activo = '';
+          queries[n] += " order by entidad asc, nombre_plastico asc, idprod asc";
+          consultasCSV[n] += " order by entidad asc, nombre_plastico asc, idprod asc";
         }
-        mostrarGlobal += '<li class="nav-item  rounded-right rounded-left">\n\
-                            <a class="nav-link '+activo+'" id="pills-'+idProds[n]+'-tab" data-toggle="pill" href="#'+idProds[n]+'" role="tab" aria-controls="'+nombres[n]+'" aria-selected="true">'+nombres[n]+'</a>\n\
-                          </li>'; 
-      }
-      mostrarGlobal += '</ul>';
-      mostrarGlobal += '<div class="tab-content rounded-right" id="pills-tabContent">';
-      
-      var jsonQuery = JSON.stringify(queries);
-
-      $.getJSON(url, {query: ""+jsonQuery+""}).done(function(request){
-        for (var j in request){
-          var datos = request[j].resultado;
-          var totalDatos = request[j].rows;
-          if (j == 0) {
-            activo = 'fade show active';
-          }
-          else {
-            activo = 'fade';
-          }
-          var divi = '<div class="tab-pane '+activo+' rounded-right" id="'+idProds[j]+'" role="tabpanel" aria-labelledby="pills-home-tab">'; 
-          var mostrar = '';
-          mostrar += divi;
-          var titulo = "<h2>Resultado de la búsqueda</h2>";
-          mostrar += titulo;
-          var mensajeConsulta = "Consulta "+tipoConsultas[j];
-          if (mensajeTipo !== null) {
-            mensajeConsulta += " "+mensajeTipo;
-          }
-          mensajeConsulta += " "+mensajeFecha;
-          if (mensajeUsuario !== null) {
-            mensajeConsulta += mensajeUsuario;
-          } 
-          mostrar += "<h3>"+mensajeConsulta+"</h3>";
-          
-          if (totalDatos >= 1) 
-            {
-            var formu = '<form name="resultadoBusqueda" id="resultadoBusqueda_'+j+'" target="_blank" action="exportar.php" method="POST" class="exportarForm">';
-            var tabla = '<table name="producto" class="tabla2">';
-                        
-            switch(radio) {
-              case 'entidadStock':  tabla += '<tr><th class="tituloTabla" colspan="9">CONSULTA DE STOCK</th></tr>';
-                                    tabla += '<tr>\n\
-                                                <th>Item</th>\n\
-                                                <th>Entidad</th>\n\
-                                                <th>Nombre</th>\n\
-                                                <th>BIN</th>\n\
-                                                <th>Código</th>\n\
-                                                <th>Snapshot</th>\n\
-                                                <th>&Uacute;ltimo Movimiento</th>\n\
-                                                <th>Stock</th>\n\
-                                                <th>Mensaje</th>\n\
-                                             </tr>';
-                                    var indice = 1;
-                                    var total = 0;
-                                    for (var i in datos) { 
-                                      var entidad = datos[i]["entidad"];
-                                      var nombre = datos[i]['nombre_plastico'];
-                                      var bin = datos[i]['bin'];
-                                      var snapshot = datos[i]['snapshot'];
-                                      var codigo_emsa = datos[i]['codigo_emsa'];
-                                      var stock = parseInt(datos[i]['stock'], 10);
-                                      var alarma1 = parseInt(datos[i]['alarma1'], 10);
-                                      var alarma2 = parseInt(datos[i]['alarma2'], 10);
-                                      var ultimoMovimiento = datos[i]['ultimoMovimiento'];
-                                      if (ultimoMovimiento === null) {
-                                        ultimoMovimiento = '';
-                                      }
-                                      var mensaje = datos[i]['prodcom'];
-                                      var claseComentario = "";
-                                      if ((mensaje === "undefined")||(mensaje === null)||(mensaje === "")) 
-                                        {
-                                        mensaje = "";
-                                        claseComentario = "";
-                                      }
-                                      else {
-                                        var patron = "dif";
-                                        var buscar = mensaje.search(new RegExp(patron, "i"));
-                                        if (buscar !== -1){
-                                          claseComentario = "alarma1";
-                                        }
-                                      }
-                                      var claseResaltado = "alarma1";
-                                      if ((stock < alarma1) && (stock > alarma2)){
-                                        claseResaltado = "alarma1";
-                                      }
-                                      else {
-                                        if (stock < alarma2) {
-                                          claseResaltado = "alarma2";
-                                        }
-                                        else {
-                                          claseResaltado = "resaltado italica";
-                                        }
-                                      }  
-                                      if ((bin === 'SIN BIN')||(bin === null)) 
-                                        {
-                                        bin = 'N/D o N/C';
-                                      }
-                                      tabla += '<tr>\n\
-                                                  <td>'+indice+'</td>\n\
-                                                  <td style="text-align: left">'+entidad+'</td>\n\
-                                                  <td>'+nombre+'</td>\n\
-                                                  <td nowrap>'+bin+'</td>\n\
-                                                  <td>'+codigo_emsa+'</td>\n\
-                                                  <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="76" width="120"></img></td>\n\
-                                                  <td>'+ultimoMovimiento+'</td>\n\
-                                                  <td class="'+claseResaltado+'" style="text-align: right">'+stock.toLocaleString()+'</td>\n\
-                                                  <td class="'+claseComentario+'" >'+mensaje+'</td>\n\
-                                                </tr>';
-                                      indice++;
-                                      total += stock;
-                                    }
-                                    if (entidadesStock[0] !== 'todos'){
-                                      tabla += '<caption>Stock de la entidad: '+entidad+'</caption>';
-                                    }
-                                    else {
-                                      tabla += '<caption>Stock de todas las entidades</caption>';
-                                    }
-                                    tabla += '<tr><th colspan="7" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td><th></th></tr>';
-
-                                    tabla += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
-                                                  <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="1"></td>\n\
-                                                  <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
-                                                  <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
-                                                  <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                                                  <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
-                                                  <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                  <td style="display:none"><input type="text" id="entidad_'+j+'" name="entidad_'+j+'" value="'+entidadesStock[j]+'"></td>\n\
-                                                  <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                  <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+tipoConsultas[j]+'"></td>\n\
-                                                  <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
-                                                </tr>';
-                                    tabla += '<tr>\n\
-                                                <td class="pieTabla" colspan="9">\n\
-                                                  <input type="button" id="1" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
-                                                </td>\n\
-                                              </tr>\n\
-                                            </table>';
-                                    break;
-              case 'productoStock': var bin = datos[0]['bin'];
-                                    //var produ = datos[0]["idProd"];
-                                    if ((bin === 'SIN BIN')||(bin === null)) 
-                                        {
-                                        bin = 'N/D o N/C';
-                                      }
-                                    var alarma1 = parseInt(datos[0]['alarma1'], 10);
-                                    var alarma2 = parseInt(datos[0]['alarma2'], 10);
-                                    var stock = parseInt(datos[0]['stock'], 10);
-                                    var snapshot = datos[0]['snapshot'];
-                                    var ultimoMovimiento = datos[0]['ultimoMovimiento'];
-                                    if (ultimoMovimiento === null) {
-                                        ultimoMovimiento = '';
-                                      }
-                                    var contacto = datos[0]['contacto'];
-                                    if (contacto === null) 
-                                        {
-                                        contacto = '';
-                                      }
-                                    var prodcom = datos[0]['prodcom'];
-                                    if (prodcom === null) 
-                                        {
-                                        prodcom = '';
-                                      }
-                                    var claseResaltado = "italica";
-                                    if ((stock < alarma1) && (stock > alarma2)){
-                                      claseResaltado = "alarma1";
-                                    }
-                                    else {
-                                      if (stock < alarma2) {
-                                        claseResaltado = "alarma2";
-                                      }
-                                      else {
-                                        claseResaltado = "resaltado italica";
-                                      }
-                                    } 
-                                    tabla += '<caption>Stock del producto: '+datos[0]['nombre_plastico']+'</caption>';
-                                    tabla += '<tr>\n\
-                                                <th colspan="2" class="tituloTabla">DETALLES</th>\n\
-                                             </tr>';                       
-                                    tabla += '<tr><th style="text-align:left">Nombre:</th><td>'+datos[0]['nombre_plastico']+'</td></tr>';
-                                    tabla += '<tr><th style="text-align:left">Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
-                                    tabla += '<tr><th style="text-align:left">C&oacute;digo:</th><td>'+datos[0]['codigo_emsa']+'</td></tr>';
-                                    tabla += '<tr><th style="text-align:left">BIN:</th><td nowrap>'+bin+'</td></tr>';
-                                    tabla += '<tr><th style="text-align:left">Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
-                                    tabla += '<tr><th style="text-align:left">Contacto:</th><td>'+contacto+'</td></tr>';
-                                    tabla += '<tr><th style="text-align:left">Comentarios:</th><td>'+prodcom+'</td></tr>';
-                                    tabla += '<tr><th style="text-align:left">&Uacute;ltimo Movimiento:</th><td>'+ultimoMovimiento+'</td></tr>';
-                                    tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
-                                    tabla += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
-                                                  <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="2"></td>\n\
-                                                  <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
-                                                  <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
-                                                  <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                                                  <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
-                                                  <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombresProductos[j]+'"></td>\n\
-                                                  <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                    <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProds[j]+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
-                                                  </tr>';
-                                      tabla += '<tr>\n\
-                                                  <td class="pieTabla" colspan="2">\n\
-                                                    <input type="button" id="2" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
-                                                  </td>\n\
-                                                </tr>\n\
-                                              </table>';
-                                      break;
-                case 'totalStock':  tabla += '<caption>Stock total en b&oacute;veda.</caption>';
-                                    tabla += '<tr>\n\
-                                                <th colspan="3" class="tituloTabla">DETALLES</th>\n\
-                                              </tr>';
-                                    tabla += '<tr>\n\
-                                                  <th>Item</th>\n\
-                                                  <th>Entidad</th>\n\
-                                                  <th>Stock</th>\n\
-                                               </tr>';          
-                                    var indice = 1;
-                                    var total = 0;
-                                    for (var i in datos) { 
-                                      //var produ = datos[i]["idProd"];
-                                      var entidad = datos[i]["entidad"];
-                                      //var nombre = datos[i]['nombre_plastico'];
-                                      var bin = datos[i]['bin'];
-                                      var codigo_emsa = datos[i]['codigo_emsa'];
-                                      var stock = datos[i]['stock'];
-                                      var subtotal = parseInt(datos[i]['subtotal'], 10);
-                                      if ((bin === 'SIN BIN')||(bin === null)) 
-                                        {
-                                        bin = 'N/D o N/C';
-                                      }
-                                      tabla += '<tr>\n\
-                                                  <td>'+indice+'</td>\n\
-                                                  <td style="text-align: left">'+entidad+'</td>\n\
-                                                  <td class="resaltado italica" style="text-align: right">'+subtotal.toLocaleString()+'</td>\n\
-                                                </tr>';
-                                      indice++;  
-                                      total += subtotal;
-                                    }
-                                    tabla += '<tr><th colspan="2" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td></tr>';
-                                    tabla += '<tr><td style="display:none"><input type="text" id="query_0" name="query_0" value="'+queries[j]+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="3"></td>\n\
-                                                <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
-                                                <td style="display:none"><input type="text" id="consultaCSV_0" name="consultaCSV_0" value="'+consultasCSV[j]+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                <td style="display:none"><input type="text" id="tipoConsulta_0" name="tipoConsulta_0" value="'+mensajeConsulta+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
-                                              </tr>';
-                                    tabla += '<tr>\n\
-                                                <td class="pieTabla" colspan="3">\n\
-                                                  <input type="button" id="3" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
-                                                </td>\n\
-                                              </tr>\n\
-                                            </table>';              
-                                    break;
-                case 'entidadMovimiento': tabla += '<tr><th class="tituloTabla" colspan="11">CONSULTA DE MOVIMIENTOS</th></tr>';
-                                          tabla += '<tr>\n\
-                                                      <th>Item</th>\n\
-                                                      <th>Fecha</th>\n\
-                                                      <th>Hora</th>\n\
-                                                      <th>Entidad</th>\n\
-                                                      <th>Nombre</th>\n\
-                                                      <th>BIN</th>\n\
-                                                      <th>Código</th>\n\
-                                                      <th>Snapshot</th>\n\
-                                                      <th>Tipo</th>\n\
-                                                      <th>Cantidad</th>\n\
-                                                      <th>Comentarios</th>\n\
-                                                   </tr>';
-                                          var indice = 1;
-                                          var productoViejo = datos[0]['nombre_plastico'];
-                                          var subtotalRetiro = 0;
-                                          var subtotalIngreso = 0;
-                                          var subtotalReno = 0;
-                                          var subtotalDestruccion = 0;
-                                          var totalConsumos = 0;
-
-                                          for (var i in datos) { 
-                                            //var produ = datos[i]["idProd"];
-                                            var idmov = datos[i]["idmov"];
-                                            var entidad = datos[i]["entidad"];
-                                            var nombre = datos[i]['nombre_plastico'];
-                                            var cantidad = parseInt(datos[i]['cantidad'], 10);
-                                            var bin = datos[i]['bin'];
-                                            var codigo_emsa = datos[i]['codigo_emsa'];
-                                            var tipo1 = datos[i]['tipo'];
-                                            var snapshot = datos[i]['snapshot'];
-                                            var fecha = datos[i]['fecha'];
-                                            var hora = datos[i]["hora"];    
-
-                                            var alarma1 = parseInt(datos[i]['alarma1'], 10);
-                                            var alarma2 = parseInt(datos[i]['alarma2'], 10);
-                                            var stock = parseInt(datos[i]['stock'], 10);
-                                            var claseResaltado = '';
-                                            if ((stock < alarma1) && (stock > alarma2)){
-                                              claseResaltado = "alarma1";
-                                            }
-                                            else {
-                                              if (stock < alarma2) {
-                                                claseResaltado = "alarma2";
-                                              }
-                                              else {
-                                                claseResaltado = "resaltado";
-                                              }
-                                            }  
-                                            var comentarios = datos[i]['comentarios'];
-                                            if ((comentarios === "undefined")||(comentarios === null)) {
-                                                comentarios = "";
-                                              }
-                                            if ((bin === 'SIN BIN')||(bin === null)) 
-                                              {
-                                              bin = 'N/D o N/C';
-                                            }
-
-                                            if (productoViejo !== nombre) {
-                                              productoViejo = nombre;
-                                              if (subtotalRetiro > 0) {
-                                                tabla += '<tr>\n\
-                                                            <td colspan="9" class="negrita">Total Retiros:</td>\n\
-                                                            <td class="subtotal" colspan="2">'+subtotalRetiro.toLocaleString()+'</td>\n\
-                                                          </tr>';
-                                                subtotalRetiro = 0;
-                                              }
-                                              if (subtotalReno > 0) {
-                                                tabla += '<tr>\n\
-                                                            <td colspan="9" class="negrita">Total Renovaciones:</td>\n\
-                                                            <td class="subtotal" colspan="2">'+subtotalReno.toLocaleString()+'</td>\n\
-                                                          </tr>';
-                                                subtotalReno = 0;
-                                              }
-                                              if (subtotalDestruccion > 0) {
-                                                tabla += '<tr>\n\
-                                                            <td colspan="9" class="negrita">Total Destrucciones:</td>\n\
-                                                            <td class="subtotal" colspan="2">'+subtotalDestruccion.toLocaleString()+'</td>\n\
-                                                          </tr>';
-                                                subtotalDestruccion = 0;
-                                              }
-                                              if (totalConsumos > 0) {
-                                                tabla += '<tr>\n\
-                                                            <td colspan="9" class="negrita">Total de Consumos:</td>\n\
-                                                            <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
-                                                          </tr>';
-                                                totalConsumos = 0;
-                                              }
-                                              if (subtotalIngreso > 0) {
-                                                tabla += '<tr>\n\
-                                                            <td colspan="9" class="negrita">Total de Ingresos:</td>\n\
-                                                            <td class="totalIngresos" colspan="2">'+subtotalIngreso.toLocaleString()+'</td>\n\
-                                                          </tr>';
-                                                subtotalIngreso = 0;
-                                              }
-
-                                              tabla += '<th colspan="11">&nbsp;\n\
-                                                        </th>';
-                                              switch (tipo1){
-                                                case "Retiro": subtotalRetiro = cantidad;
-                                                               break;
-                                                case "Ingreso": subtotalIngreso = cantidad;
-                                                                break;
-                                                case "Renovación": subtotalReno = cantidad;
-                                                                    break;
-                                                case "Destrucción": subtotalDestruccion = cantidad;
-                                                                    break;
-                                                default: break;
-                                              }
-                                              totalConsumos = subtotalRetiro + subtotalReno + subtotalDestruccion;
-                                            }
-                                            else {
-                                              switch (tipo1){
-                                                case "Retiro": subtotalRetiro = subtotalRetiro + cantidad;
-                                                               break;
-                                                case "Ingreso": subtotalIngreso = subtotalIngreso + cantidad;
-                                                                break;
-                                                case "Renovación": subtotalReno = subtotalReno + cantidad;
-                                                                    break;
-                                                case "Destrucción": subtotalDestruccion = subtotalDestruccion + cantidad;
-                                                                    break;
-                                                default: break;
-                                              }
-                                              if (tipo1 !== 'Ingreso') {
-                                                totalConsumos = totalConsumos + cantidad;
-                                              }
-                                            }
-
-                                            tabla += '<tr>\n\
-                                                        <td>'+indice+'</td>\n\
-                                                        <td>'+fecha+'</td>\n\
-                                                        <td>'+hora+'</td>\n\
-                                                        <td>'+entidad+'</td>\n\
-                                                        <td>'+nombre+'</td>\n\
-                                                        <td nowrap>'+bin+'</td>\n\
-                                                        <td>'+codigo_emsa+'</td>\n\
-                                                        <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="75" width="120"></img></td>\n\
-                                                        <td>'+tipo1+'</td>\n\
-                                                        <td class="'+claseResaltado+'"><a href="editarMovimiento.php?id='+idmov+'" target="_blank">'+cantidad.toLocaleString()+'</a></td>\n\
-                                                        <td>'+comentarios+'</td>\n\
-                                                      </tr>';        
-                                            indice++;  
-                                          }
-                                          if (subtotalRetiro > 0) {
-                                            tabla += '<tr>\n\
-                                                        <td colspan="9" class="negrita">Total Retiros:</td>\n\
-                                                        <td class="subtotal" colspan="2">'+subtotalRetiro.toLocaleString()+'</td>\n\
-                                                      </tr>';
-                                            subtotalRetiro = 0;
-                                          }
-                                          if (subtotalReno > 0) {
-                                            tabla += '<tr>\n\
-                                                        <td colspan="9" class="negrita">Total Renovaciones:</td>\n\
-                                                        <td class="subtotal" colspan="2">'+subtotalReno.toLocaleString()+'</td>\n\
-                                                      </tr>';
-                                            subtotalReno = 0;
-                                          }
-                                          if (subtotalDestruccion > 0) {
-                                            tabla += '<tr>\n\
-                                                        <td colspan="9" class="negrita">Total Destrucciones:</td>\n\
-                                                        <td class="subtotal" colspan="2">'+subtotalDestruccion.toLocaleString()+'</td>\n\
-                                                      </tr>';
-                                            subtotalDestruccion = 0;  
-                                          }
-                                          if (totalConsumos > 0) {
-                                            tabla += '<tr>\n\
-                                                        <td colspan="9" class="negrita">Total de Consumos:</td>\n\
-                                                        <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
-                                                      </tr>';
-                                            totalConsumos = 0;  
-                                          }
-                                          if (subtotalIngreso > 0) {
-                                            tabla += '<tr>\n\
-                                                        <td colspan="9" class="negrita">Total de Ingresos:</td>\n\
-                                                        <td class="totalIngresos" colspan="2">'+subtotalIngreso.toLocaleString()+'</td>\n\
-                                                      </tr>';
-                                            subtotalIngreso = 0;
-                                          }
-                                          
-                                          
-                                          if (entidadesMovimiento[0] !== 'todos'){
-                                            tabla += '<caption>Movimientos de la entidad: '+entidad+'</caption>';
-                                          }
-                                          else {
-                                            tabla += '<caption>Movimientos de todas las entidades</caption>';
-                                          }
-                                          tabla += '<th colspan="11">&nbsp;\n\
-                                                    </th>';
-                                          tabla += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="4"></td>\n\
-                                                        <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
-                                                        <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                        <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="usuario" name="usuario" value="'+idUser+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="criterioFecha" name="criterioFecha" value="'+radioFecha+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="inicio" name="inicio" value="'+inicio+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="fin" name="fin" value="'+fin+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="mes" name="mes" value="'+mes+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="año" name="año" value="'+año+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="entidad_'+j+'" name="entidad_'+j+'" value="'+entidadesMovimiento[j]+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
-                                                      </tr>';
-
-                                          tabla += '<tr>\n\
-                                                      <td class="pieTabla" colspan="11">\n\
-                                                        <input type="button" id="4" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
-                                                      </td>\n\
-                                                    </tr>\n\
-                                                  </table>';  
-                                          break;
-                case 'productoMovimiento':  var bin = datos[0]['bin'];
-                                            //var produ = datos[0]['produ'];
-                                            var ultimoMovimiento = datos[0]['ultimoMovimiento'];
-                                            if (ultimoMovimiento === null) {
-                                              ultimoMovimiento = '';
-                                            }
-                                            var contacto = datos[0]['contacto'];
-                                            if (contacto === null) 
-                                                {
-                                                contacto = '';
-                                              }
-                                            var comentarios = datos[0]['prodcom'];
-                                            if (comentarios === null) 
-                                                {
-                                                comentarios = '';
-                                              }  
-                                            if ((bin === 'SIN BIN')||(bin === null)) 
-                                                {
-                                                bin = 'N/D o N/C';
-                                              }
-                                            var snapshot = datos[0]['snapshot'];
-                                            var alarma1 = parseInt(datos[0]['alarma1'], 10);
-                                            var alarma2 = parseInt(datos[0]['alarma2'], 10);
-                                            var stock = parseInt(datos[0]['stock'],10);
-                                            if ((stock < alarma1) && (stock > alarma2)){
-                                              claseResaltado = "alarma1";
-                                            }
-                                            else {
-                                              if (stock < alarma2) {
-                                                claseResaltado = "alarma2";
-                                              }
-                                              else {
-                                                claseResaltado = "resaltado italica";
-                                              }
-                                            } 
-                                            tabla += '<caption>Detalles del producto: '+datos[0]['nombre_plastico']+'</caption>';
-                                            tabla += '<tr>\n\
-                                                        <th colspan="2" class="tituloTabla">PRODUCTO</th>\n\
-                                                     </tr>';                       
-                                            tabla += '<tr><th>Nombre:</th><td>'+datos[0]['nombre_plastico']+'</td></tr>';
-                                            tabla += '<tr><th>Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
-                                            tabla += '<tr><th>C&oacute;digo:</th><td>'+datos[0]['codigo_emsa']+'</td></tr>';
-                                            tabla += '<tr><th>BIN:</th><td nowrap>'+bin+'</td></tr>';
-                                            tabla += '<tr><th>Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
-                                            tabla += '<tr><th>Contacto:</th><td>'+contacto+'</td></tr>';
-                                            tabla += '<tr><th>Comentarios:</th><td>'+comentarios+'</td></tr>';
-                                            tabla += '<tr><th>&Uacute;ltimo Moviemiento:</th><td>'+ultimoMovimiento+'</td></tr>';
-                                            tabla += '<tr><th>Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
-                                            tabla += '<tr><th colspan="2" class="pieTabla centrado">FIN</th></tr></table>';
-
-                                            tabla += '<br>';
-                                            tabla += '<table name="movimientos" class="tabla2">';
-                                            tabla += '<caption>Movimientos del producto: '+datos[0]['nombre_plastico']+'</caption>';
-                                            tabla += '<tr><th class="tituloTabla" colspan="6">CONSULTA DE MOVIMIENTOS</th></tr>';
-                                            tabla += '<tr>\n\
-                                                        <th>Item</th>\n\
-                                                        <th>Fecha</th>\n\
-                                                        <th>Hora</th>\n\
-                                                        <th>Tipo</th>\n\
-                                                        <th>Cantidad</th>\n\
-                                                        <th>Comentarios</th>\n\
-                                                     </tr>';
-                                            var indice = 1;
-                                            var subtotalRetiro = 0;
-                                            var subtotalIngreso = 0;
-                                            var subtotalReno = 0;
-                                            var subtotalDestruccion = 0;
-                                            var totalConsumos = 0;
-
-                                            for (var i in datos) { 
-                                              var tipo2 = datos[i]['tipo'];
-                                              var fecha = datos[i]['fecha'];
-                                              var hora = datos[i]["hora"];
-                                              var idmov = datos[i]["idmov"];
-                                              var cantidad = parseInt(datos[i]['cantidad'], 10);
-                                              var alarma1 = parseInt(datos[i]['alarma1'], 10);
-                                              var alarma2 = parseInt(datos[i]['alarma2'], 10);
-                                              var stock = parseInt(datos[i]['stock'], 10);
-                                              var claseResaltado = '';
-                                              if ((stock < alarma1) && (stock > alarma2)){
-                                                claseResaltado = "alarma1";
-                                              }
-                                              else {
-                                                if (stock < alarma2) {
-                                                  claseResaltado = "alarma2";
-                                                }
-                                                else {
-                                                  claseResaltado = "resaltado";
-                                                }
-                                              } 
-                                              var comentarios = datos[i]['comentarios'];
-                                              if ((comentarios === "undefined")||(comentarios === null)) {
-                                                comentarios = "";
-                                              }
-                                              switch (tipo2){
-                                                case "Retiro": subtotalRetiro = subtotalRetiro + cantidad;
-                                                               break;
-                                                case "Ingreso": subtotalIngreso = subtotalIngreso + cantidad;
-                                                                break;
-                                                case "Renovación": subtotalReno = subtotalReno + cantidad;
-                                                                    break;
-                                                case "Destrucción": subtotalDestruccion = subtotalDestruccion + cantidad;
-                                                                    break;
-                                                default: break;
-                                              }
-                                              if (tipo2 !== 'Ingreso') {
-                                                totalConsumos = totalConsumos + cantidad;
-                                              }
-
-                                              tabla += '<tr>\n\
-                                                          <td>'+indice+'</td>\n\
-                                                          <td>'+fecha+'</td>\n\
-                                                          <td>'+hora+'</td>\n\
-                                                          <td>'+tipo2+'</td>\n\
-                                                          <td class="'+claseResaltado+'"><a href="editarMovimiento.php?id='+idmov+'">'+cantidad.toLocaleString()+'</a></td>\n\
-                                                          <td>'+comentarios+'</td>\n\
-                                                        </tr>';
-                                              indice++;  
-                                              }
-
-                                              if (subtotalRetiro > 0) {
-                                                tabla += '<tr>\n\
-                                                            <td colspan="4" class="negrita">Total Retiros:</td>\n\
-                                                            <td class="subtotal" colspan="2">'+subtotalRetiro.toLocaleString()+'</td>\n\
-                                                          </tr>';
-                                                subtotalRetiro = 0;
-                                              }
-                                              if (subtotalReno > 0) {
-                                                tabla += '<tr>\n\
-                                                            <td colspan="4" class="negrita">Total Renovaciones:</td>\n\
-                                                            <td class="subtotal" colspan="2">'+subtotalReno.toLocaleString()+'</td>\n\
-                                                          </tr>';
-                                                subtotalReno = 0;
-                                              }
-                                              if (subtotalDestruccion > 0) {
-                                                tabla += '<tr>\n\
-                                                            <td colspan="4" class="negrita">Total Destrucciones:</td>\n\
-                                                            <td class="subtotal" colspan="2">'+subtotalDestruccion.toLocaleString()+'</td>\n\
-                                                          </tr>';
-                                                subtotalDestruccion = 0;  
-                                              }
-                                              if (totalConsumos > 0) {
-                                                tabla += '<tr>\n\
-                                                            <td colspan="4" class="negrita">Total de Consumos:</td>\n\
-                                                            <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
-                                                          </tr>';
-                                                totalConsumos = 0;  
-                                              }
-                                              if (subtotalIngreso > 0) {
-                                                tabla += '<tr>\n\
-                                                            <td colspan="4" class="negrita">Total de Ingresos:</td>\n\
-                                                            <td class="totalIngresos" colspan="2">'+subtotalIngreso.toLocaleString()+'</td>\n\
-                                                          </tr>';
-                                                subtotalIngreso = 0;
-                                              }
-
-                                              tabla += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="5"></td>\n\
-                                                          <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
-                                                          <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                          <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombresProductos[j]+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="criterioFecha" name="criterioFecha" value="'+radioFecha+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="inicio" name="inicio" value="'+inicio+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="fin" name="fin" value="'+fin+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="mes" name="mes" value="'+mes+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="año" name="año" value="'+año+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="usuario" name="usuario" value="'+idUser+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProds[j]+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
-                                                        </tr>';
-
-                                              tabla += '<tr>\n\
-                                                          <td class="pieTabla" colspan="6">\n\
-                                                            <input type="button" id="5" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
-                                                          </td>\n\
-                                                        </tr>\n\
-                                                      </table>';
-                                              break;
-                default: break;
-              }   
-            formu += tabla;
-            formu += '</form>'
-            mostrar += "<h3>Total de registros afectados: <font class='naranja'>"+totalDatos+"</font></h3>";
-            mostrar += formu;
-
-            if (idProds[j] === undefined) {
-              idProds[j] = '';
-            }
-            var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&id='+idProds[j]+'&ent='+ent[j]+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
-            mostrar += volver;
-            mostrar += '</div>';
-            $("#pills-tabContent").append(mostrar);
-            delete(totalDatos);
-            delete(datos);  
-            }/// FIN del if de totalDatos>1  
-          else {
-            mostrar += "<br><hr><h3>No existen registros para la consulta realizada.</h3><hr>";
-            var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&id='+idProds[j]+'&ent='+ent[j]+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
-            mostrar += volver;
-            mostrar += '</div>';
-            $("#pills-tabContent").append(mostrar);
-          }         
-        }
-      });
-        
-      mostrarGlobal += '</div>';
-      $("#main-content").append(mostrarGlobal);
-      
+      }  
+      mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha);
     }/// Fin del IF de validado
     else {
       alert('NO validado');//Igualmente no llega a esta etapa dado que al no ser válida retorna falso y sale.    
@@ -2494,7 +2517,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
 */
 function cargarProducto(idProd, selector){
   var url = "data/selectQuery.php";
-  var query = 'select idprod, nombre_plastico, entidad, codigo_emsa, bin, codigo_origen, contacto, snapshot, stock, alarma1, alarma2, ultimoMovimiento, comentarios from productos where idprod='+idProd;
+  var query = 'select idprod, nombre_plastico, entidad, codigo_emsa, bin, codigo_origen, contacto, snapshot, stock, alarma1, alarma2, ultimoMovimiento, comentarios from productos where idprod='+idProd+' limit 1';
   
   $.getJSON(url, {query: ""+query+""}).done(function(request) {
     var resultado = request["resultado"];
@@ -3430,7 +3453,7 @@ $(document).on("change focusin", "#hint", function (e){
   $("#stock").remove();
   $("#ultimoMov").remove();
   $("#comentHint").remove();
-  $("#historial").remove();
+  $(".popover").remove();
   var stock = $("#hint").find('option:selected').attr("stock");
   var comentarios = $("#hint").find('option:selected').attr("comentarios");
   var alarma1 = $("#hint").find('option:selected').attr("alarma1");
@@ -4256,7 +4279,7 @@ $(document).on("click", "#agregarUsuario", function(){
         $.getJSON(url, {query: ""+query+""}).done(function(request) {
           var resultado = request["resultado"];
           if (resultado === "OK") {  
-            var query = 'select max(idusuarios) as ultimoUser from usuarios';
+            var query = 'select max(idusuarios) as ultimoUser from usuarios limit 1';
             var url = "data/selectQuery.php";
             $.getJSON(url, {query: ""+query+""}).done(function(request) {
               var iduser = request.resultado[0]["ultimoUser"];
@@ -4562,6 +4585,15 @@ $(document).on("click", ".exportar", function (){
   //$("#param").val(param);
   $("#resultadoBusqueda_"+indice).submit();
 });//*** fin del click .exportar ***
+
+$(document).on("click", ".paginate", function (){
+  var page = $(this).attr('data');   
+  var offset = (parseInt(page, 10)-1)*tamPagina+1;
+  var indice = $(this).attr('i');
+  var query = $("#query_"+indice).val();
+  query += " limit "+offset+", "+tamPagina;
+  alert("indice: "+indice+"\nquery: "+query);
+});
 
 /**************************************************************************************************************************
 /// *************************************************** FIN BÚSQUEDAS *****************************************************
