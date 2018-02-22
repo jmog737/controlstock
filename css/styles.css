@@ -456,17 +456,19 @@ hr {
 
 /********************************* PAGINAS ***********************************/
 .pagination {
-    height: 36px;
+    /*height: 36px;*/
     margin: auto;
+    width: 80%;
 }
 .pagination ul {
     border-radius: 3px 3px 3px 3px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    display: inline-block !important;
-    margin: auto;
+/*    box-shadow: 0 10px 10px rgba(255, 255, 255, 0.2);*/
+/*    display: inline-block !important;*/
+/*    margin: auto;*/
 }
 .pagination li {
-    display: inline !important;
+  display: inline !important;
+  
 }
 .pagination a {
     -moz-border-bottom-colors: none;
@@ -475,54 +477,34 @@ hr {
     -moz-border-right-colors: none;
     -moz-border-top-colors: none;
     border-color: #DDDDDD;
+    /*border-color: #fb4f4a;*/
     border-style: solid;
-    border-width: 1px 1px 1px 0;
+    border-width: 1px 1px 1px 1px;
     float: left;
     line-height: 34px;
-    padding: 0 14px;
+    padding: 0 10px;
     text-decoration: none;
+    /*background-color: #159e62;*/
 }
-.pagination a:hover, .pagination .active a {
-    background-color: #F5F5F5;
+.pagination a:hover {
     background-color: #f36464;
+    font-size: 1.5em;
+    cursor: pointer;
 }
-.pagination .active a {
+.pagination a:active {
     color: #999999;
     cursor: default;
 }
-.pagination .disabled a, .pagination .disabled a:hover {
-    background-color: transparent;
-    color: #999999;
-    cursor: default;
-}
-.pagination li:first-child a {
+.pagination li:first-child a{
     border-left-width: 1px;
-    border-radius: 3px 0 0 3px;
+    border-radius: 30px 0 0 30px;
 }
 .pagination li:last-child a {
-    border-radius: 0 3px 3px 0;
+    border-radius: 0 30px 30px 0;
 }
-.pagination-centered {
-    text-align: center;
+.pageActive {
+  background-color: #f36464;
 }
-.pagination-right {
-    text-align: right;
-}
-
-/*.paginate {
-  color: #2D2D28;
-  font-weight: bold;
-  text-decoration: none;
-  cursor:pointer;
-}
-
-.paginate a:hover{
-  color: #0066CC;
-  outline:0;
-  text-decoration:none;
-  font-weight: bold
-}*/
-
 /******************************** FIN PAGINAS ********************************/
 
 /* Popup container */
