@@ -21,6 +21,7 @@ $query = (array) json_decode($_GET["query"],true);
 
 ///Comento escritura en el log para evitar sobrecargar el archivo.
 //escribirLog($query);
+$limite = $tamPage;
 
 $datos = array();
 for ($i = 0; $i < count($query); $i++){
@@ -29,7 +30,7 @@ for ($i = 0; $i < count($query); $i++){
   $datos["$i"]['totalRows'] = $result1->num_rows;
   
   ///Recupero primera página para mostrar:
-  $query[$i] = $query[$i]." limit ".$tamPage;
+  $query[$i] = $query[$i]." limit ".$limite;
   $result = consultarBD($query[$i], $dbc);
 
   //$datos["$i"]['rows'] = $result->num_rows;

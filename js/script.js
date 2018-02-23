@@ -1258,13 +1258,17 @@ function mostrarTabla(radio, datos, j, todos, offset){
                           else {
                             tabla += '<caption>Stock de todas las entidades</caption>';
                           }
-                          tabla += '<tr><th colspan="7" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td><th></th></tr>';
+                          tabla += '<tr><th colspan="7" class="centrado">SUB-TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td><th></th></tr>';
                           tabla += '<tr>\n\
                                       <td class="pieTabla" colspan="9">\n\
                                         <input type="button" id="1" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                       </td>\n\
-                                    </tr>\n\
-                                  </table>';
+                                    </tr>';
+//                          subtotal = parseInt(total, 10)+parseInt(subtotal, 10);
+//                          tabla += '<tr>\n\
+//                                      <td><input type="text" id="subtotal" value="'+subtotal+'"></td>\n\
+//                                    </tr>\n\
+//                                  </table>';
                           break;
     case 'productoStock': var bin = datos[0]['bin'];
                           //var produ = datos[0]["idProd"];
@@ -4686,6 +4690,11 @@ $(document).on("click", ".paginate", function (){
   $(".nav-link.active").attr("activepage", ""+page+"");
   var indice = $(this).attr('i');
   var totalPaginas = parseInt($("#totalPaginas_"+indice).val(), 10);
+//  var ultima = false;
+//  if (page === totalPaginas){
+//    ultima = true;
+//  }
+//  var subtotal = parseInt($("#subtotal").val(), 10);
   var totalRegistros = parseInt($("#totalRegistros_"+indice).val(), 10);
   var offset = (page-1)*tamPagina;
   var primerRegistro = offset+1;
@@ -4739,7 +4748,7 @@ $(document).on("click", ".paginate", function (){
       $(".pagination[indice='"+indice+"'] li .anterior").remove();
       //$(".pagination li a[data='1']").addClass('pageActive');
     }
-
+    
     $(".pagination[indice='"+indice+"'] li a").each(function (){
       var indLi = parseInt($(this).attr('data'), 10);
       if (page === indLi){
