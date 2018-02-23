@@ -89,7 +89,7 @@ function showHint(str, id, seleccionado) {
       $("#historial").remove();
       
       var mostrar = '';
-      
+      var unico = '';
       if (totalSugerencias >= 1) {
         if (($("#productoGrafica").length > 0)||($("#producto").length > 0)){
           mostrar = '<select name="hint" id="hint" class="hint" size="15">';
@@ -101,6 +101,9 @@ function showHint(str, id, seleccionado) {
           mostrar += '<option value="NADA" name="NADA" selected>--Seleccionar--</option>';
         }
         for (var i in sugerencias) {
+          if (totalSugerencias === 1){
+            unico = parseInt(sugerencias[i]["idprod"], 10);
+          }
           var bin = sugerencias[i]["bin"];
           if ((bin === null)||(bin === '')) {
             bin = 'SIN BIN';
@@ -142,8 +145,7 @@ function showHint(str, id, seleccionado) {
         {
         $("#hint").focus();
       }
-      else {
-        
+      else {    
         switch(id) {
           case '#producto': $("#producto").focus();
                             break;
@@ -158,6 +160,7 @@ function showHint(str, id, seleccionado) {
       if (totalSugerencias === 1){
         ///Comentado por ahora pues Diego prefiere que NO salte de forma automática:
         //$("#comentarios").focus();
+        $("#hint option[value='"+unico+"'] ").attr("selected", true);
         //$("#cantidad").focus();
       }      
     });
@@ -1165,6 +1168,15 @@ function validarBusqueda() {
   
 }
 
+/**
+ * \brief Función que muestra el resultado de la consulta en pantalla. Arma la tabla con los datos pasados y luego la muestra en pantalla.
+ * @param {String} radio String con el tipo de consulta realizada para saber que tipo de tabla hay que armar. 
+ * @param {Array} datos Array de Strings con los datos a mostrar.
+ * @param {String} j String con el número de pestaña donde se tiene que mostrar la tabla. 
+ * @param {Boolean} todos Booleano que indica si la consutla realizada fue para todos los productos o entidades, o si fue sólo para algunos. Es para mostrar bien el caption de la tabla.
+ * @param {String} offset String con el número de registro donde comienza la tabla de entre todos los registros del resultado.
+ * @returns {String} String con el HTML para mostrar la tabla.
+ */
 function mostrarTabla(radio, datos, j, todos, offset){
   var tabla = '<table name="resultados" id="resultados_'+j+'" class="tabla2">';
   var rutaFoto = 'images/snapshots/';
@@ -1348,7 +1360,7 @@ function mostrarTabla(radio, datos, j, todos, offset){
                                     </tr>\n\
                                   </table>';              
                           break;
-      case 'entidadMovimiento': tabla += '<tr><th class="tituloTabla" colspan="11">CONSULTA DE MOVIMIENTOS</th></tr>';
+      case 'entidadMovimiento': tabla += '<tr><th class="tituloTabla" colspan="11">MOVIMIENTOS</th></tr>';
                                 tabla += '<tr>\n\
                                             <th>Item</th>\n\
                                             <th>Fecha</th>\n\
@@ -1578,6 +1590,7 @@ function mostrarTabla(radio, datos, j, todos, offset){
                                       claseResaltado = "resaltado italica";
                                     }
                                   } 
+                                  var tabla = '<table name="detallesProducto" id="detallesProducto_'+j+'" class="tabla2">';
                                   tabla += '<caption>Detalles del producto: '+datos[0]['nombre_plastico']+'</caption>';
                                   tabla += '<tr>\n\
                                               <th colspan="2" class="tituloTabla">PRODUCTO</th>\n\
@@ -1594,9 +1607,9 @@ function mostrarTabla(radio, datos, j, todos, offset){
                                   tabla += '<tr><th colspan="2" class="pieTabla centrado">FIN</th></tr></table>';
 
                                   tabla += '<br>';
-                                  tabla += '<table name="movimientos" class="tabla2">';
+                                  tabla += '<table name="movimientos" id="resultados_'+j+'" class="tabla2">';
                                   tabla += '<caption>Movimientos del producto: '+datos[0]['nombre_plastico']+'</caption>';
-                                  tabla += '<tr><th class="tituloTabla" colspan="6">CONSULTA DE MOVIMIENTOS</th></tr>';
+                                  tabla += '<tr><th class="tituloTabla" colspan="6">MOVIMIENTOS</th></tr>';
                                   tabla += '<tr>\n\
                                               <th>Item</th>\n\
                                               <th>Fecha</th>\n\
@@ -1711,6 +1724,24 @@ function mostrarTabla(radio, datos, j, todos, offset){
   return tabla;
 } 
 
+/**
+ * \brief Función que, en base a los parámetros pasados, ejecuta la o las consultas pertinentes
+ * @param {String} radio String que indica el tipo de consulta a realizar (stock de entidades o de productos, total en bóveda, o movimientos).
+ * @param {type} queries Array de Strings con la o las consultas a realizar.
+ * @param {type} consultasCSV Array de Strings con las consultas para generar el o los CSV.
+ * @param {type} idProds Array de Int con los ID del o de los productos.
+ * @param {type} tipoConsultas Array de Strings con el mensaje que indica los tipos de consultas realizadas.
+ * @param {type} entidadesStock Array de Strings con los nombres de la o las entidades seleccionadas para consultar su stock.
+ * @param {type} entidadesMovimiento Array de Strings con los nombres de la o las entidades seleccionadas para consultas sus movimientos.
+ * @param {type} nombresProductos Array de Strings con los nombres del o de los productos seleccionados.
+ * @param {type} nombres Array de Strings con el nombre a mostrar en las pestañas generadas.
+ * @param {type} ent Array de Strings con los nombres de las entidades seleccionadas.
+ * @param {String} prodHint String con la cadena usada para la búsqueda de productos.
+ * @param {String} mensajeTipo String con el tipo de consulta realizada (si fue stock o movimientos y de que entidad o producto). 
+ * @param {String} mensajeUsuario String con el usuario seleccionado, sólo en el caso se haya filtrado por algún usuario involucrado.
+ * @param {String} mensajeFecha String con el rango de fechas elegido para la consulta, o todo el rango en caso de no haberlo seleccionado.
+ * @returns {String} String con el HTML que contiene los títulos y la tabla a mostrar. La tabla la generará mostrarTabla a la cual se llama desde acá.
+ */
 function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha){
   var url = "data/selectQueryJSON.php";
 
@@ -1732,7 +1763,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
       activo = '';
     }
     mostrarGlobal += '<li class="nav-item  rounded-right rounded-left">\n\
-                        <a class="nav-link '+activo+'" id="pills-'+idProds[n]+'-tab" data-toggle="pill" href="#'+idProds[n]+'" role="tab" aria-controls="'+nombres[n]+'" aria-selected="true">'+nombres[n]+'</a>\n\
+                        <a class="nav-link '+activo+'" id="pills-'+idProds[n]+'-tab" activepage="1" data-toggle="pill" href="#'+idProds[n]+'" role="tab" aria-controls="'+nombres[n]+'" aria-selected="true">'+nombres[n]+'</a>\n\
                       </li>'; 
   }
   mostrarGlobal += '</ul>';
@@ -1750,12 +1781,12 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
       else {
         activo = 'fade';
       }
-      var divi = '<div class="tab-pane '+activo+' rounded-right" id="'+idProds[j]+'" role="tabpanel" aria-labelledby="pills-home-tab">'; 
+      var divi = '<div class="tab-pane '+activo+' rounded-right" id="'+idProds[j]+'" indice="'+j+'" role="tabpanel" aria-labelledby="pills-home-tab">'; 
       var mostrar = '';
       mostrar += divi;
       var titulo = "<h2 id='titulo'>Resultado de la búsqueda</h2>";
       mostrar += titulo;
-      var mensajeConsulta = "Consulta "+tipoConsultas[j];
+      var mensajeConsulta = tipoConsultas[j];
       if (mensajeTipo !== null) {
         mensajeConsulta += " "+mensajeTipo;
       }
@@ -1764,6 +1795,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         mensajeConsulta += mensajeUsuario;
       } 
       mostrar += "<h3>"+mensajeConsulta+"</h3>";
+      var mensajeTotalDatos = '';
       var todos = false;
       if (totalDatos >= 1) 
         {
@@ -1772,16 +1804,21 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
           case 'entidadStock':  if (entidadesStock[0] === 'todos'){
                                   todos = true;
                                 }
-                               break;
+                                mensajeTotalDatos = "<h3>Total de productos: <font class='naranja'>"+totalDatos+"</font></h3>";
+                                break;
           case 'productoStock': break;
-          case 'totalStock': break;
+          case 'totalStock':  mensajeTotalDatos = "<h3>Total de entidades: <font class='naranja'>"+totalDatos+"</font></h3>";
+                              break;
           case 'entidadMovimiento': if (entidadesMovimiento[0] === 'todos'){
                                       todos = true;
                                     }
+                                    mensajeTotalDatos = "<h3>Total de movimientos: <font class='naranja'>"+totalDatos+"</font></h3>";
                                     break;
-          case 'productoMovimiento': break;
+          case 'productoMovimiento':  mensajeTotalDatos = "<h3>Total de movimientos: <font class='naranja'>"+totalDatos+"</font></h3>";
+                                      break;
           default: break;
         }
+        
         var tabla = mostrarTabla(radio, datos, j, todos, 1); 
         
         formu += tabla;
@@ -1888,22 +1925,31 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         formu += datosOcultos;
         formu += '</form>';
         
-        mostrar += "<h3>Total de registros afectados: <font class='naranja'>"+totalDatos+"</font></h3>";
-        mostrar += formu;
+        if (mensajeTotalDatos !== ''){
+          mostrar += mensajeTotalDatos;
+        }
+        
 
         ///************************************ Comienzo paginación **********************************************************
-        var page = null;
-        if ($("#pagina").length > 0){
-          page = $("#pagina").val();
-        }
-        else {
-          page = 1;
-        }
+        
         var totalPaginas = Math.ceil(totalDatos/tamPagina);
+        var page = 1;
+        var ultimoRegistro = tamPagina;
+        if (tamPagina > totalDatos){
+          ultimoRegistro = totalDatos;
+        }
+        if (totalPaginas > 1){
+          var rango = "<h5 id='rango_"+j+"' class='rango'>(P&aacute;gina "+page+": registros del 1 al "+ultimoRegistro+")</h5>";
+          mostrar += rango;
+        }
+        
+        mostrar += formu;
+        
         if (totalPaginas > 1) {
-          var paginas = '<div class="pagination" id="paginas">\n\
+          var paginas = '<div class="pagination" id="paginas" indice="'+j+'">\n\
                           <ul>';
-          paginas += '<input style="display: none" type="text" id="totalPaginas" value="'+totalPaginas+'">';
+          paginas += '<input style="display: none" type="text" id="totalPaginas_'+j+'" value="'+totalPaginas+'">';
+          paginas += '<input style="display: none" type="text" id="totalRegistros_'+j+'" value="'+totalDatos+'">';
           for (var k=1;k<=totalPaginas;k++) {
             if (page === k) {
             //si muestro el índice de la página actual, no coloco enlace
@@ -2026,12 +2072,12 @@ function realizarBusqueda(){
                                 ent.push(entidadesStock[i]);
                                 query += " from productos where entidad='"+entidadesStock[i]+"' and estado='activo'";
                                 consultaCSV += " from productos where entidad='"+entidadesStock[i]+"' and estado='activo'";
-                                tipoConsulta = 'del stock de '+entidadesStock[i];
+                                tipoConsulta = 'Stock de '+entidadesStock[i];
                               } 
                               else {
                                 query += " from productos where estado='activo'";
                                 consultaCSV += " from productos where estado='activo'";
-                                tipoConsulta = 'del stock de todas las entidades';
+                                tipoConsulta = 'Stock de todas las entidades';
                                 todos = true;
                               }
                               queries.push(query);
@@ -2063,7 +2109,7 @@ function realizarBusqueda(){
                                 query += " from productos where idProd="+idProds[i];
                                 consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
                                 consultaCSV += " from productos where idProd="+idProds[i];
-                                tipoConsulta = 'de stock del producto '+nombres[i];
+                                tipoConsulta = 'Stock del producto '+nombres[i];
                                 queries.push(query);
                                 consultasCSV.push(consultaCSV);
                                 tipoConsultas.push(tipoConsulta);
@@ -2076,7 +2122,7 @@ function realizarBusqueda(){
                           queries[0] = query;
                           consultaCSV = "select entidad as Entidad, sum(stock) as Subtotal from productos where estado='activo' group by entidad";
                           consultasCSV[0] = consultaCSV;
-                          tipoConsulta = 'del total de plásticos en bóveda.';
+                          tipoConsulta = 'Total de plásticos en bóveda';
                           tipoConsultas[0] = tipoConsulta;
                           idProds[0] = 1;
                           delete nombres;
@@ -2093,10 +2139,10 @@ function realizarBusqueda(){
                                     ent = entidadesMovimiento[i];
                                       query += "and productos.entidad='"+entidadesMovimiento[i]+"'";
                                       consultaCSV += "and productos.entidad='"+entidadesMovimiento[i]+"'";
-                                      tipoConsulta = 'de los movimientos de '+entidadesMovimiento[i];
+                                      tipoConsulta = 'Movimientos de '+entidadesMovimiento[i];
                                   } 
                                   else {
-                                    tipoConsulta = 'de los movimientos de todas las entidades';
+                                    tipoConsulta = 'Movimientos de todas las entidades';
                                     todos = true;
                                   }
                                   queries.push(query);
@@ -2141,7 +2187,7 @@ function realizarBusqueda(){
                                       validarUser = true;
                                       ordenFecha = true;
                                     }
-                                    tipoConsulta = 'de los movimientos del producto '+nombres[k];
+                                    tipoConsulta = 'Movimientos del producto '+nombres[k];
                                     tipoConsultas.push(tipoConsulta);
                                     prodHint = $("#productoMovimiento").val();
                                   }
@@ -4637,9 +4683,17 @@ $(document).on("click", ".exportar", function (){
 ///Básicamente arma la consulta para mostrar la pagina solicitada y llama a la función para ejecutarla.
 $(document).on("click", ".paginate", function (){
   var page = parseInt($(this).attr('data'), 10);
-  var totalPaginas = parseInt($("#totalPaginas").val(), 10);
-  var offset = (page-1)*tamPagina;
+  $(".nav-link.active").attr("activepage", ""+page+"");
   var indice = $(this).attr('i');
+  var totalPaginas = parseInt($("#totalPaginas_"+indice).val(), 10);
+  var totalRegistros = parseInt($("#totalRegistros_"+indice).val(), 10);
+  var offset = (page-1)*tamPagina;
+  var primerRegistro = offset+1;
+  var ultimoRegistro = offset + tamPagina;
+  if (ultimoRegistro > totalRegistros){
+    ultimoRegistro = totalRegistros;
+  }
+  var rango = "<h5 id='rango_"+indice+"' class='rango'>(P&aacute;gina "+page+": registros del "+primerRegistro+" al "+ultimoRegistro+")</h4>";
   var query = $("#query_"+indice).val();
   query += " limit "+offset+", "+tamPagina;
   var idTipo = $("#idTipo").val();
@@ -4669,18 +4723,24 @@ $(document).on("click", ".paginate", function (){
     var datos = request.resultado;
     var tabla = mostrarTabla(radio, datos, indice, todos, offset+1);
     $("#resultados_"+indice+"").remove();
-    $("#resultadoBusqueda_"+indice+"").prepend(tabla);
+    if ($("#detallesProducto_"+indice+"").length > 0){
+      $("#detallesProducto_"+indice+"").remove();
+    }
+    $("#rango_"+indice+"").remove();
+    $("#resultadoBusqueda_"+indice+"").prepend(rango);
+    $("#resultadoBusqueda_"+indice+"").append(tabla);
+    
     if (page !== 1) {
       var anterior = '<li><a class="paginate anterior" i='+indice+' data="'+(page-1)+'">Anterior</a></li>';
-      $(".pagination li .anterior").remove();
-      $(".pagination ul").prepend(anterior); 
+      $(".pagination[indice='"+indice+"'] li .anterior").remove();
+      $(".pagination[indice='"+indice+"'] ul").prepend(anterior); 
     }
     else {
-      $(".pagination li .anterior").remove();
+      $(".pagination[indice='"+indice+"'] li .anterior").remove();
       //$(".pagination li a[data='1']").addClass('pageActive');
     }
 
-    $(".pagination li a").each(function (){
+    $(".pagination[indice='"+indice+"'] li a").each(function (){
       var indLi = parseInt($(this).attr('data'), 10);
       if (page === indLi){
         $(this).addClass('pageActive');   
@@ -4688,18 +4748,52 @@ $(document).on("click", ".paginate", function (){
       else {
         $(this).removeClass('pageActive');
       }
-      
       if (page !== totalPaginas){
         var siguiente = '<li><a class="paginate siguiente" i='+indice+' data="'+(page+1)+'">Siguiente</a></li>';
-        $(".pagination li .siguiente").remove();
-        $(".pagination ul").append(siguiente);
+        $(".pagination[indice='"+indice+"'] li .siguiente").remove();
+        $(".pagination[indice='"+indice+"'] ul").append(siguiente);
       }
       else {
-        $(".pagination li .siguiente").remove();
+        $(".pagination[indice='"+indice+"'] li .siguiente").remove();
       }
-    });
+    });  
     $('html, body').animate({scrollTop:136}, '10');
   });  
+});
+
+
+$(document).on("shown.bs.tab", "a[data-toggle='pill']",  function () {
+  /*var page = $(".nav-link.active").attr("activepage");
+  var indice = $(".tab-pane.active").attr("indice");
+  var totalPaginas = parseInt($("#totalPaginas_"+indice).val(), 10);
+  alert("indice: "+indice+"\nPagina: "+page+"\nTotalPaginas: "+totalPaginas);
+  if (page !== 1) {
+    var anterior = '<li><a class="paginate anterior" i='+indice+' data="'+(page-1)+'">Anterior</a></li>';
+    $(".pagination[indice='"+indice+"'] li .anterior").remove();
+    $(".pagination[indice='"+indice+"'] ul").prepend(anterior); 
+  }
+  else {
+    $(".pagination[indice='"+indice+"'] li .anterior").remove();
+    //$(".pagination li a[data='1']").addClass('pageActive');
+  }
+
+  $(".pagination[indice='"+indice+"'] li a").each(function (){
+    var indLi = parseInt($(this).attr('data'), 10);
+    if (page === indLi){
+      $(this).addClass('pageActive');   
+    }
+    else {
+      $(this).removeClass('pageActive');
+    }
+    if (page !== totalPaginas){
+      var siguiente = '<li><a class="paginate siguiente" i='+indice+' data="'+(page+1)+'">Siguiente</a></li>';
+      $(".pagination[indice='"+indice+"'] li .siguiente").remove();
+      $(".pagination[indice='"+indice+"'] ul").append(siguiente);
+    }
+    else {
+      $(".pagination[indice='"+indice+"'] li .siguiente").remove();
+    }
+  }); */
 });
 
 /*****************************************************************************************************************************

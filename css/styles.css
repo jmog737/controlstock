@@ -130,7 +130,9 @@ h2 {
 h3 h4{
   color:#fff;
 }
-
+.rango {
+  font-style: italic;
+}
 input[type=checkbox] {
   zoom: 1.4;
 }
@@ -464,11 +466,11 @@ hr {
     border-radius: 3px 3px 3px 3px;
 /*    box-shadow: 0 10px 10px rgba(255, 255, 255, 0.2);*/
 /*    display: inline-block !important;*/
-/*    margin: auto;*/
+    margin: auto;
 }
 .pagination li {
   display: inline !important;
-  
+  margin: auto;
 }
 .pagination a {
     -moz-border-bottom-colors: none;

@@ -7,7 +7,7 @@ header('content-type:text/css');
 /****** FIN STYLES *******/
 
 /******* STYLES1: ********/ 
-//$colorFondo = '#396540';
+//$colorFondo = '#d29238';
 /****** FIN STYLES1 ******/
 
 /******** STYLES2: *******/ 
@@ -147,7 +147,9 @@ h2 {
 h3 h4{
   color:#fff;
 }
-
+.rango {
+  font-style: italic;
+}
 input[type=checkbox] {
   zoom: 1.4;
 }
@@ -470,6 +472,59 @@ hr {
   color: #000;
 }
 /************************* END HOME PAGE *************************************/
+
+/********************************* PAGINAS ***********************************/
+.pagination {
+    /*height: 36px;*/
+    margin: auto;
+    width: 80%;
+}
+.pagination ul {
+    border-radius: 3px 3px 3px 3px;
+/*    box-shadow: 0 10px 10px rgba(255, 255, 255, 0.2);*/
+/*    display: inline-block !important;*/
+    margin: auto;
+}
+.pagination li {
+  display: inline !important;
+  margin: auto;
+}
+.pagination a {
+    -moz-border-bottom-colors: none;
+    -moz-border-image: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-color: #DDDDDD;
+    /*border-color: #fb4f4a;*/
+    border-style: solid;
+    border-width: 1px 1px 1px 1px;
+    float: left;
+    line-height: 34px;
+    padding: 0 10px;
+    text-decoration: none;
+    /*background-color: #159e62;*/
+}
+.pagination a:hover {
+    background-color: #f36464;
+    font-size: 1.5em;
+    cursor: pointer;
+}
+.pagination a:active {
+    color: #999999;
+    cursor: default;
+}
+.pagination li:first-child a{
+    border-left-width: 1px;
+    border-radius: 30px 0 0 30px;
+}
+.pagination li:last-child a {
+    border-radius: 0 30px 30px 0;
+}
+.pageActive {
+  background-color: #f36464;
+}
+/******************************** FIN PAGINAS ********************************/
 
 /* Popup container */
 .popup {

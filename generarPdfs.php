@@ -101,7 +101,7 @@ class PDF extends PDF_MC_Table
     $this->SetFont('Courier', 'B', 12);
     $this->SetY(25);
 
-    $tipoTotal = "Consulta del stock de: $entidad";
+    $tipoTotal = "Stock de: $entidad";
     $tam = $this->GetStringWidth($tipoTotal);
     $xInicio = $xTipo + (($anchoTipo-$tam)/2);
     $this->SetX($xInicio);
@@ -109,7 +109,7 @@ class PDF extends PDF_MC_Table
     $nbTitulo = $this->NbLines($anchoTipo,$tipoTotal);
     $hTitulo=$h*$nbTitulo;
     
-    $tam1 = $this->GetStringWidth("Consulta del stock de:");
+    $tam1 = $this->GetStringWidth("Stock de:");
     
     if ($tipo) {
       $this->SetX($xTipo);
@@ -117,13 +117,13 @@ class PDF extends PDF_MC_Table
     }
     else {
       if ($nbTitulo > 1) {
-        $this->Cell($tam1,$h, "Consulta del stock de:",0, 0, 'R', 0);
+        $this->Cell($tam1,$h, "Stock de:",0, 0, 'R', 0);
         $this->SetTextColor(255, 0, 0);
         $this->Cell($tamEntidad,$h, $entidad,0, 0,'L', 0);
         $this->SetTextColor(0);
       }
       else {
-        $this->Cell($tam1,$hTitulo, "Consulta del stock de:",0, 0,'R', 0);
+        $this->Cell($tam1,$hTitulo, "Stock de:",0, 0,'R', 0);
         $this->SetTextColor(255, 0, 0);
         $this->Cell($tamEntidad,$hTitulo, $entidad,0, 0,'L', 0);
         $this->SetTextColor(0);
@@ -222,13 +222,13 @@ class PDF extends PDF_MC_Table
         }
         else {
           if ($nbTitulo > 1) {
-            $this->Cell($tam1,$h, "Consulta del stock de:",0, 0, 'R', 0);
+            $this->Cell($tam1,$h, "Stock de:",0, 0, 'R', 0);
             $this->SetTextColor(255, 0, 0);
             $this->Cell($tamEntidad,$h, $entidad."(cont.)",0, 0,'L', 0);
             $this->SetTextColor(0);
           }
           else {
-            $this->Cell($tam1,$hTitulo, "Consulta del stock de:",0, 0,'R', 0);
+            $this->Cell($tam1,$hTitulo, "Stock de:",0, 0,'R', 0);
             $this->SetTextColor(255, 0, 0);
             $this->Cell($tamEntidad,$hTitulo, $entidad."(cont.)",0, 0,'L', 0);
             $this->SetTextColor(0);
