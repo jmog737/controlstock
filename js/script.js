@@ -1175,9 +1175,13 @@ function validarBusqueda() {
  * @param {String} j String con el número de pestaña donde se tiene que mostrar la tabla. 
  * @param {Boolean} todos Booleano que indica si la consutla realizada fue para todos los productos o entidades, o si fue sólo para algunos. Es para mostrar bien el caption de la tabla.
  * @param {String} offset String con el número de registro donde comienza la tabla de entre todos los registros del resultado.
+ * @param {Boolean} parcial Booleano que indica si se deben mostrar subtotales o totales.
+ * @param {Object} subtotales Objeto con los subtotales, a saber, subtotales{retiros: XX, renovaciones: xx, destrucciones: XX, ingresos: XX, consumos: XX, stock: XX}.
+ * @param {Integer} max Entero con el total de datos a mostrar en la tabla.
+ * @param {Integer} totalStock Entero con el total acumulado del stock.
  * @returns {String} String con el HTML para mostrar la tabla.
  */
-function mostrarTabla(radio, datos, j, todos, offset){
+function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, totalStock){
   var tabla = '<table name="resultados" id="resultados_'+j+'" class="tabla2">';
   var rutaFoto = 'images/snapshots/';
   
@@ -1194,8 +1198,9 @@ function mostrarTabla(radio, datos, j, todos, offset){
                                       <th>Stock</th>\n\
                                       <th>Mensaje</th>\n\
                                    </tr>';
+                          //var total = parseInt(subtotales["stock"], 10);
                           var total = 0;
-                          for (var i in datos) { 
+                          for (var i=0; i<max; i++) { 
                             var entidad = datos[i]["entidad"];
                             var nombre = datos[i]['nombre_plastico'];
                             var bin = datos[i]['bin'];
@@ -1258,17 +1263,27 @@ function mostrarTabla(radio, datos, j, todos, offset){
                           else {
                             tabla += '<caption>Stock de todas las entidades</caption>';
                           }
-                          tabla += '<tr><th colspan="7" class="centrado">SUB-TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+total.toLocaleString()+'</td><th></th></tr>';
+                          
+                          var totalMostrar = total.toLocaleString();
+                          var subtitulo = '';
+                          if (parcial){
+                            subtitulo = 'SUB-TOTAL';
+                          } 
+                          else {
+                            subtitulo = 'TOTAL';
+                            //totalMostrar = totalStock.toLocaleString();
+                          }
+                          var subtotalesJson = JSON.stringify(subtotales);
+                          tabla += '<tr><th colspan="7" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+totalMostrar+'</td><th></th></tr>';
                           tabla += '<tr>\n\
                                       <td class="pieTabla" colspan="9">\n\
                                         <input type="button" id="1" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                       </td>\n\
                                     </tr>';
-//                          subtotal = parseInt(total, 10)+parseInt(subtotal, 10);
-//                          tabla += '<tr>\n\
-//                                      <td><input type="text" id="subtotal" value="'+subtotal+'"></td>\n\
-//                                    </tr>\n\
-//                                  </table>';
+                          tabla += "<tr>\n\
+                                      <td><input type='text' id='subtotales_"+j+"' value="+subtotalesJson+'></td>\n\
+                                    </tr>\n\
+                                  </table>';
                           break;
     case 'productoStock': var bin = datos[0]['bin'];
                           //var produ = datos[0]["idProd"];
@@ -1778,7 +1793,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
   $.getJSON(url, {query: ""+jsonQuery+""}).done(function(request){
     for (var j in request){
       var datos = request[j].resultado;
-      var totalDatos = request[j].totalRows;
+      var totalDatos = parseInt(request[j].totalRows, 10);
       if (j == 0) {
         activo = 'fade show active';
       }
@@ -1823,7 +1838,12 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
           default: break;
         }
         
-        var tabla = mostrarTabla(radio, datos, j, todos, 1); 
+        var subtotales = {"retiros":0, "renovaciones":0, "destrucciones":0, "consumos":0, "ingresos":0, "stock":0};
+        var max = parseInt(tamPagina, 10);
+        if (totalDatos < tamPagina){
+          max = totalDatos%tamPagina;
+        }
+        var tabla = mostrarTabla(radio, datos, j, todos, 1, false, subtotales, max, 0); 
         
         formu += tabla;
         
@@ -4679,6 +4699,7 @@ $(document).on("click", ".exportar", function (){
               break;
     default: break;
   }
+  alert(query);
   //$("#param").val(param);
   $("#resultadoBusqueda_"+indice).submit();
 });//*** fin del click .exportar ***
@@ -4690,11 +4711,7 @@ $(document).on("click", ".paginate", function (){
   $(".nav-link.active").attr("activepage", ""+page+"");
   var indice = $(this).attr('i');
   var totalPaginas = parseInt($("#totalPaginas_"+indice).val(), 10);
-//  var ultima = false;
-//  if (page === totalPaginas){
-//    ultima = true;
-//  }
-//  var subtotal = parseInt($("#subtotal").val(), 10);
+  var subtotales = JSON.parse($("#subtotales_"+indice).val());
   var totalRegistros = parseInt($("#totalRegistros_"+indice).val(), 10);
   var offset = (page-1)*tamPagina;
   var primerRegistro = offset+1;
@@ -4703,8 +4720,28 @@ $(document).on("click", ".paginate", function (){
     ultimoRegistro = totalRegistros;
   }
   var rango = "<h5 id='rango_"+indice+"' class='rango'>(P&aacute;gina "+page+": registros del "+primerRegistro+" al "+ultimoRegistro+")</h4>";
+  
+  var limite = tamPagina;
+  if (page < (totalPaginas-1)){
+    limite = tamPagina + 1;
+  }
+  
+  var max = tamPagina;
+  //alert("pagina: "+page+"\ntotalPaginas: "+totalPaginas+"\noffset: "+offset+"\nlimite: "+limite);
   var query = $("#query_"+indice).val();
-  query += " limit "+offset+", "+tamPagina;
+  ///Armo consulta para conocer el total del stock
+  var query1 = query.split("from");
+  var query2 = "select sum(stock) as totalStock from "+query1[1];
+  alert(query+"\ntotal: "+query2);
+  if (page === totalPaginas){
+    query += " limit "+offset;
+    max = totalRegistros%tamPagina;
+  }
+  else {
+    query += " limit "+offset+", "+limite;
+  }
+  
+  //alert(query);
   var idTipo = $("#idTipo").val();
   var radio = '';
   var entidad = '';
@@ -4730,7 +4767,29 @@ $(document).on("click", ".paginate", function (){
   var url = "data/selectQuery.php";
   $.getJSON(url, {query: ""+query+""}).done(function(request){
     var datos = request.resultado;
-    var tabla = mostrarTabla(radio, datos, indice, todos, offset+1);
+    
+    var parcial = false;
+    switch (radio){
+      case "entidadStock":  //alert('en el case:\n'+datos[limite-2]["nombre_plastico"]+"\n"+datos[limite-1]["nombre_plastico"]);
+                            if ((datos[limite-2]['entidad'] === datos[limite-1]['entidad'])&&(page < totalPaginas)){
+                              parcial = true;
+                            }
+                            break;
+      case "productoStock": radio = 'productoStock';
+                            break;
+      case "totalStock":  radio = 'totalStock';
+                          break;
+      case "entidadMovimiento": radio = 'entidadMovimiento';
+                                entidad = $("#entidad_"+indice+"").val();
+                                break;
+      case "procutoMovimiento": radio = 'productoMovimiento';
+                                break;
+      default: break;
+    }
+    
+    //alert('antes de llamar a mostrar tabla: \nstock: '+subtotales["stock"]+"\nretiros: "+subtotales["retiros"]+"\nrenos: "+subtotales["renovaciones"]+"\ndestrucciones: "+subtotales["destrucciones"]+"\ningresos: "+subtotales["ingresos"]+"\nconsumos: "+subtotales["consumos"]);
+    var tabla = mostrarTabla(radio, datos, indice, todos, primerRegistro, parcial, subtotales, max, totalStock);
+    
     $("#resultados_"+indice+"").remove();
     if ($("#detallesProducto_"+indice+"").length > 0){
       $("#detallesProducto_"+indice+"").remove();

@@ -236,7 +236,7 @@ $pdfResumen->SetWidths($largoCampos);
 // Conectar con la base de datos
 $con = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 $resultado1 = consultarBD($query, $con);
-
+//echo "consulta: $query<br>";
 /// Ejecuto la consulta:
 $filas = obtenerResultadosArray($resultado1);
 $registros = array();
@@ -250,7 +250,7 @@ foreach($filas as $fila)
   $total = $total + $fila[$indiceStock];
   $registros[] = $fila;
 }
-
+//echo "total: ".$total."<br>";
 ///Ejecuto consulta para la generación del excel:
 $resultado2 = consultarBD($consultaCSV, $con);
 $filas1 = obtenerResultadosArray($resultado2);
