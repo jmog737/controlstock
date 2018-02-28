@@ -29,6 +29,10 @@ $datos = array();
 for ($i = 0; $i < count($query); $i++){
   ///Para las consultas de stock, armo consulta para conocer el total de plásticos de la entidad (a mostrar en la última página):
   $datos["$i"]['suma'] = 0;
+//  $datos["$i"]['retiros'] = 0;
+//  $datos["$i"]['renovaciones'] = 0;
+//  $datos["$i"]['destrucciones'] = 0;
+//  $datos["$i"]['ingresos'] = 0;
   if ($tipo === 'entidadStock'){
     $temp = explode("where", $query[$i]);
     $consultaSuma = "select sum(stock) as total from productos where ".$temp[1];
@@ -43,6 +47,54 @@ for ($i = 0; $i < count($query); $i++){
     while (($fila0 = $result0->fetch_array(MYSQLI_ASSOC)) != NULL) { 
       $datos["$i"]['suma'] = $fila0["total"];
     }
+  }
+  if ($tipo === 'entidadMovimiento'){
+    $test = stripos($query[$i], "productos.entidad='");
+    $entidad = '';
+    if ($test !== false){
+      $temp = explode("productos.entidad='", $query[$i]);
+      $temp1 = explode("'", $temp[1]);
+      $entidad = $temp1[0];
+    }
+    $consultaRetiros = "select productos.idprod as idprod, sum(cantidad) as retiros from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='retiro'";
+    $consultaRenovaciones = "select productos.idprod as idprod, sum(cantidad) as renovaciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='renovación'";
+    $consultaDestrucciones = "select productos.idprod as idprod, sum(cantidad) as destrucciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='destrucción'";
+    $consultaIngresos = "select productos.idprod as idprod, sum(cantidad) as ingresos from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='ingreso'";
+    
+    if ($entidad !== ''){
+      $consultaRetiros = $consultaRetiros." and productos.entidad='".$entidad."'";
+      $consultaRenovaciones = $consultaRenovaciones." and productos.entidad='".$entidad."'";
+      $consultaDestrucciones = $consultaDestrucciones." and productos.entidad='".$entidad."'";
+      $consultaIngresos = $consultaIngresos." and productos.entidad='".$entidad."'";
+    }
+    
+    $consultaRetiros = $consultaRetiros." group by productos.nombre_plastico";
+    $consultaRenovaciones = $consultaRenovaciones." group by productos.nombre_plastico";
+    $consultaDestrucciones = $consultaDestrucciones." group by productos.nombre_plastico";
+    $consultaIngresos = $consultaIngresos." group by productos.nombre_plastico";
+    
+    
+    $resultRetiros = consultarBD($consultaRetiros, $dbc);
+    while (($filaRetiros = $resultRetiros->fetch_array(MYSQLI_ASSOC)) != NULL) {
+      $idprod = $filaRetiros["idprod"];
+      $datos["$i"]["retiros"][$idprod] = $filaRetiros["retiros"];
+    }
+    $resultRenovaciones = consultarBD($consultaRenovaciones, $dbc);
+    while (($filaRenovaciones = $resultRenovaciones->fetch_array(MYSQLI_ASSOC)) != NULL) {
+      $idprod = $filaRenovaciones["idprod"];
+      $datos["$i"]["renovaciones"][$idprod] = $filaRenovaciones["renovaciones"];
+    }
+    $resultDestrucciones = consultarBD($consultaDestrucciones, $dbc);
+    while (($filaDestrucciones = $resultDestrucciones->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+      $idprod = $filaDestrucciones["idprod"];
+      $datos["$i"]["destrucciones"][$idprod] = $filaDestrucciones["destrucciones"];
+    }
+    $resultIngresos = consultarBD($consultaIngresos, $dbc);
+    while (($filaIngresos = $resultIngresos->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+      $idprod = $filaIngresos["idprod"];
+      $datos["$i"]["ingresos"][$idprod] = $filaIngresos["ingresos"];
+    }
+    
   }
   
   ///Ejecuto consulta "total" para concer el total de datos a devolver:
