@@ -786,6 +786,8 @@ class PDF extends PDF_MC_Table
       switch ($dato) {
         case "Id": $indId = $i;
                    break;
+        case "IdProd": $indProd = $i;
+                       break;
         case "Entidad": $indEntidad = $i;
                         break;
         case "Nombre": $indNombre = $i;
@@ -830,6 +832,9 @@ class PDF extends PDF_MC_Table
     if ($mostrar[$indEntidad]) {
       $this->Cell($largoCampos[$indEntidad], $h, $campos[$indEntidad], 'LRBT', 0, 'C', true);
     }
+    if ($mostrar[$indProd]) {
+      $this->Cell($largoCampos[$indProd], $h, $campos[$indProd], 'LRBT', 0, 'C', true);
+    }
     if ($mostrar[$indNombre]) {
       $this->Cell($largoCampos[$indNombre], $h, $campos[$indNombre], 'LRBT', 0, 'C', true);
     }
@@ -869,7 +874,7 @@ class PDF extends PDF_MC_Table
     $this->SetTextColor(0); 
     ///************************************************************ INICIALIZACIÓN DE CONTADORES ********************************************
     $fill = false;
-    $productoViejo = $registros[0][$indNombre];
+    $productoViejo = $registros[0][$indProd];
     $subtotalRetiro = 0;
     $subtotalRetiroMostrar = 0;
     $subtotalIngreso = 0;
@@ -884,6 +889,7 @@ class PDF extends PDF_MC_Table
       
     ///*********************************************************** INICIO RECORRIDA REGISTROS ***********************************************
     foreach ($registros as $dato) {
+      $idProd = $dato[$indProd];
       $nombre = trim(utf8_decode($dato[$indNombre]));
       $cantidad1 = trim(utf8_decode($dato[$indCantidad]));
       $cantidad = number_format($cantidad1, 0, ",", ".");
@@ -911,8 +917,8 @@ class PDF extends PDF_MC_Table
       ///***************************************************** INICIO CAMBIO DE PRODUCTO ****************************************************
       ///Chequeo si hay o no un cambio de producto.
       ///Si lo hay, imprimo los contadores del producto anterior, los reseteo, y agrego un espacio de separación:
-      if ($productoViejo !== $nombre) {
-        $productoViejo = $nombre;    
+      if ($productoViejo !== $idProd) {
+        $productoViejo = $idProd;    
         /// A definir más adelante el color para el fondo del separador. Por ahora es blanco (es decir, fill está como false):
         $this->setFillColor(220, 223, 232);
         //Issue a page break first if needed
@@ -1069,6 +1075,8 @@ class PDF extends PDF_MC_Table
           switch ($dato) {
             case "Id": $indId = $i;
                        break;
+            case "IndProd": $indProd = $i;
+                            break;
             case "Entidad": $indEntidad = $i;
                             break;
             case "Nombre": $indNombre = $i;
@@ -1125,6 +1133,9 @@ class PDF extends PDF_MC_Table
         }
         if ($mostrar[$indEntidad]) {
           $this->Cell($largoCampos[$indEntidad], $h, $campos[$indEntidad], 'LRBT', 0, 'C', true);
+        }
+        if ($mostrar[$indProd]) {
+          $this->Cell($largoCampos[$indProd], $h, $campos[$indProd], 'LRBT', 0, 'C', true);
         }
         if ($mostrar[$indNombre]) {
           $this->Cell($largoCampos[$indNombre], $h, $campos[$indNombre], 'LRBT', 0, 'C', true);
@@ -1221,6 +1232,8 @@ class PDF extends PDF_MC_Table
           switch ($dato) {
             case "Id": $indId = $i;
                        break;
+            case "IndProd": $indProd = $i;
+                            break;
             case "Entidad": $indEntidad = $i;
                             break;
             case "Nombre": $indNombre = $i;
@@ -1265,6 +1278,9 @@ class PDF extends PDF_MC_Table
         }
         if ($mostrar[$indEntidad]) {
           $this->Cell($largoCampos[$indEntidad], $h, $campos[$indEntidad], 'LRBT', 0, 'C', true);
+        }
+        if ($mostrar[$indProd]) {
+          $this->Cell($largoCampos[$indProd], $h, $campos[$indProd], 'LRBT', 0, 'C', true);
         }
         if ($mostrar[$indNombre]) {
           $this->Cell($largoCampos[$indNombre], $h, $campos[$indNombre], 'LRBT', 0, 'C', true);

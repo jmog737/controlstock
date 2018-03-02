@@ -28,11 +28,11 @@ $limite = $tamPage;
 $datos = array();
 for ($i = 0; $i < count($query); $i++){
   ///Para las consultas de stock, armo consulta para conocer el total de plásticos de la entidad (a mostrar en la última página):
-  $datos["$i"]['suma'] = 0;
-//  $datos["$i"]['retiros'] = 0;
-//  $datos["$i"]['renovaciones'] = 0;
-//  $datos["$i"]['destrucciones'] = 0;
-//  $datos["$i"]['ingresos'] = 0;
+  $datos["$i"]['suma'] = null;
+  $datos["$i"]['retiros'] = null;
+  $datos["$i"]['renovaciones'] = null;
+  $datos["$i"]['destrucciones'] = null;
+  $datos["$i"]['ingresos'] = null;
   if ($tipo === 'entidadStock'){
     $temp = explode("where", $query[$i]);
     $consultaSuma = "select sum(stock) as total from productos where ".$temp[1];
