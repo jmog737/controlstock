@@ -68,10 +68,10 @@ for ($i = 0; $i < count($query); $i++){
       $consultaIngresos = $consultaIngresos." and productos.entidad='".$entidad."'";
     }
     
-    $consultaRetiros = $consultaRetiros." group by productos.nombre_plastico";
-    $consultaRenovaciones = $consultaRenovaciones." group by productos.nombre_plastico";
-    $consultaDestrucciones = $consultaDestrucciones." group by productos.nombre_plastico";
-    $consultaIngresos = $consultaIngresos." group by productos.nombre_plastico";
+    $consultaRetiros = $consultaRetiros." group by productos.idprod";
+    $consultaRenovaciones = $consultaRenovaciones." group by productos.idprod";
+    $consultaDestrucciones = $consultaDestrucciones." group by productos.idprod";
+    $consultaIngresos = $consultaIngresos." group by productos.idprod";
     
     
     $resultRetiros = consultarBD($consultaRetiros, $dbc);
@@ -93,19 +93,73 @@ for ($i = 0; $i < count($query); $i++){
     while (($filaIngresos = $resultIngresos->fetch_array(MYSQLI_ASSOC)) != NULL) { 
       $idprod = $filaIngresos["idprod"];
       $datos["$i"]["ingresos"][$idprod] = $filaIngresos["ingresos"];
+    } 
+  }
+  if ($tipo === 'productoMovimiento'){
+    $test = stripos($query[$i], "where idprod=");
+    $idprod = '';
+    if ($test !== false){
+      $temp = explode("where idprod=", $query[$i]);
+      $temp1 = explode(" ", $temp[1]);
+      $idprod = $temp1[0];
+    }
+    $consultaRetiros = "select productos.idprod as idprod, sum(cantidad) as retiros from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='retiro'";
+    $consultaRenovaciones = "select productos.idprod as idprod, sum(cantidad) as renovaciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='renovación'";
+    $consultaDestrucciones = "select productos.idprod as idprod, sum(cantidad) as destrucciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='destrucción'";
+    $consultaIngresos = "select productos.idprod as idprod, sum(cantidad) as ingresos from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='ingreso'";
+    
+    if ($entidad !== ''){
+      $consultaRetiros = $consultaRetiros." and productos.idprod='".$idprod."'";
+      $consultaRenovaciones = $consultaRenovaciones." and productos.idprod='".$idprod."'";
+      $consultaDestrucciones = $consultaDestrucciones." and productos.idprod='".$idprod."'";
+      $consultaIngresos = $consultaIngresos." and productos.idprod='".$idprod."'";
     }
     
+    $consultaRetiros = $consultaRetiros." group by productos.idprod";
+    $consultaRenovaciones = $consultaRenovaciones." group by productos.idprod";
+    $consultaDestrucciones = $consultaDestrucciones." group by productos.idprod";
+    $consultaIngresos = $consultaIngresos." group by productos.idprod";
+    
+    
+    $resultRetiros = consultarBD($consultaRetiros, $dbc);
+    while (($filaRetiros = $resultRetiros->fetch_array(MYSQLI_ASSOC)) != NULL) {
+      $idprod = $filaRetiros["idprod"];
+      $datos["$i"]["retiros"][$idprod] = $filaRetiros["retiros"];
+    }
+    $resultRenovaciones = consultarBD($consultaRenovaciones, $dbc);
+    while (($filaRenovaciones = $resultRenovaciones->fetch_array(MYSQLI_ASSOC)) != NULL) {
+      $idprod = $filaRenovaciones["idprod"];
+      $datos["$i"]["renovaciones"][$idprod] = $filaRenovaciones["renovaciones"];
+    }
+    $resultDestrucciones = consultarBD($consultaDestrucciones, $dbc);
+    while (($filaDestrucciones = $resultDestrucciones->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+      $idprod = $filaDestrucciones["idprod"];
+      $datos["$i"]["destrucciones"][$idprod] = $filaDestrucciones["destrucciones"];
+    }
+    $resultIngresos = consultarBD($consultaIngresos, $dbc);
+    while (($filaIngresos = $resultIngresos->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+      $idprod = $filaIngresos["idprod"];
+      $datos["$i"]["ingresos"][$idprod] = $filaIngresos["ingresos"];
+    } 
   }
   
-  ///Ejecuto consulta "total" para concer el total de datos a devolver:
-  $result1 = consultarBD($query[$i], $dbc);
-  $datos["$i"]['totalRows'] = $result1->num_rows;
-  
+  ///Ejecuto consulta "total" para concer el total de datos a devolver
+  ///Sin embargo, sólo consulto el total de registros para que sea más rápido:
+  $totalConsulta[$i] = '';
+  $test1 = stripos($query[$i], "from");
+  if ($test1 !== false){
+    $temp = explode("from", $query[$i]);
+    $totalConsulta[$i] = "select count(*) as total from ".$temp[1];
+  }
+  $result1 = consultarBD($totalConsulta[$i], $dbc);
+  //$datos["$i"]['totalRows'] = $result1->num_rows;
+  while (($fila1 = $result1->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+    $datos["$i"]['totalRows'] = $fila1["total"];
+  }
+    
   ///Recupero primera página para mostrar:
   $query[$i] = $query[$i]." limit ".$limite;
   $result = consultarBD($query[$i], $dbc);
-
-  //$datos["$i"]['rows'] = $result->num_rows;
   
   while (($fila = $result->fetch_array(MYSQLI_ASSOC)) != NULL) { 
     $datos["$i"]['resultado'][] = $fila;

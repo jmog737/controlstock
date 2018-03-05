@@ -1181,7 +1181,7 @@ function validarBusqueda() {
  * @param {Integer} totalPlasticos Entero con el total acumulado del stock. SÓLO se usa en consultas de stock de entidades.
  * @returns {String} String con el HTML para mostrar la tabla.
  */
-function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, totalPlasticos){
+function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, totalPlasticos){
   var tabla = '<table name="resultados" id="resultados_'+j+'" class="tabla2">';
   var rutaFoto = 'images/snapshots/';
   
@@ -1265,7 +1265,7 @@ function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, 
                           }
                           
                           var subtitulo = '';
-                          if (parcial){
+                          if (fin){
                             subtitulo = 'SUB-TOTAL';
                           } 
                           else {
@@ -1370,7 +1370,7 @@ function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, 
                             offset++;  
                             total += subtotal;
                           }
-                          if (!parcial){
+                          if (!fin){
                             subtitulo = 'TOTAL';
                             tabla += '<tr><th colspan="2" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos, 10).toLocaleString()+'</td></tr>';
                           }
@@ -1402,7 +1402,8 @@ function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, 
 
                                 var productoViejo = parseInt(datos[0]['idprod'], 10);
 
-                                for (var i=0; i<max; i++) { 
+                                for (var i=0; i<max; i++) {
+                                  ///************************* INICIO RECUPERACIÓN DATOS ******************************************************************
                                   var produ = parseInt(datos[i]["idprod"], 10);
                                   var idmov = datos[i]["idmov"];
                                   var entidad = datos[i]["entidad"];
@@ -1438,8 +1439,10 @@ function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, 
                                     {
                                     bin = 'N/D o N/C';
                                   }
-
-                                  if (productoViejo !== produ) {alert(productoViejo+"\n"+produ);
+                                  ///************************* FIN RECUPERACIÓN DATOS *********************************************************************
+                                  
+                                  ///Si hay un cambio de producto, ANTES de poner el primer movimiento del nuevo producto, muestro el resumen del producto viejo:
+                                  if (productoViejo !== produ) {
                                     var totalConsumos = 0;
                                     var retiros1 = 0;
                                     var renos1 = 0;
@@ -1495,6 +1498,7 @@ function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, 
                                               </th>';
                                   }
                                   
+                                  ///Muestro el renglón con los datos del movimiento:
                                   tabla += '<tr>\n\
                                               <td>'+offset+'</td>\n\
                                               <td>'+fecha+'</td>\n\
@@ -1508,15 +1512,13 @@ function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, 
                                               <td class="'+claseResaltado+'"><a href="editarMovimiento.php?id='+idmov+'" target="_blank">'+cantidad.toLocaleString()+'</a></td>\n\
                                               <td>'+comentarios+'</td>\n\
                                             </tr>'; 
-                                  //alert(parcial);
-                                  if ((!parcial) && (parseInt(i, 10) === parseInt(tamPagina-1, 10))){
-                                    alert('resumen con parcial en FALSE y ultimo registro');
+                                  if ((fin) && (parseInt(i, 10) === parseInt(tamPagina-1, 10))){
                                     var totalConsumos = 0;
                                     var retiros2 = 0;
                                     var renos2 = 0;
                                     var destrucciones2 = 0;
                                     var ingresos2 = 0;
-                                    //alert(productoViejo);
+                                    
                                     if (subtotales["retiros"] !== null){
                                       if (subtotales["retiros"][productoViejo] !== undefined) {
                                         retiros2 = parseInt(subtotales["retiros"][productoViejo], 10);
@@ -1562,9 +1564,10 @@ function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, 
                                                   </tr>';
                                       }         
                                     }
+                                    
                                     productoViejo = produ;
                                     tabla += '<th colspan="11">&nbsp;\n\
-                                              </th>';      
+                                          </th>';
                                   }
                                   
                                   offset++;  
@@ -1629,19 +1632,20 @@ function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, 
                                   }
                                   productoViejo = produ;
                                   tabla += '<th colspan="11">&nbsp;\n\
-                                            </th>';
+                                          </th>';
                                 }
                                 
                                 ///****************** RESUMEN último producto ********************************************************************
+                                
+                                ///************************ CAPTION segun si es TODOS o alguna ENTIDAD *******************************************
                                 if (!todos){
                                   tabla += '<caption>Movimientos de la entidad: '+entidad+'</caption>';
                                 }
                                 else {
                                   tabla += '<caption>Movimientos de todas las entidades</caption>';
                                 }
-
-                                tabla += '<th colspan="11">&nbsp;\n\
-                                          </th>';
+                                ///************************ FIN CAPTION segun si es TODOS o alguna ENTIDAD ***************************************
+                                
                                 var subtotalesJson = JSON.stringify(subtotales);
                                 tabla += "<tr>\n\
                                             <td style='display:none'><input type='text' id='subtotales_"+j+"' value='"+subtotalesJson+"'></td>\n\
@@ -1653,8 +1657,8 @@ function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, 
                                           </tr>\n\
                                         </table>';  
                                 break;
-      case 'productoMovimiento':  var bin = datos[0]['bin'];
-                                  //var produ = datos[0]['produ'];
+      case 'productoMovimiento':  ///************************* INICIO RECUPERACIÓN DATOS ******************************************************************
+                                  var bin = datos[0]['bin'];
                                   var ultimoMovimiento = datos[0]['ultimoMovimiento'];
                                   if (ultimoMovimiento === null) {
                                     ultimoMovimiento = '';
@@ -1687,7 +1691,10 @@ function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, 
                                     else {
                                       claseResaltado = "resaltado italica";
                                     }
-                                  } 
+                                  }
+                                  ///************************* FIN RECUPERACIÓN DATOS *********************************************************************
+                                  
+                                  ///********************************************* TABLA DEL PRODUCTO *****************************************************
                                   var tabla = '<table name="detallesProducto" id="detallesProducto_'+j+'" class="tabla2">';
                                   tabla += '<caption>Detalles del producto: '+datos[0]['nombre_plastico']+'</caption>';
                                   tabla += '<tr>\n\
@@ -1703,8 +1710,11 @@ function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, 
                                   tabla += '<tr><th>&Uacute;ltimo Moviemiento:</th><td>'+ultimoMovimiento+'</td></tr>';
                                   tabla += '<tr><th>Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
                                   tabla += '<tr><th colspan="2" class="pieTabla centrado">FIN</th></tr></table>';
-
+                                  ///********************************************* TABLA DEL PRODUCTO *****************************************************
+                                  
                                   tabla += '<br>';
+                                  
+                                  ///********************************************* TABLA MOVIMIENTOS ******************************************************
                                   tabla += '<table name="movimientos" id="resultados_'+j+'" class="tabla2">';
                                   tabla += '<caption>Movimientos del producto: '+datos[0]['nombre_plastico']+'</caption>';
                                   tabla += '<tr><th class="tituloTabla" colspan="6">MOVIMIENTOS</th></tr>';
@@ -1716,17 +1726,14 @@ function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, 
                                               <th>Cantidad</th>\n\
                                               <th>Comentarios</th>\n\
                                            </tr>';
-                                  var subtotalRetiro = 0;
-                                  var subtotalIngreso = 0;
-                                  var subtotalReno = 0;
-                                  var subtotalDestruccion = 0;
-                                  var totalConsumos = 0;
-
-                                  for (var i=0; i<max; i++) { 
+                                  ///****************************** COMIENZO A RECORRER ARRAY CON LOS DATOS ***********************************************
+                                  for (var i=0; i<max; i++) {
+                                    ///*********************************** RECUPERO DATOS DEL MOVIMIENTO **************************************************
                                     var tipo2 = datos[i]['tipo'];
                                     var fecha = datos[i]['fecha'];
                                     var hora = datos[i]["hora"];
                                     var idmov = datos[i]["idmov"];
+                                    var produ = datos[i]['idprod'];
                                     var cantidad = parseInt(datos[i]['cantidad'], 10);
                                     var alarma1 = parseInt(datos[i]['alarma1'], 10);
                                     var alarma2 = parseInt(datos[i]['alarma2'], 10);
@@ -1747,21 +1754,9 @@ function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, 
                                     if ((comentarios === "undefined")||(comentarios === null)) {
                                       comentarios = "";
                                     }
-                                    switch (tipo2){
-                                      case "Retiro": subtotalRetiro = subtotalRetiro + cantidad;
-                                                     break;
-                                      case "Ingreso": subtotalIngreso = subtotalIngreso + cantidad;
-                                                      break;
-                                      case "Renovación": subtotalReno = subtotalReno + cantidad;
-                                                          break;
-                                      case "Destrucción": subtotalDestruccion = subtotalDestruccion + cantidad;
-                                                          break;
-                                      default: break;
-                                    }
-                                    if (tipo2 !== 'Ingreso') {
-                                      totalConsumos = totalConsumos + cantidad;
-                                    }
-
+                                    ///*********************************** FIN RECUPERO DATOS DEL MOVIMIENTO **********************************************
+                                    
+                                    ///*************************************** Muestro Datos del Movimiento ***********************************************
                                     tabla += '<tr>\n\
                                                 <td>'+offset+'</td>\n\
                                                 <td>'+fecha+'</td>\n\
@@ -1770,51 +1765,78 @@ function mostrarTabla(radio, datos, j, todos, offset, parcial, subtotales, max, 
                                                 <td class="'+claseResaltado+'"><a href="editarMovimiento.php?id='+idmov+'">'+cantidad.toLocaleString()+'</a></td>\n\
                                                 <td>'+comentarios+'</td>\n\
                                               </tr>';
+                                    ///*************************************** FIN Muestro Datos del Movimiento ********************************************          
                                     offset++;  
+                                  }
+                                  ///************************************ COMIENZO RESUMEN DEL PRODUCTO ***************************************************
+                                  var pagActual = parseInt($(".nav-link.active").attr("activepage"), 10);
+                                  var totalPaginas = parseInt($("#totalPaginas_"+j).val(), 10);
+                                  if (pagActual === totalPaginas){
+                                    var totalConsumos = 0;
+                                    var retiros1 = 0;
+                                    var renos1 = 0;
+                                    var destrucciones1 = 0;
+                                    var ingresos1 = 0;
+                                    if (subtotales["retiros"] !== null){
+                                      if (subtotales["retiros"][produ] !== undefined) {
+                                        retiros1 = parseInt(subtotales["retiros"][produ], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="4" class="negrita">Total Retiros:</td>\n\
+                                                    <td class="subtotal" colspan="2">'+retiros1.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        totalConsumos += retiros1;
+                                      }
                                     }
+                                    if (subtotales["renovaciones"] !== null){
+                                      if (subtotales["renovaciones"][produ] !== undefined) {
+                                        renos1 = parseInt(subtotales["renovaciones"][produ], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="4" class="negrita">Total Renovaciones:</td>\n\
+                                                    <td class="subtotal" colspan="2">'+renos1.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        totalConsumos += renos1;
+                                      } 
+                                    }
+                                    if (subtotales["destrucciones"] !== null){
+                                      if (subtotales["destrucciones"][produ] !== undefined) {
+                                        destrucciones1 = parseInt(subtotales["destrucciones"][produ], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="4" class="negrita">Total Destrucciones:</td>\n\
+                                                    <td class="subtotal" colspan="2">'+destrucciones1.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        totalConsumos += destrucciones1;
+                                      }
+                                    }
+                                    if (totalConsumos > 0) {
+                                      tabla += '<tr>\n\
+                                                  <td colspan="4" class="negrita">Total de Consumos:</td>\n\
+                                                  <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                    }
+                                    if (subtotales["ingresos"] !== null) {
+                                      if (subtotales["ingresos"][produ] !== undefined) {
+                                        ingresos1 = parseInt(subtotales["ingresos"][produ], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="4" class="negrita">Total de Ingresos:</td>\n\
+                                                    <td class="totalIngresos" colspan="2">'+ingresos1.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                      }         
+                                    }
+                                    ///**************************************** FIN RESUMEN DEL PRODUCTO ****************************************************
 
-                                  if (subtotalRetiro > 0) {
-                                    tabla += '<tr>\n\
-                                                <td colspan="4" class="negrita">Total Retiros:</td>\n\
-                                                <td class="subtotal" colspan="2">'+subtotalRetiro.toLocaleString()+'</td>\n\
-                                              </tr>';
-                                    subtotalRetiro = 0;
-                                  }
-                                  if (subtotalReno > 0) {
-                                    tabla += '<tr>\n\
-                                                <td colspan="4" class="negrita">Total Renovaciones:</td>\n\
-                                                <td class="subtotal" colspan="2">'+subtotalReno.toLocaleString()+'</td>\n\
-                                              </tr>';
-                                    subtotalReno = 0;
-                                  }
-                                  if (subtotalDestruccion > 0) {
-                                    tabla += '<tr>\n\
-                                                <td colspan="4" class="negrita">Total Destrucciones:</td>\n\
-                                                <td class="subtotal" colspan="2">'+subtotalDestruccion.toLocaleString()+'</td>\n\
-                                              </tr>';
-                                    subtotalDestruccion = 0;  
-                                  }
-                                  if (totalConsumos > 0) {
-                                    tabla += '<tr>\n\
-                                                <td colspan="4" class="negrita">Total de Consumos:</td>\n\
-                                                <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
-                                              </tr>';
-                                    totalConsumos = 0;  
-                                  }
-                                  if (subtotalIngreso > 0) {
-                                    tabla += '<tr>\n\
-                                                <td colspan="4" class="negrita">Total de Ingresos:</td>\n\
-                                                <td class="totalIngresos" colspan="2">'+subtotalIngreso.toLocaleString()+'</td>\n\
-                                              </tr>';
-                                    subtotalIngreso = 0;
-                                  }
-
+                                    tabla += '<th colspan="6">&nbsp;\n\
+                                              </th>';
+                                  }      
+                                  var subtotalesJson = JSON.stringify(subtotales);
+                                  tabla += "<tr>\n\
+                                              <td style='display:none'><input type='text' id='subtotales_"+j+"' value='"+subtotalesJson+"'></td>\n\
+                                            </tr>";
                                   tabla += '<tr>\n\
                                               <td class="pieTabla" colspan="6">\n\
                                                 <input type="button" id="5" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                               </td>\n\
                                             </tr>\n\
-                                          </table>';
+                                          </table>'; 
                                   break;
       default: break;
     }
@@ -1926,9 +1948,12 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         }
         
         var subtotales = {"retiros":totalRetiros, "renovaciones":totalRenovaciones, "destrucciones":totalDestrucciones, "ingresos":totalIngresos};
-        //alert("retiros: "+subtotales["retiros"]+"\nrenos: "+subtotales["renovaciones"]+"\ndestrucciones: "+subtotales["destrucciones"]+"\ningresos: "+subtotales["ingresos"]);
         var max = parseInt(tamPagina, 10);
-        var parcial = true;
+        var parcial = true; 
+        ///Chequeo en que caso estoy pues la parte de movimientos funciona con parcial invertido:
+        if ((radio === 'entidadMovimiento') || (radio === 'productoMovimiento')){
+          parcial = false;
+        }
         if (totalDatos < tamPagina){
           max = totalDatos%tamPagina;
           parcial = false;
@@ -2282,7 +2307,7 @@ function realizarBusqueda(){
                                 ordenFecha = true;
                                 break;                       
       case 'productoMovimiento':  for (var k in idProds){
-                                    query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                                    query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                                     query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where ";
                                     consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
                                     consultaCSV = "select DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";                                 
@@ -2293,8 +2318,8 @@ function realizarBusqueda(){
                                       return false;
                                     }
                                     else {
-                                      query += "idProd="+idProds[k];
-                                      consultaCSV += "and idProd="+idProds[k];
+                                      query += "idprod="+idProds[k];
+                                      consultaCSV += "and idprod="+idProds[k];
                                       queries.push(query);
                                       consultasCSV.push(consultaCSV);
                                       validarFecha = true;
@@ -4834,7 +4859,7 @@ $(document).on("click", ".paginate", function (){
   
   query += " limit "+limite+" offset "+offset;
 
- alert(query);
+ //alert(query);
   var idTipo = $("#idTipo").val();
   var radio = '';
   var entidad = '';
@@ -4854,6 +4879,7 @@ $(document).on("click", ".paginate", function (){
               var subtotales = JSON.parse($("#subtotales_"+indice).val());
               break;
     case "5": radio = 'productoMovimiento';
+              var subtotales = JSON.parse($("#subtotales_"+indice).val());
               break;
     default: break;
   }
@@ -4865,33 +4891,35 @@ $(document).on("click", ".paginate", function (){
   $.getJSON(url, {query: ""+query+""}).done(function(request){
     var datos = request.resultado;
 
-    var parcial = true;
+    ///Variable fin: en la parte de STOCK, indica que es la última página y hay que mostrar el total de stock para el producto o entidad
+    ///              en la parte de MOVIMIENTOS, indica que los movimientos del producto siguen en la otra página y por ende NO hay que mostrar el resumen
+    /// Como es la misma variable, en MOVIMIENTOS se USA INVERTIDA!!. Cuando sigue en la otra página se pasa TRUE.
+    var fin = false;
     switch (radio){
       case "entidadStock":  if (page < totalPaginas){
-                              parcial = true;
+                              fin = true;
                             }
                             break;
       case "productoStock": radio = 'productoStock';
                             break;
       case "totalStock":  radio = 'totalStock';
                           if (page < totalPaginas){
-                            parcial = true;
+                            fin = true;
                           }
                           break;
       case "entidadMovimiento": radio = 'entidadMovimiento';
                                 entidad = $("#entidad_"+indice+"").val();
-                                //alert(datos[limite-1]['idprod']+"\n"+datos[limite-2]['idprod']);
                                 if (((datos[limite-1]['idprod']) !== (datos[limite-2]['idprod']))&&(page !== totalPaginas)){
-                                  parcial = false;
+                                  fin = true;
                                 }
                                 break;
       case "procutoMovimiento": radio = 'productoMovimiento';
                                 break;
       default: break;
     }
-    //alert('antes de mostrar tabla');
-    var tabla = mostrarTabla(radio, datos, indice, todos, primerRegistro, parcial, subtotales, max, totalPlasticos);
-    //alert('despues de mostrar tabla');
+
+    var tabla = mostrarTabla(radio, datos, indice, todos, primerRegistro, fin, subtotales, max, totalPlasticos);
+
     $("#resultados_"+indice+"").remove();
     if ($("#detallesProducto_"+indice+"").length > 0){
       $("#detallesProducto_"+indice+"").remove();
@@ -4907,7 +4935,6 @@ $(document).on("click", ".paginate", function (){
     }
     else {
       $(".pagination[indice='"+indice+"'] li .anterior").remove();
-      //$(".pagination li a[data='1']").addClass('pageActive');
     }
     
     $(".pagination[indice='"+indice+"'] li a").each(function (){

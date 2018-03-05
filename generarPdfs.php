@@ -496,8 +496,8 @@ class PDF extends PDF_MC_Table
       $cCampo = 2.2*$c1;
       $cResto = 4*$c1;
       $cFoto = 3.4*$c1;
-      $nombre = trim(utf8_decode($registros[0][2]));
-      $entidad = trim(utf8_decode($registros[0][1]));
+      $nombre = trim(utf8_decode($registros[0][3]));
+      $entidad = trim(utf8_decode($registros[0][2]));
       $tamEntidad = $this->GetStringWidth($entidad);
       $tamNombre = $this->GetStringWidth($nombre);
       if ((($tamNombre) || ($tamEntidad)) < $cResto) {
@@ -518,7 +518,7 @@ class PDF extends PDF_MC_Table
       
       ///*****************************************************************  FOTO ************************************************************
       ///Agrego un snapshot de la tarjeta debajo de la tabla (si es que existe!!):
-      $foto = $registros[0][6];
+      $foto = $registros[0][7];
       if (($foto !== null) && ($foto !== '')) {
         $rutita = $rutaFotos."/".$foto;
         $xFoto = $this->GetX();
@@ -594,10 +594,10 @@ class PDF extends PDF_MC_Table
       $this->Rect($x1,$y,$cResto,$h0);
       //Print the text
       if ($nb > 1) {
-        $this->MultiCell($cResto,$h, trim(utf8_decode($registros[0][1])),'LRT','C', 0);
+        $this->MultiCell($cResto,$h, trim(utf8_decode($registros[0][2])),'LRT','C', 0);
         }
       else {
-        $this->MultiCell($cResto,$h, trim(utf8_decode($registros[0][1])),1,'C', 0);
+        $this->MultiCell($cResto,$h, trim(utf8_decode($registros[0][2])),1,'C', 0);
         }  
 
       //Put the position to the right of the cell
@@ -619,7 +619,7 @@ class PDF extends PDF_MC_Table
       ///************************************************************** FIN CAMPO CODIGO ****************************************************
       
       ///***************************************************************** CAMPO BIN ********************************************************
-      $bin = $registros[0][3];
+      $bin = $registros[0][4];
       if (($bin === '')||($bin === null)) {
         $bin = 'N/D o N/C';
       }
@@ -634,7 +634,7 @@ class PDF extends PDF_MC_Table
       ///*************************************************************** FIN CAMPO BIN ******************************************************
       
       ///************************************************************** CAMPO CONTACTO ******************************************************
-      $contacto = $registros[0][5];
+      $contacto = $registros[0][6];
       if (($contacto === '')||($contacto === null)) {
         $contacto = '';
       }
@@ -649,7 +649,7 @@ class PDF extends PDF_MC_Table
       ///************************************************************ FIN CAMPO CONTACTO ****************************************************
       
       ///************************************************************* CAMPO COMENTARIOS ****************************************************
-      $comentarios = trim(utf8_decode($registros[0][11]));
+      $comentarios = trim(utf8_decode($registros[0][12]));
       if (($comentarios === '')||($comentarios === null)) {
         $comentarios = '';
       }
@@ -678,7 +678,7 @@ class PDF extends PDF_MC_Table
       ///*********************************************************** FIN CAMPO COMENTARIOS **************************************************
       
       ///************************************************************* CAMPO ULT. MOV. ******************************************************
-      $ultimoMovimiento = trim(utf8_decode($registros[0][7]));
+      $ultimoMovimiento = trim(utf8_decode($registros[0][8]));
       if (($ultimoMovimiento === '')||($ultimoMovimiento === null)) {
         $ultimoMovimiento = '';
       }
@@ -709,9 +709,9 @@ class PDF extends PDF_MC_Table
       
       ///************************************************************* CAMPO STOCK **********************************************************
       //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:
-      $alarma1 = $registros[0][9];
-      $alarma2 = $registros[0][10];
-      $stock = $registros[0][8];
+      $alarma1 = $registros[0][10];
+      $alarma2 = $registros[0][11];
+      $stock = $registros[0][9];
 
       $this->SetFont('Courier', 'B', 10);
       $this->SetTextColor(255, 255, 255);

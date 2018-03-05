@@ -222,6 +222,13 @@ switch ($id) {
             $nombreReporte = "movimientosProducto";
             $asunto = "Reporte con los movimientos del Producto";
             $indiceStock = 12;
+            if (isset($inicio)) {
+              $inicioTemp = explode("-", $inicio);
+              $inicioMostrar = $inicioTemp[2]."/".$inicioTemp[1]."/".$inicioTemp[0];
+              $finTemp = explode("-", $fin);
+              $finMostrar = $finTemp[2]."/".$finTemp[1]."/".$finTemp[0];
+              //$tipoConsulta = $tipoConsulta." ".$inicioMostrar." y ".$finMostrar;
+            }
             break;       
   default: break;
 }
