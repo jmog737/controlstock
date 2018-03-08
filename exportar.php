@@ -233,6 +233,13 @@ switch ($id) {
   default: break;
 }
 
+// Conectar con la base de datos
+$con = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
+/// Ejecuto la consulta:
+$resultado1 = consultarBD($query, $con);
+//echo "consulta: $query<br>";
+$totalRegistros = $resultado1->num_rows;
+
 //Instancio objeto de la clase:
 $pdfResumen = new PDF();
 $pdfResumen->AddPage();
@@ -240,11 +247,6 @@ $pdfResumen->AddPage();
 $totalCampos = sizeof($campos);
 $pdfResumen->SetWidths($largoCampos);
 
-// Conectar con la base de datos
-$con = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-$resultado1 = consultarBD($query, $con);
-//echo "consulta: $query<br>";
-/// Ejecuto la consulta:
 $filas = obtenerResultadosArray($resultado1);
 $registros = array();
 $i = 1;

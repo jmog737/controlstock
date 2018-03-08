@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once("connectvars.php");
 /**
 ******************************************************
@@ -38,3 +39,14 @@ if (!file_exists($unidad)) {
 if (!file_exists($dir)){
   echo "No existe la carpeta: $dir. <br>Por favor verifique.";
 }
+
+if (!isset($_SESSION["tamPagina"])){
+  $_SESSION["tamPagina"] = 35;
+}
+if (!isset($_SESSION["limiteHistorial"])){
+  $_SESSION["limiteHistorial"] = 5;
+}
+if (!isset($_SESSION["limiteHistorialGeneral"])){
+  $_SESSION["limiteHistorialGeneral"] = 10;
+}
+$limiteSeleccion = 8;

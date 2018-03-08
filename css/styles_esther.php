@@ -241,6 +241,9 @@ hr {
 .historial {
   
 }
+.popover{
+  max-width: 100%;
+}
 .popover-header{
   background-color: #c12929;
 }
@@ -400,6 +403,10 @@ hr {
 
 .negrita {
   font-weight: bolder;
+}
+.negritaGrande {
+  font-weight: bolder;
+  font-size: 1.25em;
 }
 .italica {
   font-style: italic;

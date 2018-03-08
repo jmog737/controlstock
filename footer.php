@@ -16,7 +16,9 @@
         <font class='naranja'>
         <?php
             // Confirm the successful log-in
-            echo "<a href='#modalPwd' title='Cambiar contraseña de acceso' class='naranja' id='user'>".strtoupper($_SESSION['username'])."</a>";
+            echo "<a href='#modalPwd' title='Cambiar contraseña de acceso' class='naranja' id='user'>".strtoupper($_SESSION['username'])."</a>"
+              . " <br>"
+              . "<a href='#modalParametros' title='Cambiar los parámetros' class='naranja' id='param'>--- Par&aacute;metros ---</a>";
         ?>
         </font>
         <br>

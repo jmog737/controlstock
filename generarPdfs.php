@@ -77,7 +77,7 @@ class PDF extends PDF_MC_Table
   //Tabla tipo listado para el stock de una o todas las entidades, o también para el total de plásticos en bóveda:
   function tablaStockEntidad($total, $tipo)
     {
-    global $x,$h, $totalCampos;
+    global $x,$h, $totalCampos, $totalRegistros;
     global $registros, $campos, $largoCampos, $tituloTabla, $tipoConsulta, $entidad, $mostrar;
     
     $tamTabla = $largoCampos[$totalCampos];
@@ -131,8 +131,29 @@ class PDF extends PDF_MC_Table
     }
     ///************************************************************** FIN TITULO ************************************************************
     
-    $this->Ln(10);
+    $this->Ln(7);
     $y = $this->GetY();
+    
+    ///***************************************************************** SUB-TITULO **********************************************************
+    ///Agrego el total de registros afectados sólo para el caso de que se trate de una entidad y no de un producto:
+    if (!$tipo){
+      $this->SetFont('Courier', 'BI', 11);
+      $mensajeTotal = "Total de productos:";
+      $tam2 = $this->GetStringWidth($mensajeTotal);
+      $tam3 = $this->GetStringWidth($totalRegistros);
+      $xMensajeTotal =($anchoPagina - $tam2 - $tam3)/2;
+      $this->SetX($xMensajeTotal);
+      $this->Cell($tam2,$h, $mensajeTotal,0, 0, 'R', 0);
+      $this->SetTextColor(255, 0, 0);
+      $this->SetFont('Courier', 'BI', 14);
+      $this->Cell($tam3,$h, $totalRegistros,0, 0,'L', 0);
+      $this->SetTextColor(0);
+      $this->Ln(10);
+      $y = $this->GetY();
+    }
+    ///************************************************************** FIN SUB-TITULO *********************************************************
+    
+    
     
     //************************************** TÍTULO TABLA ***********************************************************************************
     $this->SetX($x);
@@ -454,7 +475,7 @@ class PDF extends PDF_MC_Table
   
   function tablaMovimientos($tablaProducto) 
     {
-    global $h, $x, $totalCampos, $c1;
+    global $h, $x, $totalCampos, $c1, $totalRegistros;
     global $registros, $campos, $largoCampos, $rutaFotos, $tituloTabla, $tipoConsulta, $codigo, $mostrar;
 
     $anchoPagina = $this->GetPageWidth();
@@ -473,21 +494,102 @@ class PDF extends PDF_MC_Table
     //Defino el color para el texto:
     $this->SetTextColor(0);
     
-    $subTitulo = utf8_decode($tipoConsulta);
+    $subTitulo = trim(utf8_decode($tipoConsulta));
+//    if ($tablaProducto) {
+//      $needle = "producto ";
+//    }
+//    else {
+//      $needle = "de ";
+//    }
+//    $temp = stripos($subTitulo, " de todos los tipos");
+//    if ($temp == false){
+//      $temp1 = stripos($subTitulo, "del tipo");
+//      $temp2 = explode("del tipo", $subTitulo);
+//      $temp3 = explode($needle, $temp2[0]);
+//      $produ = $temp3[1];
+//    }
+//    else {
+//      $temp2 = explode(" de todos los tipos", $subTitulo);
+//      $temp3 = explode($needle, $temp2[0]);
+//      $produ = $temp3[1];
+//    }
+
     $tam1 = $this->GetStringWidth($subTitulo);
     $xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
     $this->SetY(25);
-    $this->SetX($xTipo);
+    $anchoSubTitulo = $anchoTipo;
     
     $nbSubTitulo = $this->NbLines($anchoTipo,$subTitulo);
     $hSubTitulo=$h*$nbSubTitulo;
+    
+    if ($tam1 < $anchoTipo){
+      $xTipo = round((($anchoPagina - $tam1)/2), 2);
+      $anchoSubTitulo = 1.05*$tam1;
+    }
+    $this->SetX($xTipo);
+    ///*********************** TEST para resaltar el nombre ******************************
+//    $primeraParte = $temp3[0];
+//    if ($tablaProducto){
+//      $primeraParte = $primeraParte."del producto ";
+//    }
+//    else {
+//      $primeraParte = $primeraParte."de ";
+//    }
+//    $tamPrimeraParte = $this->GetStringWidth($primeraParte);
+//    $tamProdu = $this->GetStringWidth($produ);
+//       
+//    if ($temp == false){
+//      $segundaParte = " del tipo";
+//    }
+//    else {
+//      $segundaParte = " de todos los tipos";
+//    }
+//    $segundaParte = $segundaParte.$temp2[1];
+//    $tamSegundaParte = $this->GetStringWidth($tamSegundaParte);
+    $this->SetFillColor(167, 166, 173);
     if ($nbSubTitulo > 1) {
-      $this->MultiCell($anchoTipo,$h, $subTitulo,1, 'C', 0);
+      $this->MultiCell($anchoSubTitulo,$h, $subTitulo,0,'C', 1);
+      $this->Ln(2);
+//      $y = $this->GetY();
+//      $this->MultiCell($tamPrimeraParte,$h, $primeraParte,0, 'C', 0);
+//      $this->SetTextColor(255, 0, 0);
+//      $xProd = $xTipo+$tamPrimeraParte;
+//      $this->SetX($xProd);
+//      $this->SetY($y);
+//      $this->MultiCell($tamProdu,$h, $produ,0, 'C', 0);
+//      $this->SetTextColor(0);
+//      $xSegundaParte = $xTipo+$tamPrimeraParte+$tamProdu;
+//      $this->SetX($xSegundaParte);
+//      $this->SetY($y);
+//      $this->MultiCell($tamSegundaParte,$h, $segundaParte,0, 'C', 0);
     }
     else {
-      $this->MultiCell($anchoTipo,$hSubTitulo, $subTitulo,1,'C', 0);
+      $this->Cell($anchoSubTitulo,$hSubTitulo, $subTitulo,0, 0,'C', 1);
+      $this->Ln(8);
+//      $this->Cell($tamPrimeraParte,$hSubTitulo, $primeraParte, 0, 0, 'R', 0);
+//      $this->SetTextColor(255, 0, 0);
+//      $this->Cell($tamProdu,$hSubTitulo, $produ, 0, 0, 'L', 0);
+//      $this->SetTextColor(0);
+//      $this->Cell($tamSegundaParte,$h, $segundaParte, 0, 0, 'L', 0);
     }
+    ///*********************** FIN TEST para resaltar el nombre ******************************
     ///************************************************************ FIN TITULO **************************************************************
+    
+    
+    
+    ///***************************************************************** SUB-TITULO **********************************************************
+    $this->SetFont('Courier', 'BI', 11);
+    $mensajeTotal = "Total de movimientos:";
+    $tam2 = $this->GetStringWidth($mensajeTotal);
+    $tam3 = $this->GetStringWidth($totalRegistros);
+    $xMensajeTotal =($anchoPagina - $tam2 - $tam3)/2;
+    $this->SetX($xMensajeTotal);
+    $this->Cell($tam2,$h, $mensajeTotal,0, 0, 'R', 0);
+    $this->SetTextColor(255, 0, 0);
+    $this->SetFont('Courier', 'BI', 14);
+    $this->Cell($tam3,$h, $totalRegistros,0, 0,'L', 0);
+    $this->SetTextColor(0);
+    ///************************************************************** FIN SUB-TITULO *********************************************************
     
     $this->Ln(10);
     
@@ -1056,13 +1158,25 @@ class PDF extends PDF_MC_Table
           $this->SetFont('Courier', 'B', 12);
           $this->SetTextColor(0);
           $this->SetY(25);
-          $this->SetX($xTipo);
-
-          if ($nbSubTitulo > 1) {
-            $this->MultiCell($anchoTipo,$h, $subTitulo."(cont.)",1, 'C', 0);
+          $this->SetFillColor(167, 166, 173);
+          $sub2 = $subTitulo."(cont.)";
+          $tamSub2 = $this->GetStringWidth($sub2);
+          if ($tamSub2 < $anchoTipo){
+            $xTipo = round((($anchoPagina - $tamSub2)/2), 2);
+            $anchoSubTitulo = $tamSub2;
           }
           else {
-            $this->MultiCell($anchoTipo,$hSubTitulo, $subTitulo."(cont.)",1,'C', 0);
+            $anchoSubTitulo = $anchoTipo;
+            $xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
+          }
+          $this->SetX($xTipo);
+          
+          if ($nbSubTitulo > 1) {
+            $this->MultiCell($anchoSubTitulo,$h, $subTitulo."(cont.)",0, 'C', 1);
+          }
+          else {
+            $this->Cell($anchoSubTitulo,$hSubTitulo, $subTitulo."(cont.)",0,0,'C', 1);
+            $this->Ln();
           }
           $this->Ln();
           ///************************************************************ FIN TITULO ********************************************************
@@ -1211,13 +1325,25 @@ class PDF extends PDF_MC_Table
         $this->SetFont('Courier', 'B', 12);
         $this->SetTextColor(0);
         $this->SetY(25);
-        $this->SetX($xTipo);
-
-        if ($nbSubTitulo > 1) {
-          $this->MultiCell($anchoTipo,$h, $subTitulo."(cont.)",1, 'C', 0);
+        $this->SetFillColor(167, 166, 173);
+        $sub2 = $subTitulo."(cont.)";
+        $tamSub2 = $this->GetStringWidth($sub2);
+        if ($tamSub2 < $anchoTipo){
+          $xTipo = round((($anchoPagina - $tamSub2)/2), 2);
+          $anchoSubTitulo = $tamSub2;
         }
         else {
-          $this->MultiCell($anchoTipo,$hSubTitulo, $subTitulo."(cont.)",1,'C', 0);
+          $anchoSubTitulo = $anchoTipo;
+          $xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
+        }
+        $this->SetX($xTipo);
+          
+        if ($nbSubTitulo > 1) {
+          $this->MultiCell($anchoSubTitulo,$h, $subTitulo."(cont.)",0, 'C', 1);
+        }
+        else {
+          $this->Cell($anchoSubTitulo,$hSubTitulo, $subTitulo."(cont.)",0,0,'C', 1);
+          $this->Ln();
         }
         $this->Ln();
         ///************************************************************ FIN TITULO **********************************************************
@@ -1771,13 +1897,25 @@ class PDF extends PDF_MC_Table
       $this->SetFont('Courier', 'B', 12);
       $this->SetTextColor(0);
       $this->SetY(25);
-      $this->SetX($xTipo);
-
-      if ($nbSubTitulo > 1) {
-        $this->MultiCell($anchoTipo,$h, $subTitulo."(cont.)",1, 'C', 0);
+      $this->SetFillColor(167, 166, 173);
+      $sub2 = $subTitulo."(cont.)";
+      $tamSub2 = $this->GetStringWidth($sub2);
+      if ($tamSub2 < $anchoTipo){
+        $xTipo = round((($anchoPagina - $tamSub2)/2), 2);
+        $anchoSubTitulo = $tamSub2;
       }
       else {
-        $this->MultiCell($anchoTipo,$hSubTitulo, $subTitulo."(cont.)",1,'C', 0);
+        $anchoSubTitulo = $anchoTipo;
+        $xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
+      }
+      $this->SetX($xTipo);
+          
+      if ($nbSubTitulo > 1) {
+        $this->MultiCell($anchoSubTitulo,$h, $subTitulo."(cont.)",0, 'C', 1);
+      }
+      else {
+        $this->Cell($anchoSubTitulo,$hSubTitulo, $subTitulo."(cont.)",0,0,'C', 1);
+        $this->Ln();
       }
       $this->Ln();
       ///************************************************************ FIN TITULO ************************************************************

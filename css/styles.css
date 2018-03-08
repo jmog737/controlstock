@@ -224,11 +224,14 @@ hr {
 .historial {
   
 }
+.popover{
+  max-width: 100%;
+}
 .popover-header{
   background-color: #c12929;
 }
 .popover-body{
-  background-color: #cccccc;
+  background-color: #cccccc; 
 }
 /* FIN POPOVERS */
 
@@ -381,8 +384,34 @@ hr {
   background-color: #c12929;
 }
 
+.resaltarDiferencia {
+  background-color:#ffff00;
+  font-size: 1.2em;
+  font-weight: bolder;
+  color: red;
+}
+
+.resaltarComentario {
+  background-color: #9bf79b;
+  font-size: 1.1em;
+  font-weight: bolder;
+}
+
+.transparente {
+  background-color:transparent;
+}
+
+.fondoBlanco {
+  background-color:#ffffff;
+  background-color: #ababab;
+}
+
 .negrita {
   font-weight: bolder;
+}
+.negritaGrande {
+  font-weight: bolder;
+  font-size: 1.25em;
 }
 .italica {
   font-style: italic;
@@ -426,10 +455,22 @@ hr {
 }
 #hint {
   max-width: 100%;
-  
   position: relative;
   overflow-x: scroll;
   overflow-y: auto;
+}
+
+.comentHintResaltar {
+  background-color:#ffff00;
+  font-size: 2.2em;
+  font-weight: bolder;
+  color: red;
+}
+.comentHint{
+  font-size: 2.2em;
+  font-weight: bolder;
+  color: red;
+  background-color: #9bf79b;
 }
 
 .subtotal {

@@ -1,5 +1,9 @@
-var limiteSeleccion = 8;
-var tamPagina = 15;
+///Ahora las variables se toman de un único lugar que es el archivo config.php
+///Las mismas, para que estén accesibles, se agregan a unos input "invisibles" que están en el HEAD (antes de incluir script.js para que estén disponibles).
+var limiteSeleccion = parseInt($("#limiteSeleccion").val(), 10);
+var tamPagina = parseInt($("#tamPagina").val(), 10);
+var limiteHistorial = parseInt($("#limiteHistorial").val(), 10);
+var limiteHistorialGeneral = parseInt($("#limiteHistorialGeneral").val(), 10);
 
 /**
 ///  \file script.js
@@ -120,8 +124,22 @@ function showHint(str, id, seleccionado) {
           if (parseInt(sugerencias[i]["idprod"], 10) === parseInt(seleccionado, 10)) {
             sel = 'selected="yes"';
           }
+          var comentario = '';
+          comentario = sugerencias[i]["comentarios"];
+          var resaltarOption = '';
+          if ((comentario !== '')&&(comentario !== null)){
+            if (comentario.indexOf("dif") > -1){
+              resaltarOption = 'class="resaltarDiferencia"';
+            }
+            else {
+              resaltarOption = 'class="resaltarComentario"';
+            }  
+          }
+          else  {
+            resaltarOption = 'class="fondoBlanco"';
+          }
           //mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+' '+sel+ '>[' + sugerencias[i]["entidad"]+'] '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
-          mostrar += '<option data-toggle="popover" title="Popover Header" data-content="Some content inside the popover" value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma1='+sugerencias[i]["alarma1"]+' alarma2='+sugerencias[i]["alarma2"]+' comentarios="'+sugerencias[i]["comentarios"]+'" ultimoMov="'+sugerencias[i]["ultimoMovimiento"]+'" '+sel+ '>[' + sugerencias[i]["entidad"]+': '+codigo_emsa+'] --- '+sugerencias[i]["nombre_plastico"] + '</option>';
+          mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" '+resaltarOption+' stock='+sugerencias[i]["stock"]+' alarma1='+sugerencias[i]["alarma1"]+' alarma2='+sugerencias[i]["alarma2"]+' comentarios="'+sugerencias[i]["comentarios"]+'" ultimoMov="'+sugerencias[i]["ultimoMovimiento"]+'" '+sel+ '>[' + sugerencias[i]["entidad"]+': '+codigo_emsa+'] --- '+sugerencias[i]["nombre_plastico"] + '</option>';
         }
         mostrar += '</select>';
       }
@@ -149,10 +167,10 @@ function showHint(str, id, seleccionado) {
         switch(id) {
           case '#producto': $("#producto").focus();
                             break;
-          case '#productoStock': $("#productoStock").focus();
-            break;
+          case '#productoStock':  $("#productoStock").focus();
+                                  break;
           case '#productoMovimiento': $("#productoMovimiento").focus(); 
-            break;
+                                      break;
           default: break;  
         }     
       }
@@ -173,15 +191,12 @@ function showHint(str, id, seleccionado) {
  * @param {String} prod String con el id del producto a consultar.
 */
 function mostrarHistorial(prod){
-  if ($("#historial").length > 0){
-    $("#historial").popover('hide');
-    $("#historial").remove();
-  }
   $("#historial").popover('hide');
-    $("#historial").remove();
-  var limite = 3;
+  $("#historial").remove();
+  ///Vuelvo a redefinir limiteHistorial para que tome el último valor en caso de que se haya cambiado con el modal.
+  var limiteHistorial = parseInt($("#limiteHistorial").val(), 10);
   var url = "data/selectQuery.php";
-  var query = "select productos.nombre_plastico as nombre, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo from movimientos inner join productos on productos.idprod=movimientos.producto where productos.idprod="+prod+" order by movimientos.fecha desc, movimientos.hora desc limit "+limite+"";
+  var query = "select productos.nombre_plastico as nombre, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios as comentarios from movimientos inner join productos on productos.idprod=movimientos.producto where productos.idprod="+prod+" order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorial+"";
   //alert(query);
   $.getJSON(url, {query: ""+query+""}).done(function(request){
     var datos = request.resultado;
@@ -191,7 +206,14 @@ function mostrarHistorial(prod){
       var j = 0;
       for (var i in datos){
         j = parseInt(i, 10)+1;
-        mostrar += j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["tipo"]+": <b>"+datos[i]["cantidad"]+"</b><br>";
+        var comentario = datos[i]["comentarios"];
+        if ((comentario === '')||(comentario === null)||(comentario === "undefined")){
+          comentario = '';
+        }
+        else {
+          comentario = "&nbsp;["+comentario+"]";
+        }
+        mostrar += j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"<br>";
       }
       var popover = '<a role="button" tabindex="0" id="historial" class="btn btn-danger historial" title="Historial de '+datos[i]["nombre"]+'" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="'+mostrar+'">Historial</a>';
       
@@ -202,6 +224,47 @@ function mostrarHistorial(prod){
         $("#ultimoMov").after(popover);
       } 
       $("#historial").popover({html:true});
+    }
+    else {
+      ///ver si avisar que no hay movimientos.
+    }
+  });
+}
+
+/**
+ * \brief Función que muestra en pantalla el botón para disparar el popover con el historial general
+ *        Básicamente, hace la consulta del historial para los últimos movimientos y arma el botón con el popover.
+ *        @param {String} id String con el id del elemento delante del cual debe ir el botón para ver el historial.
+*/
+function mostrarHistorialGeneral(id){
+  $("#historialGeneral").popover('hide');
+  $("#historialGeneral").remove();
+  ///Vuelvo a redefinir limiteHistorial para que tome el último valor en caso de que se haya cambiado con el modal.
+  var limiteHistorialGeneral = parseInt($("#limiteHistorialGeneral").val(), 10);
+  var url = "data/selectQuery.php";
+  var query = "select productos.entidad, productos.nombre_plastico as nombre, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios as comentarios from movimientos inner join productos on productos.idprod=movimientos.producto order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorialGeneral+"";
+  //alert(query);
+  $.getJSON(url, {query: ""+query+""}).done(function(request){
+    var datos = request.resultado;
+    var totalDatos = request.rows;
+    if (totalDatos > 0){
+      var mostrar = '';
+      var j = 0;
+      for (var i in datos){
+        j = parseInt(i, 10)+1;
+        var comentario = datos[i]["comentarios"];
+        if ((comentario === '')||(comentario === null)||(comentario === "undefined")){
+          comentario = '';
+        }
+        else {
+          comentario = "&nbsp;["+comentario+"]";
+        }
+        mostrar += j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["entidad"]+"/"+datos[i]["nombre"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"<br>";
+      }
+      var popover = '<a role="button" tabindex="0" id="historialGeneral" class="btn btn-info" title="Historial General" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="left" data-content="'+mostrar+'">Historial General</a>';
+      
+      $(id).append(popover);
+      $("#historialGeneral").popover({html:true});
     }
     else {
       ///ver si avisar que no hay movimientos.
@@ -439,6 +502,9 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
               </td>\n\
             </tr>';
       tr += '<tr>\n\
+              <td colspan="2" align="center"><p id="gralHistory"></p></td>\n\
+            </tr>';
+      tr += '<tr>\n\
               <th align="left"><font class="negra">Tipo:</font></th>\n\
               <td align="center">\n\
                 <select id="tipo" name="tipo" tabindex="4" style="width:100%" title="Seleccionar el tipo de movimiento" >\n\
@@ -502,6 +568,8 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
       var mostrar = '';
       mostrar += formu;
       $(selector).html(mostrar);
+      
+      mostrarHistorialGeneral("#gralHistory");
       
       if ((tipo !== '') && (tipo !== undefined)){
         $("#tipo option[value="+ tipo +"]").attr("selected",true);
@@ -1149,6 +1217,69 @@ function actualizarUser ()
   }
 }
 
+/**
+ * \brief Función que primero valida la info ingresada, y de ser válida, hace la actualización de los parámetros del usuario.
+ */
+function actualizarParametros ()
+  {
+  var timestamp = Math.round(Date.now() / 1000);
+      
+  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+    window.location.href = "../consultastock/index.php";
+  }
+  else {
+    verificarSesion();
+    
+    var pageSize = $("#pageSize").val();
+    var limiteHistorial = $("#tamHistorial").val();
+
+    var url = "data/updateParametros.php";
+    var log = "NO";
+
+    $.getJSON(url, {tamPagina: ""+pageSize+"", tamHistorial: ""+limiteHistorial+"", log: log}).done(function(request) {
+      var cambioPagina = false;
+      var cambioHistorial = false;
+      
+      if (request.resultadoPagina === "OK") {
+        var paginaNueva = parseInt(request.pagina, 10);
+        var paginaVieja = parseInt($("#tamPagina").val(), 10);
+        if (paginaVieja !== paginaNueva){
+          $("#tamPagina").val(paginaNueva);
+          cambioPagina = true;
+        }
+      }
+      
+      if (request.resultadoHistory === "OK") {
+        var historialNuevo = parseInt(request.historial, 10);
+        var historialViejo = parseInt($("#limiteHistorial").val(), 10);
+        if (historialViejo !== historialNuevo){
+          $("#limiteHistorial").val(historialNuevo);
+          cambioHistorial = true;
+        }
+      }
+
+      if (cambioPagina && cambioHistorial){
+        alert('Ambos parámetros se cambiaron con éxito:\nTamaño de página: '+$("#tamPagina").val()+"\nHistorial: "+$("#limiteHistorial").val());
+      }
+      else {
+        if (cambioPagina){
+          alert('Se cambió sólo el valor del tamaño de la página: \nNuevo valor: '+$("#tamPagina").val());
+        }
+        else {
+          if (cambioHistorial){
+            alert('Se cambió sólo el valor del tamaño del historial: \nNuevo valor: '+$("#limiteHistorial").val());
+          }
+          else {
+            alert('No se cambiaron los parámetros.');
+          }
+        }
+      }
+      $("#modalParametros").modal("hide");
+    });
+    
+  }
+}
+
 /***********************************************************************************************************************
 /// *********************************************** FIN FUNCIONES USUARIOS *********************************************
 ************************************************************************************************************************
@@ -1175,8 +1306,8 @@ function validarBusqueda() {
  * @param {String} j String con el número de pestaña donde se tiene que mostrar la tabla. 
  * @param {Boolean} todos Booleano que indica si la consutla realizada fue para todos los productos o entidades, o si fue sólo para algunos. Es para mostrar bien el caption de la tabla.
  * @param {String} offset String con el número de registro donde comienza la tabla de entre todos los registros del resultado.
- * @param {Boolean} parcial Booleano que indica si se deben mostrar subtotales o totales.
- * @param {Object} subtotales Objeto con los subtotales, a saber, subtotales{retiros: XX, renovaciones: xx, destrucciones: XX, ingresos: XX, consumos: XX, stock: XX}.
+ * @param {Boolean} fin Booleano que indica si el producto continúa en la página siguiente o no. Se usa diferente según sea STOCK o MOVIMIENTO.
+ * @param {Object} subtotales Objeto con los subtotales, a saber, subtotales{retiros: XX, renovaciones: xx, destrucciones: XX, ingresos: XX}.
  * @param {Integer} max Entero con el total de datos a mostrar en la tabla.
  * @param {Integer} totalPlasticos Entero con el total acumulado del stock. SÓLO se usa en consultas de stock de entidades.
  * @returns {String} String con el HTML para mostrar la tabla.
@@ -1948,6 +2079,9 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         }
         
         var subtotales = {"retiros":totalRetiros, "renovaciones":totalRenovaciones, "destrucciones":totalDestrucciones, "ingresos":totalIngresos};
+        ///Vuelvo a definir una variable local tamPagina para actualizar el valor que ya tiene.
+        ///Esto es para que tome el último valor en caso de que se haya modificado desde el modal (que no cambia hasta recargar la página).
+        var tamPagina = parseInt($("#tamPagina").val(), 10);
         var max = parseInt(tamPagina, 10);
         var parcial = true; 
         ///Chequeo en que caso estoy pues la parte de movimientos funciona con parcial invertido:
@@ -1978,7 +2112,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
                                                     <td style="display:none"><input type="text" id="entidad_'+j+'" name="entidad_'+j+'" value="'+entidadesStock[j]+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+tipoConsultas[j]+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                   </tr>';
                                 break;
@@ -1995,11 +2129,11 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                     <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombresProductos[j]+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                      <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProds[j]+'"></td>\n\
-                                                      <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                      <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
-                                                      <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
-                                                    </tr>';
+                                                    <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProds[j]+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                                  </tr>';
                                 break;
           case 'totalStock':  campos = 'Id-Entidad-Stock';
                               largos = '1-3.0-1.8';
@@ -3708,7 +3842,14 @@ $(document).on("change focusin", "#hint", function (e){
   mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><b>Stock actual: <b><font class="'+resaltado+'" style="font-size:1.6em">'+stock.toLocaleString()+'</font></p>';
   mostrar += '<p id="ultimoMov" name="ulitmoMov">Último Movimiento: <font class="'+resaltado+'" style="font-size:1.2em">'+ultimoMovimiento+'</font></p>';
   if ((comentarios !== '')&&(comentarios !== "null")&&(comentarios !== ' ')&&(comentarios !== undefined)){
-    mostrar += '<p id="comentHint" name="comentHint">Comentarios: <font class="alarma1" style="font-size:1.4em">'+comentarios+'</font></p>';
+    var comentHint = '';
+    if (comentarios.indexOf("dif") > -1){
+      comentHint = "comentHintResaltar";
+    }
+    else {
+      comentHint = "comentHint";
+    }
+    mostrar += '<p id="comentHint" name="comentHint" class="'+comentHint+'">'+comentarios+'</p>';
   }
   //$(this).css('background-color', '#efe473');
   $(this).css('background-color', '#9db7ef');
@@ -4531,6 +4672,25 @@ $(document).on("click", "#agregarUsuario", function(){
   }
 });//*** fin del click agregarUsuario ***
 
+///Disparar función al hacer enter estando en el elemento nombreUsuario.
+///Básicamente, la idea es pasar el foco al elemento password cosa de ahorrar tiempo en el ingreso.
+$(document).on("keypress", "#nombreUsuario", function(e) {
+  if(e.which === 13) {
+    e.preventDefault();
+    $("#password").focus();
+  }  
+});
+    
+/*****************************************************************************************************************************
+/// **************************************************** FIN USUARIOS ********************************************************
+******************************************************************************************************************************
+*/
+
+/*****************************************************************************************************************************
+/// **************************************************** INICIO MODAL USARIO *************************************************
+******************************************************************************************************************************
+*/
+
 ///Disparar función al hacer click en el link con el nombre del usuario que está logueado.
 ///Esto hace que se abra el modal para cambiar la contraseña.
 $(document).on("click", "#user", function(){
@@ -4561,25 +4721,65 @@ $(document).on("keypress", "#pw1", function(e) {
   }  
 });
 
-///Disparar función al hacer ENTER estando en el elemento pw1 del MODAL.
-///Esto hace que se pase el foco al siguiente input del MODAL (pw2) cosa de ahorrar tiempo.
+///Disparar función al hacer ENTER estando en el elemento pw2 del MODAL.
+///Esto hace que se llame a la función correspondiente (actualizarUser()) cosa de ahorrar tiempo.
 $(document).on("keypress", "#pw2", function(e) {
   if(e.which === 13) {
     actualizarUser();
   }  
 });
 
-///Disparar función al hacer enter estando en el elemento nombreUsuario.
-///Básicamente, la idea es pasar el foco al elemento password cosa de ahorrar tiempo en el ingreso.
-$(document).on("keypress", "#nombreUsuario", function(e) {
+/*****************************************************************************************************************************
+/// **************************************************** FIN MODAL USARIO ****************************************************
+******************************************************************************************************************************
+*/
+
+
+
+/*****************************************************************************************************************************
+/// **************************************************** INICIO MODAL PARÁMETROS *********************************************
+******************************************************************************************************************************
+*/
+
+///Disparar función al hacer click en el link que dice PARAMETROS debajo del usuario logueado
+///Esto hace que se abra el modal para cambiar los parámetros.
+$(document).on("click", "#param", function(){
+  $("#modalParametros").modal("show");
+});
+
+///Disparar función al abrirse el modal para cambiar los parámetros.
+///Lo único que hace es limpiar el form para poder ingresar los nuevos datos.
+$(document).on("shown.bs.modal", "#modalParametros", function() {
+  $("#pageSize").val($("#tamPagina").val());
+  $("#tamHistorial").val($("#limiteHistorial").val());
+  $("#pageSize").attr("autofocus", true);
+  $("#pageSize").focus();
+});
+
+///Disparar función al hacer click en el botón de ACTUALIZAR que está en el MODAL.
+///Llama a la función que se encarga de actualizar los parámetros.
+$(document).on("click", "#btnParam", function(){
+  actualizarParametros();
+});
+
+///Disparar función al hacer ENTER estando en el elemento pageSize del MODAL.
+///Esto hace que se pase el foco al siguiente input del MODAL (tamHistorial) cosa de ahorrar tiempo.
+$(document).on("keypress", "#pageSize", function(e) {
   if(e.which === 13) {
-    e.preventDefault();
-    $("#password").focus();
+    $("#tamHistorial").focus();
   }  
 });
-    
+
+///Disparar función al hacer ENTER estando en el elemento tamHistorial del MODAL.
+///Esto hace que se llame a la función correspondiente (actualizarParametros()) cosa de ahorrar tiempo.
+$(document).on("keypress", "#tamHistorial", function(e) {
+  if(e.which === 13) {
+    actualizarParametros();
+  }  
+});
+
 /*****************************************************************************************************************************
-/// **************************************************** FIN USUARIOS ********************************************************
+/// **************************************************** FIN MODAL PARÁMETROS ************************************************
 ******************************************************************************************************************************
 */
 
@@ -4829,6 +5029,9 @@ $(document).on("click", ".paginate", function (){
   var totalPaginas = parseInt($("#totalPaginas_"+indice).val(), 10);
   var totalRegistros = parseInt($("#totalRegistros_"+indice).val(), 10);
   var totalPlasticos = parseInt($("#totalPlasticos_"+indice).val(), 10);
+  ///Vuelvo a definir una variable local tamPagina para actualizar el valor que ya tiene.
+  ///Esto es para que tome el último valor en caso de que se haya modificado desde el modal (que no cambia hasta recargar la página).
+  var tamPagina = parseInt($("#tamPagina").val(), 10);
   var offset = (page-1)*tamPagina;
   var primerRegistro = offset+1;
   var ultimoRegistro = offset + tamPagina;
@@ -4843,7 +5046,7 @@ $(document).on("click", ".paginate", function (){
   }
   
   var max = tamPagina;
-  //alert("pagina: "+page+"\ntotalPaginas: "+totalPaginas+"\noffset: "+offset+"\nlimite: "+limite);
+  
   var query = $("#query_"+indice).val();
   
   if (page === totalPaginas){
@@ -4859,7 +5062,7 @@ $(document).on("click", ".paginate", function (){
   
   query += " limit "+limite+" offset "+offset;
 
- //alert(query);
+//alert(query);
   var idTipo = $("#idTipo").val();
   var radio = '';
   var entidad = '';
@@ -4909,15 +5112,17 @@ $(document).on("click", ".paginate", function (){
                           break;
       case "entidadMovimiento": radio = 'entidadMovimiento';
                                 entidad = $("#entidad_"+indice+"").val();
-                                if (((datos[limite-1]['idprod']) !== (datos[limite-2]['idprod']))&&(page !== totalPaginas)){
-                                  fin = true;
+                                if (page < totalPaginas){
+                                  if (((datos[limite-1]['idprod']) !== (datos[limite-2]['idprod']))){
+                                    fin = true;
+                                  }
                                 }
                                 break;
       case "procutoMovimiento": radio = 'productoMovimiento';
                                 break;
       default: break;
     }
-
+    
     var tabla = mostrarTabla(radio, datos, indice, todos, primerRegistro, fin, subtotales, max, totalPlasticos);
 
     $("#resultados_"+indice+"").remove();
