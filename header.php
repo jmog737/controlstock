@@ -115,9 +115,15 @@
             </td>
           </tr>
           <tr>
-            <td>Tamaño del Historial:</td>
+            <td>Historial Producto:</td>
             <td>
-              <input type="text" id="tamHistorial" placeholder="NUEVO tamaño del historial" title="Ingresar el NUEVO tamaño para el historial" class="agrandar">
+              <input type="text" id="tamHistorialProducto" placeholder="NUEVO tamaño del historial del producto" title="Ingresar el NUEVO tamaño para el historial del producto" class="agrandar">
+            </td>
+          </tr>
+          <tr>
+            <td>Historial General:</td>
+            <td>
+              <input type="text" id="tamHistorialGeneral" placeholder="NUEVO tamaño del historial general" title="Ingresar el NUEVO tamaño para el historial general" class="agrandar">
             </td>
           </tr>
         </table>  

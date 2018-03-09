@@ -4,7 +4,7 @@
   if (!isset($_SESSION["username"])||(!file_exists("css/".$estilos))){
     $estilos = 'styles.php';
   }
-  $estilos = "styles.css";
+  //$estilos = "styles.css";
 //  switch ($user) {
 //    case 'jm':  $estilos = 'styles'.$user.'.php';
 //                //$colores = 'css/colores.php';
@@ -28,7 +28,7 @@ require_once('data/baseMysql.php');
 <head>
   <input id="tamPagina" name="tamPagina" type="text" value="<?php echo $_SESSION["tamPagina"] ?>" style="color: black; display: none">
   <input id="limiteSeleccion" name="limiteSeleccion" type="text" value="<?php echo $limiteSeleccion ?>" style="color: black; display: none">
-  <input id="limiteHistorial" name="limiteHistorial" type="text" value="<?php echo $_SESSION["limiteHistorial"] ?>" style="color: black; display: none">
+  <input id="limiteHistorialProducto" name="limiteHistorialProducto" type="text" value="<?php echo $_SESSION["limiteHistorialProducto"] ?>" style="color: black; display: none">
   <input id="limiteHistorialGeneral" name="limiteHistorialGeneral" type="text" value="<?php echo $_SESSION["limiteHistorialGeneral"] ?>" style="color: black; display: none">
   <title>CONTROL DE STOCK</title>
   <meta charset='UTF-8'>

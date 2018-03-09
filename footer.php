@@ -23,21 +23,21 @@
         </font>
         <br>
         <font><a title="Salir del programa" href="salir.php">Salir</a></font>
-        <?php
+        <hr class='d-block d-sm-none'>
+          <?php
             }
         ?>
       </section>
       <section id='address' class='col-sm-4 d-none d-sm-block'>
         <span>Dirección:</span><br>
         Buenos Aires 486<br>
-        Montevideo, Uruguay<br>v.1.3<br>
+        Montevideo, Uruguay<br>v.2.0<br>
         &copy; Copyright EMSA SERV. TEC. 2017
         <hr class='d-block d-sm-none'>
       </section>
       <section id='testimonials' class='col-sm-4'>
         <span>Teléfonos:</span>
         <br>29153304 / 29160318 / 29154195
-        <hr class='d-block d-sm-none'>
       </section>
     </div>
     <p>

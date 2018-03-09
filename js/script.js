@@ -2,7 +2,7 @@
 ///Las mismas, para que estén accesibles, se agregan a unos input "invisibles" que están en el HEAD (antes de incluir script.js para que estén disponibles).
 var limiteSeleccion = parseInt($("#limiteSeleccion").val(), 10);
 var tamPagina = parseInt($("#tamPagina").val(), 10);
-var limiteHistorial = parseInt($("#limiteHistorial").val(), 10);
+var limiteHistorialProducto = parseInt($("#limiteHistorialProducto").val(), 10);
 var limiteHistorialGeneral = parseInt($("#limiteHistorialGeneral").val(), 10);
 
 /**
@@ -156,6 +156,9 @@ function showHint(str, id, seleccionado) {
       else {
         length++;
       }
+      if (length > totalSugerencias){
+        length = totalSugerencias + 2;
+      }
       //open dropdown
       $("#hint").attr('size',length);
       
@@ -191,12 +194,12 @@ function showHint(str, id, seleccionado) {
  * @param {String} prod String con el id del producto a consultar.
 */
 function mostrarHistorial(prod){
-  $("#historial").popover('hide');
+  $("#historial").popover('dispose');
   $("#historial").remove();
-  ///Vuelvo a redefinir limiteHistorial para que tome el último valor en caso de que se haya cambiado con el modal.
-  var limiteHistorial = parseInt($("#limiteHistorial").val(), 10);
+  ///Vuelvo a redefinir limiteHistorialProducto para que tome el último valor en caso de que se haya cambiado con el modal.
+  var limiteHistorialProducto = parseInt($("#limiteHistorialProducto").val(), 10);
   var url = "data/selectQuery.php";
-  var query = "select productos.nombre_plastico as nombre, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios as comentarios from movimientos inner join productos on productos.idprod=movimientos.producto where productos.idprod="+prod+" order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorial+"";
+  var query = "select productos.nombre_plastico as nombre, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i:%s') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios as comentarios from movimientos inner join productos on productos.idprod=movimientos.producto where productos.idprod="+prod+" order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorialProducto+"";
   //alert(query);
   $.getJSON(url, {query: ""+query+""}).done(function(request){
     var datos = request.resultado;
@@ -237,12 +240,12 @@ function mostrarHistorial(prod){
  *        @param {String} id String con el id del elemento delante del cual debe ir el botón para ver el historial.
 */
 function mostrarHistorialGeneral(id){
-  $("#historialGeneral").popover('hide');
+  $("#historialGeneral").popover('dispose');
   $("#historialGeneral").remove();
-  ///Vuelvo a redefinir limiteHistorial para que tome el último valor en caso de que se haya cambiado con el modal.
+  ///Vuelvo a redefinir limiteHistorialGeneral para que tome el último valor en caso de que se haya cambiado con el modal.
   var limiteHistorialGeneral = parseInt($("#limiteHistorialGeneral").val(), 10);
   var url = "data/selectQuery.php";
-  var query = "select productos.entidad, productos.nombre_plastico as nombre, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios as comentarios from movimientos inner join productos on productos.idprod=movimientos.producto order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorialGeneral+"";
+  var query = "select productos.entidad, productos.nombre_plastico as nombre, productos.codigo_emsa as codigo, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i:%s') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios as comentarios from movimientos inner join productos on productos.idprod=movimientos.producto order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorialGeneral+"";
   //alert(query);
   $.getJSON(url, {query: ""+query+""}).done(function(request){
     var datos = request.resultado;
@@ -259,9 +262,11 @@ function mostrarHistorialGeneral(id){
         else {
           comentario = "&nbsp;["+comentario+"]";
         }
-        mostrar += j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["entidad"]+"/"+datos[i]["nombre"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"<br>";
+        //mostrar += j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["entidad"]+"/"+datos[i]["nombre"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"<br>";
+        mostrar += j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["codigo"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"<br>";
       }
-      var popover = '<a role="button" tabindex="0" id="historialGeneral" class="btn btn-info" title="Historial General" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="left" data-content="'+mostrar+'">Historial General</a>';
+      var titulo = '&Uacute;ltimos '+limiteHistorialGeneral+' movimientos:';
+      var popover = '<a role="button" tabindex="0" id="historialGeneral" class="btn btn-primary" title="'+titulo+'" data-container="#gralHistory" data-toggle="popover" data-trigger="hover" data-placement="left" data-content="'+mostrar+'">Últimos '+limiteHistorialGeneral+' Movimientos</a>';
       
       $(id).append(popover);
       $("#historialGeneral").popover({html:true});
@@ -339,6 +344,9 @@ function showHintProd(str, id, seleccionado) {
       }
       else {
         length++;
+      }
+      if (length > totalSugerencias){
+        length = totalSugerencias + 1;
       }
       //alert('sugerencias: '+totalSugerencias+'\nlength: '+length);
       //open dropdown
@@ -616,7 +624,15 @@ function agregarMovimiento(){
     //var idUserBoveda = $("#usuarioBoveda").val();
     //var idUserGrabaciones = $("#usuarioGrabaciones").val();
     var tempDate = new Date();
-    var hora = tempDate.getHours()+":"+tempDate.getMinutes();
+    var minutos = parseInt(tempDate.getMinutes(), 10);
+    var segs = parseInt(tempDate.getSeconds(), 10); 
+    if (minutos < 10){
+      minutos = "0"+minutos;
+    }
+    if (segs < 10){
+      segs = "0"+segs;
+    }
+    var hora = tempDate.getHours()+":"+minutos+":"+segs;
     var nuevoStock = stockActual;
 
     /// Elimino el pop up de confirmación a pedido de Diego: 
@@ -1231,14 +1247,16 @@ function actualizarParametros ()
     verificarSesion();
     
     var pageSize = $("#pageSize").val();
-    var limiteHistorial = $("#tamHistorial").val();
+    var limiteHistorialGeneral = $("#tamHistorialGeneral").val();
+    var limiteHistorialProducto = $("#tamHistorialProducto").val();
 
     var url = "data/updateParametros.php";
     var log = "NO";
 
-    $.getJSON(url, {tamPagina: ""+pageSize+"", tamHistorial: ""+limiteHistorial+"", log: log}).done(function(request) {
+    $.getJSON(url, {tamPagina: ""+pageSize+"", tamHistorialProducto: ""+limiteHistorialProducto+"", tamHistorialGeneral: ""+limiteHistorialGeneral+"", log: log}).done(function(request) {
       var cambioPagina = false;
-      var cambioHistorial = false;
+      var cambioHistorialProducto = false;
+      var cambioHistorialGeneral = false;
       
       if (request.resultadoPagina === "OK") {
         var paginaNueva = parseInt(request.pagina, 10);
@@ -1249,31 +1267,46 @@ function actualizarParametros ()
         }
       }
       
-      if (request.resultadoHistory === "OK") {
-        var historialNuevo = parseInt(request.historial, 10);
-        var historialViejo = parseInt($("#limiteHistorial").val(), 10);
-        if (historialViejo !== historialNuevo){
-          $("#limiteHistorial").val(historialNuevo);
-          cambioHistorial = true;
+      if (request.resultadoHistoryProducto === "OK") {
+        var historialNuevoProducto = parseInt(request.historialProducto, 10);
+        var historialViejoProducto = parseInt($("#limiteHistorialProducto").val(), 10);
+        if (historialViejoProducto !== historialNuevoProducto){
+          $("#limiteHistorialProducto").val(historialNuevoProducto);
+          cambioHistorialProducto = true;
+        }
+      }
+      
+      if (request.resultadoHistoryGeneral === "OK") {
+        var historialNuevoGeneral = parseInt(request.historialGeneral, 10);
+        var historialViejoGeneral = parseInt($("#limiteHistorialGeneral").val(), 10);
+        if (historialViejoGeneral !== historialNuevoGeneral){
+          $("#limiteHistorialGeneral").val(historialNuevoGeneral);
+          cambioHistorialGeneral = true;
         }
       }
 
-      if (cambioPagina && cambioHistorial){
-        alert('Ambos parámetros se cambiaron con éxito:\nTamaño de página: '+$("#tamPagina").val()+"\nHistorial: "+$("#limiteHistorial").val());
+      if (cambioPagina && cambioHistorialProducto && cambioHistorialGeneral){
+        alert('Todos los parámetros se cambiaron con éxito:\nTamaño de página: '+paginaNueva+"\nHistorial Producto: "+historialNuevoProducto+"\nHistorial General: "+historialNuevoGeneral);
       }
       else {
-        if (cambioPagina){
-          alert('Se cambió sólo el valor del tamaño de la página: \nNuevo valor: '+$("#tamPagina").val());
+        if (!cambioPagina && !cambioHistorialProducto && !cambioHistorialGeneral){
+          alert('No se cambiaron los parámetros.');
         }
         else {
-          if (cambioHistorial){
-            alert('Se cambió sólo el valor del tamaño del historial: \nNuevo valor: '+$("#limiteHistorial").val());
+          var mostrar = 'Nuevos parámetros:';
+          if (cambioPagina){
+            mostrar += '\nTamaño de página: '+paginaNueva;
           }
-          else {
-            alert('No se cambiaron los parámetros.');
+          if (cambioHistorialProducto){
+            mostrar += '\nHistorial Producto: '+historialNuevoProducto;
           }
+          if (cambioHistorialGeneral){
+            mostrar += '\nHistorial General: '+historialNuevoGeneral;
+          }
+          alert(mostrar);
         }
       }
+      
       $("#modalParametros").modal("hide");
     });
     
@@ -2468,7 +2501,18 @@ function realizarBusqueda(){
                                   break;
       default: break;
     }
-    
+    var hoy = new Date();
+    var diaHoy = hoy.getDate();
+    var mesHoy = hoy.getMonth()+1;
+    if (diaHoy < 10) 
+      {
+      diaHoy = '0'+diaHoy;
+    }                     
+    if (mesHoy < 10) 
+      {
+      mesHoy = '0'+mesHoy;
+    }
+    var hoyFecha = hoy.getFullYear()+'-'+mesHoy+'-'+diaHoy;
     if (validarFecha) {
       switch (radioFecha) {
         case 'intervalo': ///Comienzo la validación de las fechas:  
@@ -2485,20 +2529,9 @@ function realizarBusqueda(){
                               {
                               inicio = $("#inicio" ).attr("min");
                               }
-                            if (fin === '') 
+                            if ((fin === '') || (fin > hoyFecha))
                               {
-                              var temp = new Date();
-                              var dia = temp.getDate();
-                              var mes = temp.getMonth()+1;
-                              if (dia < 10) 
-                                {
-                                dia = '0'+dia;
-                              }                     
-                              if (mes < 10) 
-                                {
-                                mes = '0'+mes;
-                              }
-                              fin = temp.getFullYear()+'-'+mes+'-'+dia;
+                              fin = hoyFecha;
                             }
 
                             if (inicio>fin) 
@@ -2509,15 +2542,23 @@ function realizarBusqueda(){
                             }
                             else 
                               {
-                              validado = true;
-                              var inicioTemp = inicio.split('-');
-                              var inicioMostrar = inicioTemp[2]+"/"+inicioTemp[1]+"/"+inicioTemp[0];
-                              var finTemp = fin.split('-');
-                              var finMostrar = finTemp[2]+"/"+finTemp[1]+"/"+finTemp[0];
-                              rangoFecha = " and (fecha >='"+inicio+"') and (fecha<='"+fin+"')";
-                              mensajeFecha = "entre las fechas: "+inicioMostrar+" y "+finMostrar;
+                              validado = true;  
+                              if (inicio === fin){
+                                var diaTemp = inicio.split('-');
+                                var diaMostrar = diaTemp[2]+"/"+diaTemp[1]+"/"+diaTemp[0];
+                                rangoFecha = " and (fecha ='"+inicio+"')";
+                                mensajeFecha = "del día: "+diaMostrar;
+                              }
+                              else {
+                                var inicioTemp = inicio.split('-');
+                                var inicioMostrar = inicioTemp[2]+"/"+inicioTemp[1]+"/"+inicioTemp[0];
+                                var finTemp = fin.split('-');
+                                var finMostrar = finTemp[2]+"/"+finTemp[1]+"/"+finTemp[0];
+                                rangoFecha = " and (fecha >='"+inicio+"') and (fecha<='"+fin+"')";
+                                mensajeFecha = "entre las fechas: "+inicioMostrar+" y "+finMostrar;
+                              }
                             }
-                          } /// FIN validación de las fechas.
+                          } /// FIN validación de las fechas intervalo.
                           break;
         case 'mes': if (mes === 'todos') {
                       inicio = año+"-01-01";
@@ -3406,13 +3447,13 @@ function realizarGrafica(){
       case "intervalo": var diaInicio = $("#diaInicio").val();
                         var diaFin = $("#diaFin").val();
                         if (diaInicio === ''){
-                          diaInicio = "2017-09-01";
+                          diaInicio = $("#diaInicio").attr("min");
                         }
                         else {
                           diaInicio = $("#diaInicio").val();
                         }
                         if (diaFin === ''){
-                          diaFin = hoy.getFullYear()+"-"+hoy.getUTCMonth()+1+"-"+hoy.getDate();
+                          diaFin = tempAño+"-"+tempMonth+"-"+tempDia;
                         }
                         else {
                           diaFin = $("#diaFin").val();
@@ -4751,7 +4792,8 @@ $(document).on("click", "#param", function(){
 ///Lo único que hace es limpiar el form para poder ingresar los nuevos datos.
 $(document).on("shown.bs.modal", "#modalParametros", function() {
   $("#pageSize").val($("#tamPagina").val());
-  $("#tamHistorial").val($("#limiteHistorial").val());
+  $("#tamHistorialGeneral").val($("#limiteHistorialGeneral").val());
+  $("#tamHistorialProducto").val($("#limiteHistorialProducto").val());
   $("#pageSize").attr("autofocus", true);
   $("#pageSize").focus();
 });
@@ -4763,16 +4805,24 @@ $(document).on("click", "#btnParam", function(){
 });
 
 ///Disparar función al hacer ENTER estando en el elemento pageSize del MODAL.
-///Esto hace que se pase el foco al siguiente input del MODAL (tamHistorial) cosa de ahorrar tiempo.
+///Esto hace que se pase el foco al siguiente input del MODAL (tamHistorialProducto) cosa de ahorrar tiempo.
 $(document).on("keypress", "#pageSize", function(e) {
   if(e.which === 13) {
-    $("#tamHistorial").focus();
+    $("#tamHistorialProducto").focus();
   }  
 });
 
-///Disparar función al hacer ENTER estando en el elemento tamHistorial del MODAL.
+///Disparar función al hacer ENTER estando en el elemento tamHistorialProducto del MODAL.
+///Esto hace que se pase el foco al siguiente input del MODAL (tamHistorialGeneral) cosa de ahorrar tiempo.
+$(document).on("keypress", "#tamHistorialProducto", function(e) {
+  if(e.which === 13) {
+    $("#tamHistorialGeneral").focus();
+  }  
+});
+
+///Disparar función al hacer ENTER estando en el elemento tamHistorialGeneral del MODAL.
 ///Esto hace que se llame a la función correspondiente (actualizarParametros()) cosa de ahorrar tiempo.
-$(document).on("keypress", "#tamHistorial", function(e) {
+$(document).on("keypress", "#tamHistorialGeneral", function(e) {
   if(e.which === 13) {
     actualizarParametros();
   }  

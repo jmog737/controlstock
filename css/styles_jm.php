@@ -238,6 +238,9 @@ hr {
 /* FIN TABS*/
 
 /* POPOVERS */
+#gralHistory{
+  margin: 8px 0px 8px 0px;
+}
 .historial {
   
 }
@@ -249,6 +252,23 @@ hr {
 }
 .popover-body{
   background-color: #cccccc;
+}
+/* Estilos para el popover con el historial general.
+   El mismo fue "atado" al elemento gralHistory cosa de poder diferenciarlo
+*/
+#gralHistory .popover{
+  max-width: 100%;
+}
+#gralHistory .popover-header {
+  background-color: #5ca037;
+  color: #ffffff;
+  font-size: 1.2em;
+  font-weight: bold;
+  text-decoration: underline;
+}
+#gralHistory .popover-body {
+  background-color: #f8ffcd;
+  font-style: italic;
 }
 /* FIN POPOVERS */
 
@@ -401,6 +421,27 @@ hr {
   background-color: #c12929;
 }
 
+.resaltarDiferencia {
+  background-color:#ffff00;
+  font-size: 1.2em;
+  font-weight: bolder;
+  color: red;
+}
+
+.resaltarComentario {
+  background-color: #9bf79b;
+  font-size: 1.1em;
+  font-weight: bolder;
+}
+
+.transparente {
+  background-color:transparent;
+}
+
+.fondoBlanco {
+  background-color:#ffffff;
+  background-color: #ababab;
+}
 .negrita {
   font-weight: bolder;
 }
@@ -450,10 +491,22 @@ hr {
 }
 #hint {
   max-width: 100%;
-  
   position: relative;
   overflow-x: scroll;
   overflow-y: auto;
+}
+
+.comentHintResaltar {
+  background-color:#ffff00;
+  font-size: 2.2em;
+  font-weight: bolder;
+  color: red;
+}
+.comentHint{
+  font-size: 2.2em;
+  font-weight: bolder;
+  color: red;
+  background-color: #9bf79b;
 }
 
 .subtotal {
@@ -762,7 +815,12 @@ hr {
     font-size: 1.9vw;
   }
   /* End Header */
-  
+  hr{
+    height: 1px;
+    margin: 2px;
+    max-width: 75%;
+    margin: auto;
+  }
   /* Home page */
   .col-xxs-12 {
     position: relative;

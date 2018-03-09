@@ -41,10 +41,10 @@ if (!file_exists($dir)){
 }
 
 if (!isset($_SESSION["tamPagina"])){
-  $_SESSION["tamPagina"] = 35;
+  $_SESSION["tamPagina"] = 50;
 }
-if (!isset($_SESSION["limiteHistorial"])){
-  $_SESSION["limiteHistorial"] = 5;
+if (!isset($_SESSION["limiteHistorialProducto"])){
+  $_SESSION["limiteHistorialProducto"] = 5;
 }
 if (!isset($_SESSION["limiteHistorialGeneral"])){
   $_SESSION["limiteHistorialGeneral"] = 10;
