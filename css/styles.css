@@ -352,13 +352,14 @@ hr {
   text-align: center;
   padding: 0px;
 }
-.tabla2 td input[type="textarea"] {
+.tabla2 textarea {
   line-height: normal;
   width: 100%;
   border: #c0c0c0 1px solid;
   border-collapse: separate;
   text-align: center;
   padding: 0px;
+  /*resize: none;*/
 }
 .tabla2 td select {
   line-height: normal;
@@ -411,12 +412,26 @@ hr {
   color: red;
 }
 
+.resaltarStock {
+  background-color: #38ff1d;
+  font-size: 1.2em;
+  font-weight: bolder;
+  color: red;
+}
+
 .resaltarComentario {
-  background-color: #9bf79b;
+  background-color: #ff9999;
   font-size: 1.1em;
   font-weight: bolder;
 }
 
+a.linkHistorial {
+  color: black;
+}
+a.linkHistorial:hover{
+  background-color: #ffff00;
+  font-size: 1.5em;
+}
 .transparente {
   background-color:transparent;
 }
@@ -485,11 +500,17 @@ hr {
   font-weight: bolder;
   color: red;
 }
+.comentHintStock{
+  font-size: 2.2em;
+  font-weight: bolder;
+  color: red;
+  background-color: #38ff1d;
+}
 .comentHint{
   font-size: 2.2em;
   font-weight: bolder;
   color: red;
-  background-color: #9bf79b;
+  background-color: #ff9999;
 }
 
 .subtotal {

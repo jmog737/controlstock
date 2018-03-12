@@ -82,15 +82,18 @@ class PDF extends PDF_MC_Table
     }
   }  
   
+  
+  
   function graficarBarras($subtitulo, $meses, $totales, $data1, $data2, $data3, $data4, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg5, $destino){
     global $dirGraficas, $h;
-
+    
+    
     // Create the graph. These two calls are always required
-    $graph = new Graph(750,350);
+    $graph = new Graph(830,350);
     $graph->SetScale("textint");
     $graph->title->Set("MOVIMIENTOS DE STOCK");
     $graph->subtitle->Set($subtitulo." (".$totalRango." ".$tipoRango.").");
-    $graph->img->SetMargin(80,190,65,20);
+    $graph->img->SetMargin(80,250,65,20);
     $graph->SetBackgroundGradient('#e2bd6e','#023184:0.98',GRAD_HOR,BGRAD_MARGIN);
     //$graph->SetShadow();
 
@@ -132,42 +135,56 @@ class PDF extends PDF_MC_Table
     $gbplot = new GroupBarPlot(array($b1,$b2,$b3,$b4));
     // ...and add it to the graPH
     $graph->Add($gbplot);
-
+      
+    $b1->value->Show();
     $b1->SetColor("white");
     $b1->SetFillColor("#1111cc");
     $b1->SetLegend("Retiros");
-    $b1->value->SetFormat('%d');
-    $b1->value->Show();
-    $b1->value->SetFont(FF_ARIAL,FS_NORMAL, 9);
-    $b1->value->SetAngle(60);
+    $b1->SetWidth(0.8);
+    $b1->value->SetAlign('left','center');
+    $b1->value->SetMargin(30);
+    $b1->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
+    $b1->value->SetAngle(75);
+    $b1->value->SetFormatCallback(formatoDato); 
+    /*$b1->value->SetFormat('%d');*/   
     //$b1->value->HideZero();
 
+    $b2->value->Show();
     $b2->SetColor("white");
     $b2->SetFillColor("#258246");
     $b2->SetLegend("Ingresos");
-    $b2->value->SetFormat('%d');
-    $b2->value->Show();
-    $b2->value->SetFont(FF_ARIAL,FS_NORMAL, 9);
-    $b2->value->SetAngle(60);
+    $b2->SetWidth(0.8);
+    $b2->value->SetMargin(30);
+    $b2->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
+    $b2->value->SetAngle(75);
+    $b2->value->SetFormatCallback("formatoDato"); 
+    /*$b2->value->SetFormat('%d');*/
     //$b2->value->HideZero();
 
+    $b3->value->Show();
     $b3->SetColor("white");
     $b3->SetFillColor("#F08A1D");
     $b3->SetLegend("Renos");
-    $b3->value->SetFormat('%d');
-    $b3->value->Show();
-    $b3->value->SetFont(FF_ARIAL,FS_NORMAL, 9);
-    $b3->value->SetAngle(60);
+    $b3->SetWidth(0.8);
+    $b3->value->SetMargin(30);
+    $b3->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
+    $b3->value->SetAngle(75);
+    $b3->value->SetFormatCallback(formatoDato); 
+    /*$b3->value->SetFormat('%d');*/
     //$b3->value->HideZero();
 
+    $b4->value->Show();
     $b4->SetColor("white");
     $b4->SetFillColor("#FF0719");
     $b4->SetLegend("Destrucciones");
-    $b4->value->SetFormat('%d');
-    $b4->value->Show();
-    $b4->value->SetFont(FF_ARIAL,FS_NORMAL, 9);
-    $b4->value->SetAngle(60);
+    $b4->SetWidth(0.8);
+    $b4->value->SetMargin(30);
+    $b4->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
+    $b4->value->SetAngle(75);
+    $b4->value->SetFormatCallback(formatoDato); 
+    /*$b4->value->SetFormat('%d');*/
     //$b4->value->HideZero();
+    
     ///***************************************************** FIN Gráficas con los consumos del período: *************************************
 
     ///********************************************** INICIO Generación de las gráficas con los promedios: **********************************
@@ -206,7 +223,7 @@ class PDF extends PDF_MC_Table
     $separacion = 0.07;
     $posPrimero = 0.5;
 
-    $txt = new Text("PROMEDIOS:"); 
+    $txt = new Text("DATOS:"); 
     $txt->SetFont(FF_FONT1,FS_BOLD); 
     $txt->Align('right');
     $txt->SetColor('red');
@@ -215,7 +232,8 @@ class PDF extends PDF_MC_Table
     $graph->AddText($txt); 
 
     $avg1 = number_format($avg1, 0, ',', '.');
-    $txt1 = new Text("Retiros: ".$avg1); 
+    $retiros = number_format($totales[0], 0, ',', '.');
+    $txt1 = new Text("Retiros: ".$retiros." (Avg: ".$avg1.")"); 
     $txt1->SetFont(FF_FONT1,FS_BOLD); 
     $txt1->SetColor('#023184:0.98');
     $txt1->SetPos(0.98,$posPrimero+0.8*$separacion,'right','center');
@@ -223,15 +241,18 @@ class PDF extends PDF_MC_Table
     $graph->AddText($txt1); 
 
     $avg2 = number_format($avg2, 0, ',', '.');
-    $txt2 = new Text("Ingresos: ".$avg2); 
+    $ingresos = number_format($totales[1], 0, ',', '.');
+    $txt2 = new Text("Ingresos: ".$ingresos." (Avg: ".$avg2.")"); 
     $txt2->SetFont(FF_FONT1,FS_BOLD); 
-    $txt2->SetColor('#023184:0.98');
+    /*$txt2->SetColor('#023184:0.98');*/
+    $txt2->SetColor('#258246:0.98');
     $txt2->SetPos(0.98,$posPrimero+1.8*$separacion,'right','center');
     $txt2->SetBox('navajowhite1','white'); 
     $graph->AddText($txt2); 
 
     $avg3 = number_format($avg3, 0, ',', '.');
-    $txt3 = new Text("Renos: ".$avg3); 
+    $renos = number_format($totales[2], 0, ',', '.');
+    $txt3 = new Text("Renos: ".$renos." (Avg: ".$avg3.")"); 
     $txt3->SetFont(FF_FONT1,FS_BOLD); 
     $txt3->SetColor('#023184:0.98');
     $txt3->SetPos(0.98,$posPrimero+2.8*$separacion,'right','center');
@@ -239,7 +260,8 @@ class PDF extends PDF_MC_Table
     $graph->AddText($txt3); 
 
     $avg4 = number_format($avg4, 0, ',', '.');
-    $txt4 = new Text("Destrucciones: ".$avg4); 
+    $destrucciones = number_format($totales[3], 0, ',', '.');
+    $txt4 = new Text("Destrucciones: ".$destrucciones." (Avg: ".$avg4.")"); 
     $txt4->SetFont(FF_FONT1,FS_BOLD); 
     $txt4->SetColor('#023184:0.98');
     $txt4->SetPos(0.98,$posPrimero+3.8*$separacion,'right','center');
@@ -247,9 +269,9 @@ class PDF extends PDF_MC_Table
     $graph->AddText($txt4); 
 
     $avg5 = number_format($avg5, 0, ',', '.');
-    $txt5 = new Text("Consumos: ".$avg5."\n(Total ".$consumos.")"); 
+    $txt5 = new Text("Consumos: ".$consumos." (Avg: ".$avg5.")"); 
     $txt5->SetFont(FF_FONT1,FS_BOLD); 
-    $txt5->SetColor('#023184:0.98');
+    $txt5->SetColor('red:0.98');
     $txt5->SetPos(0.98,$posPrimero+5.05*$separacion,'right','center');
     $txt5->SetBox('navajowhite1','white'); 
     $graph->AddText($txt5);
@@ -438,8 +460,15 @@ class PDF extends PDF_MC_Table
     } 
   }
   
+  
 }
 
+///Función que da el formato de los valores en cada columna.
+///Básicamente, se usa para agregar el separador de miles.
+function formatoDato($aLabel) { 
+  return  number_format($aLabel, 0, ',', '.');
+};
+  
 ///Función que calcula el total de díase entre el rango de fechas pasado como argumento.
 ///Básicamente arma un array con todas las fechas que hay en medio (incluyendo ambos extremos).
 function DiasHabiles($fecha_inicial,$fecha_final) 

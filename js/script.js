@@ -132,7 +132,12 @@ function showHint(str, id, seleccionado) {
               resaltarOption = 'class="resaltarDiferencia"';
             }
             else {
-              resaltarOption = 'class="resaltarComentario"';
+              if (comentario.indexOf("stock") > -1){
+                resaltarOption = 'class="resaltarStock"';
+              }
+              else {
+                resaltarOption = 'class="resaltarComentario"';
+              }            
             }  
           }
           else  {
@@ -220,6 +225,8 @@ function mostrarHistorial(prod){
       }
       var popover = '<a role="button" tabindex="0" id="historial" class="btn btn-danger historial" title="Historial de '+datos[i]["nombre"]+'" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="'+mostrar+'">Historial</a>';
       
+      $("#historial").popover('dispose');
+      $("#historial").remove();
       if ($("#comentHint").length > 0) {
         $("#comentHint").after(popover);
       }
@@ -245,7 +252,7 @@ function mostrarHistorialGeneral(id){
   ///Vuelvo a redefinir limiteHistorialGeneral para que tome el último valor en caso de que se haya cambiado con el modal.
   var limiteHistorialGeneral = parseInt($("#limiteHistorialGeneral").val(), 10);
   var url = "data/selectQuery.php";
-  var query = "select productos.entidad, productos.nombre_plastico as nombre, productos.codigo_emsa as codigo, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i:%s') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios as comentarios from movimientos inner join productos on productos.idprod=movimientos.producto order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorialGeneral+"";
+  var query = "select movimientos.idmov, productos.entidad, productos.nombre_plastico as nombre, productos.codigo_emsa as codigo, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i:%s') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios as comentarios from movimientos inner join productos on productos.idprod=movimientos.producto order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorialGeneral+"";
   //alert(query);
   $.getJSON(url, {query: ""+query+""}).done(function(request){
     var datos = request.resultado;
@@ -263,10 +270,10 @@ function mostrarHistorialGeneral(id){
           comentario = "&nbsp;["+comentario+"]";
         }
         //mostrar += j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["entidad"]+"/"+datos[i]["nombre"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"<br>";
-        mostrar += j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["codigo"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"<br>";
+        mostrar += "<a href='editarMovimiento.php?id="+datos[i]["idmov"]+"' target='_blank' class='linkHistorial'>"+j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["codigo"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"</a><br>";
       }
       var titulo = '&Uacute;ltimos '+limiteHistorialGeneral+' movimientos:';
-      var popover = '<a role="button" tabindex="0" id="historialGeneral" class="btn btn-primary" title="'+titulo+'" data-container="#gralHistory" data-toggle="popover" data-trigger="hover" data-placement="left" data-content="'+mostrar+'">Últimos '+limiteHistorialGeneral+' Movimientos</a>';
+      var popover = '<a role="button" tabindex="0" id="historialGeneral" class="btn btn-primary" title="'+titulo+'" data-container="#gralHistory" data-toggle="popover" data-trigger="click" data-placement="bottom" data-content="'+mostrar+'">Últimos '+limiteHistorialGeneral+' Movimientos</a>';
       
       $(id).append(popover);
       $("#historialGeneral").popover({html:true});
@@ -533,7 +540,7 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
 //            </tr>';
       tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center"><input type="textarea" id="comentarios" name="comMov" placeholder="Comentarios" title="Ingresar un comentario" tabindex="2" class="agrandar" maxlength="150" size="9"></td>\n\
+              <td align="center"><textarea id="comentarios" name="comMov" placeholder="Comentarios" title="Ingresar un comentario" tabindex="2" class="agrandar" cols="15" rows="5" maxlength="250"></textarea></td>\n\
             </tr>';
 //      tr += '<th colspan="2" class="centrado">CONTROL</th>';
 //      tr += '<tr>\n\
@@ -881,7 +888,7 @@ function cargarEditarMovimiento(idMov, selector){
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comEditMov" title="Ingresar los comentarios del movimiento" placeholder="Comentarios" tabindex="1" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><textarea id="comentarios" name="comEditMov" title="Ingresar los comentarios del movimiento" placeholder="Comentarios" tabindex="1" class="agrandar" rows="3" cols="18" maxlength="250"></textarea></td>\n\
           </tr>';
     tr += '<tr>\n\
               <td class="pieTablaIzquierdo" style="width: 50%;border-right: 0px;"><input type="button" value="BLOQUEAR" id="editarMovimiento" name="editarMovimiento" title="Habilitar/Deshabilitar la edición del movimiento" class="btn btn-primary" align="center"/></td>\n\
@@ -1066,7 +1073,7 @@ function cargarDetalleUsuario(user) {
            </tr>';
     tr += '<tr>\n\
               <th>Observaciones</th>\n\
-              <td colspan="3"><textarea id="observaciones" name="observaciones" style="width: 100%;resize: none" disabled="true">'+ obs +'</textarea></td>\n\
+              <td colspan="3"><textarea id="observaciones" name="observaciones" disabled="true">'+ obs +'</textarea></td>\n\
            </tr>';
     tr += '<tr>\n\
               <td class="pieTablaIzquierdo"><input type="button" id="editarUsuario" name="editarUsuario" value="EDITAR" onclick="cambiarEdicion()" class="btn-info"></td>\n\
@@ -1250,66 +1257,99 @@ function actualizarParametros ()
     var limiteHistorialGeneral = $("#tamHistorialGeneral").val();
     var limiteHistorialProducto = $("#tamHistorialProducto").val();
 
-    var url = "data/updateParametros.php";
-    var log = "NO";
-
-    $.getJSON(url, {tamPagina: ""+pageSize+"", tamHistorialProducto: ""+limiteHistorialProducto+"", tamHistorialGeneral: ""+limiteHistorialGeneral+"", log: log}).done(function(request) {
-      var cambioPagina = false;
-      var cambioHistorialProducto = false;
-      var cambioHistorialGeneral = false;
-      
-      if (request.resultadoPagina === "OK") {
-        var paginaNueva = parseInt(request.pagina, 10);
-        var paginaVieja = parseInt($("#tamPagina").val(), 10);
-        if (paginaVieja !== paginaNueva){
-          $("#tamPagina").val(paginaNueva);
-          cambioPagina = true;
-        }
-      }
-      
-      if (request.resultadoHistoryProducto === "OK") {
-        var historialNuevoProducto = parseInt(request.historialProducto, 10);
-        var historialViejoProducto = parseInt($("#limiteHistorialProducto").val(), 10);
-        if (historialViejoProducto !== historialNuevoProducto){
-          $("#limiteHistorialProducto").val(historialNuevoProducto);
-          cambioHistorialProducto = true;
-        }
-      }
-      
-      if (request.resultadoHistoryGeneral === "OK") {
-        var historialNuevoGeneral = parseInt(request.historialGeneral, 10);
-        var historialViejoGeneral = parseInt($("#limiteHistorialGeneral").val(), 10);
-        if (historialViejoGeneral !== historialNuevoGeneral){
-          $("#limiteHistorialGeneral").val(historialNuevoGeneral);
-          cambioHistorialGeneral = true;
-        }
-      }
-
-      if (cambioPagina && cambioHistorialProducto && cambioHistorialGeneral){
-        alert('Todos los parámetros se cambiaron con éxito:\nTamaño de página: '+paginaNueva+"\nHistorial Producto: "+historialNuevoProducto+"\nHistorial General: "+historialNuevoGeneral);
+    var validarPage = validarEntero(pageSize);
+    var seguir = true;
+    if ((pageSize <= 0) || (pageSize === "null") || !validarPage){
+      alert('El tamaño de la página DEBE ser un entero > 0. Por favor verifique.');
+      seguir = false;
+      $("#pageSize").focus();
+    }
+    else {
+      var validarHistorialGeneral = validarEntero(limiteHistorialGeneral);
+      if ((limiteHistorialGeneral <= 0) || (limiteHistorialGeneral === "null") || !validarHistorialGeneral){
+        alert('El valor para el HISTORIAL GENERAL DEBE ser un entero > 0. Por favor verifique.');
+        seguir = false;
+        $("#tamHistorialGeneral").focus();
       }
       else {
-        if (!cambioPagina && !cambioHistorialProducto && !cambioHistorialGeneral){
-          alert('No se cambiaron los parámetros.');
+        var validarHistorialProducto = validarEntero(limiteHistorialProducto);
+        if ((limiteHistorialProducto <= 0) || (limiteHistorialProducto === "null") || !validarHistorialProducto){
+          alert('El valor para el HISTORIAL del PRODUCTO DEBE ser un entero > 0. Por favor verifique.');
+          seguir = false;
+          $("#tamHistorialProducto").focus();
         }
         else {
-          var mostrar = 'Nuevos parámetros:';
-          if (cambioPagina){
-            mostrar += '\nTamaño de página: '+paginaNueva;
-          }
-          if (cambioHistorialProducto){
-            mostrar += '\nHistorial Producto: '+historialNuevoProducto;
-          }
-          if (cambioHistorialGeneral){
-            mostrar += '\nHistorial General: '+historialNuevoGeneral;
-          }
-          alert(mostrar);
+          seguir = true;
         }
       }
-      
-      $("#modalParametros").modal("hide");
-    });
-    
+    }
+    if (seguir) {
+      var url = "data/updateParametros.php";
+      var log = "NO";
+
+      $.getJSON(url, {tamPagina: ""+pageSize+"", tamHistorialProducto: ""+limiteHistorialProducto+"", tamHistorialGeneral: ""+limiteHistorialGeneral+"", log: log}).done(function(request) {
+        var cambioPagina = false;
+        var cambioHistorialProducto = false;
+        var cambioHistorialGeneral = false;
+
+        if (request.resultadoPagina === "OK") {
+          var paginaNueva = parseInt(request.pagina, 10);
+          var paginaVieja = parseInt($("#tamPagina").val(), 10);
+          if (paginaVieja !== paginaNueva){
+            $("#tamPagina").val(paginaNueva);
+            cambioPagina = true;
+          }
+        }
+
+        if (request.resultadoHistoryProducto === "OK") {
+          var historialNuevoProducto = parseInt(request.historialProducto, 10);
+          var historialViejoProducto = parseInt($("#limiteHistorialProducto").val(), 10);
+          if (historialViejoProducto !== historialNuevoProducto){
+            $("#limiteHistorialProducto").val(historialNuevoProducto);
+            cambioHistorialProducto = true;
+          }
+        }
+
+        if (request.resultadoHistoryGeneral === "OK") {
+          var historialNuevoGeneral = parseInt(request.historialGeneral, 10);
+          var historialViejoGeneral = parseInt($("#limiteHistorialGeneral").val(), 10);
+          if (historialViejoGeneral !== historialNuevoGeneral){
+            $("#limiteHistorialGeneral").val(historialNuevoGeneral);
+            cambioHistorialGeneral = true;
+          }
+        }
+
+        if (cambioPagina && cambioHistorialProducto && cambioHistorialGeneral){
+          alert('Todos los parámetros se cambiaron con éxito:\nTamaño de página: '+paginaNueva+"\nHistorial Producto: "+historialNuevoProducto+"\nHistorial General: "+historialNuevoGeneral);
+        }
+        else {
+          if (!cambioPagina && !cambioHistorialProducto && !cambioHistorialGeneral){
+            alert('No se cambiaron los parámetros.');
+          }
+          else {
+            var mostrar = 'Nuevos parámetros:';
+            if (cambioPagina){
+              mostrar += '\nTamaño de página: '+paginaNueva;
+            }
+            if (cambioHistorialProducto){
+              mostrar += '\nHistorial Producto: '+historialNuevoProducto;
+            }
+            if (cambioHistorialGeneral){
+              mostrar += '\nHistorial General: '+historialNuevoGeneral;
+            }
+            alert(mostrar);
+          }
+        }//alert(request.resultadoDB);
+        if (request.resultadoDB === "OK"){
+          alert('Los parametros se actualizaron correctamente en la base de datos!');
+        }
+        else {
+          alert('Hubo un problema al actualizar los datos en la base de datos. Por favor inténtelo nuevamente.');
+        }
+
+        $("#modalParametros").modal("hide");
+      });
+    }
   }
 }
 
@@ -2977,13 +3017,16 @@ function cargarProducto(idProd, selector){
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center" colspan="2"><input type="textarea" id="comentarios" name="comProd"  title="Ingresar un comentario" placeholder="Comentarios" tabindex="13" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><textarea id="comentarios" name="comProd"  title="Ingresar un comentario" placeholder="Comentarios" tabindex="13" class="agrandar" maxlength="250" rows="5" cols="30"></textarea></td>\n\
           </tr>';
     tr += '<tr>\n\
               <td style="width: 33%;border-right: 0px;"><input type="button" value="EDITAR" id="editarProducto" name="editarProducto" title="Habilitar la edición del producto" tabindex="3" class="btn btn-primary" align="center"/></td>\n\
               <td style="width: 33%;border-left: 0px;border-right: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarProducto" name="actualizarProducto" title="Realizar la actualización" tabindex="14" class="btn btn-warning" align="center"/></td>\n\
               <td style="width: 33%;border-left: 0px;"><input type="button" value="ELIMINAR" id="eliminarProducto" name="eliminarProducto" title="Dar de baja el producto" class="btn btn-danger" align="center"/></td>\n\
           </tr>';
+    tr += '<tr>\n\
+             <td style="display:none"><input type="text" id="idprod" value='+idProd+'></td>\n\
+           </tr>';
     tr += '<tr>\n\
               <td colspan="3" class="pieTabla"><input type="button" value="NUEVO" id="agregarProducto" name="agregarProducto" title="Agregar un nuevo producto" class="btn btn-success" align="center"/></td>\n\
           </tr>';
@@ -3748,8 +3791,19 @@ function todo () {
                                       }
     case "/controlstock/index.php": break;
                                     
-    case "/controlstock/producto.php":  setTimeout(function(){cargarBusquedaProductos("#selector")}, 100);
-                                        setTimeout(function(){cargarProducto(0, "#content")}, 100);
+    case "/controlstock/producto.php":  if (parametros){
+                                          var temp = parametros.split('?');
+                                          var temp1 = temp[1].split('=');
+                                          var id = temp1[1];
+                                          setTimeout(function(){cargarProducto(id, "#content")}, 100);
+                                          setTimeout(function(){cargarBusquedaProductos("#selector")}, 100);                                          
+                                          setTimeout(function(){habilitarProducto()}, 450);
+                                          setTimeout(function(){$("#comentarios").focus()}, 460);
+                                        }
+                                        else {
+                                          setTimeout(function(){cargarBusquedaProductos("#selector")}, 100);
+                                          setTimeout(function(){cargarProducto(0, "#content")}, 100);
+                                        }
                                         break;                                                                      
     case "/controlstock/busquedas.php": {
                                         if (parametros) {
@@ -3888,9 +3942,14 @@ $(document).on("change focusin", "#hint", function (e){
       comentHint = "comentHintResaltar";
     }
     else {
-      comentHint = "comentHint";
+      if (comentarios.indexOf("stock") > -1){
+        comentHint = "comentHintStock";
+      }
+      else {
+        comentHint = "comentHint";
+      }
     }
-    mostrar += '<p id="comentHint" name="comentHint" class="'+comentHint+'">'+comentarios+'</p>';
+    mostrar += '<p id="comentHint" name="comentHint" class="'+comentHint+'"><a href="producto.php?id='+prod+'" target="_blank">'+comentarios+'</a></p>';
   }
   //$(this).css('background-color', '#efe473');
   $(this).css('background-color', '#9db7ef');
@@ -4220,12 +4279,13 @@ $(document).on("click", "#actualizarProducto", function (){
     var contacto = $("#contacto").val();
     var nombreFoto = $("#nombreFoto").val();
     var codigo_origen = $("#codigo_origen").val();
-    var idProducto = $("#hintProd").val();
+    /*var idProducto = $("#hintProd").val();*/
+    var idProducto = $("#idprod").val();
     var comentarios = $("#comentarios").val();
     var bin = $("#bin").val();
     var stock = $("#stockProducto").val();
 
-    if ((idProducto === 'NADA')||($("#hintProd").length === 0)) {
+    if ((idProducto === 'NADA')) {
       alert('Se debe seleccionar un producto para poder actualizar. Por favor verifique.');
       $("#producto").focus();
     }
@@ -4295,8 +4355,14 @@ $(document).on("click", "#actualizarProducto", function (){
                 }
               }
               var productoBusqueda = $("#productoBusqueda").val();
-              var elegido = $("#hintProd").find('option:selected').val();
-              showHintProd(productoBusqueda, "#productoBusqueda", elegido);
+              if (productoBusqueda !== ''){
+                var elegido = $("#hintProd").find('option:selected').val();
+                showHintProd(productoBusqueda, "#productoBusqueda", elegido);
+              }
+              else {
+                productoBusqueda = nombre;
+                showHintProd(productoBusqueda, "#productoBusqueda", idProducto);
+              }
               inhabilitarProducto();
               $("#productoBusqueda").focus();
             }
@@ -4636,7 +4702,7 @@ $(document).on("click", "#nuevoUsuario", function() {
          </tr>';
   tr += '<tr>\n\
             <th>Observaciones</th>\n\
-            <td colspan="3"><textarea id="observaciones" name="observaciones" style="width: 100%;resize: none"></textarea></td>\n\
+            <td colspan="3"><textarea id="observaciones" name="observaciones"></textarea></td>\n\
          </tr>';
   tr += '<tr>\n\
             <td colspan="4" class="pieTabla"><input type="button" id="agregarUsuario" name="agregarUsuario" value="AGREGAR" class="btn-success"></td>\n\

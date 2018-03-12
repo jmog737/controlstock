@@ -19,7 +19,7 @@
       <div id='collapsable-nav' class='collapse navbar-collapse align-middle'>
         <ul id='nav-list' class='navbar-nav ml-auto my-auto pr-2 pb-2'>
           <li id='navHomeButton' class='nav-item active d-none d-sm-block align-middle' >
-            <a class="nav-link" href="movimiento.php"><img src="images/home.png" alt="HOME" title="Ir al inicio"></a>  
+            <a class="nav-link" href="index.php"><img src="images/home.png" alt="HOME" title="Ir al inicio"></a>  
           </li>
           <?php
           if (isset($_SESSION['user_id'])) 
