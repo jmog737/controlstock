@@ -59,12 +59,11 @@ require_once("data/sesiones.php");
     <?php 
     }
     else {
-    ?>
-    
-    <script> 
+    ?> 
+<!--    <script> 
       alert('Su sesión expiró. Por favor vuelva loguearse.'); 
       window.location.href = "../controlstock/index.php";
-    </script>  
+    </script>  -->
     <?php
     }        
     ?>      

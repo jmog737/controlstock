@@ -29,10 +29,10 @@ require_once("data/sesiones.php");
             }
     else {
     ?>
-      <script> 
+<!--      <script> 
         alert('Su sesión expiró. Por favor vuelva loguearse.'); 
         window.location.href = "../testKMS/index.php";
-      </script>  
+      </script>  -->
     <?php
     }        
     ?>  

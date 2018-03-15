@@ -7,6 +7,7 @@ require_once('generarExcel.php');
 require_once('generarPdfs.php');
 //require_once('enviarMails.php');
 require_once('data/config.php');
+
 //phpinfo();
 //***************************** DESTINATARIOS CORREOS ***********************************************************************************************
 //$paraListados = array();
@@ -111,8 +112,8 @@ $indice = $_POST["indice"];
 $query = $_POST["query_$indice"];
 $consultaCSV = $_POST["consultaCSV_$indice"];
 
-$tipoConsulta = $_POST["tipoConsulta_$indice"];
-
+$tipoConsulta = strip_tags($_POST["tipoConsulta_$indice"]);
+//echo $tipoConsulta;
 $mostrar1 = utf8_decode($_POST["mostrar"]);
 $mostrar = preg_split("/-/", $mostrar1);
 
@@ -127,6 +128,14 @@ $x = $_POST["x"];
 if (isset($_POST["idProd"])){
   $idProd = $_POST["idProd"];
 }
+
+///Caracteres a ser reemplazados en caso de estar presentes en el nombre del producto o la entidad
+///Esto se hace para mejorar la lectura (en caso de espacios en blanco), o por requisito para el nombre de la hoja de excel
+$aguja = array(0=>" ", 1=>".", 2=>"[", 3=>"]", 4=>"*", 5=>"/", 6=>"\\", 7=>"?", 8=>":");
+///Se define el tamaño máximo aceptable para el nombre teniendo en cuenta que el excel admite un máximo de 31 caracteres, y que además, 
+///ya se tienen 6 fijos del stock_ (movs_ es uno menos).
+$tamMaximoNombre = 25;
+
 if (isset($_POST["nombreProducto"])){
   $nombreProducto1 = $_POST["nombreProducto"];
   $sep = explode("[", $nombreProducto1);
@@ -137,12 +146,16 @@ if (isset($_POST["nombreProducto"])){
   $codigo = trim($tempo[0]);
   $entidad1 = explode("-", $tempo[1]);
   $nombreProducto = trim($entidad1[3]);
+  $nombreProductoMostrar1 = str_replace($aguja, "", $nombreProducto);
+  $nombreProductoMostrar = substr($nombreProductoMostrar1, 0, $tamMaximoNombre);
 }
 if (isset($_POST["entidad_$indice"])){
   $entidad = $_POST["entidad_$indice"];
-
+  $entidadMostrar1 = str_replace($aguja, "", $entidad);
+  $entidadMostrar = substr($entidadMostrar1, 0, $tamMaximoNombre);
   if ($entidad === 'todos') {
     $entidad = 'todas las entidades.';
+    $entidadMostrar = 'Todos';
   }
 }
 //
@@ -184,14 +197,14 @@ array_push($largoCampos, $largoTotal);
 switch ($id) {
   case "1": $tituloTabla = "LISTADO DE STOCK";
             $titulo = "STOCK POR ENTIDAD";
-            $nombreReporte = "stockEntidad";
+            $nombreReporte = "stock_".$entidadMostrar;
             $asunto = "Reporte con el Stock de la Entidad";
             $nombreCampos = "(select 'Entidad', 'Nombre', 'BIN', 'Stock')";
             $indiceStock = 8;
             break;
   case "2": $tituloTabla = "STOCK DEL PRODUCTO";
             $titulo = "STOCK DEL PRODUCTO";
-            $nombreReporte = "stockProducto";
+            $nombreReporte = "stock_".$nombreProductoMostrar;
             $asunto = "Reporte con el stock del Producto";
             $nombreCampos = "(select 'Entidad', 'Nombre', 'BIN', 'Stock')";
             $indiceStock = 8;
@@ -205,7 +218,7 @@ switch ($id) {
             break;
   case "4": $tituloTabla = "MOVIMIENTOS DE LA/S ENTIDAD/ES";
             $titulo = "MOVIMIENTOS POR ENTIDAD";
-            $nombreReporte = "movimientosEntidad";
+            $nombreReporte = "movs_".$entidadMostrar;
             $asunto = "Reporte con los movimientos de la Entidad";
             $nombreCampos = "(select 'Fecha', 'Hora', 'Entidad', 'Nombre', 'BIN', 'Tipo', 'Cantidad', 'Comentarios')";
             $indiceStock = 12;
@@ -214,12 +227,11 @@ switch ($id) {
               $inicioMostrar = $inicioTemp[2]."/".$inicioTemp[1]."/".$inicioTemp[0];
               $finTemp = explode("-", $fin);
               $finMostrar = $finTemp[2]."/".$finTemp[1]."/".$finTemp[0];
-              //$tipoConsulta = $tipoConsulta." ".$inicioMostrar." y ".$finMostrar;
             }
             break;
   case "5": $tituloTabla = "MOVIMIENTOS DEL PRODUCTO";
             $titulo = "MOVIMIENTOS POR PRODUCTO";
-            $nombreReporte = "movimientosProducto";
+            $nombreReporte = "movs_".$nombreProductoMostrar;
             $asunto = "Reporte con los movimientos del Producto";
             $indiceStock = 12;
             if (isset($inicio)) {
@@ -227,7 +239,6 @@ switch ($id) {
               $inicioMostrar = $inicioTemp[2]."/".$inicioTemp[1]."/".$inicioTemp[0];
               $finTemp = explode("-", $fin);
               $finMostrar = $finTemp[2]."/".$finTemp[1]."/".$finTemp[0];
-              //$tipoConsulta = $tipoConsulta." ".$inicioMostrar." y ".$finMostrar;
             }
             break;       
   default: break;
@@ -290,8 +301,8 @@ switch ($id) {
   default: break;
 }    
 
-$timestamp = date('Ymd_His');
-$nombreArchivo = $nombreReporte.$timestamp.".pdf";
+$timestamp = date('dmY_His');
+$nombreArchivo = $nombreReporte."_".$timestamp.".pdf";
 $salida = $dir.$nombreArchivo;
 
 ///Guardo el archivo en el disco, y además lo muestro en pantalla:
@@ -323,7 +334,7 @@ $resultado2 = consultarBD($exportarCSV, $con);
 
 ///************************************************************ GENERACION ZIP FILE *********************************************************
 $zip = new ZipArchive;
-$nombreZip = "lista".$timestamp.".zip";
+$nombreZip = $nombreReporte."_".$timestamp.".zip";
 $fileDir = $dir.$nombreZip;
 
 $excel = $dir.$archivo;

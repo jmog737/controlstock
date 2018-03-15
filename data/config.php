@@ -43,6 +43,9 @@ if (!file_exists($dir)){
 if (!isset($_SESSION["tamPagina"])){
   $_SESSION["tamPagina"] = 50;
 }
+if (!isset($_SESSION["limiteSelects"])){
+  $_SESSION["limiteSelects"] = 15;
+}
 if (!isset($_SESSION["limiteHistorialProducto"])){
   $_SESSION["limiteHistorialProducto"] = 5;
 }

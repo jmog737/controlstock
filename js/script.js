@@ -4,6 +4,7 @@ var limiteSeleccion = parseInt($("#limiteSeleccion").val(), 10);
 var tamPagina = parseInt($("#tamPagina").val(), 10);
 var limiteHistorialProducto = parseInt($("#limiteHistorialProducto").val(), 10);
 var limiteHistorialGeneral = parseInt($("#limiteHistorialGeneral").val(), 10);
+var limiteSelects = parseInt($("#limiteSelects").val(), 10);
 
 /**
 ///  \file script.js
@@ -29,9 +30,17 @@ function verificarSesion() {
         var user = myObj.user;
         var user_id = myObj.user_id;
         var timestamp = myObj.timestamp;
-        $("#usuarioSesion").val(user);
-        $("#userID").val(user_id);
-        $("#timestampSesion").val(timestamp);
+        var usuarioViejo = myObj.oldUser;
+        //alert('user: '+user+'\nuser_id: '+user_id+'\ntimestamp: '+timestamp+'\nold: '+usuarioViejo);
+        if (user === "ERROR"){
+          alert("Se venció el tiempo de la sesión "+usuarioViejo+".\nPor favor vuelve a loguearte.");
+          window.location.assign("salir.php");
+        }
+        else {
+          $("#usuarioSesion").val(user);
+          $("#userID").val(user_id);
+          $("#timestampSesion").val(timestamp);
+        }
     }
   };
   xmlhttp.open("GET", "data/estadoSesion.php", true);
@@ -155,8 +164,8 @@ function showHint(str, id, seleccionado) {
       
       /// Agregado a pedido de Diego para que se abra el select automáticamente:
       var length = $('#hint> option').length;
-      if (length > 11) {
-        length = 11;
+      if (length > limiteSelects) {
+        length = limiteSelects;
       }
       else {
         length++;
@@ -247,8 +256,10 @@ function mostrarHistorial(prod){
  *        @param {String} id String con el id del elemento delante del cual debe ir el botón para ver el historial.
 */
 function mostrarHistorialGeneral(id){
-  $("#historialGeneral").popover('dispose');
-  $("#historialGeneral").remove();
+  if ($("#historialGeneral").length > 0){
+    $("#historialGeneral").popover('dispose');
+    $("#historialGeneral").remove();
+  }
   ///Vuelvo a redefinir limiteHistorialGeneral para que tome el último valor en caso de que se haya cambiado con el modal.
   var limiteHistorialGeneral = parseInt($("#limiteHistorialGeneral").val(), 10);
   var url = "data/selectQuery.php";
@@ -273,7 +284,7 @@ function mostrarHistorialGeneral(id){
         mostrar += "<a href='editarMovimiento.php?id="+datos[i]["idmov"]+"' target='_blank' class='linkHistorial'>"+j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["codigo"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"</a><br>";
       }
       var titulo = '&Uacute;ltimos '+limiteHistorialGeneral+' movimientos:';
-      var popover = '<a role="button" tabindex="0" id="historialGeneral" class="btn btn-primary" title="'+titulo+'" data-container="#gralHistory" data-toggle="popover" data-trigger="click" data-placement="bottom" data-content="'+mostrar+'">Últimos '+limiteHistorialGeneral+' Movimientos</a>';
+      var popover = '<a role="button" tabindex="0" id="historialGeneral" class="btn btn-primary" title="'+titulo+'" data-container="#gralHistory" data-toggle="popover" data-trigger="click" data-placement="left" data-content="'+mostrar+'">Últimos '+limiteHistorialGeneral+' Movimientos</a>';
       
       $(id).append(popover);
       $("#historialGeneral").popover({html:true});
@@ -584,7 +595,7 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
       mostrar += formu;
       $(selector).html(mostrar);
       
-      mostrarHistorialGeneral("#gralHistory");
+      setTimeout(function(){mostrarHistorialGeneral("#gralHistory")}, 160);
       
       if ((tipo !== '') && (tipo !== undefined)){
         $("#tipo option[value="+ tipo +"]").attr("selected",true);
@@ -610,13 +621,13 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
  *        Se separó del evento agregarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento cantidad.
  */
 function agregarMovimiento(){
-  var timestamp = Math.round(Date.now() / 1000);
-      
-  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-    window.location.href = "../controlstock/index.php";
-  }
-  else {
+//  var timestamp = Math.round(Date.now() / 1000);
+//      
+//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+//    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
+//    window.location.href = "../controlstock/index.php";
+//  }
+//  else {
     verificarSesion();
   
     var fecha = $("#fecha").val();
@@ -739,7 +750,7 @@ function agregarMovimiento(){
     else {
       alert('No hay stock suficiente del producto como para realizar el retiro.\n\n NO SE REALIZA!.');
     }
-  }
+  //}
 }
 
 /**
@@ -747,13 +758,13 @@ function agregarMovimiento(){
  *        Se separó del evento actualizarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento comentarios.
  */
 function actualizarMovimiento(){
-  var timestamp = Math.round(Date.now() / 1000);
-      
-  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-    window.location.href = "../controlstock/index.php";
-  }
-  else {
+//  var timestamp = Math.round(Date.now() / 1000);
+//      
+//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+//    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
+//    window.location.href = "../controlstock/index.php";
+//  }
+//  else {
     verificarSesion();
     var idmov = $("input[name='idMov']").val();
     var comentarios = $("#comentarios").val();
@@ -787,7 +798,7 @@ function actualizarMovimiento(){
         alert('Se optó por no actualizar el movimiento!.');
       }
     }
-  }
+  //}
 }
 
 /**
@@ -1179,12 +1190,12 @@ function validarUsuario()
  */
 function actualizarUser ()
   {
-  var timestamp = Math.round(Date.now() / 1000);
-      
-  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-    window.location.href = "../consultastock/index.php";
-  }
-  else {
+//  var timestamp = Math.round(Date.now() / 1000);
+//      
+//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+//    window.location.href = "../consultastock/index.php";
+//  }
+//  else {
     verificarSesion();
     
     var pw1 = $("#pw1").val();
@@ -1237,7 +1248,7 @@ function actualizarUser ()
         }
       }
     }
-  }
+  //}
 }
 
 /**
@@ -1245,112 +1256,143 @@ function actualizarUser ()
  */
 function actualizarParametros ()
   {
-  var timestamp = Math.round(Date.now() / 1000);
-      
-  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-    window.location.href = "../consultastock/index.php";
-  }
-  else {
+//  var timestamp = Math.round(Date.now() / 1000);
+//      
+//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+//    window.location.href = "../consultastock/index.php";
+//  }
+//  else {
     verificarSesion();
     
+    ///Recupero parámetros pasados por el usuario:
     var pageSize = $("#pageSize").val();
+    var limiteSelects = $("#tamSelects").val();
     var limiteHistorialGeneral = $("#tamHistorialGeneral").val();
     var limiteHistorialProducto = $("#tamHistorialProducto").val();
-
+    
+    var limiteMaximoPagina = 1000;
+    var limiteMaximoHistoriales = 50;
+    var limiteMaximoSelects = 50;
+    
+    ///Valido que sean válidos:
     var validarPage = validarEntero(pageSize);
     var seguir = true;
-    if ((pageSize <= 0) || (pageSize === "null") || !validarPage){
-      alert('El tamaño de la página DEBE ser un entero > 0. Por favor verifique.');
+    if ((pageSize <= 0) || (pageSize > limiteMaximoPagina) || (pageSize === "null") || (!validarPage)){
+      alert('El tamaño de la página DEBE ser un entero entre 1 y '+limiteMaximoPagina+'.\nPor favor verifique.');
       seguir = false;
       $("#pageSize").focus();
     }
     else {
       var validarHistorialGeneral = validarEntero(limiteHistorialGeneral);
-      if ((limiteHistorialGeneral <= 0) || (limiteHistorialGeneral === "null") || !validarHistorialGeneral){
-        alert('El valor para el HISTORIAL GENERAL DEBE ser un entero > 0. Por favor verifique.');
+      if ((limiteHistorialGeneral <= 0) || (limiteHistorialGeneral > limiteMaximoHistoriales) || (limiteHistorialGeneral === "null") || (!validarHistorialGeneral)){
+        alert('El valor para el HISTORIAL GENERAL DEBE ser un entero 1 y '+limiteMaximoHistoriales+'.\nPor favor verifique.');
         seguir = false;
         $("#tamHistorialGeneral").focus();
       }
       else {
         var validarHistorialProducto = validarEntero(limiteHistorialProducto);
-        if ((limiteHistorialProducto <= 0) || (limiteHistorialProducto === "null") || !validarHistorialProducto){
-          alert('El valor para el HISTORIAL del PRODUCTO DEBE ser un entero > 0. Por favor verifique.');
+        if ((limiteHistorialProducto <= 0) || (limiteHistorialProducto > limiteMaximoHistoriales) || (limiteHistorialProducto === "null") || (!validarHistorialProducto)){
+          alert('El valor para el HISTORIAL del PRODUCTO DEBE ser un entero entre 1 y '+limiteMaximoHistoriales+'.\nPor favor verifique.');
           seguir = false;
           $("#tamHistorialProducto").focus();
         }
         else {
-          seguir = true;
+          var validarLimiteSelects = validarEntero(limiteSelects);
+          if ((limiteSelects <= 0) || (limiteSelects > limiteMaximoSelects) || (limiteSelects === "null") || (!validarLimiteSelects)){
+            alert('El tamaño máximo para los selects DEBE ser un entero entre 1 y '+limiteMaximoSelects+'.\nPor favor verifique.');
+            seguir = false;
+            $("#tamSelects").focus();
+          }
+          else {
+            seguir = true;
+          }  
         }
       }
-    }
+    }///***************** FIN validación **************
+    
     if (seguir) {
       var url = "data/updateParametros.php";
       var log = "NO";
-
-      $.getJSON(url, {tamPagina: ""+pageSize+"", tamHistorialProducto: ""+limiteHistorialProducto+"", tamHistorialGeneral: ""+limiteHistorialGeneral+"", log: log}).done(function(request) {
-        var cambioPagina = false;
-        var cambioHistorialProducto = false;
-        var cambioHistorialGeneral = false;
-
-        if (request.resultadoPagina === "OK") {
-          var paginaNueva = parseInt(request.pagina, 10);
-          var paginaVieja = parseInt($("#tamPagina").val(), 10);
-          if (paginaVieja !== paginaNueva){
-            $("#tamPagina").val(paginaNueva);
-            cambioPagina = true;
-          }
-        }
-
-        if (request.resultadoHistoryProducto === "OK") {
-          var historialNuevoProducto = parseInt(request.historialProducto, 10);
-          var historialViejoProducto = parseInt($("#limiteHistorialProducto").val(), 10);
-          if (historialViejoProducto !== historialNuevoProducto){
-            $("#limiteHistorialProducto").val(historialNuevoProducto);
-            cambioHistorialProducto = true;
-          }
-        }
-
-        if (request.resultadoHistoryGeneral === "OK") {
-          var historialNuevoGeneral = parseInt(request.historialGeneral, 10);
-          var historialViejoGeneral = parseInt($("#limiteHistorialGeneral").val(), 10);
-          if (historialViejoGeneral !== historialNuevoGeneral){
-            $("#limiteHistorialGeneral").val(historialNuevoGeneral);
-            cambioHistorialGeneral = true;
-          }
-        }
-
-        if (cambioPagina && cambioHistorialProducto && cambioHistorialGeneral){
-          alert('Todos los parámetros se cambiaron con éxito:\nTamaño de página: '+paginaNueva+"\nHistorial Producto: "+historialNuevoProducto+"\nHistorial General: "+historialNuevoGeneral);
-        }
-        else {
-          if (!cambioPagina && !cambioHistorialProducto && !cambioHistorialGeneral){
-            alert('No se cambiaron los parámetros.');
+      
+      pageSize = parseInt(pageSize, 10);
+      limiteSelects = parseInt(limiteSelects, 10);
+      limiteHistorialGeneral = parseInt(limiteHistorialGeneral, 10);
+      limiteHistorialProducto = parseInt(limiteHistorialProducto, 10);
+      var paginaVieja = parseInt($("#tamPagina").val(), 10);
+      var limiteViejoSelects = parseInt($("#limiteSelects").val(), 10);
+      var historialViejoProducto = parseInt($("#limiteHistorialProducto").val(), 10);
+      var historialViejoGeneral = parseInt($("#limiteHistorialGeneral").val(), 10);
+      
+      var cambioPagina = true;
+      var cambioSelects = true;
+      var cambioHistorialProducto = true;
+      var cambioHistorialGeneral = true;
+        
+      if (paginaVieja === pageSize){
+        cambioPagina = false;
+        pageSize = -1;
+      }
+      
+      if (limiteViejoSelects === limiteSelects){
+        cambioSelects = false;
+        limiteSelects = -1;
+      }
+      
+      if (historialViejoProducto === limiteHistorialProducto){
+        cambioHistorialProducto = false;
+        limiteHistorialProducto = -1;
+      }
+      
+      if (historialViejoGeneral === limiteHistorialGeneral){
+        cambioHistorialGeneral = false;
+        limiteHistorialGeneral = -1;
+      }
+      
+      //alert('Valores a cambiar:\nPagina: '+pageSize+'\nHistorial General: '+limiteHistorialGeneral+'\nHistorial Producto: '+limiteHistorialProducto);
+      
+      if (!cambioPagina && !cambioHistorialGeneral && !cambioHistorialProducto && !cambioSelects){
+        alert('No se cambiaron los parámetros dado que todos eran iguales.');
+        $("#modalParametros").modal("hide");
+      }
+      else {
+        $.getJSON(url, {tamPagina: ""+pageSize+"", tamSelects: ""+limiteSelects+"", tamHistorialProducto: ""+limiteHistorialProducto+"", tamHistorialGeneral: ""+limiteHistorialGeneral+"", log: log}).done(function(request) {
+          //alert(request.resultadoDB);
+          if (request.resultadoDB === "OK"){
+            //alert('Los parametros se actualizaron correctamente en la base de datos!');
+            if (cambioPagina && cambioHistorialProducto && cambioHistorialGeneral && cambioSelects){
+              alert('Todos los parámetros se cambiaron con éxito:\n\nTamaño de página: '+pageSize+'\nTamaño de Selects: '+limiteSelects+"\nHistorial General: "+limiteHistorialGeneral+"\nHistorial Producto: "+limiteHistorialProducto);
+            }
+            else {
+              if (!cambioPagina && !cambioHistorialProducto && !cambioHistorialGeneral && !cambioSelects){
+                alert('No se cambiaron los parámetros.');
+              }
+              else {
+                var mostrar = 'Nuevos parámetros:\n';
+                if (cambioPagina){
+                  mostrar += '\nTamaño de página: '+pageSize;
+                }
+                if (cambioSelects){
+                  mostrar += '\nTamaño de Selects: '+limiteSelects;
+                }
+                if (cambioHistorialGeneral){
+                  mostrar += '\nHistorial General: '+limiteHistorialGeneral;
+                }
+                if (cambioHistorialProducto){
+                  mostrar += '\nHistorial Producto: '+limiteHistorialProducto;
+                }
+                alert(mostrar);
+              }
+            }
           }
           else {
-            var mostrar = 'Nuevos parámetros:';
-            if (cambioPagina){
-              mostrar += '\nTamaño de página: '+paginaNueva;
-            }
-            if (cambioHistorialProducto){
-              mostrar += '\nHistorial Producto: '+historialNuevoProducto;
-            }
-            if (cambioHistorialGeneral){
-              mostrar += '\nHistorial General: '+historialNuevoGeneral;
-            }
-            alert(mostrar);
+            alert('Hubo un problema al actualizar los datos en la base de datos.\nPor favor inténtelo nuevamente.');
           }
-        }//alert(request.resultadoDB);
-        if (request.resultadoDB === "OK"){
-          alert('Los parametros se actualizaron correctamente en la base de datos!');
-        }
-        else {
-          alert('Hubo un problema al actualizar los datos en la base de datos. Por favor inténtelo nuevamente.');
-        }
-
-        $("#modalParametros").modal("hide");
-      });
-    }
-  }
+          $("#modalParametros").modal("hide");
+          location.reload(true);
+        });
+      }///************ FIN ELSE TODOS IGUALES ****
+    }///************ FIN IF SEGUIR ***************
+  //}///************* FIN IF SESION ****************
 }
 
 /***********************************************************************************************************************
@@ -1462,10 +1504,10 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                             total += stock;
                           }
                           if (!todos){
-                            tabla += '<caption>Stock de la entidad: '+entidad+'</caption>';
+                            tabla += '<caption>Stock de <b><i>'+entidad+'</i></b></caption>';
                           }
                           else {
-                            tabla += '<caption>Stock de todas las entidades</caption>';
+                            tabla += '<caption>Stock de <b><i>todas las entidades</i></b></caption>';
                           }
                           
                           var subtitulo = '';
@@ -1524,7 +1566,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                               claseResaltado = "resaltado italica";
                             }
                           } 
-                          tabla += '<caption>Stock del producto: '+datos[0]['nombre_plastico']+'</caption>';
+                          tabla += '<caption>Stock del producto <b><i>'+datos[0]['nombre_plastico']+'</i></b></caption>';
                           tabla += '<tr>\n\
                                       <th colspan="2" class="tituloTabla">DETALLES</th>\n\
                                    </tr>';                       
@@ -1544,7 +1586,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     </tr>\n\
                                   </table>';
                           break;
-      case 'totalStock':  tabla += '<caption>Stock total en b&oacute;veda.</caption>';
+      case 'totalStock':  tabla += '<caption><b><i>Stock total en b&oacute;veda.</i></b></caption>';
                           tabla += '<tr>\n\
                                       <th colspan="3" class="tituloTabla">DETALLES</th>\n\
                                     </tr>';
@@ -1843,10 +1885,10 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                 
                                 ///************************ CAPTION segun si es TODOS o alguna ENTIDAD *******************************************
                                 if (!todos){
-                                  tabla += '<caption>Movimientos de la entidad: '+entidad+'</caption>';
+                                  tabla += '<caption>Movimientos de <b><i>'+entidad+'</i></b></caption>';
                                 }
                                 else {
-                                  tabla += '<caption>Movimientos de todas las entidades</caption>';
+                                  tabla += '<caption>Movimientos de <b><i>todas las entidades</i></b></caption>';
                                 }
                                 ///************************ FIN CAPTION segun si es TODOS o alguna ENTIDAD ***************************************
                                 
@@ -1900,7 +1942,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   
                                   ///********************************************* TABLA DEL PRODUCTO *****************************************************
                                   var tabla = '<table name="detallesProducto" id="detallesProducto_'+j+'" class="tabla2">';
-                                  tabla += '<caption>Detalles del producto: '+datos[0]['nombre_plastico']+'</caption>';
+                                  tabla += '<caption>Detalles del producto <b><i>'+datos[0]['nombre_plastico']+'</i></b></caption>';
                                   tabla += '<tr>\n\
                                               <th colspan="2" class="tituloTabla">PRODUCTO</th>\n\
                                            </tr>';                       
@@ -1920,7 +1962,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   
                                   ///********************************************* TABLA MOVIMIENTOS ******************************************************
                                   tabla += '<table name="movimientos" id="resultados_'+j+'" class="tabla2">';
-                                  tabla += '<caption>Movimientos del producto: '+datos[0]['nombre_plastico']+'</caption>';
+                                  tabla += '<caption>Movimientos del producto <b><i>'+datos[0]['nombre_plastico']+'</i></b></caption>';
                                   tabla += '<tr><th class="tituloTabla" colspan="6">MOVIMIENTOS</th></tr>';
                                   tabla += '<tr>\n\
                                               <th>Item</th>\n\
@@ -2345,13 +2387,14 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
  * \brief Función que ejecuta la búsqueda y muestra el resultado.
  */
 function realizarBusqueda(){  
-  var timestamp = Math.round(Date.now() / 1000);
-      
-  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-    window.location.href = "../controlstock/index.php";
-  }
-  else {
+//  var timestamp = Math.round(Date.now() / 1000);
+// 
+//  //alert('timestamp: '+timestamp+"\nsesion: "+$("#timestampSesion").val()+"\nduracion: "+$("#duracionSesion").val());    
+//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+//    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
+//    window.location.href = "../controlstock/index.php";
+//  }
+//  else {
     verificarSesion();
     var radio = $('input:radio[name=criterio]:checked').val();
     var entidadesStock = new Array();
@@ -2419,12 +2462,12 @@ function realizarBusqueda(){
                                 ent.push(entidadesStock[i]);
                                 query += " from productos where entidad='"+entidadesStock[i]+"' and estado='activo'";
                                 consultaCSV += " from productos where entidad='"+entidadesStock[i]+"' and estado='activo'";
-                                tipoConsulta = 'Stock de '+entidadesStock[i];
+                                tipoConsulta = 'Stock de <b><i>'+entidadesStock[i]+"</i></b>";
                               } 
                               else {
                                 query += " from productos where estado='activo'";
                                 consultaCSV += " from productos where estado='activo'";
-                                tipoConsulta = 'Stock de todas las entidades';
+                                tipoConsulta = 'Stock de <b><i>todas las entidades</i></b>';
                                 todos = true;
                               }
                               queries.push(query);
@@ -2456,7 +2499,7 @@ function realizarBusqueda(){
                                 query += " from productos where idProd="+idProds[i];
                                 consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
                                 consultaCSV += " from productos where idProd="+idProds[i];
-                                tipoConsulta = 'Stock del producto '+nombres[i];
+                                tipoConsulta = 'Stock del producto <b><i>'+nombres[i]+"</i></b>";
                                 queries.push(query);
                                 consultasCSV.push(consultaCSV);
                                 tipoConsultas.push(tipoConsulta);
@@ -2469,7 +2512,7 @@ function realizarBusqueda(){
                           queries[0] = query;
                           consultaCSV = "select entidad as Entidad, sum(stock) as Subtotal from productos where estado='activo' group by entidad";
                           consultasCSV[0] = consultaCSV;
-                          tipoConsulta = 'Total de plásticos en bóveda';
+                          tipoConsulta = '<b><i>Total de plásticos en bóveda</i></b>';
                           tipoConsultas[0] = tipoConsulta;
                           idProds[0] = 1;
                           delete nombres;
@@ -2486,10 +2529,10 @@ function realizarBusqueda(){
                                     ent = entidadesMovimiento[i];
                                       query += "and productos.entidad='"+entidadesMovimiento[i]+"'";
                                       consultaCSV += "and productos.entidad='"+entidadesMovimiento[i]+"'";
-                                      tipoConsulta = 'Movimientos de '+entidadesMovimiento[i];
+                                      tipoConsulta = 'Movimientos de <b><i>'+entidadesMovimiento[i]+"</i></b>";
                                   } 
                                   else {
-                                    tipoConsulta = 'Movimientos de todas las entidades';
+                                    tipoConsulta = 'Movimientos de <b><i>todas las entidades</i></b>';
                                     todos = true;
                                   }
                                   queries.push(query);
@@ -2534,7 +2577,7 @@ function realizarBusqueda(){
                                       validarUser = true;
                                       ordenFecha = true;
                                     }
-                                    tipoConsulta = 'Movimientos del producto '+nombres[k];
+                                    tipoConsulta = 'Movimientos del producto <b><i>'+nombres[k]+"</i></b>";
                                     tipoConsultas.push(tipoConsulta);
                                     prodHint = $("#productoMovimiento").val();
                                   }
@@ -2698,7 +2741,7 @@ function realizarBusqueda(){
     else {
       alert('NO validado');//Igualmente no llega a esta etapa dado que al no ser válida retorna falso y sale.    
     } 
-  }
+  //}
 }
 
 /**
@@ -3445,12 +3488,12 @@ function cargarGrafica(selector){
   \brief Función que se encarga de realizar la gráfica.
 */
 function realizarGrafica(){
-  var timestamp = Math.round(Date.now() / 1000);
-      
-  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-    window.location.href = "../consultastock/index.php";
-  }
-  else {
+//  var timestamp = Math.round(Date.now() / 1000);
+//      
+//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+//    window.location.href = "../consultastock/index.php";
+//  }
+//  else {
     verificarSesion();
     var radio = $('input:radio[name=criterio]:checked').val();
     var entidadGrafica = document.getElementById("entidadGrafica").value;
@@ -3743,7 +3786,7 @@ function realizarGrafica(){
         }
       }); 
     }  
-  }
+  //}
 }
 
 /**************************************************************************************************************************
@@ -3893,7 +3936,8 @@ $(document).on("blur", ".agrandar", function (){
 ///Disparar funcion al cambiar el elemento elegido en el select con las sugerencias para los productos.
 ///Cambia el color de fondo para resaltarlo, carga un snapshot del plástico si está disponible, y muestra
 ///el stock actual.
-$(document).on("change focusin", "#hint", function (e){
+$(document).on("change focusin", "#hint", function (){
+  //verificarSesion();
   var rutaFoto = 'images/snapshots/';
   var nombreFoto = $(this).find('option:selected').attr("name");
   var prod = $(this).find('option:selected').val();
@@ -4079,6 +4123,7 @@ $(document).on("keydown", "#hint", function (e){
 ///Disparar funcion al hacer clic en el botón para agregar el movimiento.
 $(document).on("click", "#agregarMovimiento", function (){
   //$(this).css('background-color', '#efe473');
+  verificarSesion();
   var seguir = true;
   seguir = validarMovimiento();
   if (seguir) {
@@ -4152,6 +4197,12 @@ $(document).on("keypress", "#producto", function(e) {
     //alert('enter');
     $("#hint").focus();
   }  
+});
+
+///Llamar a verificarSesion() para actualizar los parámetros de la sesión. 
+///En caso de estar vencidos, cierra la sesión y pide nuevo logueo.
+$(document).on("change focusin", "#entidadStock, #entidadMovimiento, #entidadGrafica", function (){
+  verificarSesion();
 });
 
 /*****************************************************************************************************************************
@@ -4263,13 +4314,13 @@ $(document).on("keypress", "#productoBusqueda", function(e) {
 
 ///Dispara función para realizar los cambios con las modificaciones para el producto (luego de validar los datos obviamente).
 $(document).on("click", "#actualizarProducto", function (){
-  var timestamp = Math.round(Date.now() / 1000);
-      
-  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-    window.location.href = "../controlstock/index.php";
-  }
-  else {
+//  var timestamp = Math.round(Date.now() / 1000);
+//      
+//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+//    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
+//    window.location.href = "../controlstock/index.php";
+//  }
+//  else {
     verificarSesion();
     var entidad = $("#entidad").val();
     var nombre = $("#nombre").val();
@@ -4376,7 +4427,7 @@ $(document).on("click", "#actualizarProducto", function (){
       }
       }
     }
-  }
+  //}
 });
 
 ///Disparar función al hacer enter estando en alguno de los input de la edición del Producto
@@ -4393,6 +4444,7 @@ $(document).on("keypress", "#productUpdate input", function(e) {
 
 ///Dispara función que da de baja el producto. NO lo borra, sino que le cambia su estado a INACTIVO.
 $(document).on("click", "#eliminarProducto", function (){
+  verificarSesion();
   var nombre = $("#nombre").val();
   var idProducto = $("#hintProd").val();
 
@@ -4441,13 +4493,13 @@ $(document).on("click", "#eliminarProducto", function (){
 ///Disparar función al hacer click en el botón de EDITAR del form para los productos.
 ///Cambia entre habilitar o deshabilitar los input del form cosa de poder hacer la edición del producto.
 $(document).on("click", "#editarProducto", function (){
-  var timestamp = Math.round(Date.now() / 1000);
-      
-  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-    window.location.href = "../controlstock/index.php";
-  }
-  else {
+//  var timestamp = Math.round(Date.now() / 1000);
+//      
+//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
+//    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
+//    window.location.href = "../controlstock/index.php";
+//  }
+//  else {
     verificarSesion();
     var nombre = $(this).val();
     if (nombre === 'EDITAR') {
@@ -4456,12 +4508,13 @@ $(document).on("click", "#editarProducto", function (){
     else {
       inhabilitarProducto();
     }
-  }
+  //}
 });
 
 ///Disparar función al hacer click en el botón AGREGAR (o NUEVO) del form productos.
 ///Según si dice NUEVO o AGREGAR, vacío el form para poder agregar los datos o envío los datos para agregarlo a la base de datos.
 $(document).on("click", "#agregarProducto", function (){
+  verificarSesion();
   var accion = $("#agregarProducto").val();
   if (accion === "NUEVO") {
     $("#agregarProducto").val("AGREGAR");
@@ -4801,6 +4854,7 @@ $(document).on("keypress", "#nombreUsuario", function(e) {
 ///Disparar función al hacer click en el link con el nombre del usuario que está logueado.
 ///Esto hace que se abra el modal para cambiar la contraseña.
 $(document).on("click", "#user", function(){
+  verificarSesion();
   $("#modalPwd").modal("show");
 });
 
@@ -4851,6 +4905,7 @@ $(document).on("keypress", "#pw2", function(e) {
 ///Disparar función al hacer click en el link que dice PARAMETROS debajo del usuario logueado
 ///Esto hace que se abra el modal para cambiar los parámetros.
 $(document).on("click", "#param", function(){
+  verificarSesion();
   $("#modalParametros").modal("show");
 });
 
@@ -4858,6 +4913,7 @@ $(document).on("click", "#param", function(){
 ///Lo único que hace es limpiar el form para poder ingresar los nuevos datos.
 $(document).on("shown.bs.modal", "#modalParametros", function() {
   $("#pageSize").val($("#tamPagina").val());
+  $("#tamSelects").val($("#limiteSelects").val());
   $("#tamHistorialGeneral").val($("#limiteHistorialGeneral").val());
   $("#tamHistorialProducto").val($("#limiteHistorialProducto").val());
   $("#pageSize").attr("autofocus", true);
@@ -4871,24 +4927,32 @@ $(document).on("click", "#btnParam", function(){
 });
 
 ///Disparar función al hacer ENTER estando en el elemento pageSize del MODAL.
-///Esto hace que se pase el foco al siguiente input del MODAL (tamHistorialProducto) cosa de ahorrar tiempo.
+///Esto hace que se pase el foco al siguiente input del MODAL (tamSelects) cosa de ahorrar tiempo.
 $(document).on("keypress", "#pageSize", function(e) {
   if(e.which === 13) {
-    $("#tamHistorialProducto").focus();
+    $("#tamSelects").focus();
   }  
 });
 
-///Disparar función al hacer ENTER estando en el elemento tamHistorialProducto del MODAL.
+///Disparar función al hacer ENTER estando en el elemento tamSelects del MODAL.
 ///Esto hace que se pase el foco al siguiente input del MODAL (tamHistorialGeneral) cosa de ahorrar tiempo.
-$(document).on("keypress", "#tamHistorialProducto", function(e) {
+$(document).on("keypress", "#tamSelects", function(e) {
   if(e.which === 13) {
     $("#tamHistorialGeneral").focus();
   }  
 });
 
 ///Disparar función al hacer ENTER estando en el elemento tamHistorialGeneral del MODAL.
-///Esto hace que se llame a la función correspondiente (actualizarParametros()) cosa de ahorrar tiempo.
+///Esto hace que se pase el foco al siguiente input del MODAL (tamHistorialProducto) cosa de ahorrar tiempo.
 $(document).on("keypress", "#tamHistorialGeneral", function(e) {
+  if(e.which === 13) {
+    $("#tamHistorialProducto").focus();
+  }  
+});
+
+///Disparar función al hacer ENTER estando en el elemento tamHistorialProducto del MODAL.
+///Esto hace que se llame a la función correspondiente (actualizarParametros()) cosa de ahorrar tiempo.
+$(document).on("keypress", "#tamHistorialProducto", function(e) {
   if(e.which === 13) {
     actualizarParametros();
   }  

@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once ("baseMysql.php");
 
 if (isset($_SESSION["username"])){
@@ -16,44 +17,42 @@ $dbc = crearConexion(DB_HOST, $userDB, $pwDB, DB_NAME);
 $query = "update appusers";
 
 $newPageSize = $_GET["tamPagina"];
+$newSelectSize = $_GET["tamSelects"];
 $newHistoryProducto = $_GET["tamHistorialProducto"];
 $newHistoryGeneral = $_GET["tamHistorialGeneral"];
 
 $cambioPagina = false;
+$cambioLimiteSelects = false;
 $cambioHistoryProducto = false;
 $cambioHistoryGeneral = false;
 
-if (is_numeric($newPageSize)){
-  if ($newPage > 0){
-    $_SESSION["tamPagina"] = $newPageSize;
-    $datos["pagina"] = $_SESSION["tamPagina"];
-    $queryPage = " tamPagina=".$newPageSize;
-    $cambioPagina = true;
-  }
+if ($newPageSize !== "-1"){
+  $_SESSION["tamPagina"] = $newPageSize;
+  $queryPage = " tamPagina=".$newPageSize;
+  $cambioPagina = true;
 }
-if (is_numeric($newHistoryProducto)){
-  if ($newHistoryProducto > 0){
-    $_SESSION["limiteHistorialProducto"] = $newHistoryProducto;
-    $datos["historialProducto"] = $_SESSION["limiteHistorialProducto"];
-    $queryProducto = " historialProducto=".$newHistoryProducto;
-    $cambioHistoryProducto = true;
-  }
+
+if ($newSelectSize !== "-1"){
+  $_SESSION["limiteSelects"] = $newSelectSize;
+  $queryLimiteSelects = " limiteSelects=".$newSelectSize;
+  $cambioLimiteSelects = true;
 }
-if (is_numeric($newHistoryGeneral)){
-  if ($newHistoryGeneral > 0){
-    $_SESSION["limiteHistorialGeneral"] = $newHistoryGeneral;
-    $datos["historialGeneral"] = $_SESSION["limiteHistorialGeneral"];
-    $queryGeneral = " historialGeneral=".$newHistoryGeneral;
-    $cambioHistoryGeneral = true;
-  }
+
+if ($newHistoryProducto !== "-1"){
+  $_SESSION["limiteHistorialProducto"] = $newHistoryProducto;
+  $queryProducto = " historialProducto=".$newHistoryProducto;
+  $cambioHistoryProducto = true;
 }
+
+if ($newHistoryGeneral !== "-1"){
+  $_SESSION["limiteHistorialGeneral"] = $newHistoryGeneral;
+  $queryGeneral = " historialGeneral=".$newHistoryGeneral;
+  $cambioHistoryGeneral = true;
+}
+
 
 if ($cambioPagina){
   $query = $query." set".$queryPage;
-  $datos["resultadoPagina"] = 'OK';
-}
-else {
-  $datos["resultadoPagina"] = 'ERROR'; 
 }
 
 if ($cambioHistoryProducto){
@@ -63,10 +62,6 @@ if ($cambioHistoryProducto){
   else {
     $query = $query." set".$queryProducto;
   }
-  $datos["resultadoHistoryProducto"] = 'OK';
-}
-else {
-  $datos["resultadoHistoryProducto"] = 'ERROR';
 }
 
 if ($cambioHistoryGeneral){
@@ -76,18 +71,23 @@ if ($cambioHistoryGeneral){
   else {
     $query = $query." set".$queryGeneral;
   }
-  $datos["resultadoHistoryGeneral"] = 'OK';
 }
-else {
-  $datos["resultadoHistoryGeneral"] = 'ERROR';
+
+if ($cambioLimiteSelects){
+  if (($cambioPagina)||($cambioHistoryProducto)||($cambioHistoryGeneral)){
+    $query = $query.",".$queryLimiteSelects;
+  }
+  else {
+    $query = $query." set".$queryLimiteSelects;
+  }
 }
 
 $query = $query." where id_usuario=".$_SESSION['user_id'];
 
-if ($cambioPagina || $cambioHistoryGeneral || $cambioHistoryProducto){
+if ($cambioPagina || $cambioHistoryGeneral || $cambioHistoryProducto || $cambioLimiteSelects){
   $result1 = consultarBD($query, $dbc);
   if ($result1 === TRUE) {
-  $datos["resultadoDB"] = "OK";
+    $datos["resultadoDB"] = "OK";
   }
   else {
     $datos["resultadoDB"] = "ERROR";

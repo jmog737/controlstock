@@ -1,4 +1,5 @@
 <?php
+session_start();
 /*!
   @file connectvars.php
   @brief Archivo que contiene las constantes predefinidas para la conexión. \n
@@ -26,7 +27,8 @@ define('DB_PASSWORD', 'jmpp');
 define('DB_NAME', 'controlstock');
 
 /**
-  \param DURACION Constante que indica el tiempo de sesión permitido sin actividad.
+  \param DURACION Constante que indica el tiempo de sesión permitido sin actividad (en segundos).
 */
-define('DURACION', 1200);
+define('DURACION', 300);
+
 ?>

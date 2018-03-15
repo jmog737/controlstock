@@ -1,4 +1,5 @@
 <?php
+session_start();
 /**
 ******************************************************
 *  @file generarPdfs.php
@@ -101,7 +102,7 @@ class PDF extends PDF_MC_Table
     $this->SetFont('Courier', 'B', 12);
     $this->SetY(25);
 
-    $tipoTotal = "Stock de: $entidad";
+    $tipoTotal = "Stock de $entidad";
     $tam = $this->GetStringWidth($tipoTotal);
     $xInicio = $xTipo + (($anchoTipo-$tam)/2);
     $this->SetX($xInicio);
@@ -109,23 +110,27 @@ class PDF extends PDF_MC_Table
     $nbTitulo = $this->NbLines($anchoTipo,$tipoTotal);
     $hTitulo=$h*$nbTitulo;
     
-    $tam1 = $this->GetStringWidth("Stock de:");
+    $tam1 = $this->GetStringWidth("Stock de");
     
     if ($tipo) {
+      ///Si es Total de stock en bóveda, le agrego itálica a todo el título:
+      $this->SetFont('Courier', 'BI', 12);
       $this->SetX($xTipo);
       $this->MultiCell($anchoTipo, $h, utf8_decode($tipoConsulta), 0, 'C', 0);
     }
     else {
       if ($nbTitulo > 1) {
-        $this->Cell($tam1,$h, "Stock de:",0, 0, 'R', 0);
+        $this->Cell($tam1,$h, "Stock de",0, 0, 'R', 0);
         $this->SetTextColor(255, 0, 0);
-        $this->Cell($tamEntidad,$h, $entidad,0, 0,'L', 0);
+        $this->SetFont('Courier', 'BI', 12);
+        $this->Cell($tamEntidad,$h, utf8_decode($entidad),0, 0,'L', 0);
         $this->SetTextColor(0);
       }
       else {
-        $this->Cell($tam1,$hTitulo, "Stock de:",0, 0,'R', 0);
+        $this->Cell($tam1,$hTitulo, "Stock de",0, 0,'R', 0);
         $this->SetTextColor(255, 0, 0);
-        $this->Cell($tamEntidad,$hTitulo, $entidad,0, 0,'L', 0);
+        $this->SetFont('Courier', 'BI', 12);
+        $this->Cell($tamEntidad,$hTitulo, utf8_decode($entidad),0, 0,'L', 0);
         $this->SetTextColor(0);
       }  
     }
@@ -495,24 +500,40 @@ class PDF extends PDF_MC_Table
     $this->SetTextColor(0);
     
     $subTitulo = trim(utf8_decode($tipoConsulta));
-//    if ($tablaProducto) {
-//      $needle = "producto ";
-//    }
-//    else {
-//      $needle = "de ";
-//    }
-//    $temp = stripos($subTitulo, " de todos los tipos");
-//    if ($temp == false){
-//      $temp1 = stripos($subTitulo, "del tipo");
-//      $temp2 = explode("del tipo", $subTitulo);
-//      $temp3 = explode($needle, $temp2[0]);
-//      $produ = $temp3[1];
-//    }
-//    else {
-//      $temp2 = explode(" de todos los tipos", $subTitulo);
-//      $temp3 = explode($needle, $temp2[0]);
-//      $produ = $temp3[1];
-//    }
+    
+    ///**************************** Separo el subtítulo para poder resaltear el nombre de la entidad o el producto según corresponda *********
+    ///Como NO se puede cambiar el formato dentro del MultiCell (o Cell), lo que se hace es al menos ponerlo en mayúsculas *******************
+    if ($tablaProducto){
+      $temp0 = explode("Movimientos del producto ", $subTitulo);
+    }  
+    else {
+      $temp0 = explode("Movimientos de ", $subTitulo);
+    }
+    
+    $q1 = stripos($temp0[1], " de todos los tipos");
+    if ($q1 !== FALSE) {
+      $temp1 = explode(" de todos los tipos", $temp0[1]);
+      $nombre1 = strtoupper($temp1[0]);
+    }
+    else {
+      $temp1 = explode(" del tipo", $temp0[1]);
+      $nombre1 = strtoupper($temp1[0]);
+    }
+    
+    if ($tablaProducto){
+      $subTitulo = "Movimientos del producto ".$nombre1;
+    }
+    else {
+      $subTitulo = "Movimientos de ".$nombre1;
+    }
+    if ($q1 !== FALSE) {
+      $subTitulo = $subTitulo." de todos los tipos".$temp1[1];
+    }
+    else {
+      $subTitulo = $subTitulo." del tipo".$temp1[1];
+    }
+    ///************************* FIN Separo el subtítulo para poder resaltear el nombre de la entidad o el producto según corresponda *********  
+
 
     $tam1 = $this->GetStringWidth($subTitulo);
     $xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
@@ -527,29 +548,12 @@ class PDF extends PDF_MC_Table
       $anchoSubTitulo = 1.05*$tam1;
     }
     $this->SetX($xTipo);
-    ///*********************** TEST para resaltar el nombre ******************************
-//    $primeraParte = $temp3[0];
-//    if ($tablaProducto){
-//      $primeraParte = $primeraParte."del producto ";
-//    }
-//    else {
-//      $primeraParte = $primeraParte."de ";
-//    }
-//    $tamPrimeraParte = $this->GetStringWidth($primeraParte);
-//    $tamProdu = $this->GetStringWidth($produ);
-//       
-//    if ($temp == false){
-//      $segundaParte = " del tipo";
-//    }
-//    else {
-//      $segundaParte = " de todos los tipos";
-//    }
-//    $segundaParte = $segundaParte.$temp2[1];
-//    $tamSegundaParte = $this->GetStringWidth($tamSegundaParte);
+
     $this->SetFillColor(167, 166, 173);
     if ($nbSubTitulo > 1) {
-      $this->MultiCell($anchoSubTitulo,$h, $subTitulo,0,'C', 1);
+      $this->MultiCell($anchoSubTitulo,$h, utf8_decode($subTitulo),0,'C', 1);
       $this->Ln(2);
+
 //      $y = $this->GetY();
 //      $this->MultiCell($tamPrimeraParte,$h, $primeraParte,0, 'C', 0);
 //      $this->SetTextColor(255, 0, 0);
@@ -564,7 +568,7 @@ class PDF extends PDF_MC_Table
 //      $this->MultiCell($tamSegundaParte,$h, $segundaParte,0, 'C', 0);
     }
     else {
-      $this->Cell($anchoSubTitulo,$hSubTitulo, $subTitulo,0, 0,'C', 1);
+      $this->Cell($anchoSubTitulo,$hSubTitulo, utf8_decode($subTitulo),0, 0,'C', 1);
       $this->Ln(8);
 //      $this->Cell($tamPrimeraParte,$hSubTitulo, $primeraParte, 0, 0, 'R', 0);
 //      $this->SetTextColor(255, 0, 0);
@@ -2064,7 +2068,7 @@ class PDF extends PDF_MC_Table
     //Establezco las coordenadas del borde de arriba a la izquierda de la tabla:
     $this->SetY(25);
     
-    $tipoTotal = "Stock del producto: $nombre";
+    $tipoTotal = "Stock del producto $nombre";
     $tam = $this->GetStringWidth($tipoTotal);
     $xInicio = $xTipo + (($anchoTipo-$tam)/2);
     $this->SetX($xInicio);
@@ -2075,20 +2079,22 @@ class PDF extends PDF_MC_Table
     //Save the current position
     $x1=$this->GetX();
     $y=$this->GetY();
-    $tam1 = $this->GetStringWidth("Stock del producto:");
+    $tam1 = $this->GetStringWidth("Stock del producto");
     
     //Print the text
     if ($nbTitulo > 1) {
       //$this->MultiCell($anchoTipo,$h, trim(utf8_decode($tipoConsulta)),0,'C', 0);
-      $this->Cell($tam1,$h, "Stock del producto:",0, 0, 'R', 0);
+      $this->Cell($tam1,$h, "Stock del producto",0, 0, 'R', 0);
       $this->SetTextColor(255, 0, 0);
+      $this->SetFont('Courier', 'BI', 12);
       $this->Cell($tamNombre,$h, $nombreProducto,0, 0,'L', 0);
       $this->SetTextColor(0);
       }
     else {
       //$this->MultiCell($anchoTipo,$h, trim(utf8_decode($tipoConsulta)),0,'C', 0);
-      $this->Cell($tam1,$hTitulo, "Stock del producto:",0, 0,'R', 0);
+      $this->Cell($tam1,$hTitulo, "Stock del producto",0, 0,'R', 0);
       $this->SetTextColor(255, 0, 0);
+      $this->SetFont('Courier', 'BI', 12);
       $this->Cell($tamNombre,$hTitulo, $nombreProducto,0, 0,'L', 0);
       $this->SetTextColor(0);
       }  

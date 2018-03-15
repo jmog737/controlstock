@@ -1,4 +1,3 @@
-
 <footer class='panel-footer'>
   <a href='#' class="arrow arrow-bottom"><img border='0'  src="images/arrowDown1.png" height="35" width="35" title="BAJAR" /></a>
   <a href='#' class="arrow arrow-top"><img border='0'  src="images/arrowUp1.png" height="35" width="35"  title="SUBIR" /></a>
@@ -18,7 +17,7 @@
             // Confirm the successful log-in
             echo "<a href='#modalPwd' title='Cambiar contraseña de acceso' class='naranja' id='user'>".strtoupper($_SESSION['username'])."</a>"
               . " <br>"
-              . "<a href='#modalParametros' title='Cambiar los parámetros' class='naranja' id='param'>--- Par&aacute;metros ---</a>";
+              . "<a href='#modalParametros' title='Cambiar los parámetros' class='naranja' id='param'>--- Cambiar Par&aacute;metros ---</a>";
         ?>
         </font>
         <br>

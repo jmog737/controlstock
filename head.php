@@ -1,10 +1,11 @@
-<?php 
+<?php
+  session_start();
   $user = $_SESSION["username"];
   $estilos = 'styles_'.$user.'.php';
   if (!isset($_SESSION["username"])||(!file_exists("css/".$estilos))){
     $estilos = 'styles.php';
   }
-  //$estilos = "styles.css";
+  $estilos = "styles.css";
 //  switch ($user) {
 //    case 'jm':  $estilos = 'styles'.$user.'.php';
 //                //$colores = 'css/colores.php';
@@ -28,9 +29,10 @@ require_once('data/baseMysql.php');
 <head>
   <input id="tamPagina" name="tamPagina" type="text" value="<?php echo $_SESSION["tamPagina"] ?>" style="color: black; display: none">
   <input id="limiteSeleccion" name="limiteSeleccion" type="text" value="<?php echo $limiteSeleccion ?>" style="color: black; display: none">
+  <input id="limiteSelects" name="limiteSelects" type="text" value="<?php echo $_SESSION["limiteSelects"] ?>" style="color: black; display: none">
   <input id="limiteHistorialProducto" name="limiteHistorialProducto" type="text" value="<?php echo $_SESSION["limiteHistorialProducto"] ?>" style="color: black; display: none">
   <input id="limiteHistorialGeneral" name="limiteHistorialGeneral" type="text" value="<?php echo $_SESSION["limiteHistorialGeneral"] ?>" style="color: black; display: none">
-  <title>CONTROL DE STOCK</title>
+  <title>STOCK EMSA</title>
   <meta charset='UTF-8'>
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
   <meta http-equiv='X-UA-Compatible' content='IE=edge'>

@@ -21,7 +21,7 @@ if (!isset($_SESSION['user_id']))
     if (!empty($user_username) && !empty($user_password)) 
       {
       //Busco usuario y password en la base de datos para ver si existen:
-      $query = "SELECT id_usuario, user, historialGeneral, historialProducto, tamPagina FROM appusers WHERE user = '$user_username' AND password = SHA('$user_password') limit 1";
+      $query = "SELECT id_usuario, user, historialGeneral, historialProducto, tamPagina, limiteSelects FROM appusers WHERE user = '$user_username' AND password = SHA('$user_password') limit 1";
       $data = consultarBD($query, $dbc);
       $registros = $data->num_rows;
       $filas = obtenerResultados($data);
@@ -43,6 +43,9 @@ if (!isset($_SESSION['user_id']))
           }
           if (($fila->tamPagina !== '')&&($fila->tamPagina !== null)){
             $_SESSION["tamPagina"] = $fila->tamPagina;
+          }
+          if (($fila->limiteSelects !== '')&&($fila->limiteSelects !== null)){
+            $_SESSION["limiteSelects"] = $fila->limiteSelects;
           }
         }
         //Obtenemos el timestamp del servidor de cuanto se hizo la petición

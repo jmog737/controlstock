@@ -1,0 +1,13 @@
+{
+    "name": "vendor/controlstock",
+    "description": "Description of project controlstock.",
+    "authors": [
+        {
+            "name": "Juan Martin",
+            "email": "your@email.here"
+        }
+    ],
+    "require": {
+        "phpoffice/phpspreadsheet": "dev-master"
+    }
+}
