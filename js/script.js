@@ -150,7 +150,7 @@ function showHint(str, id, seleccionado) {
             }  
           }
           else  {
-            resaltarOption = 'class="fondoBlanco"';
+            resaltarOption = 'class="fondoSelect"';
           }
           //mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+' '+sel+ '>[' + sugerencias[i]["entidad"]+'] '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
           mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" '+resaltarOption+' stock='+sugerencias[i]["stock"]+' alarma1='+sugerencias[i]["alarma1"]+' alarma2='+sugerencias[i]["alarma2"]+' comentarios="'+sugerencias[i]["comentarios"]+'" ultimoMov="'+sugerencias[i]["ultimoMovimiento"]+'" '+sel+ '>[' + sugerencias[i]["entidad"]+': '+codigo_emsa+'] --- '+sugerencias[i]["nombre_plastico"] + '</option>';
@@ -3980,8 +3980,8 @@ $(document).on("change focusin", "#hint", function (){
   var mostrar = '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
   mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><b>Stock actual: <b><font class="'+resaltado+'" style="font-size:1.6em">'+stock.toLocaleString()+'</font></p>';
   mostrar += '<p id="ultimoMov" name="ulitmoMov">Último Movimiento: <font class="'+resaltado+'" style="font-size:1.2em">'+ultimoMovimiento+'</font></p>';
+  var comentHint = '';
   if ((comentarios !== '')&&(comentarios !== "null")&&(comentarios !== ' ')&&(comentarios !== undefined)){
-    var comentHint = '';
     if (comentarios.indexOf("dif") > -1){
       comentHint = "comentHintResaltar";
     }
@@ -3992,9 +3992,10 @@ $(document).on("change focusin", "#hint", function (){
       else {
         comentHint = "comentHint";
       }
-    }
-    mostrar += '<p id="comentHint" name="comentHint" class="'+comentHint+'"><a href="producto.php?id='+prod+'" target="_blank">'+comentarios+'</a></p>';
-  }
+    } 
+  mostrar += '<p id="comentHint" name="comentHint" class="'+comentHint+'"><a href="producto.php?id='+prod+'" target="_blank">'+comentarios+'</a></p>';  
+  }  
+  
   //$(this).css('background-color', '#efe473');
   $(this).css('background-color', '#9db7ef');
   //$(this).find('option:selected').css('background-color', '#79ea52');
@@ -4002,7 +4003,7 @@ $(document).on("change focusin", "#hint", function (){
   $(this).parent().prev().prev().children().prop("checked", true);
   //setTimeout(function(){mostrarHistorial(prod)}, 100);
   mostrarHistorial(prod);
-  });
+});
   
 /// ****** COMENTO EVENTO CLICK POR SER REDUNDANTE CON EL CHANGE ***************************  
 /////Disparar función al hacer CLICK en alguna de las option del select #hint.

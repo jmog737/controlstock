@@ -238,12 +238,6 @@ hr {
 /* FIN TABS*/
 
 /* POPOVERS */
-#gralHistory{
-  margin: 8px 0px 8px 0px;
-}
-.historial {
-  
-}
 .popover{
   max-width: 100%;
 }
@@ -253,11 +247,18 @@ hr {
 .popover-body{
   background-color: #cccccc;
 }
+
 /* Estilos para el popover con el historial general.
    El mismo fue "atado" al elemento gralHistory cosa de poder diferenciarlo
 */
+#historialGeneral {
+  float: center;
+}
+#gralHistory{
+  margin: auto;
+}
 #gralHistory .popover{
-  max-width: 100%;
+  max-width: 40%;
 }
 #gralHistory .popover-header {
   background-color: #5ca037;
@@ -453,9 +454,10 @@ a.linkHistorial:hover{
   background-color:transparent;
 }
 
-.fondoBlanco {
-  background-color:#ffffff;
-  background-color: #ababab;
+.fondoSelect {
+  /*background-color:#ffffff;*/
+  background-color: #ea843b;
+  background-color: #ffd8bd;
 }
 .negrita {
   font-weight: bolder;

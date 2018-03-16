@@ -203,7 +203,7 @@ $rango = "A1:E".$j;
 $styleGeneral = array(
 	'borders' => array(
 		'allBorders' => array(
-			'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+			'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
 			'color' => array('rgb' => '023184'),
 		),
 	),

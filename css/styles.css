@@ -437,10 +437,12 @@ a.linkHistorial:hover{
   background-color:transparent;
 }
 
-.fondoBlanco {
-  background-color:#ffffff;
-  background-color: #ababab;
+.fondoSelect {
+  /*background-color:#ffffff;*/
+  background-color: #ea843b;
+  background-color: #ffd8bd;
 }
+
 .negrita {
   font-weight: bolder;
 }
