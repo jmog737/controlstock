@@ -10,8 +10,11 @@ session_start();
 *
 *******************************************************/
 
-/** Include PHPExcel */
-require_once('..\..\excel\PHPExcel.php');
+require 'vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 require_once("data/config.php");
 
 //phpinfo();
@@ -25,15 +28,16 @@ require_once("data/config.php");
 
 function generarExcelStock($registros, $total) {
   global $nombreReporte;
-  // Create new PHPExcel object
-$objPHPExcel = new PHPExcel();
+  
+$spreadsheet = new Spreadsheet();
 
 $locale = 'es_UY'; 
-$validLocale = PHPExcel_Settings::setLocale($locale); 
+$validLocale = \PhpOffice\PhpSpreadsheet\Settings::setLocale($locale); 
 if (!$validLocale) { echo 'Unable to set locale to '.$locale." - reverting to en_us<br />\n"; }
 
+
 // Set document properties
-$objPHPExcel->getProperties()->setCreator("Juan Martín Ortega")
+$spreadsheet->getProperties()->setCreator("Juan Martín Ortega")
 							 ->setLastModifiedBy("Juan Martín Ortega")
 							 ->setTitle("Stock")
 							 ->setSubject("Datos exportados")
@@ -42,13 +46,13 @@ $objPHPExcel->getProperties()->setCreator("Juan Martín Ortega")
 							 ->setCategory("Resultado");
 
 /// Declaro hoja activa:
-$hoja = $objPHPExcel->getSheet(0);
+$hoja = $spreadsheet->getSheet(0);
 
 $hoja->setTitle($nombreReporte);
 $hoja->getTabColor()->setRGB('023184');
 
 // Agrego los títulos:
-$objPHPExcel->setActiveSheetIndex(0)
+$spreadsheet->setActiveSheetIndex(0)
             ->setCellValue('A1', 'Id')
             ->setCellValue('B1', 'Entidad')
             ->setCellValue('C1', 'Nombre')
@@ -59,13 +63,13 @@ $header = 'A1:E1';
 $styleHeader = array(
   'fill' => array(
       'color' => array('rgb' => 'AEE2FA'),
-      'type' => 'solid',
+      'fillType' => 'solid',
     ),
   'font' => array(
       'bold' => true,
     ),
   'alignment' => array(
-      'horizontal' => \PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+      'horizontal' => HORIZONTAL_CENTER,
     ),
 );
 $hoja->getStyle($header)->applyFromArray($styleHeader);
@@ -90,7 +94,7 @@ $hoja->setCellValue($celdaTotalTarjetas, $total);
 $styleTotalPlasticos = array(
 	'fill' => array(
         'color' => array('rgb' => 'F3FF00'),
-        'type' => 'solid',
+        'fillType' => 'solid',
     ),
     'font' => array(
         'bold' => true,
@@ -103,8 +107,8 @@ $styleTotalPlasticos = array(
        'horizontal' => 'center',
        'vertical' => 'bottom',
     ),
-    'numberformat' => array(
-        'code' => '#,###0',
+    'numberFormat' => array(
+        'formatCode' => '#,###0',
     ),
 );
 $hoja->getStyle($celdaTotalTarjetas)->applyFromArray($styleTotalPlasticos);
@@ -113,7 +117,7 @@ $hoja->getStyle($celdaTotalTarjetas)->applyFromArray($styleTotalPlasticos);
 $styleTextoTotal = array(
 	'fill' => array(
         'color' => array('rgb' => 'AEE2FA'),
-        'type' => 'solid',
+        'fillType' => 'solid',
     ),
     'font' => array(
         'bold' => true,
@@ -133,7 +137,7 @@ $hoja->getStyle('A'.$j.'')->applyFromArray($styleTextoTotal);
 $styleColumnaStock = array(
 	'fill' => array(
         'color' => array('rgb' => 'A9FF96'),
-        'type' => 'solid',
+        'fillType' => 'solid',
     ),
     'font' => array(
         'bold' => true,
@@ -144,8 +148,8 @@ $styleColumnaStock = array(
        'horizontal' => 'center',
        'vertical' => 'middle',
     ),
-    'numberformat' => array(
-        'code' => '[Blue]#,##0',
+    'numberFormat' => array(
+        'formatCode' => '[Blue]#,##0',
     ),
 );
 $rangoStock = 'E2:E'.$i.'';
@@ -155,14 +159,14 @@ $hoja->getStyle($rangoStock)->applyFromArray($styleColumnaStock);
 $styleAl1 = array(
     'fill' => array(
         'color' => array ('rgb' => 'FAFF98'),
-        'type' => 'solid',
+        'fillType' => 'solid',
     ),
 );
         
 $styleAl2 = array(
     'fill' => array(
         'color' => array ('rgb' => 'FC4A3F'),
-        'type' => 'solid',
+        'fillType' => 'solid',
     ),
 );
 
@@ -198,8 +202,8 @@ $rango = "A1:E".$j;
 /// Defino el formato para las celdas:
 $styleGeneral = array(
 	'borders' => array(
-		'allborders' => array(
-			'style' => PHPExcel_Style_Border::BORDER_THICK,
+		'allBorders' => array(
+			'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
 			'color' => array('rgb' => '023184'),
 		),
 	),
@@ -210,28 +214,29 @@ $styleGeneral = array(
 );
 $hoja->getStyle($rango)->applyFromArray($styleGeneral);
 
-
 // Se guarda como Excel 2007:
-$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+$writer = new Xlsx($spreadsheet);
 
 $timestamp = date('dmY_His');
-$nombreArchivo = $nombreReporte."_".$timestamp.".xlsx";
+$nombreArchivo = $nombreReporte."_".$timestamp.".Xlsx";
 $salida = $GLOBALS["dirExcel"]."/".$nombreArchivo;
-$objWriter->save($salida);
+$writer->save($salida);
+
 return $nombreArchivo;
 }
 
+
 function generarExcelMovimientos($registros) {
   global $nombreReporte;
-  // Create new PHPExcel object
-  $objPHPExcel = new PHPExcel();
+  
+  $spreadsheet = new Spreadsheet();
 
   $locale = 'es_UY'; 
-  $validLocale = PHPExcel_Settings::setLocale($locale); 
+  $validLocale = \PhpOffice\PhpSpreadsheet\Settings::setLocale($locale); 
   if (!$validLocale) { echo 'Unable to set locale to '.$locale." - reverting to en_us<br />\n"; }
 
   // Set document properties
-  $objPHPExcel->getProperties()->setCreator("Juan Martín Ortega")
+  $spreadsheet->getProperties()->setCreator("Juan Martín Ortega")
                                ->setLastModifiedBy("Juan Martín Ortega")
                                ->setTitle("Stock")
                                ->setSubject("Datos exportados")
@@ -239,16 +244,16 @@ function generarExcelMovimientos($registros) {
                                ->setKeywords("stock excel php")
                                ->setCategory("Resultado");
 
-  $objPHPExcel->getDefaultStyle()->getFont()->setName('Courier New');
+  //$spreadsheet->getDefaultStyle()->getFont()->setName('Courier New');
   
   /// Declaro hoja activa:
-  $hoja = $objPHPExcel->getSheet(0);
+  $hoja = $spreadsheet->getSheet(0);
 
   $hoja->setTitle($nombreReporte);
   $hoja->getTabColor()->setRGB('E02309');
 
   // Agrego los títulos:
-  $objPHPExcel->setActiveSheetIndex(0)
+  $spreadsheet->setActiveSheetIndex(0)
               ->setCellValue('A1', 'Id')
               ->setCellValue('B1', 'Fecha')
               ->setCellValue('C1', 'Hora')
@@ -265,11 +270,11 @@ function generarExcelMovimientos($registros) {
           'bold' => true,
         ),
       'alignment' => array(
-          'horizontal' => \PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+          'horizontal' => HORIZONTAL_CENTER,
         ),
       'fill' => array(
           'color' => array('rgb' => 'AEE2FA'),
-          'type' => 'solid',
+          'fillType' => 'solid',
         ),
       );
   $hoja->getStyle($header)->applyFromArray($styleHeader);
@@ -334,18 +339,11 @@ function generarExcelMovimientos($registros) {
   $hoja->getStyle('A'.$j.'')->applyFromArray($styleTextoTotal);
   */
 
-  /// Ajusto el auto size para que las celdas no se vean cortadas:
-  for ($col = ord('a'); $col <= ord('i'); $col++)
-    {
-    $hoja->getColumnDimension(chr($col))->setAutoSize(true); 
-  }
-  
-  
   /// Defino el formato para la columna con el STOCK:
   $styleColumnaStock = array(
       'fill' => array(
           'color' => array('rgb' => 'A9FF96'),
-          'type' => 'solid',
+          'fillType' => 'solid',
       ),
       'font' => array(
           'bold' => true,
@@ -356,8 +354,8 @@ function generarExcelMovimientos($registros) {
          'horizontal' => 'center',
          'vertical' => 'middle',
       ),
-      'numberformat' => array(
-          'code' => '[Blue]#,##0',
+      'numberFormat' => array(
+          'formatCode' => '[Blue]#,##0',
       ),
   );
   $rangoStock = 'H2:H'.$i.'';
@@ -367,15 +365,15 @@ function generarExcelMovimientos($registros) {
   $styleColumnaFecha = array(
         'fill' => array(
           'color' => array('rgb' => 'A9FF96'),
-          'type' => 'solid',
+          'fillType' => 'solid',
       ),
       'alignment' => array(
          'wrap' => true,
          'horizontal' => 'center',
          'vertical' => 'middle',
       ),
-      'numberformat' => array(
-          'code' => 'DD/MM/YYYY',
+      'numberFormat' => array(
+          'formatCode' => 'DD/MM/YYYY',
       ),
   );
   $rangoFecha = 'B2:B'.$i.'';
@@ -385,14 +383,14 @@ function generarExcelMovimientos($registros) {
   $styleAl1 = array(
       'fill' => array(
           'color' => array ('rgb' => 'FAFF98'),
-          'type' => 'solid',
+          'fillType' => 'solid',
       ),
   );
 
   $styleAl2 = array(
       'fill' => array(
           'color' => array ('rgb' => 'FC4A3F'),
-          'type' => 'solid',
+          'fillType' => 'solid',
       ),
   );
 
@@ -422,8 +420,8 @@ function generarExcelMovimientos($registros) {
   /// Defino el formato para las celdas:
   $styleGeneral = array(
       'borders' => array(
-            'allborders' => array(
-            'style' => PHPExcel_Style_Border::BORDER_THICK,
+            'allBorders' => array(
+            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
             'color' => array('rgb' => '023184'),
           ),
       ),
@@ -435,11 +433,27 @@ function generarExcelMovimientos($registros) {
   );
   $hoja->getStyle($rango)->applyFromArray($styleGeneral);
   
+  /// Ajusto el auto size para que las celdas no se vean cortadas:
+  for ($col = ord('A'); $col <= ord('I'); $col++)
+    {
+    $hoja->getColumnDimension(chr($col))->setAutoSize(true); 
+  }
+
+  $maxWidth = 75;
+  $hoja->calculateColumnWidths();
+  $colWidth = $hoja->getColumnDimension('I')->getWidth();
+  if ($colWidth > $maxWidth) {
+      $hoja->getColumnDimension('I')->setAutoSize(false);
+      $hoja->getColumnDimension('I')->setWidth($maxWidth);
+  }
+  
   // Se guarda como Excel 2007:
-  $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+  $writer = new Xlsx($spreadsheet);
+
   $timestamp = date('dmY_His');
-  $nombreArchivo = $nombreReporte."_".$timestamp.".xlsx";
-  $salida = $GLOBALS["dir"]."/".$nombreArchivo;
-  $objWriter->save($salida);
+  $nombreArchivo = $nombreReporte."_".$timestamp.".Xlsx";
+  $salida = $GLOBALS["dirExcel"]."/".$nombreArchivo;
+  $writer->save($salida);
+
   return $nombreArchivo;
 }

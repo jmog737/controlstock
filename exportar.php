@@ -131,7 +131,7 @@ if (isset($_POST["idProd"])){
 
 ///Caracteres a ser reemplazados en caso de estar presentes en el nombre del producto o la entidad
 ///Esto se hace para mejorar la lectura (en caso de espacios en blanco), o por requisito para el nombre de la hoja de excel
-$aguja = array(0=>" ", 1=>".", 2=>"[", 3=>"]", 4=>"*", 5=>"/", 6=>"\\", 7=>"?", 8=>":");
+$aguja = array(0=>" ", 1=>".", 2=>"[", 3=>"]", 4=>"*", 5=>"/", 6=>"\\", 7=>"?", 8=>":", 9=>"_", 10=>"-");
 ///Se define el tamaño máximo aceptable para el nombre teniendo en cuenta que el excel admite un máximo de 31 caracteres, y que además, 
 ///ya se tienen 6 fijos del stock_ (movs_ es uno menos).
 $tamMaximoNombre = 25;

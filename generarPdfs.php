@@ -657,8 +657,8 @@ class PDF extends PDF_MC_Table
       $this->SetFont('Courier');
       $this->SetX($x);
       ///**************************************************************** CAMPO NOMBRE ******************************************************
-      $nb1 = $this->NbLines($cResto,$nombre);
-      $h0=$h*$nb1;
+      $nbNombre = $this->NbLines($cResto,$nombre);
+      $h0=$h*$nbNombre;
 
       $this->SetFillColor(103, 167, 253);
       
@@ -673,7 +673,7 @@ class PDF extends PDF_MC_Table
       //Draw the border
       $this->Rect($x1,$y,$cResto,$h0);
       //Print the text
-      if ($nb > 1) {
+      if ($nbNombre > 1) {
         $this->MultiCell($cResto,$h, $nombre,'LRT','C', 0);
         }
       else {
@@ -685,8 +685,8 @@ class PDF extends PDF_MC_Table
       ///************************************************************* FIN CAMPO NOMBRE *****************************************************
 
       ///*************************************************************** CAMPO ENTIDAD ******************************************************
-      $nb = $this->NbLines($cResto, $entidad);
-      $h0=$h*$nb;
+      $nbEntidad = $this->NbLines($cResto, $entidad);
+      $h0=$h*$nbEntidad;
 
       $this->SetFont('Courier', 'B', 10);
       $this->SetTextColor(255, 255, 255);
@@ -699,11 +699,11 @@ class PDF extends PDF_MC_Table
       //Draw the border
       $this->Rect($x1,$y,$cResto,$h0);
       //Print the text
-      if ($nb > 1) {
-        $this->MultiCell($cResto,$h, trim(utf8_decode($registros[0][2])),'LRT','C', 0);
+      if ($nbEntidad > 1) {
+        $this->MultiCell($cResto,$h, $entidad,'LRT','C', 0);
         }
       else {
-        $this->MultiCell($cResto,$h, trim(utf8_decode($registros[0][2])),1,'C', 0);
+        $this->MultiCell($cResto,$h, $entidad,1,'C', 0);
         }  
 
       //Put the position to the right of the cell
@@ -759,8 +759,8 @@ class PDF extends PDF_MC_Table
       if (($comentarios === '')||($comentarios === null)) {
         $comentarios = '';
       }
-      $nb = $this->NbLines($cResto,$comentarios);
-      $h0=$h*$nb;
+      $nbComment = $this->NbLines($cResto,$comentarios);
+      $h0=$h*$nbComment;
 
       $this->SetFont('Courier', 'B', 10);
       $this->SetTextColor(255, 255, 255);
@@ -773,7 +773,7 @@ class PDF extends PDF_MC_Table
       //Draw the border
       $this->Rect($x1,$y,$cResto,$h0);
       //Print the text
-      if ($nb > 1) {
+      if ($nbComment > 1) {
         $this->MultiCell($cResto,$h, $comentarios,'LRT','C', 0);
         }
       else {
@@ -788,8 +788,8 @@ class PDF extends PDF_MC_Table
       if (($ultimoMovimiento === '')||($ultimoMovimiento === null)) {
         $ultimoMovimiento = '';
       }
-      $nb = $this->NbLines($cResto,$ultimoMovimiento);
-      $h0=$h*$nb;
+      $nbUltimo = $this->NbLines($cResto,$ultimoMovimiento);
+      $h0=$h*$nbUltimo;
 
       $this->SetFont('Courier', 'B', 10);
       $this->SetTextColor(255, 255, 255);
@@ -802,7 +802,7 @@ class PDF extends PDF_MC_Table
       //Draw the border
       $this->Rect($x1,$y,$cResto,$h0);
       //Print the text
-      if ($nb > 1) {
+      if ($nbUltimo > 1) {
         $this->MultiCell($cResto,$h, $ultimoMovimiento,'LRT','C', 0);
         }
       else {
@@ -2134,12 +2134,12 @@ class PDF extends PDF_MC_Table
     //$this->SetTextColor(0);
     $this->SetFillColor(103, 167, 253);
     $this->SetTextColor(255, 255, 255);
-    $this->SetFont('Courier');
+    $this->SetFont('Courier', '', 9);
     $this->SetX($x);
     
     ///**************************************************************** CAMPO NOMBRE **********************************************************
-    $nb1 = $this->NbLines($cResto,$nombre);
-    $h0=$h*$nb1;
+    $nbNombre = $this->NbLines($cResto,$nombre);
+    $h0=$h*$nbNombre;
     
     $this->SetFont('Courier', 'B', 10);
     $this->Cell($cCampo, $h0, "Nombre:", 'LRBT', 0, 'L', true);
@@ -2151,7 +2151,7 @@ class PDF extends PDF_MC_Table
     //Draw the border
     $this->Rect($x1,$y,$cResto,$h0);
     //Print the text
-    if ($nb > 1) {
+    if ($nbNombre > 1) {
       $this->MultiCell($cResto,$h, $nombre,'LRT','C', 0);
       }
     else {
@@ -2178,10 +2178,10 @@ class PDF extends PDF_MC_Table
     $this->Rect($x1,$y,$cResto,$h0);
     //Print the text
     if ($nb > 1) {
-      $this->MultiCell($cResto,$h, trim(utf8_decode($registros[0][1])),'LRT','C', 0);
+      $this->MultiCell($cResto,$h, $entidad,'LRT','C', 0);
       }
     else {
-      $this->MultiCell($cResto,$h, trim(utf8_decode($registros[0][1])),1,'C', 0);
+      $this->MultiCell($cResto,$h, $entidad,1,'C', 0);
       }  
       
     //Put the position to the right of the cell
@@ -2238,8 +2238,8 @@ class PDF extends PDF_MC_Table
     if (($comentarios === '')||($comentarios === null)) {
       $comentarios = '';
     }
-    $nb = $this->NbLines($cResto,$comentarios);
-    $h0=$h*$nb;
+    $nbComment = $this->NbLines($cResto,$comentarios);
+    $h0=$h*$nbComment;
     
     $this->SetFont('Courier', 'B', 10);
     $this->SetTextColor(255, 255, 255);
@@ -2252,7 +2252,7 @@ class PDF extends PDF_MC_Table
     //Draw the border
     $this->Rect($x1,$y,$cResto,$h0);
     //Print the text
-    if ($nb > 1) {
+    if ($nbComment > 1) {
       $this->MultiCell($cResto,$h, $comentarios,'LRT','C', 0);
       }
     else {
@@ -2268,8 +2268,8 @@ class PDF extends PDF_MC_Table
     if (($ultimoMovimiento === '')||($ultimoMovimiento === null)) {
       $ultimoMovimiento = '';
     }
-    $nb = $this->NbLines($cResto,$ultimoMovimiento);
-    $h0=$h*$nb;
+    $nbMov = $this->NbLines($cResto,$ultimoMovimiento);
+    $h0=$h*$nbMov;
     
     $this->SetFont('Courier', 'B', 10);
     $this->SetTextColor(255, 255, 255);
@@ -2282,7 +2282,7 @@ class PDF extends PDF_MC_Table
     //Draw the border
     $this->Rect($x1,$y,$cResto,$h0);
     //Print the text
-    if ($nb > 1) {
+    if ($nbMov > 1) {
       $this->MultiCell($cResto,$h, $ultimoMovimiento,'LRT','C', 0);
       }
     else {

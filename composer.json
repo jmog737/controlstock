@@ -7,7 +7,5 @@
             "email": "your@email.here"
         }
     ],
-    "require": {
-        "phpoffice/phpspreadsheet": "dev-master"
-    }
+    "require": {}
 }
