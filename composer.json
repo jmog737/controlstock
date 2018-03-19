@@ -1,11 +1,13 @@
 {
     "name": "vendor/controlstock",
-    "description": "Description of project controlstock.",
+    "description": "Proyecto para el manejo del stock.",
     "authors": [
         {
-            "name": "Juan Martin",
-            "email": "your@email.here"
+            "name": "Juan Martin Ortega",
+            "email": "juanortega@emsa.com.uy"
         }
     ],
-    "require": {}
+    "require": {
+        "phpoffice/phpspreadsheet": "* dev-master"
+    }
 }

@@ -235,6 +235,7 @@ function generarExcelMovimientos($registros) {
   $validLocale = \PhpOffice\PhpSpreadsheet\Settings::setLocale($locale); 
   if (!$validLocale) { echo 'Unable to set locale to '.$locale." - reverting to en_us<br />\n"; }
 
+  ///**************************************** PARAMETROS BASICOS ***************************************
   // Set document properties
   $spreadsheet->getProperties()->setCreator("Juan Martín Ortega")
                                ->setLastModifiedBy("Juan Martín Ortega")
@@ -251,7 +252,9 @@ function generarExcelMovimientos($registros) {
 
   $hoja->setTitle($nombreReporte);
   $hoja->getTabColor()->setRGB('E02309');
+  ///************************************ FIN PARAMETROS BASICOS ***************************************
 
+  ///**************************************** INICIO formato encabezado ********************************
   // Agrego los títulos:
   $spreadsheet->setActiveSheetIndex(0)
               ->setCellValue('A1', 'Id')
@@ -263,6 +266,7 @@ function generarExcelMovimientos($registros) {
               ->setCellValue('G1', 'Tipo')
               ->setCellValue('H1', 'Cantidad')
               ->setCellValue('I1', 'Comentarios');
+  
   /// Formato de los títulos:
   $header = 'A1:I1';
   $styleHeader = array(
@@ -278,7 +282,9 @@ function generarExcelMovimientos($registros) {
         ),
       );
   $hoja->getStyle($header)->applyFromArray($styleHeader);
-
+  ///******************************************** FIN formato encabezado *******************************
+  
+  ///*************************************** ESCRIBO DATOS *********************************************
   /// Datos de los campos:
   foreach ($registros as $i => $dato) {
     /// Acomodo el índice pues empieza en 0, y en el 1 están los nombres de los campos:
@@ -287,6 +293,131 @@ function generarExcelMovimientos($registros) {
     $hoja->fromArray($dato, ' ', $celda);
   }
   $j = $i+1;
+  ///*************************************** FIN ESCRIBO DATOS *****************************************
+  
+  ///************************************ MUESTRO TOTALES **********************************************
+  /*
+  $nombres = Array();
+  $nom = '';
+  foreach ($registros[4] as $valor){
+    if ($nom !== $valor){
+       $nombres[] = $valor;
+    }
+  }
+  
+  foreach ($nombres as $nombre){
+    $hoja->setCellValue('M2','=SUMIF(G2:G'.$i.',"Retiro",H2:H'.$i.')');
+  }
+  */
+  $hoja->mergeCells('L1:M1');
+  $hoja->setCellValue("L1", "TOTALES");
+  $hoja->setCellValue("L2", "Retiros");
+  $hoja->setCellValue("L3", "Renovaciones");
+  $hoja->setCellValue('L4', 'Destrucciones');
+  $hoja->setCellValue('L6', 'Consumos');
+  $hoja->setCellValue('L7', 'Ingresos');
+  $hoja->setCellValue('M2','=SUMIF(G2:G'.$i.',"Retiro",H2:H'.$i.')');
+  $hoja->setCellValue('M3','=SUMIF(G2:G'.$i.',"Renovación",H2:H'.$i.')');
+  $hoja->setCellValue('M4','=SUMIF(G2:G'.$i.',"Destrucción",H2:H'.$i.')');
+  $hoja->setCellValue('M6','=M2+M3+M4');
+  $hoja->setCellValue('M7','=SUMIF(G2:G'.$i.',"Ingreso",H2:H'.$i.')');
+  
+  $header1 = 'L1:M1';
+  $styleTituloTotales = array(
+      'font' => array(
+          'bold' => true,
+          'underline' => true,
+        ),
+      'borders' => array(
+              'allBorders' => array(
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                'color' => array('rgb' => '023184'),
+                ),
+              ), 
+    'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'center',
+         'vertical' => 'middle',
+      ),
+      'fill' => array(
+          'color' => array('rgb' => 'AEE2FA'),
+          'fillType' => 'solid',
+        ),
+      );
+  $hoja->getStyle($header1)->applyFromArray($styleTituloTotales);
+  
+  $nombreCampos = 'L2:L7';
+  $styleCamposTotales = array(
+    'font' => array(
+        'bold' => true,
+        'italic' => true,
+      ),
+    'borders' => array(
+              'allBorders' => array(
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                'color' => array('rgb' => '023184'),
+                ),
+              ), 
+    'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'left',
+         'vertical' => 'middle',
+      ),
+  );
+  $hoja->getStyle($nombreCampos)->applyFromArray($styleCamposTotales);
+  
+  $rangoTotales = 'M2:M7';
+  $styleTotales = array(
+    'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'right',
+         'vertical' => 'middle',
+      ),
+    'borders' => array(
+              'allBorders' => array(
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                'color' => array('rgb' => '023184'),
+                ),
+              ),  
+    'numberFormat' => array(
+        'formatCode' => '[Blue]#,##0',
+      ),
+  );
+  $hoja->getStyle($rangoTotales)->applyFromArray($styleTotales);
+  
+  $colorConsumos = array(
+    'fill' => array(
+          'color' => array('rgb' => 'feff00'),
+          'fillType' => 'solid',
+        ),
+    'font' => array(
+        'bold' => true,
+        'size' => 13,
+        'color' => array('rgb' => 'ff0000'),
+      ),
+    'numberFormat' => array(
+        'formatCode' => '[Red]#,##0',
+      ),
+  );
+  $hoja->getStyle('M6')->applyFromArray($colorConsumos);
+  
+  $resaltarIngresos = array(
+    'fill' => array(
+          'color' => array('rgb' => '00ff11'),
+          'fillType' => 'solid',
+        ),
+    'font' => array(
+        'bold' => true,
+        'size' => 13,
+        'color' => array('rgb' => '00ff11'),
+      ),
+    'numberFormat' => array(
+        'formatCode' => '[Red]#,##0',
+      ),
+  );
+  $hoja->getStyle('M7')->applyFromArray($resaltarIngresos);
+  ///************************************ FIN MUESTRO TOTALES ******************************************
+  
   /*
   /// Agrego línea con el total del stock:
   $j = $i+1;
@@ -339,7 +470,7 @@ function generarExcelMovimientos($registros) {
   $hoja->getStyle('A'.$j.'')->applyFromArray($styleTextoTotal);
   */
 
-  /// Defino el formato para la columna con el STOCK:
+  ///*********************************** Formato para el STOCK: ****************************************
   $styleColumnaStock = array(
       'fill' => array(
           'color' => array('rgb' => 'A9FF96'),
@@ -347,7 +478,7 @@ function generarExcelMovimientos($registros) {
       ),
       'font' => array(
           'bold' => true,
-          'size' => 11,
+          'size' => 12,
       ),
       'alignment' => array(
          'wrap' => true,
@@ -360,8 +491,9 @@ function generarExcelMovimientos($registros) {
   );
   $rangoStock = 'H2:H'.$i.'';
   $hoja->getStyle($rangoStock)->applyFromArray($styleColumnaStock);
-
-  /// Defino el formato para la columna con la FECHA:
+  ///*********************************** FIN Formato para el STOCK: ************************************
+  
+  ///*********************************** Formato para la FECHA: ****************************************
   $styleColumnaFecha = array(
         'fill' => array(
           'color' => array('rgb' => 'A9FF96'),
@@ -378,8 +510,9 @@ function generarExcelMovimientos($registros) {
   );
   $rangoFecha = 'B2:B'.$i.'';
   $hoja->getStyle($rangoFecha)->applyFromArray($styleColumnaFecha);
-
-  /// Estilos para las alarmas aunque en el caso de los movimientos no tiene sentido: REVISAR!!!:
+  ///*********************************** FIN Formato para la FECHA: ************************************
+  
+  ///************************************* Formato de las ALARMAS: *************************************
   $styleAl1 = array(
       'fill' => array(
           'color' => array ('rgb' => 'FAFF98'),
@@ -393,7 +526,8 @@ function generarExcelMovimientos($registros) {
           'fillType' => 'solid',
       ),
   );
-
+  ///************************************* FIN Formato de las ALARMAS: *********************************
+  
   /// Aplico color de fondo de la columna de stock según el valor y las alarmas para dicho produco:
   for ($k = 2; $k <= $i; $k++) {
     $al1 = "J".$k;
@@ -415,6 +549,7 @@ function generarExcelMovimientos($registros) {
     $hoja->setCellValue($al2, ''); 
   }  
   
+  ///**************************************** FORMATO GENERAL: *****************************************
   /// Defino el rango de celdas con datos para poder darle formato a todas juntas:
   $rango = "A1:I".$i;
   /// Defino el formato para las celdas:
@@ -432,13 +567,15 @@ function generarExcelMovimientos($registros) {
       )
   );
   $hoja->getStyle($rango)->applyFromArray($styleGeneral);
+  ///**************************************** FIN FORMATO GENERAL: *************************************
   
+  ///**************************************** INICIO AJUSTE ANCHO COLUMNAS *****************************
   /// Ajusto el auto size para que las celdas no se vean cortadas:
-  for ($col = ord('A'); $col <= ord('I'); $col++)
+  for ($col = ord('A'); $col <= ord('M'); $col++)
     {
     $hoja->getColumnDimension(chr($col))->setAutoSize(true); 
   }
-
+  
   $maxWidth = 75;
   $hoja->calculateColumnWidths();
   $colWidth = $hoja->getColumnDimension('I')->getWidth();
@@ -446,8 +583,9 @@ function generarExcelMovimientos($registros) {
       $hoja->getColumnDimension('I')->setAutoSize(false);
       $hoja->getColumnDimension('I')->setWidth($maxWidth);
   }
+  ///****************************************** FIN AJUSTE ANCHO COLUMNAS ******************************
   
-  // Se guarda como Excel 2007:
+  /// Se guarda como Excel 2007:
   $writer = new Xlsx($spreadsheet);
 
   $timestamp = date('dmY_His');
