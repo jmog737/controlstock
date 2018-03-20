@@ -285,8 +285,12 @@ function generarExcelMovimientos($registros) {
   ///******************************************** FIN formato encabezado *******************************
   
   ///*************************************** ESCRIBO DATOS *********************************************
+  
   /// Datos de los campos:
   foreach ($registros as $i => $dato) {
+    ///Elimino el primer elemento del array dado que se agregó idprod como primer elemento para no tener
+    ///problemas con los nombres de producto repetidos. El array con los idprod queda en $dato1:
+    $dato1 = array_shift($dato);
     /// Acomodo el índice pues empieza en 0, y en el 1 están los nombres de los campos:
     $i = $i + 2;
     $celda = 'A'.$i;
@@ -296,33 +300,71 @@ function generarExcelMovimientos($registros) {
   ///*************************************** FIN ESCRIBO DATOS *****************************************
   
   ///************************************ MUESTRO TOTALES **********************************************
-  /*
-  $nombres = Array();
-  $nom = '';
-  foreach ($registros[4] as $valor){
-    if ($nom !== $valor){
-       $nombres[] = $valor;
+  $hoja->mergeCells('L1:Q1');
+  $hoja->setCellValue("L1", "TOTALES");
+  $hoja->setCellValue("L2", "Nombre");
+  $hoja->setCellValue("M2", "Retiros");
+  $hoja->setCellValue("N2", "Renovaciones");
+  $hoja->setCellValue('O2', 'Destrucciones');
+  $hoja->setCellValue('P2', 'Consumos');
+  $hoja->setCellValue('Q2', 'Ingresos');
+  
+  $resumen = Array();
+  $ids = Array();
+  $id = '';
+  foreach ($registros as $datito){
+    switch ($datito[7]){
+      case 'Retiro':  $resumen["$datito[0]"]['retiros'] = $resumen["$datito[0]"]['retiros'] + $datito[8];
+                      break;
+      case 'Renovación':  $resumen["$datito[0]"]['renos'] = $resumen["$datito[0]"]['renos'] + $datito[8];
+                          break;
+      case 'Destrucción': $resumen["$datito[0]"]['destrucciones'] = $resumen["$datito[0]"]['destrucciones'] + $datito[8];
+                          break;
+      case 'Ingreso': $resumen["$datito[0]"]['ingresos'] = $resumen["$datito[0]"]['ingresos'] + $datito[8];
+                      break;
+      default: break;
+    }
+    if ($id !== $datito[0]){
+       $ids[] = $datito[0];
+       $id = $datito[0];
+       $resumen["$datito[0]"]['nombre'] = $datito[5];
     }
   }
   
-  foreach ($nombres as $nombre){
-    $hoja->setCellValue('M2','=SUMIF(G2:G'.$i.',"Retiro",H2:H'.$i.')');
+  $n = 3;
+  foreach ($ids as $id1){
+    if ((!isset($resumen["$id1"]['retiros']))) {
+      $resumen["$id1"]['retiros'] = 0;
+    }
+    if ((!isset($resumen["$id1"]['ingresos']))) {
+      $resumen["$id1"]['ingresos'] = 0;
+    }
+    if ((!isset($resumen["$id1"]['renos']))) {
+      $resumen["$id1"]['renos'] = 0;
+    }
+    if ((!isset($resumen["$id1"]['destrucciones']))) {
+      $resumen["$id1"]['destrucciones'] = 0;
+    }
+    $hoja->setCellValue('L'.$n, $resumen["$id1"]['nombre']);
+    $hoja->setCellValue('M'.$n, $resumen["$id1"]['retiros']);
+    $hoja->setCellValue('N'.$n, $resumen["$id1"]['renos']);
+    $hoja->setCellValue('O'.$n, $resumen["$id1"]['destrucciones']);
+    $hoja->setCellValue('P'.$n,'=M'.$n.'+N'.$n.'+O'.$n);
+    $hoja->setCellValue('Q'.$n, $resumen["$id1"]['ingresos']);
+    $n++;
   }
-  */
-  $hoja->mergeCells('L1:M1');
-  $hoja->setCellValue("L1", "TOTALES");
-  $hoja->setCellValue("L2", "Retiros");
-  $hoja->setCellValue("L3", "Renovaciones");
-  $hoja->setCellValue('L4', 'Destrucciones');
-  $hoja->setCellValue('L6', 'Consumos');
-  $hoja->setCellValue('L7', 'Ingresos');
-  $hoja->setCellValue('M2','=SUMIF(G2:G'.$i.',"Retiro",H2:H'.$i.')');
-  $hoja->setCellValue('M3','=SUMIF(G2:G'.$i.',"Renovación",H2:H'.$i.')');
-  $hoja->setCellValue('M4','=SUMIF(G2:G'.$i.',"Destrucción",H2:H'.$i.')');
-  $hoja->setCellValue('M6','=M2+M3+M4');
-  $hoja->setCellValue('M7','=SUMIF(G2:G'.$i.',"Ingreso",H2:H'.$i.')');
+  $finDatos = $n - 1;
   
-  $header1 = 'L1:M1';
+  ///Línea con el total por categoría y totales generales:
+  $hoja->setCellValue("L".$n, "TOTALES");
+  $hoja->setCellValue('M'.$n, '=SUM(M3:M'.$finDatos.')');
+  $hoja->setCellValue('N'.$n, '=SUM(N3:N'.$finDatos.')');
+  $hoja->setCellValue('O'.$n, '=SUM(O3:O'.$finDatos.')');
+  $hoja->setCellValue('P'.$n, '=SUM(P3:P'.$finDatos.')');
+  $hoja->setCellValue('Q'.$n, '=SUM(Q3:Q'.$finDatos.')');
+  
+  ///**************************************** Formato Título *******************************************
+  $header1 = 'L1:Q1';
   $styleTituloTotales = array(
       'font' => array(
           'bold' => true,
@@ -345,9 +387,36 @@ function generarExcelMovimientos($registros) {
         ),
       );
   $hoja->getStyle($header1)->applyFromArray($styleTituloTotales);
+  ///************************************** FIN Formato Título *****************************************
   
-  $nombreCampos = 'L2:L7';
+  ///************************************ Formato nombre CAMPOS ****************************************
+  $nombreCampos = 'L2:Q2';
   $styleCamposTotales = array(
+    'fill' => array(
+          'color' => array('rgb' => 'b3a8ac'),
+          'fillType' => 'solid',
+        ),
+    'font' => array(
+        'bold' => true,
+      ),
+    'borders' => array(
+              'allBorders' => array(
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                'color' => array('rgb' => '023184'),
+                ),
+              ), 
+    'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'center',
+         'vertical' => 'middle',
+      ),
+  );
+  $hoja->getStyle($nombreCampos)->applyFromArray($styleCamposTotales);
+  ///************************************ FIN Formato nombre CAMPOS ************************************
+  
+  ///************************************ Formato Nombre Productos *************************************
+  $nombreProductos = 'L3:L'.$finDatos;
+  $styleNombreProductos = array(
     'font' => array(
         'bold' => true,
         'italic' => true,
@@ -364,9 +433,11 @@ function generarExcelMovimientos($registros) {
          'vertical' => 'middle',
       ),
   );
-  $hoja->getStyle($nombreCampos)->applyFromArray($styleCamposTotales);
+  $hoja->getStyle($nombreProductos)->applyFromArray($styleNombreProductos);
+  ///********************************** FIN Formato Nombre Productos ***********************************
   
-  $rangoTotales = 'M2:M7';
+  ///************************************ Formato Totales Categoría ************************************
+  $rangoTotales = 'M3:O'.$n;
   $styleTotales = array(
     'alignment' => array(
          'wrap' => true,
@@ -384,8 +455,98 @@ function generarExcelMovimientos($registros) {
       ),
   );
   $hoja->getStyle($rangoTotales)->applyFromArray($styleTotales);
+  ///********************************** FIN Formato Totales Categoría **********************************
   
+  ///***************************************** Formato Consumos ****************************************
+  $rangoConsumos = 'P3:P'.$finDatos;
   $colorConsumos = array(
+    'fill' => array(
+          'color' => array('rgb' => 'ffff99'),
+          'fillType' => 'solid',
+        ),
+    'font' => array(
+        'bold' => true,
+        'size' => 13,
+      ),
+    'numberFormat' => array(
+        'formatCode' => '[Red]#,##0',
+      ),
+    'borders' => array(
+              'allBorders' => array(
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                'color' => array('rgb' => '023184'),
+                ),
+              ), 
+    'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'right',
+         'vertical' => 'middle',
+      ),
+  );
+  $hoja->getStyle($rangoConsumos)->applyFromArray($colorConsumos);
+  ///*************************************** FIN Formato Consumos **************************************
+  
+  ///***************************************** Formato Ingresos ****************************************
+  $rangoIngresos = 'Q3:Q'.$finDatos;
+  $resaltarIngresos = array(
+    'fill' => array(
+          'color' => array('rgb' => 'cefdd5'),
+          'fillType' => 'solid',
+        ),
+    'font' => array(
+        'bold' => true,
+        'size' => 13,
+      ),
+    'numberFormat' => array(
+        'formatCode' => '[Red]#,##0',
+      ),
+    'borders' => array(
+              'allBorders' => array(
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                'color' => array('rgb' => '023184'),
+                ),
+              ), 
+    'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'right',
+         'vertical' => 'middle',
+      ),
+  );
+  $hoja->getStyle($rangoIngresos)->applyFromArray($resaltarIngresos);
+  ///*************************************** FIN Formato Ingresos **************************************
+  
+  ///*************************************** Formato Palabra TOTAL *************************************
+  $rangoTotal = 'L'.$n;
+  $resaltarPalabraTotal = array(
+    'fill' => array(
+          'color' => array('rgb' => 'AEE2FA'),
+          'fillType' => 'solid',
+        ),
+    'font' => array(
+        'bold' => true,
+        'size' => 13,
+      ),
+    'numberFormat' => array(
+        'formatCode' => '[Red]#,##0',
+      ),
+    'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'center',
+         'vertical' => 'middle',
+      ),
+    'borders' => array(
+              'allBorders' => array(
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                'color' => array('rgb' => '023184'),
+                ),
+              ), 
+  );
+  $hoja->getStyle($rangoTotal)->applyFromArray($resaltarPalabraTotal);
+  ///************************************* FIN Formato Palabra TOTAL ***********************************
+  
+  ///************************************** Formato Consumos Total *************************************
+  $rangoConsumosTotal = 'P'.$n;
+  $colorConsumosTotal = array(
     'fill' => array(
           'color' => array('rgb' => 'feff00'),
           'fillType' => 'solid',
@@ -393,15 +554,29 @@ function generarExcelMovimientos($registros) {
     'font' => array(
         'bold' => true,
         'size' => 13,
-        'color' => array('rgb' => 'ff0000'),
+        'italic' => true,
       ),
     'numberFormat' => array(
         'formatCode' => '[Red]#,##0',
       ),
+    'borders' => array(
+              'allBorders' => array(
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                'color' => array('rgb' => '023184'),
+                ),
+              ), 
+    'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'right',
+         'vertical' => 'middle',
+      ),
   );
-  $hoja->getStyle('M6')->applyFromArray($colorConsumos);
+  $hoja->getStyle($rangoConsumosTotal)->applyFromArray($colorConsumosTotal);
+  ///*********************************** FIN Formato Consumos Total ************************************
   
-  $resaltarIngresos = array(
+  ///************************************** Formato Ingresos Total *************************************
+  $rangoIngresosTotal = 'Q'.$n;
+  $resaltarIngresosTotal = array(
     'fill' => array(
           'color' => array('rgb' => '00ff11'),
           'fillType' => 'solid',
@@ -409,13 +584,49 @@ function generarExcelMovimientos($registros) {
     'font' => array(
         'bold' => true,
         'size' => 13,
-        'color' => array('rgb' => '00ff11'),
+        'italic' => true,
       ),
     'numberFormat' => array(
         'formatCode' => '[Red]#,##0',
       ),
+    'borders' => array(
+              'allBorders' => array(
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                'color' => array('rgb' => '023184'),
+                ),
+              ), 
+    'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'right',
+         'vertical' => 'middle',
+      ),
   );
-  $hoja->getStyle('M7')->applyFromArray($resaltarIngresos);
+  $hoja->getStyle($rangoIngresosTotal)->applyFromArray($resaltarIngresosTotal);
+  ///************************************* FIN Formato Ingresos Total **********************************
+  
+  ///****************************************** Muestro TOTALES ****************************************
+  $rangoTotalGeneral = 'M'.$n.':O'.$n;
+  $resaltarTotalGeneral = array(
+    'fill' => array(
+          'color' => array('rgb' => '888888'),
+          'fillType' => 'solid',
+        ),
+    'font' => array(
+        'bold' => true,
+        'size' => 13,
+        'color' => array('rgb' => '00ff11'),
+        'italic' => true,
+      ),
+    'numberFormat' => array(
+        'formatCode' => '[Red]#,##0',
+      ),
+    'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'right',
+         'vertical' => 'middle',
+      ),
+  );
+  $hoja->getStyle($rangoTotalGeneral)->applyFromArray($resaltarTotalGeneral);
   ///************************************ FIN MUESTRO TOTALES ******************************************
   
   /*
@@ -571,7 +782,7 @@ function generarExcelMovimientos($registros) {
   
   ///**************************************** INICIO AJUSTE ANCHO COLUMNAS *****************************
   /// Ajusto el auto size para que las celdas no se vean cortadas:
-  for ($col = ord('A'); $col <= ord('M'); $col++)
+  for ($col = ord('A'); $col <= ord('Q'); $col++)
     {
     $hoja->getColumnDimension(chr($col))->setAutoSize(true); 
   }

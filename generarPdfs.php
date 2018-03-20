@@ -627,9 +627,13 @@ class PDF extends PDF_MC_Table
       $foto = $registros[0][7];
       if (($foto !== null) && ($foto !== '')) {
         $rutita = $rutaFotos."/".$foto;
-        $xFoto = $this->GetX();
+        $tamaño = getimagesize($rutita);
+        $anchoFoto = $tamaño[0];
+        $altoFoto = $tamaño[1];
+        $xFoto = ($anchoPagina - $anchoFoto)/2;
+        //$this->SetX($xFoto);
         $yFoto = $this->GetY();
-        $this->Image($rutita, 77, $yfoto, $cFoto, 30);
+        $this->Image($rutita, $xFoto, $yfoto, $cFoto, 30);
         $this->Ln();
       }
       ///***************************************************************  FIN FOTO **********************************************************

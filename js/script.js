@@ -1688,12 +1688,12 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   ///************************* FIN RECUPERACIÓN DATOS *********************************************************************
                                   
                                   ///Si hay un cambio de producto, ANTES de poner el primer movimiento del nuevo producto, muestro el resumen del producto viejo:
-                                  if (productoViejo !== produ) {
+                                  if (productoViejo !== produ) {//alert('cambio');
                                     var totalConsumos = 0;
                                     var retiros1 = 0;
                                     var renos1 = 0;
                                     var destrucciones1 = 0;
-                                    var ingresos1 = 0;
+                                    var ingresos1 = 0;//alert(subtotales["retiros"]);
                                     if (subtotales["retiros"] !== null){
                                       if (subtotales["retiros"][productoViejo] !== undefined) {
                                         retiros1 = parseInt(subtotales["retiros"][productoViejo], 10);
@@ -1823,7 +1823,14 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                 ///Detecto si es o no la primer página.
                                 ///En caso de serlo seteo el total de Páginas a 0 para que NO muestre el resumen para el último producto
                                 var pagActual = parseInt($(".nav-link.active").attr("activepage"), 10);
-                                var totalPaginas = parseInt($("#totalPaginas_"+j).val(), 10);
+                                ///Agrego if para saber si la variable con el total de páginas existe o no pues solo existirá si el total de datos 
+                                ///es mayor al tamaño de página elegida (de lo contrario no se crea el div con los datosOcultos
+                                if ($("#totalPaginas_"+j).length > 0){
+                                  var totalPaginas = parseInt($("#totalPaginas_"+j).val(), 10);
+                                }
+                                else {
+                                  totalPaginas = 1;
+                                }
                                 if (offset === tamPagina+1){
                                   totalPaginas = 0;
                                 }
@@ -2016,7 +2023,15 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   }
                                   ///************************************ COMIENZO RESUMEN DEL PRODUCTO ***************************************************
                                   var pagActual = parseInt($(".nav-link.active").attr("activepage"), 10);
-                                  var totalPaginas = parseInt($("#totalPaginas_"+j).val(), 10);
+                                  ///Agrego if para saber si la variable con el total de páginas existe o no pues solo existirá si el total de datos 
+                                  ///es mayor al tamaño de página elegida (de lo contrario no se crea el div con los datosOcultos
+                                  if ($("#totalPaginas_"+j).length > 0){
+                                    totalPaginas = parseInt($("#totalPaginas_"+j).val(), 10);
+                                  }
+                                  else {
+                                    totalPaginas = 1;
+                                  }
+                                  
                                   if (pagActual === totalPaginas){
                                     var totalConsumos = 0;
                                     var retiros1 = 0;
@@ -2145,7 +2160,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
       var totalRenovaciones = request[j]["renovaciones"];
       var totalDestrucciones = request[j]["destrucciones"];
       var totalIngresos = request[j]["ingresos"];
-      var totalDatos = parseInt(request[j].totalRows, 10);
+      var totalDatos = parseInt(request[j].totalRows, 10);//alert('total: '+totalDatos+'\nplasticos: '+totalPlasticos+'\nretiros:'+totalRetiros+'\nrenos: '+totalRenovaciones+'\ndestrucciones: '+totalDestrucciones+'\ningresos: '+totalIngresos);
       
       if (j == 0) {
         activo = 'fade show active';
@@ -2207,6 +2222,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
           max = totalDatos%tamPagina;
           parcial = false;
         }
+        
         var tabla = mostrarTabla(radio, datos, j, todos, 1, parcial, subtotales, max, totalPlasticos); 
         
         formu += tabla;
@@ -2524,7 +2540,7 @@ function realizarBusqueda(){
                                 for (var i in entidadesMovimiento){
                                   query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                                   query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
-                                  consultaCSV = "select DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
+                                  consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
                                   if (entidadesMovimiento[i] !== 'todos') {
                                     ent = entidadesMovimiento[i];
                                       query += "and productos.entidad='"+entidadesMovimiento[i]+"'";
@@ -2559,8 +2575,8 @@ function realizarBusqueda(){
       case 'productoMovimiento':  for (var k in idProds){
                                     query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                                     query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where ";
-                                    consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
-                                    consultaCSV = "select DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";                                 
+                                    //consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
+                                    consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";                                 
                                     if ((idProds[k] === 'NADA') || (nombresProductos[k] === '')){
                                       alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
                                       document.getElementById("productoMovimiento").focus();
@@ -2584,6 +2600,7 @@ function realizarBusqueda(){
                                   break;
       default: break;
     }
+    
     var hoy = new Date();
     var diaHoy = hoy.getDate();
     var mesHoy = hoy.getMonth()+1;

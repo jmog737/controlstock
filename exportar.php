@@ -35,77 +35,6 @@ $fecha = date('d/m/Y');
 $hora = date('H:i');
 //********************************************************** FIN Hora y título *****************************************************************
 
-//RECUPERO ID PASADO con el tipo de dato a exportar y sus parámetros:
-
-//$temp1 = explode("&", $parametros);
-
-//foreach ($temp1 as $valor) {
-//  $temp2 = explode(":", $valor);
-//  switch ($temp2[0]) {
-//    case 'id': $id = $temp2[1];
-//               break;
-//    case 'query': $query = $temp2[1];
-//                  if (isset($temp2[2])) {
-//                    $query = $query.':'.$temp2[2];
-//                  }  
-//                  break;
-//    case 'consultaCSV': $consultaCSV = $temp2[1];
-//                        if (isset($temp2[2])) {
-//                          $consultaCSV = $consultaCSV.':'.$temp2[2];
-//                        } 
-//                        break;            
-//    case 'largos': $largos = $temp2[1];
-//                   $temp = explode('-', $largos);
-//                   break;
-//    case 'campos': $campos1 = utf8_decode($temp2[1]);
-//                   $campos = preg_split("/-/", $campos1);
-//                   break;
-//    case 'idProd': $idslot = $temp2[1];
-//                   break;
-//    case 'nombreProducto':  $nombreProducto1 = $temp2[1];
-//                            $sep = explode("[", $nombreProducto1);
-//                            $entidad0 = trim($sep[1]);
-//                            $nom2 = $temp2[2];
-//                            $tempo = explode("]", $nom2);
-//                            $codigo = trim($tempo[0]);
-//                            $entidad1 = explode("-", $tempo[1]);
-//                            $nombreProducto = trim($entidad1[3]);
-//                   break; 
-//    case 'entidad': $entidad = $temp2[1];
-//                    if ($entidad === 'todos') {
-//                      $entidad = 'todas las entidades.';
-//                    }
-//                    break;             
-//    case 'x': $x = $temp2[1];
-//              break;
-//    case 'tipo': $tipo = $temp2[1];
-//                  break;
-//    case 'inicio': $inicio = $temp2[1];
-//                   break;  
-//    case 'fin': $fin = $temp2[1];
-//                 break;   
-//    case 'mes': $mes = $temp2[1];
-//                 break;  
-//    case 'año': $año = $temp2[1];
-//                 break;            
-//    case 'idUser': $iduser = $temp2[1];
-//                   break;
-//    case 'mails': $mails = $temp2[1];
-//                  //$mails = preg_split("/,/", $mails1);
-//                  break;
-//    case 'tipoConsulta': $tipoConsulta = $temp2[1];
-//                         if ((($id === "4")||($id === "5")) && (isset($temp2[2]))) {
-//                           $tipoConsulta = $tipoConsulta.":".$temp2[2];
-//                         }  
-//                         break;            
-//    case 'mostrar': $mostrar1 = utf8_decode($temp2[1]);
-//                    $mostrar = preg_split("/-/", $mostrar1);
-//                    break;
-//    default: break;                
-//  }
-//}
-// *** FIN RECUPERACIÓN DE PARÁMETROS *******************************
-
 $id = $_POST["idTipo"];
 $indice = $_POST["indice"];
 
@@ -158,26 +87,6 @@ if (isset($_POST["entidad_$indice"])){
     $entidadMostrar = 'Todos';
   }
 }
-//
-//if (isset($_POST["inicio"])){
-//$inicio = $_POST["inicio"];
-//}
-//if (isset($_POST["fin"])){
-//$fin = $_POST["fin"];
-//}
-//if (isset($_POST["año"])){
-//$año = $_POST["año"];
-//}
-//if (isset($_POST["mes"])){
-//$mes = $_POST["mes"];
-//}
-//if (isset($_POST["tipo"])){
-//  $tipo = $_POST["tipo"];
-//}
-//if (isset($_POST["usuario"])){
-//  $idUser = $_POST["usuario"];
-//}
-
 //echo "id: $id<br>query: $query<br>consultaCSV: $consultaCSV<br>campos: $campos1<br>largos: $largos<br>mostrar: $mostrar1<br>tipoConsulta: $tipoConsulta<br>idProd: $idProd<br>nombreProducto: $nombreProducto<br>entidad: $entidad"
 //        . "<br>x: $x<br>inicio: $inicio<br>fin: $fin<br>mes: $mes<br>año: $año<br>tipo: $tipo<br>usuario: $idUser<br>";
 
@@ -252,7 +161,7 @@ $resultado1 = consultarBD($query, $con);
 $totalRegistros = $resultado1->num_rows;
 
 //Instancio objeto de la clase:
-$pdfResumen = new PDF();
+$pdfResumen = new PDF('L','mm','A4');
 $pdfResumen->AddPage();
 
 $totalCampos = sizeof($campos);
@@ -279,7 +188,15 @@ $j = 1;
 $total1 = 0;
 foreach($filas1 as $fila)
   {
-  array_unshift($fila, $j);
+  if (($id == 4)||($id == 5)){
+    $primerColumna = array_shift($fila);
+    array_unshift($fila, $j);
+    array_unshift($fila, $primerColumna);
+  }
+  else {
+    array_unshift($fila, $j);
+  }
+ 
   $j++;
   //Acumulo el total de plásticos ya sea en stock o movidos:
   $total1 = $total1 + $fila[4];
