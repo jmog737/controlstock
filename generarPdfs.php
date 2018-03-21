@@ -35,33 +35,70 @@ require_once('..\..\fpdf\mc_table.php');
 
 class PDF extends PDF_MC_Table
   {
+  const DPI_150 = 150;
+  const DPI_300 = 300;
+  const MM_IN_INCH = 25.4;
+  const A4_HEIGHT = 297;
+  const A4_WIDTH = 210;
+  // tweak these values (in pixels)
+//  const A4_WIDTH_PX_150 = 1240;
+//  const A4_HEIGHT_PX_150 = 1754;
+//  const A4_WIDTH_PX_300 = 2480;
+//  const A4_HEIGHT_PX_300 = 3508;
+  const LOGO_WIDTH_MM = 50;
+  const LOGO_HEIGHT_MM = 20;
+  const FOTO_WIDTH_MM = 60;
+  const FOTO_HEIGHT_MM = 37.84;
+  
   //Cabecera de página
   function Header()
     {
     global $fecha, $hora, $titulo, $x, $hHeader;
+    
+    $anchoPage = $this->GetPageWidth();
+    $anchoDia = 20;
+    $xLogo = 2;
+    $yLogo = 2;
+    
     //Agrego logo de EMSA:
-    $this->Image('images/logotipo.jpg', 3, 3, 50);
-    $this->setY(10);
-    $this->setX(10);
+    $logo = 'images/logotipo.jpg';
+
+    list($nuevoAncho, $nuevoAlto) = $this->resizeToFit($logo, self::LOGO_WIDTH_MM, self::LOGO_HEIGHT_MM);
+    
+    $anchoTitle = $anchoPage - $anchoDia - $nuevoAncho - 2*$xLogo;
+    
+    //echo "pagina: $ancho<br>ancho logo: ".$anchoLogoPx."<br>alto: ".$altoLogoPx."<br>ancho logo mm: ".$anchoLogoMm."<br>alto mm: ".$altoLogoMm."<br><br>";
+    $this->Image($logo, $xLogo, $yLogo, $nuevoAncho, $nuevoAlto);
+    $this->setY($yLogo+1);
+    $this->setX($nuevoAncho+$xLogo);
+    //$this->SetFillColor(120, 200, 120);
     //Defino características para el título y agrego el título:
     $this->SetFont('Arial', 'BU', 18);
-    $this->Cell(200, $hHeader, utf8_decode($titulo), 0, 0, 'C');
-    $this->Ln();
-
-    $this->setY(8);
-    $this->setX(187);
+    $this->Cell($anchoTitle, $nuevoAlto-1, utf8_decode($titulo), 0, 0, 'C', false);
+    
+    //$this->SetFillColor(180, 200, 20);
+    
+    $this->setY($yLogo+1);
+    $xFecha = $nuevoAncho+$anchoTitle+$xLogo;
+    $this->setX($xFecha);
+    
     $this->SetFont('Arial');
     $this->SetFontSize(10);
-    $this->Cell(20, $hHeader, $fecha, 0, 0, 'C');
+    
+    $this->Cell($anchoDia, $nuevoAlto-5, $fecha, 0, 0, 'C',false);
 
-    $this->setY(11);
-    $this->setX(187);
+    //$this->SetFillColor(0, 200, 20);
+    
+    $this->setY($yLogo+6);
+    $this->setX($xFecha);
+    
     $this->SetFont('Arial');
-    $this->SetFontSize(10);
-    $this->Cell(20, $hHeader, $hora, 0, 0, 'C');
+    $this->SetFontSize(10);   
+    
+    $this->Cell($anchoDia, 5, $hora, 0, 0, 'C', false);
 
     //Dejo el cursor donde debe empezar a escribir:
-    $this->Ln(20);
+    $this->Ln(18);
     $this->setX($x);
     }
 
@@ -100,7 +137,7 @@ class PDF extends PDF_MC_Table
     ///***************************************************************** TITULO *************************************************************
     //Defino tipo de letra y tamaño para el Título:
     $this->SetFont('Courier', 'B', 12);
-    $this->SetY(25);
+    //$this->SetY(20);
 
     $tipoTotal = "Stock de $entidad";
     $tam = $this->GetStringWidth($tipoTotal);
@@ -537,7 +574,7 @@ class PDF extends PDF_MC_Table
 
     $tam1 = $this->GetStringWidth($subTitulo);
     $xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
-    $this->SetY(25);
+    //$this->SetY(20);
     $anchoSubTitulo = $anchoTipo;
     
     $nbSubTitulo = $this->NbLines($anchoTipo,$subTitulo);
@@ -627,14 +664,13 @@ class PDF extends PDF_MC_Table
       $foto = $registros[0][7];
       if (($foto !== null) && ($foto !== '')) {
         $rutita = $rutaFotos."/".$foto;
-        $tamaño = getimagesize($rutita);
-        $anchoFoto = $tamaño[0];
-        $altoFoto = $tamaño[1];
+        list($anchoFoto, $altoFoto) = $this->resizeToFit($rutita, self::FOTO_WIDTH_MM, self::FOTO_HEIGHT_MM);
+        
         $xFoto = ($anchoPagina - $anchoFoto)/2;
-        //$this->SetX($xFoto);
+        $this->SetX($xFoto);
         $yFoto = $this->GetY();
-        $this->Image($rutita, $xFoto, $yfoto, $cFoto, 30);
-        $this->Ln();
+        $this->Image($rutita, $xFoto, $yFoto, $anchoFoto, $altoFoto);
+        $this->Ln($altoFoto+8);
       }
       ///***************************************************************  FIN FOTO **********************************************************
       
@@ -2070,7 +2106,7 @@ class PDF extends PDF_MC_Table
     //Defino tipo de letra y tamaño para el Título:
     $this->SetFont('Courier', 'B', 12);
     //Establezco las coordenadas del borde de arriba a la izquierda de la tabla:
-    $this->SetY(25);
+    //$this->SetY(20);
     
     $tipoTotal = "Stock del producto $nombre";
     $tam = $this->GetStringWidth($tipoTotal);
@@ -2110,14 +2146,18 @@ class PDF extends PDF_MC_Table
     ///Agrego un snapshot de la tarjeta debajo de la tabla (si es que existe!!):
     $foto = $registros[0][6];
     if (($foto !== null) && ($foto !== '')) {
+      $this->Ln(3);
       $rutita = $rutaFotos."/".$foto;
-      $xFoto = $this->GetX();
+      list($anchoFoto, $altoFoto) = $this->resizeToFit($rutita, self::FOTO_WIDTH_MM, self::FOTO_HEIGHT_MM);
+
+      $xFoto = ($anchoPagina - $anchoFoto)/2;
+      $this->SetX($xFoto);
       $yFoto = $this->GetY();
-      $this->Ln();
-      $this->Image($rutita, 77, $yfoto, $cFoto, 30);
+      $this->Image($rutita, $xFoto, $yFoto, $anchoFoto, $altoFoto);
+      $this->Ln($altoFoto-3);
     }
     ///*************************************************************** FIN FOTO **************************************************************
-    $this->Ln(10);
+    $this->Ln(8);
     ///************************************************************* TÍTULO TABLA ************************************************************
     $this->SetX($x);
     $y = $this->GetY();
@@ -2390,5 +2430,24 @@ class PDF extends PDF_MC_Table
     $this->_out(sprintf('%.2F %.2F %.2F %.2F %.2F %.2F c ', $x1*$this->k, ($h-$y1)*$this->k,
         $x2*$this->k, ($h-$y2)*$this->k, $x3*$this->k, ($h-$y3)*$this->k));
   }
- 
+  
+  function pixelsToMM($val) {
+        return $val * self::MM_IN_INCH / self::DPI_300;
+    }
+  
+  function resizeToFit($imgFilename, $ancho, $alto) {
+    list($anchoImgPx, $altoImgPx) = getimagesize($imgFilename);
+    
+    ///Convierto de px a mm (usando los DPI estipulados):
+    $anchoImgMm = $anchoImgPx*self::MM_IN_INCH/self::DPI_300;
+    $altoImgMm = $altoImgPx*self::MM_IN_INCH/self::DPI_300;
+    
+    $widthScale = $ancho / $anchoImgMm;
+    $heightScale = $alto / $altoImgMm;
+    $scale = min($widthScale, $heightScale);
+    
+    return array(
+        round($scale * $anchoImgMm),
+        round($scale * $altoImgMm));        
+    }  
 }

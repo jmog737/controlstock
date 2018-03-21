@@ -26,7 +26,7 @@ require_once('data/config.php');
 //********************************************* Defino tamaño de la celda base: c1, y el número ************************************************
 $c1 = 18;
 $h = 6;
-$hHeader = 3;
+$hHeader = 30;
 $hFooter = 10;
 //******************************************************** FIN tamaños de celdas ***************************************************************
 
@@ -161,7 +161,7 @@ $resultado1 = consultarBD($query, $con);
 $totalRegistros = $resultado1->num_rows;
 
 //Instancio objeto de la clase:
-$pdfResumen = new PDF('L','mm','A4');
+$pdfResumen = new PDF('P','mm','A4');
 $pdfResumen->AddPage();
 
 $totalCampos = sizeof($campos);
