@@ -194,12 +194,21 @@ foreach($filas1 as $fila)
     array_unshift($fila, $primerColumna);
   }
   else {
-    array_unshift($fila, $j);
+    if (($id == 1)||($id == 2)){
+      $coment = array_pop($fila);
+      $al2 = array_pop($fila);
+      $al1 = array_pop($fila);
+      $stock = array_pop($fila);
+      array_push($fila, $coment);
+      array_push($fila, $stock);
+      array_push($fila, $al1);
+      array_push($fila, $al2);
+    }
+    array_unshift($fila, $j); //echo $coment." - ".$al1." - ".$al2." - ".$stock."<br>";
   }
- 
   $j++;
   //Acumulo el total de plásticos ya sea en stock o movidos:
-  $total1 = $total1 + $fila[4];
+  $total1 = $total1 + $fila[5];
   $registros1[] = $fila;
 }
 
@@ -232,7 +241,8 @@ switch ($id) {
             break;
   case "2": $archivo = generarExcelStock($registros1, $total1);
             break;
-  case "3": break;
+  case "3": $archivo = generarExcelBoveda($registros1);
+            break;
   case "4": $archivo = generarExcelMovimientos($registros1);
             break;
   case "5": $archivo = generarExcelMovimientos($registros1);

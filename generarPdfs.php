@@ -425,6 +425,7 @@ class PDF extends PDF_MC_Table
               $a = 'C';
             }
             //$datito = utf8_decode($dato[$i]);
+            /// Resaltado en AMARILLO del comentario que tiene el patrón: DIF
             if ($i === $indiceMensaje) {
               $patron = "dif";
               $buscar = stripos($datito, $patron);
@@ -434,7 +435,29 @@ class PDF extends PDF_MC_Table
               }
               else 
                 {
-                $this->setFillColor(220, 223, 232);
+                /// Resaltado en VERDE del comentario que tiene el patrón: STOCK
+                $patron = "stock";
+                $buscar = stripos($datito, $patron);
+                if ($buscar !== FALSE){
+                  $this->SetFillColor(4, 255, 20);
+                  $fill = 1;
+                }
+                else 
+                  {
+                  /// Resaltado en ROJO SUAVE del comentario que tiene el patrón: PLASTICO con o sin tilde
+                  $patron = "plastico";
+                  $patron1 = utf8_decode("plástico");
+                  $buscar = stripos($datito, $patron);
+                  $buscar1 = stripos($datito, $patron1);
+                  if (($buscar !== FALSE)||($buscar1 !== FALSE)){
+                    $this->SetFillColor(234, 140, 160);
+                    $fill = 1;
+                  }
+                  else 
+                    {
+                    $this->setFillColor(220, 223, 232);
+                  }
+                }
               }
             }
             if ($i === $indiceUltMov) {
@@ -812,13 +835,58 @@ class PDF extends PDF_MC_Table
       $y=$this->GetY();
       //Draw the border
       $this->Rect($x1,$y,$cResto,$h0);
+      
+      /// Resaltado en AMARILLO del comentario que tiene el patrón: DIF
+      $patron = "dif";
+      $buscar = stripos($comentarios, $patron);
+      if ($buscar !== FALSE){
+        $this->SetFillColor(255, 255, 51);
+        $fill = 1;
+      }
+      else 
+        {
+        /// Resaltado en VERDE del comentario que tiene el patrón: STOCK
+        $patron = "stock";
+        $buscar = stripos($comentarios, $patron);
+        if ($buscar !== FALSE){
+          $this->SetFillColor(4, 255, 20);
+          $fill = 1;
+        }
+        else 
+          {
+          /// Resaltado en ROJO SUAVE del comentario que tiene el patrón: PLASTICO con o sin tilde
+          $patron = "plastico";
+          $patron1 = utf8_decode("plástico");
+          $buscar = stripos($comentarios, $patron);
+          $buscar1 = stripos($comentarios, $patron1);
+          if (($buscar !== FALSE)||($buscar1 !== FALSE)){
+            $this->SetFillColor(234, 140, 160);
+            $fill = 1;
+          }
+          else 
+            {
+            /// Resaltado en GRIS del comentario que no cumple con ninguno de los patrones, pero que NO es nulo
+            if (($comentarios !== '')){
+              $this->setFillColor(220, 223, 232);
+              $fill = 1;
+            }
+            else {
+              $fill = 0;
+            }
+          }
+        }
+      }
+      
       //Print the text
       if ($nbComment > 1) {
-        $this->MultiCell($cResto,$h, $comentarios,'LRT','C', 0);
+        $this->MultiCell($cResto,$h, $comentarios,'LRT','C', $fill);
         }
       else {
-        $this->MultiCell($cResto,$h, $comentarios,1,'C', 0);
+        $this->MultiCell($cResto,$h, $comentarios,1,'C', $fill);
         } 
+        
+      /// Restauro color de fondo para los nombres de los campos:  
+      $this->SetFillColor(103, 167, 253);  
       //Put the position to the right of the cell
       $this->SetXY($x,$y+$h0);
       ///*********************************************************** FIN CAMPO COMENTARIOS **************************************************
@@ -2295,16 +2363,60 @@ class PDF extends PDF_MC_Table
     $y=$this->GetY();
     //Draw the border
     $this->Rect($x1,$y,$cResto,$h0);
+    
+    /// Resaltado en AMARILLO del comentario que tiene el patrón: DIF
+    $patron = "dif";
+    $buscar = stripos($comentarios, $patron);
+    if ($buscar !== FALSE){
+      $this->SetFillColor(255, 255, 51);
+      $fill = 1;
+    }
+    else 
+      {
+      /// Resaltado en VERDE del comentario que tiene el patrón: STOCK
+      $patron = "stock";
+      $buscar = stripos($comentarios, $patron);
+      if ($buscar !== FALSE){
+        $this->SetFillColor(4, 255, 20);
+        $fill = 1;
+      }
+      else 
+        {
+        /// Resaltado en ROJO SUAVE del comentario que tiene el patrón: PLASTICO con o sin tilde
+        $patron = "plastico";
+        $patron1 = utf8_decode("plástico");
+        $buscar = stripos($comentarios, $patron);
+        $buscar1 = stripos($comentarios, $patron1);
+        if (($buscar !== FALSE)||($buscar1 !== FALSE)){
+          $this->SetFillColor(234, 140, 160);
+          $fill = 1;
+        }
+        else 
+          {
+          /// Resaltado en GRIS del comentario que no cumple con ninguno de los patrones, pero que NO es nulo
+          if (($comentarios !== '')){
+            $this->setFillColor(220, 223, 232);
+            $fill = 1;
+          }
+          else {
+            $fill = 0;
+          }
+        }
+      }
+    }
+    
     //Print the text
     if ($nbComment > 1) {
-      $this->MultiCell($cResto,$h, $comentarios,'LRT','C', 0);
+      $this->MultiCell($cResto,$h, $comentarios,'LRT','C', $fill);
       }
     else {
-      $this->MultiCell($cResto,$h, $comentarios,1,'C', 0);
+      $this->MultiCell($cResto,$h, $comentarios,1,'C', $fill);
       } 
       
     //Put the position to the right of the cell
     $this->SetXY($x,$y+$h0);
+    ///Restauro color de fondo de los campos: 
+    $this->SetFillColor(103, 167, 253);
     ///**************************************************************** FIN CAMPO COMENTARIOS *************************************************
     
     ///**************************************************************** CAMPO ULT. MOV ********************************************************

@@ -29,10 +29,11 @@ function verificarSesion() {
         var myObj = JSON.parse(this.responseText);
         var user = myObj.user;
         var user_id = myObj.user_id;
+        var sesion = myObj.sesion;
         var timestamp = myObj.timestamp;
         var usuarioViejo = myObj.oldUser;
-        //alert('user: '+user+'\nuser_id: '+user_id+'\ntimestamp: '+timestamp+'\nold: '+usuarioViejo);
-        if (user === "ERROR"){
+        //alert('sesion: '+sesion+'\nuser: '+user+'\nuser_id: '+user_id+'\ntimestamp: '+timestamp+'\nold: '+usuarioViejo);
+        if (sesion === 'expirada'){
           alert("Se venció el tiempo de la sesión "+usuarioViejo+".\nPor favor vuelve a loguearte.");
           window.location.assign("salir.php");
         }
@@ -137,15 +138,24 @@ function showHint(str, id, seleccionado) {
           comentario = sugerencias[i]["comentarios"];
           var resaltarOption = '';
           if ((comentario !== '')&&(comentario !== null)){
+            /// Resaltado en AMARILLO del comentario que tiene el patrón: DIF
             if (comentario.indexOf("dif") > -1){
               resaltarOption = 'class="resaltarDiferencia"';
             }
             else {
+              /// Resaltado en VERDE del comentario que tiene el patrón: STOCK
               if (comentario.indexOf("stock") > -1){
                 resaltarOption = 'class="resaltarStock"';
               }
               else {
-                resaltarOption = 'class="resaltarComentario"';
+                /// Resaltado en ROJO SUAVE del comentario que tiene el patrón: PLASTICO con o sin tilde
+                if ((comentario.indexOf("plastico") > -1)||(comentario.indexOf("plástico") > -1)){
+                  resaltarOption = 'class="resaltarPlastico"';
+                }
+                else {
+                  /// Resaltado general en caso de tener un comentario que no cumpla con ninguno de los patrones anteriores
+                  resaltarOption = 'class="resaltarComentario"';
+                }
               }            
             }  
           }
@@ -1470,7 +1480,26 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                               var patron = "dif";
                               var buscar = mensaje.search(new RegExp(patron, "i"));
                               if (buscar !== -1){
-                                claseComentario = "alarma1";
+                                claseComentario = "resaltarDiferencia";
+                              }
+                              else {
+                                var patron = "stock";
+                                var buscar = mensaje.search(new RegExp(patron, "i"));
+                                if (buscar !== -1){
+                                  claseComentario = "resaltarStock";
+                                }
+                                else {
+                                  var patron = "plastico";
+                                  var buscar = mensaje.search(new RegExp(patron, "i"));
+                                  var patron1 = "plástico";
+                                  var buscar1 = mensaje.search(new RegExp(patron1, "i"));
+                                  if ((buscar !== -1)||(buscar1 !== -1)){
+                                    claseComentario = "resaltarPlastico";
+                                  }
+                                  else {
+                                    claseComentario = "resaltarComentario";
+                                  }
+                                }
                               }
                             }
                             var claseResaltado = "alarma1";
@@ -1550,10 +1579,38 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                               contacto = '';
                             }
                           var prodcom = datos[0]['prodcom'];
-                          if (prodcom === null) 
-                              {
-                              prodcom = '';
+                          var claseComentario = "";
+                          if ((prodcom === "undefined")||(prodcom === null)||(prodcom === "")) 
+                            {
+                            prodcom = "";
+                          }
+                          else {
+                            var patron = "dif";
+                            var buscar = prodcom.search(new RegExp(patron, "i"));
+                            if (buscar !== -1){
+                              claseComentario = "resaltarDiferencia";
                             }
+                            else {
+                              var patron = "stock";
+                              var buscar = prodcom.search(new RegExp(patron, "i"));
+                              if (buscar !== -1){
+                                claseComentario = "resaltarStock";
+                              }
+                              else {
+                                var patron = "plastico";
+                                var buscar = prodcom.search(new RegExp(patron, "i"));
+                                var patron1 = "plástico";
+                                var buscar1 = prodcom.search(new RegExp(patron1, "i"));
+                                if ((buscar !== -1)||(buscar1 !== -1)){
+                                  claseComentario = "resaltarPlastico";
+                                }
+                                else {
+                                  claseComentario = "resaltarComentario";
+                                }
+                              }
+                            }
+                          }  
+                            
                           var claseResaltado = "italica";
                           if ((stock < alarma1) && (stock > alarma2)){
                             claseResaltado = "alarma1";
@@ -1576,7 +1633,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                           tabla += '<tr><th style="text-align:left">BIN:</th><td nowrap>'+bin+'</td></tr>';
                           tabla += '<tr><th style="text-align:left">Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
                           tabla += '<tr><th style="text-align:left">Contacto:</th><td>'+contacto+'</td></tr>';
-                          tabla += '<tr><th style="text-align:left">Comentarios:</th><td>'+prodcom+'</td></tr>';
+                          tabla += '<tr><th style="text-align:left">Comentarios:</th><td class="'+claseComentario+'">'+prodcom+'</td></tr>';
                           tabla += '<tr><th style="text-align:left">&Uacute;ltimo Movimiento:</th><td>'+ultimoMovimiento+'</td></tr>';
                           tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
                           tabla += '<tr>\n\
@@ -1922,10 +1979,38 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       contacto = '';
                                     }
                                   var comentarios = datos[0]['prodcom'];
-                                  if (comentarios === null) 
-                                      {
-                                      comentarios = '';
-                                    }  
+                                  var claseComentario = "";
+                                  if ((comentarios === "undefined")||(comentarios === null)||(comentarios === "")) 
+                                    {
+                                    comentarios = "";
+                                  }
+                                  else {
+                                    var patron = "dif";
+                                    var buscar = comentarios.search(new RegExp(patron, "i"));
+                                    if (buscar !== -1){
+                                      claseComentario = "resaltarDiferencia";
+                                    }
+                                    else {
+                                      var patron = "stock";
+                                      var buscar = comentarios.search(new RegExp(patron, "i"));
+                                      if (buscar !== -1){
+                                        claseComentario = "resaltarStock";
+                                      }
+                                      else {
+                                        var patron = "plastico";
+                                        var buscar = comentarios.search(new RegExp(patron, "i"));
+                                        var patron1 = "plástico";
+                                        var buscar1 = comentarios.search(new RegExp(patron1, "i"));
+                                        if ((buscar !== -1)||(buscar1 !== -1)){
+                                          claseComentario = "resaltarPlastico";
+                                        }
+                                        else {
+                                          claseComentario = "resaltarComentario";
+                                        }
+                                      }
+                                    }
+                                  }
+                                    
                                   if ((bin === 'SIN BIN')||(bin === null)) 
                                       {
                                       bin = 'N/D o N/C';
@@ -1959,7 +2044,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   tabla += '<tr><th>BIN:</th><td nowrap>'+bin+'</td></tr>';
                                   tabla += '<tr><th>Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
                                   tabla += '<tr><th>Contacto:</th><td>'+contacto+'</td></tr>';
-                                  tabla += '<tr><th>Comentarios:</th><td>'+comentarios+'</td></tr>';
+                                  tabla += '<tr><th>Comentarios:</th><td class="'+claseComentario+'">'+comentarios+'</td></tr>';
                                   tabla += '<tr><th>&Uacute;ltimo Moviemiento:</th><td>'+ultimoMovimiento+'</td></tr>';
                                   tabla += '<tr><th>Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
                                   tabla += '<tr><th colspan="2" class="pieTabla centrado">FIN</th></tr></table>';
@@ -2403,14 +2488,6 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
  * \brief Función que ejecuta la búsqueda y muestra el resultado.
  */
 function realizarBusqueda(){  
-//  var timestamp = Math.round(Date.now() / 1000);
-// 
-//  //alert('timestamp: '+timestamp+"\nsesion: "+$("#timestampSesion").val()+"\nduracion: "+$("#duracionSesion").val());    
-//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-//    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-//    window.location.href = "../controlstock/index.php";
-//  }
-//  else {
     verificarSesion();
     var radio = $('input:radio[name=criterio]:checked').val();
     var entidadesStock = new Array();
@@ -2473,7 +2550,7 @@ function realizarBusqueda(){
                               delete (tipoConsulta);
                               var tipoConsulta = '';
                               var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
-                              var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
+                              var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
                               if (entidadesStock[i] !== 'todos') {
                                 ent.push(entidadesStock[i]);
                                 query += " from productos where entidad='"+entidadesStock[i]+"' and estado='activo'";
@@ -2513,7 +2590,7 @@ function realizarBusqueda(){
                               else {
                                 query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                                 query += " from productos where idProd="+idProds[i];
-                                consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
+                                consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
                                 consultaCSV += " from productos where idProd="+idProds[i];
                                 tipoConsulta = 'Stock del producto <b><i>'+nombres[i]+"</i></b>";
                                 queries.push(query);
@@ -2745,12 +2822,12 @@ function realizarBusqueda(){
         }
 
         if (ordenFecha) {
-          queries[n] += " order by entidad asc, nombre_plastico asc, idprod, movimientos.fecha desc, hora desc";
-          consultasCSV[n] += " order by entidad asc, nombre_plastico asc, idprod, movimientos.fecha desc, hora desc";
+          queries[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod, movimientos.fecha desc, hora desc";
+          consultasCSV[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod, movimientos.fecha desc, hora desc";
         }
         else {
-          queries[n] += " order by entidad asc, nombre_plastico asc, idprod asc";
-          consultasCSV[n] += " order by entidad asc, nombre_plastico asc, idprod asc";
+          queries[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";
+          consultasCSV[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";
         }
       }  
       mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha);
@@ -3828,6 +3905,7 @@ function todo () {
     //parametros = unescape(parametros);
     parametros = parametros.replace(remplaza, " ");
   }
+    
   ///Según en que url esté, es lo que se carga:
   switch (urlActual) {
     case "/controlstock/movimiento.php":{
@@ -3999,15 +4077,24 @@ $(document).on("change focusin", "#hint", function (){
   mostrar += '<p id="ultimoMov" name="ulitmoMov">Último Movimiento: <font class="'+resaltado+'" style="font-size:1.2em">'+ultimoMovimiento+'</font></p>';
   var comentHint = '';
   if ((comentarios !== '')&&(comentarios !== "null")&&(comentarios !== ' ')&&(comentarios !== undefined)){
+    /// Resaltado en AMARILLO del comentario que tiene el patrón: DIF
     if (comentarios.indexOf("dif") > -1){
       comentHint = "comentHintResaltar";
     }
     else {
+      /// Resaltado en VERDE del comentario que tiene el patrón: STOCK
       if (comentarios.indexOf("stock") > -1){
         comentHint = "comentHintStock";
       }
       else {
-        comentHint = "comentHint";
+        /// Resaltado en ROJO SUAVE del comentario que tiene el patrón: PLASTICO con o sin tilde
+        if ((comentarios.indexOf("plastico") > -1)||((comentarios.indexOf("plástico") > -1))){
+          comentHint = "comentHintPlastico";
+        }
+        else {
+          /// Resaltado general en caso de tener un comentario que no cumpla con ninguno de los patrones anteriores
+          comentHint = "comentHint";
+        }
       }
     } 
   mostrar += '<p id="comentHint" name="comentHint" class="'+comentHint+'"><a href="producto.php?id='+prod+'" target="_blank">'+comentarios+'</a></p>';  
@@ -4220,7 +4307,7 @@ $(document).on("keypress", "#producto", function(e) {
 ///Llamar a verificarSesion() para actualizar los parámetros de la sesión. 
 ///En caso de estar vencidos, cierra la sesión y pide nuevo logueo.
 $(document).on("change focusin", "#entidadStock, #entidadMovimiento, #entidadGrafica", function (){
-  verificarSesion();
+  //verificarSesion();
 });
 
 /*****************************************************************************************************************************

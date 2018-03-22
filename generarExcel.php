@@ -29,202 +29,432 @@ require_once("data/config.php");
 function generarExcelStock($registros, $total) {
   global $nombreReporte;
   
-$spreadsheet = new Spreadsheet();
+  $spreadsheet = new Spreadsheet();
 
-$locale = 'es_UY'; 
-$validLocale = \PhpOffice\PhpSpreadsheet\Settings::setLocale($locale); 
-if (!$validLocale) { echo 'Unable to set locale to '.$locale." - reverting to en_us<br />\n"; }
-
-
-// Set document properties
-$spreadsheet->getProperties()->setCreator("Juan Martín Ortega")
-							 ->setLastModifiedBy("Juan Martín Ortega")
-							 ->setTitle("Stock")
-							 ->setSubject("Datos exportados")
-							 ->setDescription("Archivo excel con el resultado de la consulta realizada.")
-							 ->setKeywords("stock excel php")
-							 ->setCategory("Resultado");
-
-/// Declaro hoja activa:
-$hoja = $spreadsheet->getSheet(0);
-
-$hoja->setTitle($nombreReporte);
-$hoja->getTabColor()->setRGB('023184');
-
-// Agrego los títulos:
-$spreadsheet->setActiveSheetIndex(0)
-            ->setCellValue('A1', 'Id')
-            ->setCellValue('B1', 'Entidad')
-            ->setCellValue('C1', 'Nombre')
-            ->setCellValue('D1', 'BIN')
-            ->setCellValue('E1', 'Stock');
-/// Formato de los títulos:
-$header = 'A1:E1';
-$styleHeader = array(
-  'fill' => array(
-      'color' => array('rgb' => 'AEE2FA'),
-      'fillType' => 'solid',
-    ),
-  'font' => array(
-      'bold' => true,
-    ),
-  'alignment' => array(
-      'horizontal' => HORIZONTAL_CENTER,
-    ),
-);
-$hoja->getStyle($header)->applyFromArray($styleHeader);
-
-/// Datos de los campos:
-foreach ($registros as $i => $dato) {
-  /// Acomodo el índice pues empieza en 0, y en el 1 están los nombres de los campos:
-  $i = $i + 2;
-  $celda = 'A'.$i;
-  $hoja->fromArray($dato, ' ', $celda);
-}
-
-/// Agrego línea con el total del stock:
-$j = $i+1;
-$hoja->mergeCells('A'.$j.':D'.$j.'');
-$hoja->setCellValue('A'.$j.'', 'TOTAL');
-$celdaTotalTarjetas = "E".$j;
-$hoja->setCellValue($celdaTotalTarjetas, $total);
+  $locale = 'es_UY'; 
+  $validLocale = \PhpOffice\PhpSpreadsheet\Settings::setLocale($locale); 
+  if (!$validLocale) { echo 'Unable to set locale to '.$locale." - reverting to en_us<br />\n"; }
 
 
-/// Defino el formato para la celda con el total de tarjetas:
-$styleTotalPlasticos = array(
-	'fill' => array(
-        'color' => array('rgb' => 'F3FF00'),
-        'fillType' => 'solid',
-    ),
-    'font' => array(
-        'bold' => true,
-        'italic' => true,
-        'size' => 14,
-        'color' => array('rgb' => 'ff0000'),
-    ),
-    'alignment' => array(
-       'wrap' => true,
-       'horizontal' => 'center',
-       'vertical' => 'bottom',
-    ),
-    'numberFormat' => array(
-        'formatCode' => '#,###0',
-    ),
-);
-$hoja->getStyle($celdaTotalTarjetas)->applyFromArray($styleTotalPlasticos);
+  // Set document properties
+  $spreadsheet->getProperties()->setCreator("Juan Martín Ortega")
+                               ->setLastModifiedBy("Juan Martín Ortega")
+                               ->setTitle("Stock")
+                               ->setSubject("Datos exportados")
+                               ->setDescription("Archivo excel con el resultado de la consulta realizada.")
+                               ->setKeywords("stock excel php")
+                               ->setCategory("Resultado");
 
-/// Defino el formato para la celda con el texto "Total":
-$styleTextoTotal = array(
-	'fill' => array(
+  /// Declaro hoja activa:
+  $hoja = $spreadsheet->getSheet(0);
+
+  $hoja->setTitle($nombreReporte);
+  $hoja->getTabColor()->setRGB('023184');
+
+  // Agrego los títulos:
+  $spreadsheet->setActiveSheetIndex(0)
+              ->setCellValue('A1', 'Id')
+              ->setCellValue('B1', 'Entidad')
+              ->setCellValue('C1', 'Nombre')
+              ->setCellValue('D1', 'BIN')
+              ->setCellValue('E1', 'Comentarios')
+              ->setCellValue('F1', 'Stock');
+  /// Formato de los títulos:
+  $header = 'A1:F1';
+  $styleHeader = array(
+    'fill' => array(
         'color' => array('rgb' => 'AEE2FA'),
         'fillType' => 'solid',
-    ),
+      ),
     'font' => array(
         'bold' => true,
-        'size' => 14,
-    ),
+      ),
     'alignment' => array(
-       'wrap' => true,
-       'horizontal' => 'center',
-       'vertical' => 'middle',
-    ),
-);
-$hoja->getRowDimension($j)->setRowHeight(18);
-$hoja->getStyle('A'.$j.'')->applyFromArray($styleTextoTotal);
+        'horizontal' => HORIZONTAL_CENTER,
+      ),
+  );
+  $hoja->getStyle($header)->applyFromArray($styleHeader);
 
-
-/// Defino el formato para la columna con el STOCK:
-$styleColumnaStock = array(
-	'fill' => array(
-        'color' => array('rgb' => 'A9FF96'),
-        'fillType' => 'solid',
-    ),
-    'font' => array(
-        'bold' => true,
-        'size' => 11,
-    ),
-    'alignment' => array(
-       'wrap' => true,
-       'horizontal' => 'center',
-       'vertical' => 'middle',
-    ),
-    'numberFormat' => array(
-        'formatCode' => '[Blue]#,##0',
-    ),
-);
-$rangoStock = 'E2:E'.$i.'';
-$hoja->getStyle($rangoStock)->applyFromArray($styleColumnaStock);
-
-/// Defino estilos para las alarmas 1 y 2:
-$styleAl1 = array(
-    'fill' => array(
-        'color' => array ('rgb' => 'FAFF98'),
-        'fillType' => 'solid',
-    ),
-);
-        
-$styleAl2 = array(
-    'fill' => array(
-        'color' => array ('rgb' => 'FC4A3F'),
-        'fillType' => 'solid',
-    ),
-);
-
-/// Aplico color de fondo de la columna de stock según el valor y las alarmas para dicho produco:
-for ($k = 2; $k <= $i; $k++) {
-  $al1 = "F".$k;
-  $al2 = "G".$k;
-  $celda = "E".$k;
-  $valorAlarma1 = $hoja->getCell($al1)->getValue();
-  $valorAlarma2 = $hoja->getCell($al2)->getValue();
-  $valorCelda = $hoja->getCell($celda)->getValue();
-
-  if (($valorCelda > $valorAlarma2) && ($valorCelda < $valorAlarma1)){
-    $hoja->getStyle($celda)->applyFromArray($styleAl1);
+  /// Datos de los campos:
+  foreach ($registros as $i => $dato) {
+    /// Acomodo el índice pues empieza en 0, y en el 1 están los nombres de los campos:
+    $i = $i + 2;
+    $celda = 'A'.$i;
+    $hoja->fromArray($dato, ' ', $celda);
   }
+
+  /// Agrego línea con el total del stock:
+  $j = $i+1;
+  $hoja->mergeCells('A'.$j.':E'.$j.'');
+  $hoja->setCellValue('A'.$j.'', 'TOTAL');
+  $celdaTotalTarjetas = "F".$j;
+  ///Se comenta agregado de línea con el total pasado dado que ahora el total se calcula usando una fórmula de excel:
+  //$hoja->setCellValue($celdaTotalTarjetas, $total);
+  $hoja->setCellValue($celdaTotalTarjetas, '=sum(F2:F'.$i.')');
+
+
+  /// Defino el formato para la celda con el total de tarjetas:
+  $styleTotalPlasticos = array(
+      'fill' => array(
+          'color' => array('rgb' => 'F3FF00'),
+          'fillType' => 'solid',
+      ),
+      'font' => array(
+          'bold' => true,
+          'italic' => true,
+          'size' => 14,
+          'color' => array('rgb' => 'ff0000'),
+      ),
+      'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'center',
+         'vertical' => 'bottom',
+      ),
+      'numberFormat' => array(
+          'formatCode' => '#,###0',
+      ),
+  );
+  $hoja->getStyle($celdaTotalTarjetas)->applyFromArray($styleTotalPlasticos);
+
+  /// Defino el formato para la celda con el texto "Total":
+  $styleTextoTotal = array(
+      'fill' => array(
+          'color' => array('rgb' => 'AEE2FA'),
+          'fillType' => 'solid',
+      ),
+      'font' => array(
+          'bold' => true,
+          'size' => 14,
+      ),
+      'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'center',
+         'vertical' => 'middle',
+      ),
+  );
+  $hoja->getRowDimension($j)->setRowHeight(18);
+  $hoja->getStyle('A'.$j.'')->applyFromArray($styleTextoTotal);
+
+
+  /// Defino el formato para la columna con el STOCK:
+  $styleColumnaStock = array(
+      'fill' => array(
+          'color' => array('rgb' => 'A9FF96'),
+          'fillType' => 'solid',
+      ),
+      'font' => array(
+          'bold' => true,
+          'size' => 11,
+      ),
+      'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'center',
+         'vertical' => 'middle',
+      ),
+      'numberFormat' => array(
+          'formatCode' => '[Blue]#,##0',
+      ),
+  );
+  $rangoStock = 'F2:F'.$i.'';
+  $hoja->getStyle($rangoStock)->applyFromArray($styleColumnaStock);
+
+  /// Defino estilos para las alarmas 1 y 2:
+  $styleAl1 = array(
+      'fill' => array(
+          'color' => array ('rgb' => 'FAFF98'),
+          'fillType' => 'solid',
+      ),
+  );
+
+  $styleAl2 = array(
+      'fill' => array(
+          'color' => array ('rgb' => 'FC4A3F'),
+          'fillType' => 'solid',
+      ),
+  );
+
+  /// Aplico color de fondo de la columna de stock según el valor y las alarmas para dicho produco:
+  for ($k = 2; $k <= $i; $k++) {
+    $al1 = "G".$k;
+    $al2 = "H".$k;
+    $celda = "F".$k;
+    $valorAlarma1 = $hoja->getCell($al1)->getValue();
+    $valorAlarma2 = $hoja->getCell($al2)->getValue();
+    $valorCelda = $hoja->getCell($celda)->getValue();
+
+    if (($valorCelda > $valorAlarma2) && ($valorCelda < $valorAlarma1)){
+      $hoja->getStyle($celda)->applyFromArray($styleAl1);
+    }
+
+    if ($valorCelda < $valorAlarma2) {
+      $hoja->getStyle($celda)->applyFromArray($styleAl2);
+    }
+    /// Borro el contenido de las alarmas que vienen en la consulta:
+    $hoja->setCellValue($al1, '');
+    $hoja->setCellValue($al2, ''); 
+  }  
+
+  /// Defino estilos para resaltar los comentarios:
+  $styleDif = array(
+      'fill' => array(
+          'color' => array ('rgb' => 'ffff00'),
+          'fillType' => 'solid',
+      ),
+  );
+
+  $styleStock = array(
+      'fill' => array(
+          'color' => array ('rgb' => '38ff1d'),
+          'fillType' => 'solid',
+      ),
+  );
+
+  $stylePlastico = array(
+      'fill' => array(
+          'color' => array ('rgb' => 'FF9999'),
+          'fillType' => 'solid',
+      ),
+  );
+
+  $styleComentario = array(
+      'fill' => array(
+          'color' => array ('rgb' => 'd3d3d3'),
+          'fillType' => 'solid',
+      ),
+  );
+
+  /// Aplico color de fondo de la columna de stock según el valor y las alarmas para dicho produco:
+  for ($k = 2; $k <= $i; $k++) {
+    $celda = "E".$k;
+    $valorCelda = $hoja->getCell($celda)->getValue();
+
+    $patron = "dif";
+    $buscar = stripos($valorCelda, $patron);
+    if ($buscar !== FALSE){
+      $hoja->getStyle($celda)->applyFromArray($styleDif);
+    }
+    else {
+      $patron = "stock";
+      $buscar = stripos($valorCelda, $patron);
+      if ($buscar !== FALSE){
+        $hoja->getStyle($celda)->applyFromArray($styleStock);
+      }
+      else {
+        $patron = "plastico";
+        $patron1 = "plástico";
+        $buscar = stripos($valorCelda, $patron);
+        $buscar1 = stripos($valorCelda, $patron1);
+        if (($buscar !== FALSE)||($buscar1 !== FALSE)){
+          $hoja->getStyle($celda)->applyFromArray($stylePlastico);
+        }
+        else {
+          if (($valorCelda !== null)&&($valorCelda !== '')){
+            $hoja->getStyle($celda)->applyFromArray($styleComentario);
+          }
+        }
+      }
+    } 
+  }  
+
+
+  /// Ajusto el auto size para que las celdas no se vean cortadas:
+  for ($col = ord('a'); $col <= ord('e'); $col++)
+    {
+    $hoja->getColumnDimension(chr($col))->setAutoSize(true);   
+  }
+
+  /// Defino el rango de celdas con datos para poder darle formato a todas juntas:
+  $rango = "A1:F".$j;
+  /// Defino el formato para las celdas:
+  $styleGeneral = array(
+      'borders' => array(
+          'allBorders' => array(
+              'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+              'color' => array('rgb' => '023184'),
+          ),
+      ),
+      'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'center',
+      )
+  );
+  $hoja->getStyle($rango)->applyFromArray($styleGeneral);
+
+  // Se guarda como Excel 2007:
+  $writer = new Xlsx($spreadsheet);
+
+  $timestamp = date('dmY_His');
+  $nombreArchivo = $nombreReporte."_".$timestamp.".Xlsx";
+  $salida = $GLOBALS["dirExcel"]."/".$nombreArchivo;
+  $writer->save($salida);
+
+  return $nombreArchivo;
+}
+
+function generarExcelBoveda($registros) {
+  global $nombreReporte;
   
-  if ($valorCelda < $valorAlarma2) {
-    $hoja->getStyle($celda)->applyFromArray($styleAl2);
-  }
-  /// Borro el contenido de las alarmas que vienen en la consulta:
-  $hoja->setCellValue($al1, '');
-  $hoja->setCellValue($al2, ''); 
-}  
+  $spreadsheet = new Spreadsheet();
 
-/// Ajusto el auto size para que las celdas no se vean cortadas:
-for ($col = ord('a'); $col <= ord('e'); $col++)
-  {
-  $hoja->getColumnDimension(chr($col))->setAutoSize(true);   
-}
+  $locale = 'es_UY'; 
+  $validLocale = \PhpOffice\PhpSpreadsheet\Settings::setLocale($locale); 
+  if (!$validLocale) { echo 'Unable to set locale to '.$locale." - reverting to en_us<br />\n"; }
 
-/// Defino el rango de celdas con datos para poder darle formato a todas juntas:
-$rango = "A1:E".$j;
-/// Defino el formato para las celdas:
-$styleGeneral = array(
-	'borders' => array(
-		'allBorders' => array(
-			'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
-			'color' => array('rgb' => '023184'),
-		),
-	),
+
+  // Set document properties
+  $spreadsheet->getProperties()->setCreator("Juan Martín Ortega")
+                               ->setLastModifiedBy("Juan Martín Ortega")
+                               ->setTitle("StockBoveda")
+                               ->setSubject("Datos exportados")
+                               ->setDescription("Archivo excel con el total de plásticos en bóveda.")
+                               ->setKeywords("stock excel php")
+                               ->setCategory("Resultado");
+
+  /// Declaro hoja activa:
+  $hoja = $spreadsheet->getSheet(0);
+
+  $hoja->setTitle($nombreReporte);
+  $hoja->getTabColor()->setRGB('46A743');
+
+  // Agrego los títulos:
+  $spreadsheet->setActiveSheetIndex(0)
+              ->setCellValue('A1', 'Id')
+              ->setCellValue('B1', 'Entidad')
+              ->setCellValue('C1', 'Stock');
+  /// Formato de los títulos:
+  $header = 'A1:C1';
+  $styleHeader = array(
+    'fill' => array(
+        'color' => array('rgb' => 'AEE2FA'),
+        'fillType' => 'solid',
+      ),
+    'font' => array(
+        'bold' => true,
+      ),
     'alignment' => array(
-       'wrap' => true,
-       'horizontal' => 'center',
-    )
-);
-$hoja->getStyle($rango)->applyFromArray($styleGeneral);
+        'horizontal' => HORIZONTAL_CENTER,
+      ),
+  );
+  $hoja->getStyle($header)->applyFromArray($styleHeader);
 
-// Se guarda como Excel 2007:
-$writer = new Xlsx($spreadsheet);
+  /// Datos de los campos:
+  foreach ($registros as $i => $dato) {
+    /// Acomodo el índice pues empieza en 0, y en el 1 están los nombres de los campos:
+    $i = $i + 2;
+    $celda = 'A'.$i;
+    $hoja->fromArray($dato, ' ', $celda);
+  }
 
-$timestamp = date('dmY_His');
-$nombreArchivo = $nombreReporte."_".$timestamp.".Xlsx";
-$salida = $GLOBALS["dirExcel"]."/".$nombreArchivo;
-$writer->save($salida);
+  /// Agrego línea con el total del stock:
+  $j = $i+1;
+  $hoja->mergeCells('A'.$j.':B'.$j.'');
+  $hoja->setCellValue('A'.$j.'', 'TOTAL');
+  $celdaTotalTarjetas = "C".$j;
+  ///Se comenta agregado de línea con el total pasado dado que ahora el total se calcula usando una fórmula de excel:
+  //$hoja->setCellValue($celdaTotalTarjetas, $total);
+  $hoja->setCellValue($celdaTotalTarjetas, '=sum(C2:C'.$i.')');
 
-return $nombreArchivo;
+
+  /// Defino el formato para la celda con el total de tarjetas:
+  $styleTotalPlasticos = array(
+      'fill' => array(
+          'color' => array('rgb' => 'F3FF00'),
+          'fillType' => 'solid',
+      ),
+      'font' => array(
+          'bold' => true,
+          'italic' => true,
+          'size' => 14,
+          'color' => array('rgb' => 'ff0000'),
+      ),
+      'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'center',
+         'vertical' => 'bottom',
+      ),
+      'numberFormat' => array(
+          'formatCode' => '#,###0',
+      ),
+  );
+  $hoja->getStyle($celdaTotalTarjetas)->applyFromArray($styleTotalPlasticos);
+
+  /// Defino el formato para la celda con el texto "Total":
+  $styleTextoTotal = array(
+      'fill' => array(
+          'color' => array('rgb' => 'AEE2FA'),
+          'fillType' => 'solid',
+      ),
+      'font' => array(
+          'bold' => true,
+          'size' => 14,
+      ),
+      'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'center',
+         'vertical' => 'middle',
+      ),
+  );
+  $hoja->getRowDimension($j)->setRowHeight(18);
+  $hoja->getStyle('A'.$j.'')->applyFromArray($styleTextoTotal);
+
+
+  /// Defino el formato para la columna con el STOCK:
+  $styleColumnaStock = array(
+      'fill' => array(
+          'color' => array('rgb' => 'DADADA'),
+          'fillType' => 'solid',
+      ),
+      'font' => array(
+          'bold' => true,
+          'italic' => true,
+          'size' => 11,
+      ),
+      'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'center',
+         'vertical' => 'middle',
+      ),
+      'numberFormat' => array(
+          'formatCode' => '[Black]#,##0',
+      ),
+  );
+  
+  /// Ajusto el auto size para que las celdas no se vean cortadas:
+  for ($col = ord('a'); $col <= ord('c'); $col++)
+    {
+    $hoja->getColumnDimension(chr($col))->setAutoSize(true);   
+  }
+
+  /// Defino el rango de celdas con datos para poder darle formato a todas juntas:
+  $rango = "A1:C".$j;
+  /// Defino el formato para las celdas:
+  $styleGeneral = array(
+      'borders' => array(
+          'allBorders' => array(
+              'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+              'color' => array('rgb' => '023184'),
+          ),
+      ),
+      'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'center',
+      )
+  );
+  $hoja->getStyle($rango)->applyFromArray($styleGeneral);
+
+  $rangoStock = 'C2:C'.$i.'';
+  $hoja->getStyle($rangoStock)->applyFromArray($styleColumnaStock);
+  
+  // Se guarda como Excel 2007:
+  $writer = new Xlsx($spreadsheet);
+
+  $timestamp = date('dmY_His');
+  $nombreArchivo = $nombreReporte."_".$timestamp.".Xlsx";
+  $salida = $GLOBALS["dirExcel"]."/".$nombreArchivo;
+  $writer->save($salida);
+
+  return $nombreArchivo;
 }
-
 
 function generarExcelMovimientos($registros) {
   global $nombreReporte;

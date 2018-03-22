@@ -13,6 +13,7 @@ if (isset($_SESSION['ultima_actividad']) && ($hora - $_SESSION['ultima_actividad
   $myObj->user = "ERROR";
   $myObj->timestamp = 0;
   $myObj->user_id = 0;
+  $myObj->sesion = 'expirada';
   session_unset();
   session_destroy();
 }
@@ -23,6 +24,7 @@ else {
   $myObj->oldUser = $_SESSION['username'];
   $myObj->user_id = $_SESSION['user_id'];
   $myObj->timestamp = $hora;
+  $myObj->sesion = 'activa';
 }
 
 $myJSON = json_encode($myObj);
