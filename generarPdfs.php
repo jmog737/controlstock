@@ -232,6 +232,12 @@ class PDF extends PDF_MC_Table
         if ($campos[$i] === 'Mensaje') {
           $indiceMensaje = $i;
         }
+        if ($campos[$i] === utf8_decode('Cód. EMSA')) {
+          $indiceCodEMSA = $i;
+        }
+        if ($campos[$i] === utf8_decode('Cód. Origen')) {
+          $indiceCodOrigen = $i;
+        }
         if ($campos[$i] === utf8_decode('Últ. Mov.')) {
           $indiceUltMov = $i;
         }
@@ -352,15 +358,30 @@ class PDF extends PDF_MC_Table
           $w = $largoCampos[$i];
           $this->SetFont('Courier', '', 9);
           $datito = trim(utf8_decode($dato[$i]));
-          if ($i === $indiceUltMov) {
-            $separo = explode(" ", $datito);
-            $tempDatito = $separo[0];
-            $datito1 = explode("-", $tempDatito);
-            if (isset($datito1[1])){
-              $datito = $datito1[2]."/".$datito1[1]."/".$datito1[0];
+          
+          if ($i === $indiceCodEMSA) {
+            if (($datito === '')||($datito === null)){
+              $datito = 'NO Ingresado';
             }
-            else {
-              $datito = $datito1;
+          }
+          
+          if ($i === $indiceCodOrigen) {
+            if (($datito === '')||($datito === null)){
+              $datito = 'NO Ingresado';
+            }
+          }
+          
+          if ($i === $indiceUltMov) {
+            if ($datito !== ''){
+              $separo = explode(" ", $datito);
+              $tempDatito = $separo[0];
+              if (isset($separo[1])){
+                $datito = $tempDatito;
+              }
+              else {
+                $datito1 = explode('-', $tempDatito);
+                $datito = $datito1[2]."/".$datito1[1]."/".$datito1[0];
+              }
             }
           }
           $tamDat1 = $this->GetStringWidth($datito);
@@ -507,12 +528,13 @@ class PDF extends PDF_MC_Table
       //$this->SetTextColor(0);*****************************************************************************************************
       $this->SetFillColor(103, 167, 253);
       $this->SetTextColor(255, 255, 255);
-      $largoParaTotal = $largoCampos[$totalCampos-1];
+      //$largoParaTotal = $largoCampos[$totalCampos-1];
+      $largoParaTotal = $largoCampos[$indiceStock];
       if ($tipo) {
         $largoTemp = $largoCampos[$totalCampos] - $largoParaTotal;
       }
       else {
-        $largoParaTotal = $largoParaTotal + $largoCampos[$totalCampos-4];
+        //$largoParaTotal = $largoParaTotal + $largoCampos[$totalCampos-4];
         $largoTemp = $largoCampos[$totalCampos] - $largoParaTotal;
       }
       $this->Cell($largoTemp, $h, 'TOTAL:', 1, 0, 'C', true);
@@ -541,7 +563,7 @@ class PDF extends PDF_MC_Table
   function tablaMovimientos($tablaProducto) 
     {
     global $h, $x, $totalCampos, $c1, $totalRegistros;
-    global $registros, $campos, $largoCampos, $rutaFotos, $tituloTabla, $tipoConsulta, $codigo, $mostrar;
+    global $registros, $campos, $largoCampos, $rutaFotos, $tituloTabla, $tipoConsulta, $codigoEMSA, $mostrar;
 
     $anchoPagina = $this->GetPageWidth();
     $anchoTipo = 0.8*$anchoPagina;
@@ -684,7 +706,7 @@ class PDF extends PDF_MC_Table
       
       ///*****************************************************************  FOTO ************************************************************
       ///Agrego un snapshot de la tarjeta debajo de la tabla (si es que existe!!):
-      $foto = $registros[0][7];
+      $foto = $registros[0][8];
       if (($foto !== null) && ($foto !== '')) {
         $rutita = $rutaFotos."/".$foto;
         list($anchoFoto, $altoFoto) = $this->resizeToFit($rutita, self::FOTO_WIDTH_MM, self::FOTO_HEIGHT_MM);
@@ -773,19 +795,34 @@ class PDF extends PDF_MC_Table
       $this->SetXY($x,$y+$h0);
       ///************************************************************* FIN CAMPO ENTIDAD ****************************************************
       
-      ///**************************************************************** CAMPO CODIGO ******************************************************
-      if (($codigo === '')||($codigo === null)) {
-        $codigo = 'No ingresado';
+      ///************************************************************* CAMPO CODIGO EMSA ****************************************************
+      if (($codigoEMSA === '')||($codigoEMSA === null)) {
+        $codigoEMSA = 'No Ingresado';
       }
       $this->SetFont('Courier', 'B', 10);
       $this->SetTextColor(255, 255, 255);
-      $this->Cell($cCampo, $h, utf8_decode("Código:"), 'LRBT', 0, 'L', true);
+      $this->Cell($cCampo, $h, utf8_decode("Cód. EMSA:"), 'LRBT', 0, 'L', true);
       $this->SetFont('Courier', '', 9);
       $this->SetTextColor(0);
-      $this->Cell($cResto, $h, $codigo, 'LRBT', 0, 'C', false);
+      $this->Cell($cResto, $h, $codigoEMSA, 'LRBT', 0, 'C', false);
       $this->Ln();
       $this->SetX($x);
-      ///************************************************************** FIN CAMPO CODIGO ****************************************************
+      ///************************************************************ FIN CAMPO CODIGO EMSA *************************************************
+      
+      ///************************************************************** CAMPO CODIGO ORIGEN *************************************************
+      $codigoOrigen = $registros[0][6];
+      if (($codigoOrigen === '')||($codigoOrigen === null)) {
+        $codigoOrigen = 'No Ingresado';
+      }
+      $this->SetFont('Courier', 'B', 10);
+      $this->SetTextColor(255, 255, 255);
+      $this->Cell($cCampo, $h, utf8_decode("Cód. Origen:"), 'LRBT', 0, 'L', true);
+      $this->SetFont('Courier', '', 9);
+      $this->SetTextColor(0);
+      $this->Cell($cResto, $h, $codigoOrigen, 'LRBT', 0, 'C', false);
+      $this->Ln();
+      $this->SetX($x);
+      ///************************************************************ FIN CAMPO CODIGO ORIGEN ***********************************************
       
       ///***************************************************************** CAMPO BIN ********************************************************
       $bin = $registros[0][4];
@@ -803,7 +840,7 @@ class PDF extends PDF_MC_Table
       ///*************************************************************** FIN CAMPO BIN ******************************************************
       
       ///************************************************************** CAMPO CONTACTO ******************************************************
-      $contacto = $registros[0][6];
+      $contacto = $registros[0][7];
       if (($contacto === '')||($contacto === null)) {
         $contacto = '';
       }
@@ -818,7 +855,7 @@ class PDF extends PDF_MC_Table
       ///************************************************************ FIN CAMPO CONTACTO ****************************************************
       
       ///************************************************************* CAMPO COMENTARIOS ****************************************************
-      $comentarios = trim(utf8_decode($registros[0][12]));
+      $comentarios = trim(utf8_decode($registros[0][13]));
       if (($comentarios === '')||($comentarios === null)) {
         $comentarios = '';
       }
@@ -892,7 +929,7 @@ class PDF extends PDF_MC_Table
       ///*********************************************************** FIN CAMPO COMENTARIOS **************************************************
       
       ///************************************************************* CAMPO ULT. MOV. ******************************************************
-      $ultimoMovimiento = trim(utf8_decode($registros[0][8]));
+      $ultimoMovimiento = trim(utf8_decode($registros[0][9]));
       if (($ultimoMovimiento === '')||($ultimoMovimiento === null)) {
         $ultimoMovimiento = '';
       }
@@ -923,9 +960,9 @@ class PDF extends PDF_MC_Table
       
       ///************************************************************* CAMPO STOCK **********************************************************
       //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:
-      $alarma1 = $registros[0][10];
-      $alarma2 = $registros[0][11];
-      $stock = $registros[0][9];
+      $alarma1 = $registros[0][11];
+      $alarma2 = $registros[0][12];
+      $stock = $registros[0][10];
 
       $this->SetFont('Courier', 'B', 10);
       $this->SetTextColor(255, 255, 255);
@@ -996,12 +1033,14 @@ class PDF extends PDF_MC_Table
     $this->SetFont('Courier', 'B', 10);
     
     /// Recupero los índices de cada campo para poder ordenarlos luego:
-    foreach ($campos as $i => $dato) {
-      switch ($dato) {
+    foreach ($campos as $i => $dato2) {
+      switch ($dato2) {
         case "Id": $indId = $i;
                    break;
         case "IdProd": $indProd = $i;
                        break;
+        case "IdMov": $indMov = $i;
+                       break;             
         case "Entidad": $indEntidad = $i;
                         break;
         case "Nombre": $indNombre = $i;
@@ -1018,20 +1057,29 @@ class PDF extends PDF_MC_Table
                             break;
         case "BIN": $indBin = $i;
                     break;
-        case "Código":  $indCodigo = $i;
-                        break;
+        case "Cód. EMSA": $indCodEMSA = $i;
+                          break;
+        case "Cód. Origen": $indCodOrigen = $i;
+                            break;                 
         case "Contacto":  $indContacto = $i;
-                        break;              
+                          break;              
         case "Snapshot":  $indSnapshot = $i;
                           break;
-        case "Alarma":  $indAlarma = $i;
+        case "Alarma1": $indAlarma1 = $i;
                         break;
+        case "Alarma2": $indAlarma2 = $i;
+                        break;   
+        case "Últ. Mov.":  $indUltMov = $i;
+                          break;
+        case "Stock": $indStock = $i;
+                      break;                 
         case "ComentariosProd": $indComProd = $i;
                                 break;  
         default: break;
       }
     }
     
+    ///************************************************* INICIO ESCRITURA CAMPOS VISIBLES ***********************************************
     /// Imprimo los nombres de cada campo, siempre y cuando, se hayan marcado como visibles:
     /// Esto hay que hacerlo uno a uno para que queden en el orden requerido que es diferente al de la consulta
     if ($mostrar[$indId]) {
@@ -1055,8 +1103,11 @@ class PDF extends PDF_MC_Table
     if ($mostrar[$indBin]) {
       $this->Cell($largoCampos[$indBin], $h, $campos[$indBin], 'LRBT', 0, 'C', true);
     }
-    if ($mostrar[$indCodigo]) {
-      $this->Cell($largoCampos[$indCodigo], $h, $campos[$indCodigo], 'LRBT', 0, 'C', true);
+    if ($mostrar[$indCodEMSA]) {
+      $this->Cell($largoCampos[$indCodEMSA], $h, $campos[$indCodEMSA], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indCodOrigen]) {
+      $this->Cell($largoCampos[$indCodOrigen], $h, $campos[$indCodOrigen], 'LRBT', 0, 'C', true);
     }
     if ($mostrar[$indContacto]) {
       $this->Cell($largoCampos[$indContacto], $h, $campos[$indContacto], 'LRBT', 0, 'C', true);
@@ -1073,13 +1124,25 @@ class PDF extends PDF_MC_Table
     if ($mostrar[$indComentarios]) {
       $this->Cell($largoCampos[$indComentarios], $h, $campos[$indComentarios], 'LRBT', 0, 'C', true);
     }
-    if ($mostrar[$indAlarma]) {
-      $this->Cell($largoCampos[$indAlarma], $h, $campos[$indAlarma], 'LRBT', 0, 'C', true);
+    if ($mostrar[$indStock]) {
+      $this->Cell($largoCampos[$indStock], $h, $campos[$indStock], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indUltMov]) {
+      $this->Cell($largoCampos[$indUltMov], $h, $campos[$indUltMov], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indAlarma1]) {
+      $this->Cell($largoCampos[$indAlarma1], $h, $campos[$indAlarma1], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indAlarma2]) {
+      $this->Cell($largoCampos[$indAlarma2], $h, $campos[$indAlarma2], 'LRBT', 0, 'C', true);
     }
     if ($mostrar[$indComProd]) {
       $this->Cell($largoCampos[$indComProd], $h, $campos[$indComProd], 'LRBT', 0, 'C', true);
     }
-    ///********************************************************** FIN CAMPOS ****************************************************************
+    if ($mostrar[$indMov]) {
+      $this->Cell($largoCampos[$indMov], $h, $campos[$indMov], 'LRBT', 0, 'C', true);
+    }
+    ///*************************************************** FIN ESCRITURA CAMPOS VISIBLES ************************************************
     
     ///*********************************************************** COMIENZO DATOS ***********************************************************
     $this->Ln();
@@ -1297,12 +1360,14 @@ class PDF extends PDF_MC_Table
         
         ///******************************************************** INICIO CAMPOS NUEVO PRODUCTO ********************************************
         /// Recupero los índices de cada campo para poder ordenarlos luego:
-        foreach ($campos as $i => $dato1) {
-          switch ($dato) {
+        foreach ($campos as $i => $dato3) {
+          switch ($dato3) {
             case "Id": $indId = $i;
                        break;
-            case "IndProd": $indProd = $i;
-                            break;
+            case "IdProd": $indProd = $i;
+                           break;
+            case "IdMov": $indMov = $i;
+                           break;             
             case "Entidad": $indEntidad = $i;
                             break;
             case "Nombre": $indNombre = $i;
@@ -1319,14 +1384,22 @@ class PDF extends PDF_MC_Table
                                 break;
             case "BIN": $indBin = $i;
                         break;
-            case "Código":  $indCodigo = $i;
-                            break;
+            case "Cód. EMSA": $indCodEMSA = $i;
+                              break;
+            case "Cód. Origen": $indCodOrigen = $i;
+                                break;                 
             case "Contacto":  $indContacto = $i;
-                            break;              
+                              break;              
             case "Snapshot":  $indSnapshot = $i;
                               break;
-            case "Alarma":  $indAlarma = $i;
+            case "Alarma1": $indAlarma1 = $i;
                             break;
+            case "Alarma2": $indAlarma2 = $i;
+                            break;   
+            case "Últ. Mov.":  $indUltMov = $i;
+                              break;
+            case "Stock": $indStock = $i;
+                          break;                 
             case "ComentariosProd": $indComProd = $i;
                                     break;  
             default: break;
@@ -1369,8 +1442,11 @@ class PDF extends PDF_MC_Table
         if ($mostrar[$indBin]) {
           $this->Cell($largoCampos[$indBin], $h, $campos[$indBin], 'LRBT', 0, 'C', true);
         }
-        if ($mostrar[$indCodigo]) {
-          $this->Cell($largoCampos[$indCodigo], $h, $campos[$indCodigo], 'LRBT', 0, 'C', true);
+        if ($mostrar[$indCodEMSA]) {
+          $this->Cell($largoCampos[$indCodEMSA], $h, $campos[$indCodEMSA], 'LRBT', 0, 'C', true);
+        }
+        if ($mostrar[$indCodOrigen]) {
+          $this->Cell($largoCampos[$indCodOrigen], $h, $campos[$indCodOrigen], 'LRBT', 0, 'C', true);
         }
         if ($mostrar[$indContacto]) {
           $this->Cell($largoCampos[$indContacto], $h, $campos[$indContacto], 'LRBT', 0, 'C', true);
@@ -1387,11 +1463,23 @@ class PDF extends PDF_MC_Table
         if ($mostrar[$indComentarios]) {
           $this->Cell($largoCampos[$indComentarios], $h, $campos[$indComentarios], 0, 0, 'C', false);
         }
-        if ($mostrar[$indAlarma]) {
-          $this->Cell($largoCampos[$indAlarma], $h, $campos[$indAlarma], 'LRBT', 0, 'C', true);
+        if ($mostrar[$indStock]) {
+          $this->Cell($largoCampos[$indStock], $h, $campos[$indStock], 'LRBT', 0, 'C', true);
+        }
+        if ($mostrar[$indUltMov]) {
+          $this->Cell($largoCampos[$indUltMov], $h, $campos[$indUltMov], 'LRBT', 0, 'C', true);
+        }
+        if ($mostrar[$indAlarma1]) {
+          $this->Cell($largoCampos[$indAlarma1], $h, $campos[$indAlarma1], 'LRBT', 0, 'C', true);
+        }
+        if ($mostrar[$indAlarma2]) {
+          $this->Cell($largoCampos[$indAlarma2], $h, $campos[$indAlarma2], 'LRBT', 0, 'C', true);
         }
         if ($mostrar[$indComProd]) {
           $this->Cell($largoCampos[$indComProd], $h, $campos[$indComProd], 'LRBT', 0, 'C', true);
+        }
+        if ($mostrar[$indMov]) {
+          $this->Cell($largoCampos[$indMov], $h, $campos[$indMov], 'LRBT', 0, 'C', true);
         }
         ///*************************************************** FIN ESCRITURA CAMPOS VISIBLES ************************************************
         $this->Ln();
@@ -1467,11 +1555,13 @@ class PDF extends PDF_MC_Table
         ///******************************************************** INICIO CAMPOS  **********************************************************
         /// Recupero los índices de cada campo para poder ordenarlos luego:
         foreach ($campos as $i => $dato1) {
-          switch ($dato) {
+          switch ($dato1) {
             case "Id": $indId = $i;
                        break;
-            case "IndProd": $indProd = $i;
-                            break;
+            case "IdProd": $indProd = $i;
+                           break;
+            case "IdMov": $indMov = $i;
+                           break;             
             case "Entidad": $indEntidad = $i;
                             break;
             case "Nombre": $indNombre = $i;
@@ -1488,14 +1578,22 @@ class PDF extends PDF_MC_Table
                                 break;
             case "BIN": $indBin = $i;
                         break;
-            case "Código":  $indCodigo = $i;
-                            break;
+            case "Cód. EMSA": $indCodEMSA = $i;
+                              break;
+            case "Cód. Origen": $indCodOrigen = $i;
+                                break;                 
             case "Contacto":  $indContacto = $i;
-                            break;              
+                              break;              
             case "Snapshot":  $indSnapshot = $i;
                               break;
-            case "Alarma":  $indAlarma = $i;
+            case "Alarma1": $indAlarma1 = $i;
                             break;
+            case "Alarma2": $indAlarma2 = $i;
+                            break;   
+            case "Últ. Mov.":  $indUltMov = $i;
+                              break;
+            case "Stock": $indStock = $i;
+                          break;                 
             case "ComentariosProd": $indComProd = $i;
                                     break;  
             default: break;
@@ -1526,8 +1624,11 @@ class PDF extends PDF_MC_Table
         if ($mostrar[$indBin]) {
           $this->Cell($largoCampos[$indBin], $h, $campos[$indBin], 'LRBT', 0, 'C', true);
         }
-        if ($mostrar[$indCodigo]) {
-          $this->Cell($largoCampos[$indCodigo], $h, $campos[$indCodigo], 'LRBT', 0, 'C', true);
+        if ($mostrar[$indCodEMSA]) {
+          $this->Cell($largoCampos[$indCodEMSA], $h, $campos[$indCodEMSA], 'LRBT', 0, 'C', true);
+        }
+        if ($mostrar[$indCodOrigen]) {
+          $this->Cell($largoCampos[$indCodOrigen], $h, $campos[$indCodOrigen], 'LRBT', 0, 'C', true);
         }
         if ($mostrar[$indContacto]) {
           $this->Cell($largoCampos[$indContacto], $h, $campos[$indContacto], 'LRBT', 0, 'C', true);
@@ -1544,13 +1645,26 @@ class PDF extends PDF_MC_Table
         if ($mostrar[$indComentarios]) {
           $this->Cell($largoCampos[$indComentarios], $h, $campos[$indComentarios], 'LRBT', 0, 'C', true);
         }
-        if ($mostrar[$indAlarma]) {
-          $this->Cell($largoCampos[$indAlarma], $h, $campos[$indAlarma], 'LRBT', 0, 'C', true);
+        if ($mostrar[$indStock]) {
+          $this->Cell($largoCampos[$indStock], $h, $campos[$indStock], 'LRBT', 0, 'C', true);
+        }
+        if ($mostrar[$indUltMov]) {
+          $this->Cell($largoCampos[$indUltMov], $h, $campos[$indUltMov], 'LRBT', 0, 'C', true);
+        }
+        if ($mostrar[$indAlarma1]) {
+          $this->Cell($largoCampos[$indAlarma1], $h, $campos[$indAlarma1], 'LRBT', 0, 'C', true);
+        }
+        if ($mostrar[$indAlarma2]) {
+          $this->Cell($largoCampos[$indAlarma2], $h, $campos[$indAlarma2], 'LRBT', 0, 'C', true);
         }
         if ($mostrar[$indComProd]) {
           $this->Cell($largoCampos[$indComProd], $h, $campos[$indComProd], 'LRBT', 0, 'C', true);
-        } 
+        }
+        if ($mostrar[$indMov]) {
+          $this->Cell($largoCampos[$indMov], $h, $campos[$indMov], 'LRBT', 0, 'C', true);
+        }
         ///*************************************************** FIN ESCRITURA CAMPOS VISIBLES ************************************************
+        
         $this->Ln();
         $this->SetX($x);
         $this->SetFont('Courier', '', 9);
@@ -1594,6 +1708,38 @@ class PDF extends PDF_MC_Table
         $this->SetXY($x1+$w,$y);
       }
       ///*********************************************************** FIN CAMPO ID ***********************************************************
+      
+      ///*********************************************************** CAMPO IDPROD ***********************************************************
+      /// Chequeo si se tiene que mostrar el campo IdProd, y de ser así lo muestro:
+      if ($mostrar[$indProd]) 
+        {
+        $w = $largoCampos[$indProd];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indProd])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indProd])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indProd])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      ///********************************************************* FIN CAMPO IDPROD *********************************************************
       
       ///************************************************************* CAMPO FECHA **********************************************************
       /// Chequeo si se tiene que mostrar el campo Fecha, y de ser así lo muestro:
@@ -1757,12 +1903,12 @@ class PDF extends PDF_MC_Table
       }
       ///************************************************************ FIN CAMPO BIN *********************************************************
       
-      ///************************************************************ CAMPO CODIGO **********************************************************
-      /// Chequeo si se tiene que mostrar el campo Codigo, y de ser así lo muestro:
-      if ($mostrar[$indCodigo]) 
+      ///********************************************************** CAMPO CODIGO EMSA *******************************************************
+      /// Chequeo si se tiene que mostrar el campo Codigo EMSA, y de ser así lo muestro:
+      if ($mostrar[$indCodEMSA]) 
         {
-        $w = $largoCampos[$indCodigo];
-        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indCodigo])));
+        $w = $largoCampos[$indCodEMSA];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indCodEMSA])));
 
         //Save the current position
         $x1=$this->GetX();
@@ -1779,18 +1925,82 @@ class PDF extends PDF_MC_Table
         $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indCodigo])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indCodEMSA])),'LRT','C', $fill);
           }
         else {
-          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indCodigo])),1,'C', $fill);
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indCodEMSA])),1,'C', $fill);
           }  
         //Put the position to the right of the cell
         $this->SetXY($x1+$w,$y);
       }
-      ///********************************************************** FIN CAMPO CODIGO ********************************************************
+      ///******************************************************* FIN CAMPO CODIGO EMSA ******************************************************
       
-      ///************************************************************ CAMPO CONTACTO ********************************************************
-      /// Chequeo si se tiene que mostrar el campo Codigo, y de ser así lo muestro:
+      ///******************************************************** CAMPO CODIGO ORIGEN *******************************************************
+      /// Chequeo si se tiene que mostrar el campo Codigo Origen, y de ser así lo muestro:
+      if ($mostrar[$indCodOrigen]) 
+        {
+        $w = $largoCampos[$indCodOrigen];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indCodOrigen])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indCodOrigen])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indCodOrigen])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      ///********************************************************** FIN CAMPO CODIGO ORIGEN *************************************************
+      
+      ///********************************************************* CAMPO ULT. MOV. **********************************************************
+      /// Chequeo si se tiene que mostrar el campo Ult. Mov., y de ser así lo muestro:
+      if ($mostrar[$indUltMov]) 
+        {
+        $w = $largoCampos[$indUltMov];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indUltMov])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indUltMov])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indUltMov])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      ///******************************************************** FIN CAMPO ULT. MOV. *******************************************************
+      
+      ///*********************************************************** CAMPO CONTACTO *********************************************************
+      /// Chequeo si se tiene que mostrar el campo Contacto, y de ser así lo muestro:
       if ($mostrar[$indContacto]) 
         {
         $w = $largoCampos[$indContacto];
@@ -1852,6 +2062,38 @@ class PDF extends PDF_MC_Table
         $this->SetXY($x1+$w,$y);
       }
       ///********************************************************** FIN CAMPO SNAPSHOT ******************************************************
+      
+      ///********************************************************* CAMPO COMPROD ************************************************************
+      /// Chequeo si se tiene que mostrar el campo ComProd, y de ser así lo muestro:
+      if ($mostrar[$indComProd]) 
+        {
+        $w = $largoCampos[$indComProd];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indComProd])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indComProd])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indComProd])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      ///********************************************************* FIN CAMPO COMPROD ********************************************************
       
       ///************************************************************ CAMPO TIPO ************************************************************
       /// Chequeo si se tiene que mostrar el campo Tipo, y de ser así lo muestro:
@@ -1959,6 +2201,70 @@ class PDF extends PDF_MC_Table
       }
       ///********************************************************* FIN CAMPO STOCK **********************************************************
       
+      ///********************************************************** CAMPO ALARMA1 ***********************************************************
+      /// Chequeo si se tiene que mostrar el campo Alarma1, y de ser así lo muestro:
+      if ($mostrar[$indAlarma1]) 
+        {
+        $w = $largoCampos[$indAlarma1];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indAlarma1])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indAlarma1])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indAlarma1])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      ///******************************************************* FIN CAMPO ALARMA1 **********************************************************
+      
+      ///********************************************************** CAMPO ALARMA2 ***********************************************************
+      /// Chequeo si se tiene que mostrar el campo Alarma2, y de ser así lo muestro:
+      if ($mostrar[$indAlarma2]) 
+        {
+        $w = $largoCampos[$indAlarma2];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indAlarma2])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indAlarma2])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indAlarma2])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      ///******************************************************* FIN CAMPO ALARMA2 **********************************************************
+      
       ///******************************************************** CAMPO COMENTARIOS *********************************************************
       /// Chequeo si se tiene que mostrar el campo Comentarios, y de ser así lo muestro:
       if ($mostrar[$indComentarios]) 
@@ -1990,6 +2296,38 @@ class PDF extends PDF_MC_Table
         $this->SetXY($x1+$w,$y);
       }
       ///******************************************************** CAMPO COMENTARIOS *********************************************************
+      
+      ///************************************************************ CAMPO IDMOV ***********************************************************
+      /// Chequeo si se tiene que mostrar el campo IdMov, y de ser así lo muestro:
+      if ($mostrar[$indMov]) 
+        {
+        $w = $largoCampos[$indMov];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indMov])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indMov])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indMov])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      ///********************************************************** FIN CAMPO IDMOV *********************************************************
       
       ///********************************************************** FIN MUESTRO LOS CAMPOS **************************************************
       
@@ -2212,7 +2550,7 @@ class PDF extends PDF_MC_Table
     
     ///***************************************************************** FOTO ****************************************************************
     ///Agrego un snapshot de la tarjeta debajo de la tabla (si es que existe!!):
-    $foto = $registros[0][6];
+    $foto = $registros[0][7];
     if (($foto !== null) && ($foto !== '')) {
       $this->Ln(3);
       $rutita = $rutaFotos."/".$foto;
@@ -2300,19 +2638,34 @@ class PDF extends PDF_MC_Table
     $this->SetXY($x,$y+$h0);
     ///**************************************************************** FIN CAMPO ENTIDAD *****************************************************
     
-    ///**************************************************************** CAMPO CODIGO **********************************************************
+    ///************************************************************** CAMPO CODIGO EMSA *******************************************************
     if (($codigo === '')||($codigo === null)) {
-      $codigo = 'No ingresado';
+      $codigo = 'No Ingresado';
     }
     $this->SetTextColor(255, 255, 255);
     $this->SetFont('Courier', 'B', 10);
-    $this->Cell($cCampo, $h, utf8_decode("Código:"), 'LRBT', 0, 'L', true);
+    $this->Cell($cCampo, $h, utf8_decode("Código EMSA:"), 'LRBT', 0, 'L', true);
     $this->SetFont('Courier', '', 9);
     $this->SetTextColor(0);
     $this->Cell($cResto, $h, $codigo, 'LRBT', 0, 'C', false);
     $this->Ln();
     $this->SetX($x);
-    ///**************************************************************** FIN CAMPO CODIGO ******************************************************
+    ///************************************************************* FIN CAMPO CODIGO EMSA ****************************************************
+    
+    ///************************************************************ CAMPO CODIGO ORIGEN *******************************************************
+    $codigoOrigen = $registros[0][5];
+    if (($codigoOrigen === '')||($codigoOrigen === null)) {
+      $codigoOrigen = 'No Ingresado';
+    }
+    $this->SetTextColor(255, 255, 255);
+    $this->SetFont('Courier', 'B', 10);
+    $this->Cell($cCampo, $h, utf8_decode("Código Origen:"), 'LRBT', 0, 'L', true);
+    $this->SetFont('Courier', '', 9);
+    $this->SetTextColor(0);
+    $this->Cell($cResto, $h, $codigoOrigen, 'LRBT', 0, 'C', false);
+    $this->Ln();
+    $this->SetX($x);
+    ///************************************************************ FIN CAMPO CODIGO ORIGEN ***************************************************
     
     ///**************************************************************** CAMPO BIN *************************************************************
     $bin = $registros[0][3];
@@ -2330,7 +2683,7 @@ class PDF extends PDF_MC_Table
     ///**************************************************************** FIN CAMPO BIN *********************************************************
     
     ///**************************************************************** CAMPO CONTACTO ********************************************************
-    $contacto = $registros[0][5];
+    $contacto = $registros[0][6];
     if (($contacto === '')||($contacto === null)) {
       $contacto = '';
     }
@@ -2346,7 +2699,7 @@ class PDF extends PDF_MC_Table
     ///**************************************************************** FIN CAMPO CONTACTO ****************************************************
     
     ///**************************************************************** CAMPO COMENTARIOS *****************************************************
-    $comentarios = trim(utf8_decode($registros[0][11]));
+    $comentarios = trim(utf8_decode($registros[0][12]));
     if (($comentarios === '')||($comentarios === null)) {
       $comentarios = '';
     }
@@ -2420,7 +2773,7 @@ class PDF extends PDF_MC_Table
     ///**************************************************************** FIN CAMPO COMENTARIOS *************************************************
     
     ///**************************************************************** CAMPO ULT. MOV ********************************************************
-    $ultimoMovimiento = trim(utf8_decode($registros[0][7]));
+    $ultimoMovimiento = trim(utf8_decode($registros[0][8]));
     if (($ultimoMovimiento === '')||($ultimoMovimiento === null)) {
       $ultimoMovimiento = '';
     }
@@ -2451,9 +2804,9 @@ class PDF extends PDF_MC_Table
     
     ///**************************************************************** CAMPO STOCK ***********************************************************
     //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:
-    $alarma1 = $registros[0][9];
-    $alarma2 = $registros[0][10];
-    $stock = $registros[0][8];
+    $alarma1 = $registros[0][10];
+    $alarma2 = $registros[0][11];
+    $stock = $registros[0][9];
        
     $this->SetFont('Courier', 'B', 10);
     $this->SetTextColor(255, 255, 255);

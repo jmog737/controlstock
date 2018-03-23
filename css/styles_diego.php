@@ -437,8 +437,14 @@ hr {
   color: red;
 }
 
-.resaltarComentario {
+.resaltarPlastico {
   background-color: #ff9999;
+  font-size: 1.1em;
+  font-weight: bolder;
+}
+
+.resaltarComentario {
+  background-color: #d3d3d3;
   font-size: 1.1em;
   font-weight: bolder;
 }
@@ -459,6 +465,7 @@ a.linkHistorial:hover{
   background-color: #ea843b;
   background-color: #ffd8bd;
 }
+
 .negrita {
   font-weight: bolder;
 }
@@ -525,11 +532,17 @@ a.linkHistorial:hover{
   color: red;
   background-color: #38ff1d;
 }
-.comentHint{
+.comentHintPlastico{
   font-size: 2.2em;
   font-weight: bolder;
   color: red;
   background-color: #ff9999;
+}
+.comentHint{
+  font-size: 2.2em;
+  font-weight: bolder;
+  color: red;
+  background-color: #d3d3d3;
 }
 
 .subtotal {

@@ -1442,13 +1442,14 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
   var rutaFoto = 'images/snapshots/';
   
   switch(radio) {
-    case 'entidadStock':  tabla += '<tr><th class="tituloTabla" colspan="9">CONSULTA DE STOCK</th></tr>';
+    case 'entidadStock':  tabla += '<tr><th class="tituloTabla" colspan="10">CONSULTA DE STOCK</th></tr>';
                           tabla += '<tr>\n\
                                       <th>Item</th>\n\
                                       <th>Entidad</th>\n\
                                       <th>Nombre</th>\n\
                                       <th>BIN</th>\n\
-                                      <th>Código</th>\n\
+                                      <th>Cód. EMSA</th>\n\
+                                      <th>Cód. Origen</th>\n\
                                       <th>Snapshot</th>\n\
                                       <th>&Uacute;ltimo Movimiento</th>\n\
                                       <th>Stock</th>\n\
@@ -1462,6 +1463,15 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                             var bin = datos[i]['bin'];
                             var snapshot = datos[i]['snapshot'];
                             var codigo_emsa = datos[i]['codigo_emsa'];
+                            var codigo_origen = datos[i]['codigo_origen'];
+                            if ((codigo_origen === '')||(codigo_origen === null)) 
+                                {
+                                codigo_origen = 'NO Ingresado';
+                              }
+                            if ((codigo_emsa === '')||(codigo_emsa === null)) 
+                                {
+                                codigo_emsa = 'NO Ingresado';
+                              } 
                             var stock = parseInt(datos[i]['stock'], 10);
                             var alarma1 = parseInt(datos[i]['alarma1'], 10);
                             var alarma2 = parseInt(datos[i]['alarma2'], 10);
@@ -1514,7 +1524,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                 claseResaltado = "resaltado italica";
                               }
                             }  
-                            if ((bin === 'SIN BIN')||(bin === null)) 
+                            if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
                               {
                               bin = 'N/D o N/C';
                             }
@@ -1524,6 +1534,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                         <td>'+nombre+'</td>\n\
                                         <td nowrap>'+bin+'</td>\n\
                                         <td>'+codigo_emsa+'</td>\n\
+                                        <td>'+codigo_origen+'</td>\n\
                                         <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="76" width="120"></img></td>\n\
                                         <td>'+ultimoMovimiento+'</td>\n\
                                         <td class="'+claseResaltado+'" style="text-align: right">'+stock.toLocaleString()+'</td>\n\
@@ -1545,12 +1556,12 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                           } 
                           else {
                             subtitulo = 'TOTAL';
-                            tabla += '<tr><th colspan="7" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos, 10).toLocaleString()+'</td><th></th></tr>';
+                            tabla += '<tr><th colspan="8" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos, 10).toLocaleString()+'</td><th></th></tr>';
                             //totalMostrar = totalStock.toLocaleString();
                           }
                           var subtotalesJson = JSON.stringify(subtotales);
                           tabla += '<tr>\n\
-                                      <td class="pieTabla" colspan="9">\n\
+                                      <td class="pieTabla" colspan="10">\n\
                                         <input type="button" id="1" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                       </td>\n\
                                     </tr>';
@@ -1561,10 +1572,20 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                           break;
     case 'productoStock': var bin = datos[0]['bin'];
                           //var produ = datos[0]["idProd"];
-                          if ((bin === 'SIN BIN')||(bin === null)) 
+                          if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
                               {
                               bin = 'N/D o N/C';
                             }
+                          var codigo_origen = datos[0]['codigo_origen'];
+                          if ((codigo_origen === '')||(codigo_origen === null)) 
+                              {
+                              codigo_origen = 'NO Ingresado';
+                            }
+                          var codigo_emsa = datos[0]['codigo_emsa'];
+                          if ((codigo_emsa === '')||(codigo_emsa === null)) 
+                              {
+                              codigo_emsa = 'NO Ingresado';
+                            }   
                           var alarma1 = parseInt(datos[0]['alarma1'], 10);
                           var alarma2 = parseInt(datos[0]['alarma2'], 10);
                           var stock = parseInt(datos[0]['stock'], 10);
@@ -1629,7 +1650,8 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                    </tr>';                       
                           tabla += '<tr><th style="text-align:left">Nombre:</th><td>'+datos[0]['nombre_plastico']+'</td></tr>';
                           tabla += '<tr><th style="text-align:left">Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
-                          tabla += '<tr><th style="text-align:left">C&oacute;digo:</th><td>'+datos[0]['codigo_emsa']+'</td></tr>';
+                          tabla += '<tr><th style="text-align:left">C&oacute;digo EMSA:</th><td>'+codigo_emsa+'</td></tr>';
+                          tabla += '<tr><th style="text-align:left">C&oacute;digo Origen:</th><td>'+codigo_origen+'</td></tr>';
                           tabla += '<tr><th style="text-align:left">BIN:</th><td nowrap>'+bin+'</td></tr>';
                           tabla += '<tr><th style="text-align:left">Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
                           tabla += '<tr><th style="text-align:left">Contacto:</th><td>'+contacto+'</td></tr>';
@@ -1661,7 +1683,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                             var codigo_emsa = datos[k]['codigo_emsa'];
                             var stock = datos[k]['stock'];
                             var subtotal = parseInt(datos[k]['subtotal'], 10);
-                            if ((bin === 'SIN BIN')||(bin === null)) 
+                            if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
                               {
                               bin = 'N/D o N/C';
                             }
@@ -1688,7 +1710,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     </tr>\n\
                                   </table>';              
                           break;
-      case 'entidadMovimiento': tabla += '<tr><th class="tituloTabla" colspan="11">MOVIMIENTOS</th></tr>';
+      case 'entidadMovimiento': tabla += '<tr><th class="tituloTabla" colspan="12">MOVIMIENTOS</th></tr>';
                                 tabla += '<tr>\n\
                                             <th>Item</th>\n\
                                             <th>Fecha</th>\n\
@@ -1696,7 +1718,8 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                             <th>Entidad</th>\n\
                                             <th>Nombre</th>\n\
                                             <th>BIN</th>\n\
-                                            <th>Código</th>\n\
+                                            <th>Cód. EMSA</th>\n\
+                                            <th>Cód. Origen</th>\n\
                                             <th>Snapshot</th>\n\
                                             <th>Tipo</th>\n\
                                             <th>Cantidad</th>\n\
@@ -1714,6 +1737,15 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   var cantidad = parseInt(datos[i]['cantidad'], 10);
                                   var bin = datos[i]['bin'];
                                   var codigo_emsa = datos[i]['codigo_emsa'];
+                                  if ((codigo_emsa === '')||(codigo_emsa === null)) 
+                                      {
+                                      codigo_emsa = 'NO Ingresado';
+                                    }
+                                  var codigo_origen = datos[i]['codigo_origen'];
+                                  if ((codigo_origen === '')||(codigo_origen === null)) 
+                                    {
+                                    codigo_origen = 'NO Ingresado';
+                                  }
                                   var tipo1 = datos[i]['tipo'];
                                   var snapshot = datos[i]['snapshot'];
                                   var fecha = datos[i]['fecha'];
@@ -1738,7 +1770,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   if ((comentarios === "undefined")||(comentarios === null)) {
                                       comentarios = "";
                                     }
-                                  if ((bin === 'SIN BIN')||(bin === null)) 
+                                  if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
                                     {
                                     bin = 'N/D o N/C';
                                   }
@@ -1755,7 +1787,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       if (subtotales["retiros"][productoViejo] !== undefined) {
                                         retiros1 = parseInt(subtotales["retiros"][productoViejo], 10);
                                         tabla += '<tr>\n\
-                                                    <td colspan="9" class="negrita">Total Retiros:</td>\n\
+                                                    <td colspan="10" class="negrita">Total Retiros:</td>\n\
                                                     <td class="subtotal" colspan="2">'+retiros1.toLocaleString()+'</td>\n\
                                                   </tr>';
                                         totalConsumos += retiros1;
@@ -1765,7 +1797,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       if (subtotales["renovaciones"][productoViejo] !== undefined) {
                                         renos1 = parseInt(subtotales["renovaciones"][productoViejo], 10);
                                         tabla += '<tr>\n\
-                                                    <td colspan="9" class="negrita">Total Renovaciones:</td>\n\
+                                                    <td colspan="10" class="negrita">Total Renovaciones:</td>\n\
                                                     <td class="subtotal" colspan="2">'+renos1.toLocaleString()+'</td>\n\
                                                   </tr>';
                                         totalConsumos += renos1;
@@ -1775,7 +1807,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       if (subtotales["destrucciones"][productoViejo] !== undefined) {
                                         destrucciones1 = parseInt(subtotales["destrucciones"][productoViejo], 10);
                                         tabla += '<tr>\n\
-                                                    <td colspan="9" class="negrita">Total Destrucciones:</td>\n\
+                                                    <td colspan="10" class="negrita">Total Destrucciones:</td>\n\
                                                     <td class="subtotal" colspan="2">'+destrucciones1.toLocaleString()+'</td>\n\
                                                   </tr>';
                                         totalConsumos += destrucciones1;
@@ -1783,7 +1815,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     }
                                     if (totalConsumos > 0) {
                                       tabla += '<tr>\n\
-                                                  <td colspan="9" class="negrita">Total de Consumos:</td>\n\
+                                                  <td colspan="10" class="negrita">Total de Consumos:</td>\n\
                                                   <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
                                                 </tr>';
                                     }
@@ -1791,13 +1823,13 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       if (subtotales["ingresos"][productoViejo] !== undefined) {
                                         ingresos1 = parseInt(subtotales["ingresos"][productoViejo], 10);
                                         tabla += '<tr>\n\
-                                                    <td colspan="9" class="negrita">Total de Ingresos:</td>\n\
+                                                    <td colspan="10" class="negrita">Total de Ingresos:</td>\n\
                                                     <td class="totalIngresos" colspan="2">'+ingresos1.toLocaleString()+'</td>\n\
                                                   </tr>';
                                       }         
                                     }
                                     productoViejo = produ;
-                                    tabla += '<th colspan="11">&nbsp;\n\
+                                    tabla += '<th colspan="12">&nbsp;\n\
                                               </th>';
                                   }
                                   
@@ -1809,7 +1841,8 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                               <td>'+entidad+'</td>\n\
                                               <td>'+nombre+'</td>\n\
                                               <td nowrap>'+bin+'</td>\n\
-                                              <td>'+codigo_emsa+'</td>\n\
+                                              <td nowrap>'+codigo_emsa+'</td>\n\
+                                              <td nowrap>'+codigo_origen+'</td>\n\
                                               <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="75" width="120"></img></td>\n\
                                               <td>'+tipo1+'</td>\n\
                                               <td class="'+claseResaltado+'"><a href="editarMovimiento.php?id='+idmov+'" target="_blank">'+cantidad.toLocaleString()+'</a></td>\n\
@@ -1826,7 +1859,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       if (subtotales["retiros"][productoViejo] !== undefined) {
                                         retiros2 = parseInt(subtotales["retiros"][productoViejo], 10);
                                         tabla += '<tr>\n\
-                                                    <td colspan="9" class="negrita">Total Retiros:</td>\n\
+                                                    <td colspan="10" class="negrita">Total Retiros:</td>\n\
                                                     <td class="subtotal" colspan="2">'+retiros2.toLocaleString()+'</td>\n\
                                                   </tr>';
                                         totalConsumos += retiros2;
@@ -1836,7 +1869,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       if (subtotales["renovaciones"][productoViejo] !== undefined) {
                                         renos2 = parseInt(subtotales["renovaciones"][productoViejo], 10);
                                         tabla += '<tr>\n\
-                                                    <td colspan="9" class="negrita">Total Renovaciones:</td>\n\
+                                                    <td colspan="10" class="negrita">Total Renovaciones:</td>\n\
                                                     <td class="subtotal" colspan="2">'+renos2.toLocaleString()+'</td>\n\
                                                   </tr>';
                                         totalConsumos += renos2;
@@ -1846,7 +1879,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       if (subtotales["destrucciones"][productoViejo] !== undefined) {
                                         destrucciones2 = parseInt(subtotales["destrucciones"][productoViejo], 10);
                                         tabla += '<tr>\n\
-                                                    <td colspan="9" class="negrita">Total Destrucciones:</td>\n\
+                                                    <td colspan="10" class="negrita">Total Destrucciones:</td>\n\
                                                     <td class="subtotal" colspan="2">'+destrucciones2.toLocaleString()+'</td>\n\
                                                   </tr>';
                                         totalConsumos += destrucciones2;
@@ -1854,7 +1887,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     }
                                     if (totalConsumos > 0) {
                                       tabla += '<tr>\n\
-                                                  <td colspan="9" class="negrita">Total de Consumos:</td>\n\
+                                                  <td colspan="10" class="negrita">Total de Consumos:</td>\n\
                                                   <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
                                                 </tr>';
                                     }
@@ -1862,7 +1895,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       if (subtotales["ingresos"][productoViejo] !== undefined) {
                                         ingresos2 = parseInt(subtotales["ingresos"][productoViejo], 10);
                                         tabla += '<tr>\n\
-                                                    <td colspan="9" class="negrita">Total de Ingresos:</td>\n\
+                                                    <td colspan="10" class="negrita">Total de Ingresos:</td>\n\
                                                     <td class="totalIngresos" colspan="2">'+ingresos2.toLocaleString()+'</td>\n\
                                                   </tr>';
                                       }         
@@ -1899,7 +1932,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     if (subtotales["retiros"][productoViejo] !== undefined) {
                                       var retiros3 = parseInt(subtotales["retiros"][productoViejo], 10);
                                       tabla += '<tr>\n\
-                                                  <td colspan="9" class="negrita">Total Retiros:</td>\n\
+                                                  <td colspan="10" class="negrita">Total Retiros:</td>\n\
                                                   <td class="subtotal" colspan="2">'+retiros3.toLocaleString()+'</td>\n\
                                                 </tr>';
                                       totalConsumos += retiros3;
@@ -1909,7 +1942,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     if (subtotales["renovaciones"][productoViejo] !== undefined) {
                                       var renos3 = parseInt(subtotales["renovaciones"][productoViejo], 10);
                                       tabla += '<tr>\n\
-                                                  <td colspan="9" class="negrita">Total Renovaciones:</td>\n\
+                                                  <td colspan="10" class="negrita">Total Renovaciones:</td>\n\
                                                   <td class="subtotal" colspan="2">'+renos3.toLocaleString()+'</td>\n\
                                                 </tr>';
                                       totalConsumos += renos3;
@@ -1919,7 +1952,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     if (subtotales["destrucciones"][productoViejo] !== undefined) {
                                       var destrucciones3 = parseInt(subtotales["destrucciones"][productoViejo], 10);
                                       tabla += '<tr>\n\
-                                                  <td colspan="9" class="negrita">Total Destrucciones:</td>\n\
+                                                  <td colspan="10" class="negrita">Total Destrucciones:</td>\n\
                                                   <td class="subtotal" colspan="2">'+destrucciones3.toLocaleString()+'</td>\n\
                                                 </tr>';
                                       totalConsumos += destrucciones3;
@@ -1927,7 +1960,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   }
                                   if (totalConsumos > 0) {
                                     tabla += '<tr>\n\
-                                                <td colspan="9" class="negrita">Total de Consumos:</td>\n\
+                                                <td colspan="10" class="negrita">Total de Consumos:</td>\n\
                                                 <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
                                               </tr>';
                                   }
@@ -1935,13 +1968,13 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     if (subtotales["ingresos"][productoViejo] !== undefined) {
                                       var ingresos3 = parseInt(subtotales["ingresos"][productoViejo], 10);
                                       tabla += '<tr>\n\
-                                                  <td colspan="9" class="negrita">Total de Ingresos:</td>\n\
+                                                  <td colspan="10" class="negrita">Total de Ingresos:</td>\n\
                                                   <td class="totalIngresos" colspan="2">'+ingresos3.toLocaleString()+'</td>\n\
                                                 </tr>';
                                     }         
                                   }
                                   productoViejo = produ;
-                                  tabla += '<th colspan="11">&nbsp;\n\
+                                  tabla += '<th colspan="12">&nbsp;\n\
                                           </th>';
                                 }
                                 
@@ -1961,7 +1994,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                             <td style='display:none'><input type='text' id='subtotales_"+j+"' value='"+subtotalesJson+"'></td>\n\
                                           </tr>";
                                 tabla += '<tr>\n\
-                                            <td class="pieTabla" colspan="11">\n\
+                                            <td class="pieTabla" colspan="12">\n\
                                               <input type="button" id="4" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                             </td>\n\
                                           </tr>\n\
@@ -1978,6 +2011,16 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       {
                                       contacto = '';
                                     }
+                                  var codigo_emsa = datos[0]['codigo_emsa'];
+                                  if ((codigo_emsa === '')||(codigo_emsa === null)) 
+                                      {
+                                      codigo_emsa = 'NO Ingresado';
+                                    }
+                                  var codigo_origen = datos[0]['codigo_origen'];
+                                  if ((codigo_origen === '')||(codigo_origen === null)) 
+                                    {
+                                    codigo_origen = 'NO Ingresado';
+                                  }  
                                   var comentarios = datos[0]['prodcom'];
                                   var claseComentario = "";
                                   if ((comentarios === "undefined")||(comentarios === null)||(comentarios === "")) 
@@ -2011,7 +2054,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     }
                                   }
                                     
-                                  if ((bin === 'SIN BIN')||(bin === null)) 
+                                  if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
                                       {
                                       bin = 'N/D o N/C';
                                     }
@@ -2040,7 +2083,8 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                            </tr>';                       
                                   tabla += '<tr><th>Nombre:</th><td>'+datos[0]['nombre_plastico']+'</td></tr>';
                                   tabla += '<tr><th>Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
-                                  tabla += '<tr><th>C&oacute;digo:</th><td>'+datos[0]['codigo_emsa']+'</td></tr>';
+                                  tabla += '<tr><th>C&oacute;d. EMSA:</th><td>'+codigo_emsa+'</td></tr>';
+                                  tabla += '<tr><th>C&oacute;d. Origen:</th><td>'+codigo_origen+'</td></tr>';
                                   tabla += '<tr><th>BIN:</th><td nowrap>'+bin+'</td></tr>';
                                   tabla += '<tr><th>Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
                                   tabla += '<tr><th>Contacto:</th><td>'+contacto+'</td></tr>';
@@ -2245,7 +2289,8 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
       var totalRenovaciones = request[j]["renovaciones"];
       var totalDestrucciones = request[j]["destrucciones"];
       var totalIngresos = request[j]["ingresos"];
-      var totalDatos = parseInt(request[j].totalRows, 10);//alert('total: '+totalDatos+'\nplasticos: '+totalPlasticos+'\nretiros:'+totalRetiros+'\nrenos: '+totalRenovaciones+'\ndestrucciones: '+totalDestrucciones+'\ningresos: '+totalIngresos);
+      var totalDatos = parseInt(request[j].totalRows, 10);
+      //alert('total: '+totalDatos+'\nplasticos: '+totalPlasticos+'\nretiros:'+totalRetiros+'\nrenos: '+totalRenovaciones+'\ndestrucciones: '+totalDestrucciones+'\ningresos: '+totalIngresos);
       
       if (j == 0) {
         activo = 'fade show active';
@@ -2314,9 +2359,9 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         
         var datosOcultos = '<table id="datosOcultos_'+j+'" name="datosOcultos" class="tabla2" style="display:none">';
         switch (radio){
-          case 'entidadStock':  campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje";
-                                largos = "0.8-1.2-2.5-0.8-2-1-1-1.2-1.2-1-2-1.7";
-                                mostrarCamposQuery = "1-1-1-0-1-0-0-1-1-0-0-1";
+          case 'entidadStock':  campos = "Id-Entidad-Nombre-BIN-C&oacute;d. EMSA-C&oacute;d. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje";
+                                largos = "0.8-1.2-2.5-0.8-1.9-1.5-1-1-1.2-1.6-1-2-1.7";
+                                mostrarCamposQuery = "1-1-1-0-1-1-0-0-1-1-0-0-0";
                                 x = 20;
                                 tipMov = 'entStock';
                                 datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
@@ -2332,9 +2377,9 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                   </tr>';
                                 break;
-          case 'productoStock': campos = "Id-Entidad-Nombre-BIN-C&oacute;digo-Contacto-Snapshot-Stock-Alarma1-Alarma2-Mensaje-&Uacute;ltimo Movimiento";
-                                largos = "0.8-1.2-2.5-0.8-2-2.5-1-1-1-1-2-1";
-                                mostrarCamposQuery = "1-1-1-1-1-1-1-1-0-0-1-1";;
+          case 'productoStock': campos = "Id-Entidad-Nombre-BIN-C&oacute;d. EMSA-C&oacute;d. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje";
+                                largos = "0.8-1.2-2.5-0.8-2-1.5-1-1-1.2-1.4-1-2-1.7";
+                                mostrarCamposQuery = "1-1-1-0-1-1-0-0-1-1-0-0-0";
                                 x = 22;
                                 tipMov = 'prodStock';
                                 datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
@@ -2368,10 +2413,10 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                 <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                               </tr>';
                              break;
-          case 'entidadMovimiento': campos = 'Id-IdProd-Entidad-Nombre-BIN-Código-Contacto-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-&Uacute;ltimo Movimiento-Fecha-Hora-Cantidad-Tipo-Comentarios';
-                                    //Orden de la consulta: entidad - nombre - bin - codigo - contacto - snapshot - stock - alarma1 - alarma2 - prodcom - fecha - hora - cantidad - tipo - comentarios
-                                    largos = '0.6-0.5-1.6-1.9-1-1-1-1-1-1-1-1.1-1.5-1.5-0.8-1.2-1.4-2';
-                                    mostrarCamposQuery = '1-0-1-1-0-0-0-0-0-0-0-0-0-1-1-1-1-1';
+          case 'entidadMovimiento': campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios-IdMov';
+                                    //Orden de la consulta: idprod - entidad - nombre - bin - cod emsa - cod origen - contacto - snapshot - ult.Mov - stock - alarma1 - alarma2 - prodcom - fecha - hora - cantidad - tipo - comentarios - idmov
+                                    largos = '0.6-0.5-1.6-1.9-1-1-1-1-1-1-1-1-1.1-1.5-1.5-0.8-1.2-1.4-2-0.8';
+                                    mostrarCamposQuery = '1-0-1-1-0-0-0-0-0-0-0-0-0-0-1-1-1-1-1-0';
                                     x = 40;
                                     tipMov = 'entMov';
                                     datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
@@ -2387,10 +2432,10 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                         <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
                                                       </tr>';
                                     break;
-          case 'productoMovimiento':  campos = 'Id-IdProd-Entidad-Nombre-BIN-Código-Contacto-Snapshot-Stock-Alarma1-Alarma2-ComentariosProd-&Uacute;ltimo Movimiento-Fecha-Hora-Cantidad-Tipo-Comentarios';
-                                      //Orden de la consulta: entidad - nombre - bin - codigo - snapshot - stock - alarma - prodcom - fecha - hora - cantidad - tipo - comentarios
-                                      largos = '0.4-0.5-1.5-1.8-1-1-1-1-1-1-1-1.1-1.5-1.5-0.8-1.2-1.4-2';
-                                      mostrarCamposQuery = '1-0-0-0-0-0-0-0-0-0-0-0-0-1-1-1-1-1';
+          case 'productoMovimiento':  campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios-IdMov';
+                                      //Orden de la consulta: idprod - entidad - nombre - bin - cod emsa - cod origen - contacto - snapshot - ult.Mov - stock - alarma1 - alarma2 - prodcom - fecha - hora - cantidad - tipo - comentarios - idmov
+                                      largos = '0.4-0.5-1.5-1.8-1-1-1-1-1-1-1-1-1.1-1.5-1.5-0.8-1.2-1.4-2-0.8';
+                                      mostrarCamposQuery = '1-0-0-0-0-0-0-0-0-0-0-0-0-0-1-1-1-1-1-0';
                                       x = 40;
                                       tipMov = 'prodMov';
                                       datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
@@ -2549,7 +2594,7 @@ function realizarBusqueda(){
                               delete (consultaCSV);
                               delete (tipoConsulta);
                               var tipoConsulta = '';
-                              var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                              var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                               var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
                               if (entidadesStock[i] !== 'todos') {
                                 ent.push(entidadesStock[i]);
@@ -2588,7 +2633,7 @@ function realizarBusqueda(){
                                 return false;
                               }
                               else {
-                                query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                                query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                                 query += " from productos where idProd="+idProds[i];
                                 consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
                                 consultaCSV += " from productos where idProd="+idProds[i];
@@ -2615,7 +2660,7 @@ function realizarBusqueda(){
       case 'entidadMovimiento': delete nombres;
                                 var nombres = new Array();
                                 for (var i in entidadesMovimiento){
-                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                                   query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
                                   consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
                                   if (entidadesMovimiento[i] !== 'todos') {
@@ -2650,7 +2695,7 @@ function realizarBusqueda(){
                                 ordenFecha = true;
                                 break;                       
       case 'productoMovimiento':  for (var k in idProds){
-                                    query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                                    query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                                     query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where ";
                                     //consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
                                     consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";                                 
