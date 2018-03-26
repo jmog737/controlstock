@@ -53,7 +53,7 @@ class PDF extends PDF_MC_Table
   //Cabecera de página
   function Header()
     {
-    global $fecha, $hora, $titulo, $x, $hHeader;
+    global $fecha, $hora, $titulo, $x;// $hHeader;
     
     $anchoPage = $this->GetPageWidth();
     $anchoDia = 20;
@@ -71,7 +71,9 @@ class PDF extends PDF_MC_Table
     $this->Image($logo, $xLogo, $yLogo, $nuevoAncho, $nuevoAlto);
     $this->setY($yLogo+1);
     $this->setX($nuevoAncho+$xLogo);
-    //$this->SetFillColor(120, 200, 120);
+    
+    $this->SetTextColor(0, 0, 0);
+    $this->SetFillColor(120, 200, 120);
     //Defino características para el título y agrego el título:
     $this->SetFont('Arial', 'BU', 18);
     $this->Cell($anchoTitle, $nuevoAlto-1, utf8_decode($titulo), 0, 0, 'C', false);
@@ -138,7 +140,7 @@ class PDF extends PDF_MC_Table
     //Defino tipo de letra y tamaño para el Título:
     $this->SetFont('Courier', 'B', 12);
     //$this->SetY(20);
-
+    
     $tipoTotal = "Stock de $entidad";
     $tam = $this->GetStringWidth($tipoTotal);
     $xInicio = $xTipo + (($anchoTipo-$tam)/2);
@@ -152,11 +154,13 @@ class PDF extends PDF_MC_Table
     if ($tipo) {
       ///Si es Total de stock en bóveda, le agrego itálica a todo el título:
       $this->SetFont('Courier', 'BI', 12);
+      $this->SetTextColor(0);
       $this->SetX($xTipo);
       $this->MultiCell($anchoTipo, $h, utf8_decode($tipoConsulta), 0, 'C', 0);
     }
     else {
       if ($nbTitulo > 1) {
+        $this->SetTextColor(0);
         $this->Cell($tam1,$h, "Stock de",0, 0, 'R', 0);
         $this->SetTextColor(255, 0, 0);
         $this->SetFont('Courier', 'BI', 12);
@@ -164,6 +168,7 @@ class PDF extends PDF_MC_Table
         $this->SetTextColor(0);
       }
       else {
+        $this->SetTextColor(0);
         $this->Cell($tam1,$hTitulo, "Stock de",0, 0,'R', 0);
         $this->SetTextColor(255, 0, 0);
         $this->SetFont('Courier', 'BI', 12);
@@ -282,6 +287,7 @@ class PDF extends PDF_MC_Table
         ///***************************************************************** TITULO ************************************************************
         //Defino tipo de letra y tamaño para el Título:
         $this->SetFont('Courier', 'B', 12);
+        $this->SetTextColor(0);
         $this->SetY(25);
         $this->SetX($xInicio);
 
@@ -1345,12 +1351,13 @@ class PDF extends PDF_MC_Table
             $xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
           }
           $this->SetX($xTipo);
-          
+          $nbSubTitulo1 = $this->NbLines($anchoSubTitulo,$sub2);
+          $hSubTitulo1=$h*$nbSubTitulo1;
           if ($nbSubTitulo > 1) {
             $this->MultiCell($anchoSubTitulo,$h, $subTitulo."(cont.)",0, 'C', 1);
           }
           else {
-            $this->Cell($anchoSubTitulo,$hSubTitulo, $subTitulo."(cont.)",0,0,'C', 1);
+            $this->Cell($anchoSubTitulo,$hSubTitulo1, $subTitulo."(cont.)",0,0,'C', 1);
             $this->Ln();
           }
           $this->Ln();
@@ -1526,23 +1533,26 @@ class PDF extends PDF_MC_Table
         $this->SetTextColor(0);
         $this->SetY(25);
         $this->SetFillColor(167, 166, 173);
-        $sub2 = $subTitulo."(cont.)";
-        $tamSub2 = $this->GetStringWidth($sub2);
-        if ($tamSub2 < $anchoTipo){
-          $xTipo = round((($anchoPagina - $tamSub2)/2), 2);
-          $anchoSubTitulo = $tamSub2;
+        $sub3 = $subTitulo."(cont.)";
+        $tamSub3 = $this->GetStringWidth($sub3);
+        if ($tamSub3 < $anchoTipo){
+          $xTipo = round((($anchoPagina - $tamSub3)/2), 2);
+          $anchoSubTitulo = $tamSub3;
         }
         else {
           $anchoSubTitulo = $anchoTipo;
           $xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
         }
         $this->SetX($xTipo);
+        
+        $nbSubTitulo3 = $this->NbLines($anchoSubTitulo,$sub3);
+        $hSubTitulo3=$h*$nbSubTitulo3;
           
         if ($nbSubTitulo > 1) {
           $this->MultiCell($anchoSubTitulo,$h, $subTitulo."(cont.)",0, 'C', 1);
         }
         else {
-          $this->Cell($anchoSubTitulo,$hSubTitulo, $subTitulo."(cont.)",0,0,'C', 1);
+          $this->Cell($anchoSubTitulo,$hSubTitulo3, $subTitulo."(cont.)",0,0,'C', 1);
           $this->Ln();
         }
         $this->Ln();
