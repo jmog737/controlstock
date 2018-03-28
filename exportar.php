@@ -28,6 +28,7 @@ $c1 = 18;
 $h = 6;
 $hHeader = 30;
 $hFooter = 10;
+$orientacion = 'P';
 //******************************************************** FIN tamaños de celdas ***************************************************************
 
 //******************************************************** INICIO Hora y título ****************************************************************
@@ -160,8 +161,15 @@ $resultado1 = consultarBD($query, $con);
 //echo "consulta: $query<br>";
 $totalRegistros = $resultado1->num_rows;
 
+if ($orientacion == 'P'){
+  $c1 = 18;
+}
+else {
+  $c1 = 25;
+}
+
 //Instancio objeto de la clase:
-$pdfResumen = new PDF('P','mm','A4');
+$pdfResumen = new PDF($orientacion,'mm','A4');
 $pdfResumen->AddPage();
 
 $totalCampos = sizeof($campos);
