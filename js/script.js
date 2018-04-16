@@ -2265,7 +2265,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
   var x = 55;
   var tipMov = '';
     
-  for (var n in queries){//alert(queries[n]);
+  for (var n in queries){
     if (n == 0) {
       activo = 'active';
     }
@@ -2776,7 +2776,7 @@ function realizarBusqueda(){
                                 var inicioMostrar = inicioTemp[2]+"/"+inicioTemp[1]+"/"+inicioTemp[0];
                                 var finTemp = fin.split('-');
                                 var finMostrar = finTemp[2]+"/"+finTemp[1]+"/"+finTemp[0];
-                                rangoFecha = " and (fecha >='"+inicio+"') and (fecha<='"+fin+"')";
+                                rangoFecha = " and (fecha >='"+inicio+"') and (fecha <='"+fin+"')";
                                 mensajeFecha = "entre las fechas: "+inicioMostrar+" y "+finMostrar;
                               }
                             }
@@ -2831,7 +2831,7 @@ function realizarBusqueda(){
                       mensajeFecha = "del mes de "+mesMostrar+" de "+año;
                     }
                     validado = true;
-                    rangoFecha = " and (fecha >='"+inicio+"') and (fecha<'"+fin+"')";
+                    rangoFecha = " and (fecha >='"+inicio+"') and (fecha <'"+fin+"')";
                     break;
         case 'todos': break;
         default: break;
@@ -2840,7 +2840,7 @@ function realizarBusqueda(){
     
     if (validado) 
       {
-      for (var n in queries){
+      for (var n in queries){//alert(queries[n]);
         if (rangoFecha !== null) {
           queries[n] += rangoFecha;
           consultasCSV[n] += rangoFecha; 

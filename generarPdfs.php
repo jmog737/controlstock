@@ -639,7 +639,7 @@ class PDF extends PDF_MC_Table
 
     $this->SetFillColor(167, 166, 173);
     if ($nbSubTitulo > 1) {
-      $this->MultiCell($anchoSubTitulo,$h, utf8_decode($subTitulo),0,'C', 1);
+      $this->MultiCell($anchoSubTitulo,$h, $subTitulo,0,'C', 1);
       $this->Ln(2);
 
 //      $y = $this->GetY();
@@ -656,7 +656,7 @@ class PDF extends PDF_MC_Table
 //      $this->MultiCell($tamSegundaParte,$h, $segundaParte,0, 'C', 0);
     }
     else {
-      $this->Cell($anchoSubTitulo,$hSubTitulo, utf8_decode($subTitulo),0, 0,'C', 1);
+      $this->Cell($anchoSubTitulo,$hSubTitulo, $subTitulo,0, 0,'C', 1);
       $this->Ln(8);
 //      $this->Cell($tamPrimeraParte,$hSubTitulo, $primeraParte, 0, 0, 'R', 0);
 //      $this->SetTextColor(255, 0, 0);
@@ -1353,11 +1353,11 @@ class PDF extends PDF_MC_Table
           $this->SetX($xTipo);
           $nbSubTitulo1 = $this->NbLines($anchoSubTitulo,$sub2);
           $hSubTitulo1=$h*$nbSubTitulo1;
-          if ($nbSubTitulo > 1) {
-            $this->MultiCell($anchoSubTitulo,$h, $subTitulo."(cont.)",0, 'C', 1);
+          if ($nbSubTitulo1 > 1) {
+            $this->MultiCell($anchoSubTitulo,$h, $sub2,0, 'C', 1);
           }
           else {
-            $this->Cell($anchoSubTitulo,$hSubTitulo1, $subTitulo."(cont.)",0,0,'C', 1);
+            $this->Cell($anchoSubTitulo,$hSubTitulo1, $sub2,0,0,'C', 1);
             $this->Ln();
           }
           $this->Ln();
@@ -1548,11 +1548,11 @@ class PDF extends PDF_MC_Table
         $nbSubTitulo3 = $this->NbLines($anchoSubTitulo,$sub3);
         $hSubTitulo3=$h*$nbSubTitulo3;
           
-        if ($nbSubTitulo > 1) {
-          $this->MultiCell($anchoSubTitulo,$h, $subTitulo."(cont.)",0, 'C', 1);
+        if ($nbSubTitulo3 > 1) {
+          $this->MultiCell($anchoSubTitulo,$h, $sub3,0, 'C', 1);
         }
         else {
-          $this->Cell($anchoSubTitulo,$hSubTitulo3, $subTitulo."(cont.)",0,0,'C', 1);
+          $this->Cell($anchoSubTitulo,$hSubTitulo3, $sub3,0,0,'C', 1);
           $this->Ln();
         }
         $this->Ln();
@@ -2370,11 +2370,11 @@ class PDF extends PDF_MC_Table
       }
       $this->SetX($xTipo);
           
-      if ($nbSubTitulo > 1) {
-        $this->MultiCell($anchoSubTitulo,$h, $subTitulo."(cont.)",0, 'C', 1);
+      if ($nbSubTitulo1 > 1) {
+        $this->MultiCell($anchoSubTitulo,$h, $sub2,0, 'C', 1);
       }
       else {
-        $this->Cell($anchoSubTitulo,$hSubTitulo, $subTitulo."(cont.)",0,0,'C', 1);
+        $this->Cell($anchoSubTitulo,$hSubTitulo, $sub2,0,0,'C', 1);
         $this->Ln();
       }
       $this->Ln();
