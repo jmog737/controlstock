@@ -26,7 +26,7 @@ require_once("data/config.php");
 
 ///*********************************************************************** FIN SETEO DE CARPETAS **************************************************************
 
-function generarExcelStock($registros, $total) {
+function generarExcelStock($registros) {
   global $nombreReporte;
   
   $spreadsheet = new Spreadsheet();
@@ -50,17 +50,44 @@ function generarExcelStock($registros, $total) {
 
   $hoja->setTitle($nombreReporte);
   $hoja->getTabColor()->setRGB('023184');
+  
+  /*
+  ************ TEST PARAMETRIZACIÓN DE LAS CELDAS: ****************************/
+  $colId = 'A';
+  $colEntidad = chr(ord($colId)+1);
+  $colNombre = chr(ord($colId)+2);
+  $colBin = chr(ord($colId)+3);
+  $colCodEMSA = chr(ord($colId)+4);
+  $colCodOrigen = chr(ord($colId)+5);
+  //$colComent = chr(ord($colId)+6);
+  $colStock = chr(ord($colId)+6);
+  $colAl1 = chr(ord($colId)+7);
+  $colAl2 = chr(ord($colId)+8); 
+  
+  $mostrarId = 1;
+  $mostrarEntidad = 1;
+  $mostrarNombre = 1;
+  $mostrarBin = 1;
+  $mostrarCodEMSA = 1;
+  $mostrarCodOrigen = 1;
+  $mostrarComent = 1;
+  $mostrarStock = 1;
+  $mostrarAl1 = 1;
+  $mostrarAl2 = 1;
+  /**************** FIN PARAMETRIZACIÓN ***************************************/
 
   // Agrego los títulos:
   $spreadsheet->setActiveSheetIndex(0)
-              ->setCellValue('A1', 'Id')
-              ->setCellValue('B1', 'Entidad')
-              ->setCellValue('C1', 'Nombre')
-              ->setCellValue('D1', 'BIN')
-              ->setCellValue('E1', 'Comentarios')
-              ->setCellValue('F1', 'Stock');
+              ->setCellValue($colId.'1', 'Id')
+              ->setCellValue($colEntidad.'1', 'Entidad')
+              ->setCellValue($colNombre.'1', 'Nombre')
+              ->setCellValue($colBin.'1', 'BIN')
+              ->setCellValue($colCodEMSA.'1', 'Cód. EMSA')
+              ->setCellValue($colCodOrigen.'1', 'Cód. Origen')
+              //->setCellValue($colComent.'1', 'Comentarios')
+              ->setCellValue($colStock.'1', 'Stock');
   /// Formato de los títulos:
-  $header = 'A1:F1';
+  $header = $colId.'1:'.$colStock.'1';
   $styleHeader = array(
     'fill' => array(
         'color' => array('rgb' => 'AEE2FA'),
@@ -77,20 +104,43 @@ function generarExcelStock($registros, $total) {
 
   /// Datos de los campos:
   foreach ($registros as $i => $dato) {
+    $al2 = array_pop($dato);
+    $al1 = array_pop($dato);
+    $stock = array_pop($dato);
+    $codOrigen = array_pop($dato);
+    if (($codOrigen === null)||($codOrigen === '')){
+      $codOrigen = 'NO ingresado';
+    }
+    $codEMSA = array_pop($dato);
+    if (($codEMSA === null)||($codEMSA === '')){
+      $codEMSA = 'NO ingresado';
+    }
+    $codBin = array_pop($dato);
+    if (($codBin === null)||($codBin === '')){
+      $codBin = 'ND o NC';
+    }
+    
+    array_push($dato, $codBin);
+    array_push($dato, $codEMSA);
+    array_push($dato, $codOrigen);
+    array_push($dato, $stock);
+    array_push($dato, $al1);
+    array_push($dato, $al2);
+    
     /// Acomodo el índice pues empieza en 0, y en el 1 están los nombres de los campos:
     $i = $i + 2;
-    $celda = 'A'.$i;
+    $celda = $colId.$i;
     $hoja->fromArray($dato, ' ', $celda);
   }
 
   /// Agrego línea con el total del stock:
   $j = $i+1;
-  $hoja->mergeCells('A'.$j.':E'.$j.'');
-  $hoja->setCellValue('A'.$j.'', 'TOTAL');
-  $celdaTotalTarjetas = "F".$j;
+  $hoja->mergeCells($colId.$j.':'.$colCodOrigen.$j.'');
+  $hoja->setCellValue($colId.$j.'', 'TOTAL');
+  $celdaTotalTarjetas = $colStock.$j;
   ///Se comenta agregado de línea con el total pasado dado que ahora el total se calcula usando una fórmula de excel:
   //$hoja->setCellValue($celdaTotalTarjetas, $total);
-  $hoja->setCellValue($celdaTotalTarjetas, '=sum(F2:F'.$i.')');
+  $hoja->setCellValue($celdaTotalTarjetas, '=sum('.$colStock.'2:'.$colStock.$i.')');
 
 
   /// Defino el formato para la celda con el total de tarjetas:
@@ -133,7 +183,7 @@ function generarExcelStock($registros, $total) {
       ),
   );
   $hoja->getRowDimension($j)->setRowHeight(18);
-  $hoja->getStyle('A'.$j.'')->applyFromArray($styleTextoTotal);
+  $hoja->getStyle(''.$colId.$j.'')->applyFromArray($styleTextoTotal);
 
 
   /// Defino el formato para la columna con el STOCK:
@@ -155,7 +205,7 @@ function generarExcelStock($registros, $total) {
           'formatCode' => '[Blue]#,##0',
       ),
   );
-  $rangoStock = 'F2:F'.$i.'';
+  $rangoStock = ''.$colStock.'2:'.$colStock.$i.'';
   $hoja->getStyle($rangoStock)->applyFromArray($styleColumnaStock);
 
   /// Defino estilos para las alarmas 1 y 2:
@@ -175,9 +225,9 @@ function generarExcelStock($registros, $total) {
 
   /// Aplico color de fondo de la columna de stock según el valor y las alarmas para dicho produco:
   for ($k = 2; $k <= $i; $k++) {
-    $al1 = "G".$k;
-    $al2 = "H".$k;
-    $celda = "F".$k;
+    $al1 = $colAl1.$k;
+    $al2 = $colAl2.$k;
+    $celda = $colStock.$k;
     $valorAlarma1 = $hoja->getCell($al1)->getValue();
     $valorAlarma2 = $hoja->getCell($al2)->getValue();
     $valorCelda = $hoja->getCell($celda)->getValue();
@@ -223,9 +273,11 @@ function generarExcelStock($registros, $total) {
       ),
   );
 
-  /// Aplico color de fondo de la columna de stock según el valor y las alarmas para dicho produco:
+ ///Comento la parte del coloreado de los comentarios dado que ya NO se muestran los comentarios: 
+ /* 
+  /// Aplico color de fondo de la columna de comentarios según el mismo:
   for ($k = 2; $k <= $i; $k++) {
-    $celda = "E".$k;
+    $celda = $colComent.$k;
     $valorCelda = $hoja->getCell($celda)->getValue();
 
     $patron = "dif";
@@ -255,16 +307,16 @@ function generarExcelStock($registros, $total) {
       }
     } 
   }  
-
+*/
 
   /// Ajusto el auto size para que las celdas no se vean cortadas:
-  for ($col = ord('a'); $col <= ord('e'); $col++)
+  for ($col = ord(''.$colId.''); $col <= ord(''.$colCodOrigen.''); $col++)
     {
     $hoja->getColumnDimension(chr($col))->setAutoSize(true);   
   }
 
   /// Defino el rango de celdas con datos para poder darle formato a todas juntas:
-  $rango = "A1:F".$j;
+  $rango = $colId."1:".$colStock.$j;
   /// Defino el formato para las celdas:
   $styleGeneral = array(
       'borders' => array(
@@ -484,21 +536,44 @@ function generarExcelMovimientos($registros) {
   $hoja->getTabColor()->setRGB('E02309');
   ///************************************ FIN PARAMETROS BASICOS ***************************************
 
+  $colId = 'A';
+  $colFecha = chr(ord($colId)+1);
+  $colHora = chr(ord($colId)+2);
+  $colEntidad = chr(ord($colId)+3);
+  $colNombre = chr(ord($colId)+4);
+  $colBin = chr(ord($colId)+5);
+  $colCodEMSA = chr(ord($colId)+6);
+  $colCodOrigen = chr(ord($colId)+7);
+  $colTipo = chr(ord($colId)+8);
+  $colCantidad = chr(ord($colId)+9);
+  //$colComent = chr(ord($colId)+10);
+  
+  $colVacia1 = chr(ord($colId)+10);
+  //$colVacia2 = chr(ord($colId)+11);
+  
+  $colNombreTotales = chr(ord($colId)+11);
+  $colRetiros = chr(ord($colId)+12);
+  $colRenos = chr(ord($colId)+13);
+  $colDestrucciones = chr(ord($colId)+14);
+  $colConsumos = chr(ord($colId)+15);
+  $colIngresos = chr(ord($colId)+16);
   ///**************************************** INICIO formato encabezado ********************************
   // Agrego los títulos:
   $spreadsheet->setActiveSheetIndex(0)
-              ->setCellValue('A1', 'Id')
-              ->setCellValue('B1', 'Fecha')
-              ->setCellValue('C1', 'Hora')
-              ->setCellValue('D1', 'Entidad')
-              ->setCellValue('E1', 'Nombre')
-              ->setCellValue('F1', 'BIN')
-              ->setCellValue('G1', 'Tipo')
-              ->setCellValue('H1', 'Cantidad')
-              ->setCellValue('I1', 'Comentarios');
+              ->setCellValue($colId.'1', 'Id')
+              ->setCellValue($colFecha.'1', 'Fecha')
+              ->setCellValue($colHora.'1', 'Hora')
+              ->setCellValue($colEntidad.'1', 'Entidad')
+              ->setCellValue($colNombre.'1', 'Nombre')
+              ->setCellValue($colBin.'1', 'BIN')
+              ->setCellValue($colCodEMSA.'1', 'Cód. EMSA')
+              ->setCellValue($colCodOrigen.'1', 'Cód. Origen')
+              ->setCellValue($colTipo.'1', 'Tipo')
+              ->setCellValue($colCantidad.'1', 'Cantidad')
+              /*->setCellValue($colComent.'1', 'Comentarios')*/;
   
   /// Formato de los títulos:
-  $header = 'A1:I1';
+  $header = $colId.'1:'.$colCantidad.'1';
   $styleHeader = array(
       'font' => array(
           'bold' => true,
@@ -521,43 +596,71 @@ function generarExcelMovimientos($registros) {
     ///Elimino el primer elemento del array dado que se agregó idprod como primer elemento para no tener
     ///problemas con los nombres de producto repetidos. El array con los idprod queda en $dato1:
     $dato1 = array_shift($dato);
+    
+    $cantidad = array_pop($dato);
+    $tipo = array_pop($dato);
+    
+    $codOrigen = array_pop($dato);
+    if (($codOrigen === null)||($codOrigen === '')){
+      $codOrigen = 'NO ingresado';
+    }
+
+    $codEMSA = array_pop($dato);
+    if (($codEMSA === null)||($codEMSA === '')){
+      $codEMSA = 'NO ingresado';
+    }
+    
+    $bin = array_pop($dato); 
+    if (($bin === null)||($bin === '')){
+      $bin = 'ND o NC';
+    }
+    
+    array_push($dato, $bin);
+    array_push($dato, $codEMSA);
+    array_push($dato, $codOrigen);
+    array_push($dato, $tipo);
+    array_push($dato, $cantidad);
     /// Acomodo el índice pues empieza en 0, y en el 1 están los nombres de los campos:
     $i = $i + 2;
-    $celda = 'A'.$i;
+    $celda = $colId.$i;
     $hoja->fromArray($dato, ' ', $celda);
   }
   $j = $i+1;
   ///*************************************** FIN ESCRIBO DATOS *****************************************
   
   ///************************************ MUESTRO TOTALES **********************************************
-  $hoja->mergeCells('L1:Q1');
-  $hoja->setCellValue("L1", "TOTALES");
-  $hoja->setCellValue("L2", "Nombre");
-  $hoja->setCellValue("M2", "Retiros");
-  $hoja->setCellValue("N2", "Renovaciones");
-  $hoja->setCellValue('O2', 'Destrucciones');
-  $hoja->setCellValue('P2', 'Consumos');
-  $hoja->setCellValue('Q2', 'Ingresos');
+  $hoja->mergeCells($colNombreTotales.'1:'.$colIngresos.'1');
+  $hoja->setCellValue($colNombreTotales."1", "TOTALES");
+  $hoja->setCellValue($colNombreTotales."2", "Nombre");
+  $hoja->setCellValue($colRetiros."2", "Retiros");
+  $hoja->setCellValue($colRenos."2", "Renovaciones");
+  $hoja->setCellValue($colDestrucciones.'2', 'Destrucciones');
+  $hoja->setCellValue($colConsumos.'2', 'Consumos');
+  $hoja->setCellValue($colIngresos.'2', 'Ingresos');
   
   $resumen = Array();
   $ids = Array();
   $id = '';
   foreach ($registros as $datito){
-    switch ($datito[7]){
-      case 'Retiro':  $resumen["$datito[0]"]['retiros'] = $resumen["$datito[0]"]['retiros'] + $datito[8];
+    $idprod = $datito[0];
+    $nombre = $datito[5];
+    $tipo = $datito[9];
+    $cantidad = $datito[10];
+    switch ($tipo){
+      case 'Retiro':  $resumen["$idprod"]['retiros'] = $resumen["$idprod"]['retiros'] + $cantidad;
                       break;
-      case 'Renovación':  $resumen["$datito[0]"]['renos'] = $resumen["$datito[0]"]['renos'] + $datito[8];
+      case 'Renovación':  $resumen["$idprod"]['renos'] = $resumen["$idprod"]['renos'] + $cantidad;
                           break;
-      case 'Destrucción': $resumen["$datito[0]"]['destrucciones'] = $resumen["$datito[0]"]['destrucciones'] + $datito[8];
+      case 'Destrucción': $resumen["$idprod"]['destrucciones'] = $resumen["$idprod"]['destrucciones'] + $cantidad;
                           break;
-      case 'Ingreso': $resumen["$datito[0]"]['ingresos'] = $resumen["$datito[0]"]['ingresos'] + $datito[8];
+      case 'Ingreso': $resumen["$idprod"]['ingresos'] = $resumen["$idprod"]['ingresos'] + $cantidad;
                       break;
       default: break;
     }
-    if ($id !== $datito[0]){
-       $ids[] = $datito[0];
-       $id = $datito[0];
-       $resumen["$datito[0]"]['nombre'] = $datito[5];
+    if ($id !== $idprod){
+       $ids[] = $idprod;
+       $id = $idprod;
+       $resumen["$idprod"]['nombre'] = $nombre;
     }
   }
   
@@ -575,26 +678,26 @@ function generarExcelMovimientos($registros) {
     if ((!isset($resumen["$id1"]['destrucciones']))) {
       $resumen["$id1"]['destrucciones'] = 0;
     }
-    $hoja->setCellValue('L'.$n, $resumen["$id1"]['nombre']);
-    $hoja->setCellValue('M'.$n, $resumen["$id1"]['retiros']);
-    $hoja->setCellValue('N'.$n, $resumen["$id1"]['renos']);
-    $hoja->setCellValue('O'.$n, $resumen["$id1"]['destrucciones']);
-    $hoja->setCellValue('P'.$n,'=M'.$n.'+N'.$n.'+O'.$n);
-    $hoja->setCellValue('Q'.$n, $resumen["$id1"]['ingresos']);
+    $hoja->setCellValue($colNombreTotales.$n, $resumen["$id1"]['nombre']);
+    $hoja->setCellValue($colRetiros.$n, $resumen["$id1"]['retiros']);
+    $hoja->setCellValue($colRenos.$n, $resumen["$id1"]['renos']);
+    $hoja->setCellValue($colDestrucciones.$n, $resumen["$id1"]['destrucciones']);
+    $hoja->setCellValue($colConsumos.$n,'='.$colRetiros.$n.'+'.$colRenos.$n.'+'.$colDestrucciones.$n);
+    $hoja->setCellValue($colIngresos.$n, $resumen["$id1"]['ingresos']);
     $n++;
   }
   $finDatos = $n - 1;
   
   ///Línea con el total por categoría y totales generales:
-  $hoja->setCellValue("L".$n, "TOTALES");
-  $hoja->setCellValue('M'.$n, '=SUM(M3:M'.$finDatos.')');
-  $hoja->setCellValue('N'.$n, '=SUM(N3:N'.$finDatos.')');
-  $hoja->setCellValue('O'.$n, '=SUM(O3:O'.$finDatos.')');
-  $hoja->setCellValue('P'.$n, '=SUM(P3:P'.$finDatos.')');
-  $hoja->setCellValue('Q'.$n, '=SUM(Q3:Q'.$finDatos.')');
+  $hoja->setCellValue($colNombreTotales.$n, "TOTALES");
+  $hoja->setCellValue($colRetiros.$n, '=SUM('.$colRetiros.'3:'.$colRetiros.$finDatos.')');
+  $hoja->setCellValue($colRenos.$n, '=SUM('.$colRenos.'3:'.$colRenos.$finDatos.')');
+  $hoja->setCellValue($colDestrucciones.$n, '=SUM('.$colDestrucciones.'3:'.$colDestrucciones.$finDatos.')');
+  $hoja->setCellValue($colConsumos.$n, '=SUM('.$colConsumos.'3:'.$colConsumos.$finDatos.')');
+  $hoja->setCellValue($colIngresos.$n, '=SUM('.$colIngresos.'3:'.$colIngresos.$finDatos.')');
   
   ///**************************************** Formato Título *******************************************
-  $header1 = 'L1:Q1';
+  $header1 = $colNombreTotales.'1:'.$colIngresos.'1';
   $styleTituloTotales = array(
       'font' => array(
           'bold' => true,
@@ -620,7 +723,7 @@ function generarExcelMovimientos($registros) {
   ///************************************** FIN Formato Título *****************************************
   
   ///************************************ Formato nombre CAMPOS ****************************************
-  $nombreCampos = 'L2:Q2';
+  $nombreCampos = $colNombreTotales.'2:'.$colIngresos.'2';
   $styleCamposTotales = array(
     'fill' => array(
           'color' => array('rgb' => 'b3a8ac'),
@@ -645,7 +748,7 @@ function generarExcelMovimientos($registros) {
   ///************************************ FIN Formato nombre CAMPOS ************************************
   
   ///************************************ Formato Nombre Productos *************************************
-  $nombreProductos = 'L3:L'.$finDatos;
+  $nombreProductos = $colNombreTotales.'3:'.$colNombreTotales.$finDatos;
   $styleNombreProductos = array(
     'font' => array(
         'bold' => true,
@@ -667,7 +770,7 @@ function generarExcelMovimientos($registros) {
   ///********************************** FIN Formato Nombre Productos ***********************************
   
   ///************************************ Formato Totales Categoría ************************************
-  $rangoTotales = 'M3:O'.$n;
+  $rangoTotales = $colRetiros.'3:'.$colDestrucciones.$n;
   $styleTotales = array(
     'alignment' => array(
          'wrap' => true,
@@ -688,7 +791,7 @@ function generarExcelMovimientos($registros) {
   ///********************************** FIN Formato Totales Categoría **********************************
   
   ///***************************************** Formato Consumos ****************************************
-  $rangoConsumos = 'P3:P'.$finDatos;
+  $rangoConsumos = $colConsumos.'3:'.$colConsumos.$finDatos;
   $colorConsumos = array(
     'fill' => array(
           'color' => array('rgb' => 'ffff99'),
@@ -717,7 +820,7 @@ function generarExcelMovimientos($registros) {
   ///*************************************** FIN Formato Consumos **************************************
   
   ///***************************************** Formato Ingresos ****************************************
-  $rangoIngresos = 'Q3:Q'.$finDatos;
+  $rangoIngresos = $colIngresos.'3:'.$colIngresos.$finDatos;
   $resaltarIngresos = array(
     'fill' => array(
           'color' => array('rgb' => 'cefdd5'),
@@ -746,7 +849,7 @@ function generarExcelMovimientos($registros) {
   ///*************************************** FIN Formato Ingresos **************************************
   
   ///*************************************** Formato Palabra TOTAL *************************************
-  $rangoTotal = 'L'.$n;
+  $rangoTotal = $colNombreTotales.$n;
   $resaltarPalabraTotal = array(
     'fill' => array(
           'color' => array('rgb' => 'AEE2FA'),
@@ -775,7 +878,7 @@ function generarExcelMovimientos($registros) {
   ///************************************* FIN Formato Palabra TOTAL ***********************************
   
   ///************************************** Formato Consumos Total *************************************
-  $rangoConsumosTotal = 'P'.$n;
+  $rangoConsumosTotal = $colConsumos.$n;
   $colorConsumosTotal = array(
     'fill' => array(
           'color' => array('rgb' => 'feff00'),
@@ -805,7 +908,7 @@ function generarExcelMovimientos($registros) {
   ///*********************************** FIN Formato Consumos Total ************************************
   
   ///************************************** Formato Ingresos Total *************************************
-  $rangoIngresosTotal = 'Q'.$n;
+  $rangoIngresosTotal = $colIngresos.$n;
   $resaltarIngresosTotal = array(
     'fill' => array(
           'color' => array('rgb' => '00ff11'),
@@ -835,7 +938,7 @@ function generarExcelMovimientos($registros) {
   ///************************************* FIN Formato Ingresos Total **********************************
   
   ///****************************************** Muestro TOTALES ****************************************
-  $rangoTotalGeneral = 'M'.$n.':O'.$n;
+  $rangoTotalGeneral = $colRetiros.$n.':'.$colDestrucciones.$n;
   $resaltarTotalGeneral = array(
     'fill' => array(
           'color' => array('rgb' => '888888'),
@@ -911,8 +1014,8 @@ function generarExcelMovimientos($registros) {
   $hoja->getStyle('A'.$j.'')->applyFromArray($styleTextoTotal);
   */
 
-  ///*********************************** Formato para el STOCK: ****************************************
-  $styleColumnaStock = array(
+  ///*********************************** Formato para la CANTIDAD: ****************************************
+  $styleColumnaCantidad = array(
       'fill' => array(
           'color' => array('rgb' => 'A9FF96'),
           'fillType' => 'solid',
@@ -930,9 +1033,9 @@ function generarExcelMovimientos($registros) {
           'formatCode' => '[Blue]#,##0',
       ),
   );
-  $rangoStock = 'H2:H'.$i.'';
-  $hoja->getStyle($rangoStock)->applyFromArray($styleColumnaStock);
-  ///*********************************** FIN Formato para el STOCK: ************************************
+  $rangoStock = $colCantidad.'2:'.$colCantidad.$i.'';
+  $hoja->getStyle($rangoStock)->applyFromArray($styleColumnaCantidad);
+  ///*********************************** FIN Formato para la CANTIDAD ************************************
   
   ///*********************************** Formato para la FECHA: ****************************************
   $styleColumnaFecha = array(
@@ -949,50 +1052,13 @@ function generarExcelMovimientos($registros) {
           'formatCode' => 'DD/MM/YYYY',
       ),
   );
-  $rangoFecha = 'B2:B'.$i.'';
+  $rangoFecha = $colFecha.'2:'.$colFecha.$i.'';
   $hoja->getStyle($rangoFecha)->applyFromArray($styleColumnaFecha);
   ///*********************************** FIN Formato para la FECHA: ************************************
   
-  ///************************************* Formato de las ALARMAS: *************************************
-  $styleAl1 = array(
-      'fill' => array(
-          'color' => array ('rgb' => 'FAFF98'),
-          'fillType' => 'solid',
-      ),
-  );
-
-  $styleAl2 = array(
-      'fill' => array(
-          'color' => array ('rgb' => 'FC4A3F'),
-          'fillType' => 'solid',
-      ),
-  );
-  ///************************************* FIN Formato de las ALARMAS: *********************************
-  
-  /// Aplico color de fondo de la columna de stock según el valor y las alarmas para dicho produco:
-  for ($k = 2; $k <= $i; $k++) {
-    $al1 = "J".$k;
-    $al2 = "K".$k;
-    $celda = "H".$k;
-    $valorAlarma1 = $hoja->getCell($al1)->getValue();
-    $valorAlarma2 = $hoja->getCell($al2)->getValue();
-    $valorCelda = $hoja->getCell($celda)->getValue();
-
-    if (($valorCelda > $valorAlarma2) && ($valorCelda < $valorAlarma1)){
-      $hoja->getStyle($celda)->applyFromArray($styleAl1);
-    }
-
-    if ($valorCelda < $valorAlarma2) {
-      $hoja->getStyle($celda)->applyFromArray($styleAl2);
-    }
-    /// Borro el contenido de las alarmas que vienen en la consulta:
-    $hoja->setCellValue($al1, '');
-    $hoja->setCellValue($al2, ''); 
-  }  
-  
   ///**************************************** FORMATO GENERAL: *****************************************
   /// Defino el rango de celdas con datos para poder darle formato a todas juntas:
-  $rango = "A1:I".$i;
+  $rango = $colId."1:".$colCantidad.$i;
   /// Defino el formato para las celdas:
   $styleGeneral = array(
       'borders' => array(
@@ -1012,18 +1078,16 @@ function generarExcelMovimientos($registros) {
   
   ///**************************************** INICIO AJUSTE ANCHO COLUMNAS *****************************
   /// Ajusto el auto size para que las celdas no se vean cortadas:
-  for ($col = ord('A'); $col <= ord('Q'); $col++)
+  for ($col = ord($colId); $col <= ord($colIngresos); $col++)
     {
-    $hoja->getColumnDimension(chr($col))->setAutoSize(true); 
+    $hoja->getColumnDimension(chr($col))->setAutoSize(true);
   }
+  ///Elimino seteo de ajuste máximo en caso de ser muy grande del campo COMENTARIOS pues ya NO se muestra el mismo:
   
-  $maxWidth = 75;
+  ///Se agrega seteo fijo de la columna de separación entre los movimientos y los totales:
   $hoja->calculateColumnWidths();
-  $colWidth = $hoja->getColumnDimension('I')->getWidth();
-  if ($colWidth > $maxWidth) {
-      $hoja->getColumnDimension('I')->setAutoSize(false);
-      $hoja->getColumnDimension('I')->setWidth($maxWidth);
-  }
+  $hoja->getColumnDimension($colVacia1)->setAutoSize(false);
+  $hoja->getColumnDimension($colVacia1)->setWidth(2);
   ///****************************************** FIN AJUSTE ANCHO COLUMNAS ******************************
   
   /// Se guarda como Excel 2007:

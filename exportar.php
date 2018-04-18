@@ -132,6 +132,7 @@ switch ($id) {
             $asunto = "Reporte con los movimientos de la Entidad";
             //$nombreCampos = "(select 'Fecha', 'Hora', 'Entidad', 'Nombre', 'BIN', 'Tipo', 'Cantidad', 'Comentarios')";
             $indiceStock = 12;
+            $orientacion = 'L';
             if (isset($inicio)) {
               $inicioTemp = explode("-", $inicio);
               $inicioMostrar = $inicioTemp[2]."/".$inicioTemp[1]."/".$inicioTemp[0];
@@ -200,6 +201,8 @@ foreach($filas1 as $fila)
     $primerColumna = array_shift($fila);
     array_unshift($fila, $j);
     array_unshift($fila, $primerColumna);
+    ///Quito la última columna que es la de COMENTARIOS pues ya no se muestran en el EXCEL a pedido de Diego:
+    array_pop($fila);
   }
   else {
     if (($id == 1)||($id == 2)){
@@ -207,7 +210,8 @@ foreach($filas1 as $fila)
       $al2 = array_pop($fila);
       $al1 = array_pop($fila);
       $stock = array_pop($fila);
-      array_push($fila, $coment);
+      ///Comento el agregado de la columna con los comentarios del producto pues la misma se quita del EXCEL a pedido de Diego:
+      //array_push($fila, $coment);
       array_push($fila, $stock);
       array_push($fila, $al1);
       array_push($fila, $al2);
@@ -245,9 +249,9 @@ $pdfResumen->Output($salida, 'I');
 
 ///Según el ID, genero los listados en Excel:
 switch ($id) {
-  case "1": $archivo = generarExcelStock($registros1, $total1);
+  case "1": $archivo = generarExcelStock($registros1);
             break;
-  case "2": $archivo = generarExcelStock($registros1, $total1);
+  case "2": $archivo = generarExcelStock($registros1);
             break;
   case "3": $archivo = generarExcelBoveda($registros1);
             break;

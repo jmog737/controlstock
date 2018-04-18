@@ -570,7 +570,7 @@ class PDF extends PDF_MC_Table
     {
     global $h, $x, $totalCampos, $c1, $totalRegistros;
     global $registros, $campos, $largoCampos, $rutaFotos, $tituloTabla, $tipoConsulta, $codigoEMSA, $mostrar;
-
+       
     $anchoPagina = $this->GetPageWidth();
     $anchoTipo = 0.8*$anchoPagina;
 
@@ -624,17 +624,24 @@ class PDF extends PDF_MC_Table
 
 
     $tam1 = $this->GetStringWidth($subTitulo);
-    $xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
-    //$this->SetY(20);
-    $anchoSubTitulo = $anchoTipo;
-    
-    $nbSubTitulo = $this->NbLines($anchoTipo,$subTitulo);
-    $hSubTitulo=$h*$nbSubTitulo;
-    
     if ($tam1 < $anchoTipo){
-      $xTipo = round((($anchoPagina - $tam1)/2), 2);
       $anchoSubTitulo = 1.05*$tam1;
     }
+    else {
+      $anchoSubTitulo = $anchoTipo;
+    }
+    $xTipo = round((($anchoPagina - $anchoSubTitulo)/2), 2);
+    //$xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
+    //$this->SetY(20);
+    //$anchoSubTitulo = $anchoTipo;
+    
+    $nbSubTitulo = $this->NbLines($anchoSubTitulo,$subTitulo);
+    $hSubTitulo=$h*$nbSubTitulo;
+    
+//    if ($tam1 < $anchoTipo){
+//      $xTipo = round((($anchoPagina - $tam1)/2), 2);
+//      $anchoSubTitulo = 1.05*$tam1;
+//    }
     $this->SetX($xTipo);
 
     $this->SetFillColor(167, 166, 173);
@@ -1063,9 +1070,9 @@ class PDF extends PDF_MC_Table
                             break;
         case "BIN": $indBin = $i;
                     break;
-        case "Cód. EMSA": $indCodEMSA = $i;
+        case utf8_decode("Cód. EMSA"): $indCodEMSA = $i;
                           break;
-        case "Cód. Origen": $indCodOrigen = $i;
+        case utf8_decode("Cód. Origen"): $indCodOrigen = $i;
                             break;                 
         case "Contacto":  $indContacto = $i;
                           break;              
@@ -1340,19 +1347,21 @@ class PDF extends PDF_MC_Table
           $this->SetTextColor(0);
           $this->SetY(25);
           $this->SetFillColor(167, 166, 173);
+          
           $sub2 = $subTitulo."(cont.)";
           $tamSub2 = $this->GetStringWidth($sub2);
           if ($tamSub2 < $anchoTipo){
-            $xTipo = round((($anchoPagina - $tamSub2)/2), 2);
-            $anchoSubTitulo = $tamSub2;
+            $anchoSubTitulo = 1.05*$tamSub2;
           }
           else {
             $anchoSubTitulo = $anchoTipo;
-            $xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
           }
+          $xTipo = round((($anchoPagina - $anchoSubTitulo)/2), 2);
           $this->SetX($xTipo);
+          
           $nbSubTitulo1 = $this->NbLines($anchoSubTitulo,$sub2);
           $hSubTitulo1=$h*$nbSubTitulo1;
+          
           if ($nbSubTitulo1 > 1) {
             $this->MultiCell($anchoSubTitulo,$h, $sub2,0, 'C', 1);
           }
@@ -1391,9 +1400,9 @@ class PDF extends PDF_MC_Table
                                 break;
             case "BIN": $indBin = $i;
                         break;
-            case "Cód. EMSA": $indCodEMSA = $i;
+            case utf8_decode("Cód. EMSA"): $indCodEMSA = $i;
                               break;
-            case "Cód. Origen": $indCodOrigen = $i;
+            case utf8_decode("Cód. Origen"): $indCodOrigen = $i;
                                 break;                 
             case "Contacto":  $indContacto = $i;
                               break;              
@@ -1533,16 +1542,16 @@ class PDF extends PDF_MC_Table
         $this->SetTextColor(0);
         $this->SetY(25);
         $this->SetFillColor(167, 166, 173);
+        
         $sub3 = $subTitulo."(cont.)";
         $tamSub3 = $this->GetStringWidth($sub3);
         if ($tamSub3 < $anchoTipo){
-          $xTipo = round((($anchoPagina - $tamSub3)/2), 2);
-          $anchoSubTitulo = $tamSub3;
+          $anchoSubTitulo = 1.05*$tamSub3;
         }
         else {
-          $anchoSubTitulo = $anchoTipo;
-          $xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
+          $anchoSubTitulo = $anchoTipo;     
         }
+        $xTipo = round((($anchoPagina - $anchoSubTitulo)/2), 2);
         $this->SetX($xTipo);
         
         $nbSubTitulo3 = $this->NbLines($anchoSubTitulo,$sub3);
@@ -1588,9 +1597,9 @@ class PDF extends PDF_MC_Table
                                 break;
             case "BIN": $indBin = $i;
                         break;
-            case "Cód. EMSA": $indCodEMSA = $i;
+            case utf8_decode("Cód. EMSA"): $indCodEMSA = $i;
                               break;
-            case "Cód. Origen": $indCodOrigen = $i;
+            case utf8_decode("Cód. Origen"): $indCodOrigen = $i;
                                 break;                 
             case "Contacto":  $indContacto = $i;
                               break;              
@@ -1917,8 +1926,13 @@ class PDF extends PDF_MC_Table
       /// Chequeo si se tiene que mostrar el campo Codigo EMSA, y de ser así lo muestro:
       if ($mostrar[$indCodEMSA]) 
         {
+        $codEMSA = trim(utf8_decode($dato[$indCodEMSA]));
+        if (($codEMSA == '')||($codEMSA == null))
+          {
+          $codEMSA = 'NO ingresado';
+        }
         $w = $largoCampos[$indCodEMSA];
-        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indCodEMSA])));
+        $nb1 = $this->NbLines($w, $codEMSA);
 
         //Save the current position
         $x1=$this->GetX();
@@ -1935,10 +1949,10 @@ class PDF extends PDF_MC_Table
         $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indCodEMSA])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, $codEMSA,'LRT','C', $fill);
           }
         else {
-          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indCodEMSA])),1,'C', $fill);
+          $this->MultiCell($w,$h0, $codEMSA,1,'C', $fill);
           }  
         //Put the position to the right of the cell
         $this->SetXY($x1+$w,$y);
@@ -1950,7 +1964,12 @@ class PDF extends PDF_MC_Table
       if ($mostrar[$indCodOrigen]) 
         {
         $w = $largoCampos[$indCodOrigen];
-        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indCodOrigen])));
+        $codOrigen = trim(utf8_decode($dato[$indCodOrigen]));
+        if (($codOrigen == '')||($codOrigen == null))
+          {
+          $codOrigen = 'NO ingresado';
+        }
+        $nb1 = $this->NbLines($w, $codOrigen);
 
         //Save the current position
         $x1=$this->GetX();
@@ -1967,10 +1986,10 @@ class PDF extends PDF_MC_Table
         $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indCodOrigen])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, $codOrigen,'LRT','C', $fill);
           }
         else {
-          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indCodOrigen])),1,'C', $fill);
+          $this->MultiCell($w,$h0, $codOrigen,1,'C', $fill);
           }  
         //Put the position to the right of the cell
         $this->SetXY($x1+$w,$y);
@@ -2358,23 +2377,26 @@ class PDF extends PDF_MC_Table
       $this->SetTextColor(0);
       $this->SetY(25);
       $this->SetFillColor(167, 166, 173);
-      $sub2 = $subTitulo."(cont.)";
-      $tamSub2 = $this->GetStringWidth($sub2);
-      if ($tamSub2 < $anchoTipo){
-        $xTipo = round((($anchoPagina - $tamSub2)/2), 2);
-        $anchoSubTitulo = $tamSub2;
+      
+      $sub4 = $subTitulo."(cont.)";
+      $tamSub4 = $this->GetStringWidth($sub4);
+      if ($tamSub4 < $anchoTipo){
+        $anchoSubTitulo = 1.05*$tamSub4;
       }
       else {
         $anchoSubTitulo = $anchoTipo;
-        $xTipo = round((($anchoPagina - $anchoTipo)/2), 2);
       }
+      $xTipo = round((($anchoPagina - $anchoSubTitulo)/2), 2);
       $this->SetX($xTipo);
-          
-      if ($nbSubTitulo1 > 1) {
-        $this->MultiCell($anchoSubTitulo,$h, $sub2,0, 'C', 1);
+       
+      $nbSubTitulo4 = $this->NbLines($anchoSubTitulo,$sub4);
+      $hSubTitulo4=$h*$nbSubTitulo4;
+      
+      if ($nbSubTitulo4 > 1) {
+        $this->MultiCell($anchoSubTitulo,$h, $sub4,0, 'C', 1);
       }
       else {
-        $this->Cell($anchoSubTitulo,$hSubTitulo, $sub2,0,0,'C', 1);
+        $this->Cell($anchoSubTitulo,$hSubTitulo4, $sub4,0,0,'C', 1);
         $this->Ln();
       }
       $this->Ln();
