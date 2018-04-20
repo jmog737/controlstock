@@ -309,12 +309,6 @@ function generarExcelStock($registros) {
   }  
 */
 
-  /// Ajusto el auto size para que las celdas no se vean cortadas:
-  for ($col = ord(''.$colId.''); $col <= ord(''.$colCodOrigen.''); $col++)
-    {
-    $hoja->getColumnDimension(chr($col))->setAutoSize(true);   
-  }
-
   /// Defino el rango de celdas con datos para poder darle formato a todas juntas:
   $rango = $colId."1:".$colStock.$j;
   /// Defino el formato para las celdas:
@@ -332,6 +326,15 @@ function generarExcelStock($registros) {
   );
   $hoja->getStyle($rango)->applyFromArray($styleGeneral);
 
+  /// Ajusto el auto size para que las celdas no se vean cortadas:
+  for ($col = ord(''.$colId.''); $col <= ord(''.$colStock.''); $col++)
+    {
+    $hoja->getColumnDimension(chr($col))->setAutoSize(true);   
+  }
+  
+  $hoja->getProtection()->setPassword('emsa');
+  $hoja->getProtection()->setSheet(true);
+  
   // Se guarda como Excel 2007:
   $writer = new Xlsx($spreadsheet);
 
