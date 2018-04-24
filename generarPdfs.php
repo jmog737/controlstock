@@ -35,6 +35,7 @@ require_once('..\..\fpdf\mc_table.php');
 
 class PDF extends PDF_MC_Table
   {
+  ///Constantes usadas por las funciones de ajuste de las imágenes:
   const DPI_150 = 150;
   const DPI_300 = 300;
   const MM_IN_INCH = 25.4;
@@ -49,6 +50,9 @@ class PDF extends PDF_MC_Table
   const LOGO_HEIGHT_MM = 20;
   const FOTO_WIDTH_MM = 60;
   const FOTO_HEIGHT_MM = 37.84;
+  
+  ///Variable usada por las funciones de generación de las marcas de agua:
+  var $angle=0;
   
   //Cabecera de página
   function Header()
@@ -99,6 +103,14 @@ class PDF extends PDF_MC_Table
     
     $this->Cell($anchoDia, 5, $hora, 0, 0, 'C', false);
 
+    ///*************************** AGREGADO DE UNA MARCA DE AGUA: *********************************************
+    //Put the watermark
+    $this->SetFont('Arial','B',110);
+    $this->SetTextColor(255,180,203);
+    $this->RotatedText(35,270,'CONFIDENCIAL',55);
+    
+    ///************************ FIN AGREGADO DE UNA MARCA DE AGUA *********************************************
+    
     //Dejo el cursor donde debe empezar a escribir:
     $this->Ln(18);
     $this->setX($x);
@@ -566,6 +578,7 @@ class PDF extends PDF_MC_Table
     ///***************************************************** FIN BORDE REDONDEADO DE CIERRE *************************************************
   }
   
+  ///Función para generar los PDFs correspondientes a consultas de MOVIMIENTOS, ya sean de entidad o de productos:
   function tablaMovimientos($tablaProducto) 
     {
     global $h, $x, $totalCampos, $c1, $totalRegistros;
@@ -2871,6 +2884,8 @@ class PDF extends PDF_MC_Table
     ///***************************************************** FIN BORDE REDONDEADO DE CIERRE ***************************************************
   }
   
+  ///Función auxiliar para redondear los bordes de las tablas.
+  ///Está sacada del script: Rounded Rectangle
   function RoundedRect($x, $y, $w, $h, $r, $corners = '1234', $style = '')
     {
     $k = $this->k;
@@ -2921,6 +2936,8 @@ class PDF extends PDF_MC_Table
     $this->_out($op);
   }
 
+  ///Función auxiliar para redondear los bordes de las tablas.
+  ///Está sacada del script: Rounded Rectangle
   function _Arc($x1, $y1, $x2, $y2, $x3, $y3)
     {
     $h = $this->h;
@@ -2928,10 +2945,12 @@ class PDF extends PDF_MC_Table
         $x2*$this->k, ($h-$y2)*$this->k, $x3*$this->k, ($h-$y3)*$this->k));
   }
   
+  ///Función auxiliar que calcula cuantos mm ocupará una imagen con determinados píxeles según los DPI:
   function pixelsToMM($val) {
         return $val * self::MM_IN_INCH / self::DPI_300;
     }
-  
+    
+  ///Función auxiliar que ajusta el tamaño de la imagen a los parámetros de ancho y alto pasados:
   function resizeToFit($imgFilename, $ancho, $alto) {
     list($anchoImgPx, $altoImgPx) = getimagesize($imgFilename);
     
@@ -2947,4 +2966,49 @@ class PDF extends PDF_MC_Table
         round($scale * $anchoImgMm),
         round($scale * $altoImgMm));        
     }  
+    
+  ///Función auxiliar usada para generar las marcas de agua:
+  ///Sacada del script: PDF_Rotate
+  function Rotate($angle,$x=-1,$y=-1)
+    {
+    if($x==-1)
+        $x=$this->x;
+    if($y==-1)
+        $y=$this->y;
+    if($this->angle!=0)
+        $this->_out('Q');
+    $this->angle=$angle;
+    if($angle!=0)
+      {
+      $angle*=M_PI/180;
+      $c=cos($angle);
+      $s=sin($angle);
+      $cx=$x*$this->k;
+      $cy=($this->h-$y)*$this->k;
+      $this->_out(sprintf('q %.5F %.5F %.5F %.5F %.2F %.2F cm 1 0 0 1 %.2F %.2F cm',$c,$s,-$s,$c,$cx,$cy,-$cx,-$cy));
+    }
+  }
+  
+  ///Función auxiliar para generar las marcas de agua:
+  ///Sacada del script: PDF_Rotate
+  function RotatedText($x,$y,$txt,$angle)
+    {
+    //Text rotated around its origin
+    $this->Rotate($angle,$x,$y);
+    $this->Text($x,$y,$txt);
+    $this->Rotate(0);
+  }
+
+  ///Función auxiliar usada para generar las marcas de agua:
+  ///Sacada del script: PDF_Rotate
+  function _endpage()
+    {
+    if($this->angle!=0)
+      {
+      $this->angle=0;
+      $this->_out('Q');
+    }
+    parent::_endpage();
+  }  
+    
 }

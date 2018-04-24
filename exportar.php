@@ -286,13 +286,13 @@ if ($zip->open($fileDir, ZIPARCHIVE::CREATE ) !== TRUE)
 $zip->addFile($salida, $nombreArchivo);
 $zip->addFile($excel, $archivo);
 
-/*
+
 ///****************************************************** ESTABLECER CONTRASEÑA PARA LOS ARCHIVOS *******************************************
-$zip->setPassword('emsa123');
+$zip->setPassword('Emsa1234');
 $zip->setEncryptionName($archivo, ZipArchive::EM_AES_256);
 $zip->setEncryptionName($nombreArchivo, ZipArchive::EM_AES_256);
 ///**************************************************** FIN ESTABLECER CONTRASEÑA PARA LOS ARCHIVOS *****************************************
-*/
+
 
 $zip->close();
 ///********************************************************** FIN GENERACION ZIP FILE *******************************************************

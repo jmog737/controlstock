@@ -332,7 +332,8 @@ function generarExcelStock($registros) {
     $hoja->getColumnDimension(chr($col))->setAutoSize(true);   
   }
   
-  $hoja->getProtection()->setPassword('emsa');
+  ///Agrego protección para la hoja activa:
+  $hoja->getProtection()->setPassword('Emsa1234');
   $hoja->getProtection()->setSheet(true);
   
   // Se guarda como Excel 2007:
@@ -499,6 +500,10 @@ function generarExcelBoveda($registros) {
 
   $rangoStock = 'C2:C'.$i.'';
   $hoja->getStyle($rangoStock)->applyFromArray($styleColumnaStock);
+  
+  ///Agrego protección para la hoja activa:
+  $hoja->getProtection()->setPassword('Emsa1234');
+  $hoja->getProtection()->setSheet(true);
   
   // Se guarda como Excel 2007:
   $writer = new Xlsx($spreadsheet);
@@ -1092,6 +1097,10 @@ function generarExcelMovimientos($registros) {
   $hoja->getColumnDimension($colVacia1)->setAutoSize(false);
   $hoja->getColumnDimension($colVacia1)->setWidth(2);
   ///****************************************** FIN AJUSTE ANCHO COLUMNAS ******************************
+  
+  ///Agrego protección para la hoja activa:
+  $hoja->getProtection()->setPassword('Emsa1234');
+  $hoja->getProtection()->setSheet(true);
   
   /// Se guarda como Excel 2007:
   $writer = new Xlsx($spreadsheet);
