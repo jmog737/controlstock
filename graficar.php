@@ -82,8 +82,6 @@ class PDF extends PDF_MC_Table
     }
   }  
   
-  
-  
   function graficarBarras($subtitulo, $meses, $totales, $data1, $data2, $data3, $data4, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg5, $destino){
     global $dirGraficas, $h;
     
@@ -459,8 +457,6 @@ class PDF extends PDF_MC_Table
       $graph->img->Stream();
     } 
   }
-  
-  
 }
 
 ///Función que da el formato de los valores en cada columna.

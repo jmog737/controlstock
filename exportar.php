@@ -5,7 +5,6 @@ require_once("data/sesiones.php");
 require_once('data/baseMysql.php');
 require_once('generarExcel.php');
 require_once('generarPdfs.php');
-//require_once('enviarMails.php');
 require_once('data/config.php');
 
 //phpinfo();
@@ -43,7 +42,18 @@ $query = $_POST["query_$indice"];
 $consultaCSV = $_POST["consultaCSV_$indice"];
 
 $tipoConsulta = strip_tags($_POST["tipoConsulta_$indice"]);
-//echo $tipoConsulta;
+
+$buscarTipo = stripos($tipoConsulta, "de todos los tipos");
+$tipo = '';
+if ($buscarTipo !== false){
+  $tipo = 'todos';
+}
+else {
+  $tempTipo = explode("del tipo ", $tipoConsulta);
+  $tempTipo1 = explode(" ", $tempTipo[1]);
+  $tipo = $tempTipo1[0];
+}
+//echo "consulta: ".$tipoConsulta."<br>tipo: ".$tipo;
 $mostrar1 = utf8_decode($_POST["mostrar"]);
 $mostrar = preg_split("/-/", $mostrar1);
 
@@ -153,6 +163,37 @@ switch ($id) {
             }
             break;       
   default: break;
+}
+
+if (($id === "4")||($id === "5")){
+  if ($id === "4") {
+    $nombre = $entidadMostrar;
+    $subTipo = " POR ENTIDAD";
+  }
+  else {
+    $nombre = "_".$nombreProductoMostrar;
+    $subTipo = " DEL PRODUCTO";
+  }
+  switch ($tipo){
+    case "todos": $tit = "MOVIMIENTOS";
+                  $nomRep = "movs";
+                  break;
+    case "Retiro": $tit = "RETIROS"; 
+                   $nomRep = "retiros";
+                   break;
+    case "Ingreso": $tit = "INGRESOS";
+                    $nomRep = "ingresos";
+                    break;
+    case "Renovación": $tit = "RENOVACIONES";
+                       $nomRep = "renos";
+                       break;
+    case "Destrucción": $tit = "DESTRUCCIONES";
+                        $nomRep = "destrucciones";
+                        break;
+    default: break;
+  }
+  $titulo = $tit.$subTipo;
+  $nombreReporte = $nomRep.$nombre;
 }
 
 // Conectar con la base de datos
