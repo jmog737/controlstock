@@ -62,27 +62,27 @@ class PDF extends PDF_MC_Table
     }
   
   //Función para agregar la gráfica exportada:
-  function agregarGrafica($nombre)
-    {
-    global $dirGraficas;
-    //************************************** TÍTULO *****************************************************************************************
-    $xFoto = $this->GetX();
-    $yFoto = $this->GetY();
-    //**************************************  FIN TÍTULO ************************************************************************************
-
-    $rutaGrafica = $dirGraficas.$nombre;
-
-    if (file_exists($rutaGrafica)) {
-      $this->Ln(10);
-      $this->Image($rutaGrafica, $xFoto, $yFoto, 0, 0); 
-      $_SESSION["nombreGrafica"] = null;
-    } 
-    else {
-
-    }
-  }  
+//  function agregarGrafica($nombre)
+//    {
+//    global $dirGraficas;
+//    //************************************** TÍTULO *****************************************************************************************
+//    $xFoto = $this->GetX();
+//    $yFoto = $this->GetY();
+//    //**************************************  FIN TÍTULO ************************************************************************************
+//
+//    $rutaGrafica = $dirGraficas.$nombre;
+//
+//    if (file_exists($rutaGrafica)) {
+//      $this->Ln(10);
+//      $this->Image($rutaGrafica, $xFoto, $yFoto, 0, 0); 
+//      $_SESSION["nombreGrafica"] = null;
+//    } 
+//    else {
+//
+//    }
+//  }  
   
-  function graficarBarras($subtitulo, $meses, $totales, $data1, $data2, $data3, $data4, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg5, $destino){
+  function graficarBarras($subtitulo, $meses, $totales, $data1, $data2, $data3, $data4, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg5, $destino, $nombreGrafica){
     global $dirGraficas, $h;
     
     
@@ -282,8 +282,8 @@ class PDF extends PDF_MC_Table
     $graph->legend->SetColumns(1);
 
     if ($destino === 'pdf'){
-      $timestamp = date('Ymd_His');
-      $nombreArchivo = "graficaEntidad".$timestamp.".png";
+      $timestamp = date('dmY_His');
+      $nombreArchivo = $nombreGrafica.$timestamp.".png";
       $fileName = $dirGraficas.$nombreArchivo;
 
       // Stroke image to a file
@@ -317,7 +317,7 @@ class PDF extends PDF_MC_Table
     
   }
 
-  function graficarTorta($subtitulo, $data, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg5, $destino){
+  function graficarTorta($subtitulo, $data, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg5, $destino, $nombreGrafica){
     global $dirGraficas, $h;
 
     // A new pie graph
@@ -424,8 +424,8 @@ class PDF extends PDF_MC_Table
     ///************************************************************ FIN Textos con los promedios: **************************************************************
 
     if ($destino === 'pdf'){
-      $timestamp = date('Ymd_His');
-      $nombreArchivo = "graficaProducto".$timestamp.".png";
+      $timestamp = date('dmY_His');
+      $nombreArchivo = $nombreGrafica.$timestamp.".png";
       $fileName = $dirGraficas.$nombreArchivo;
 
       // Stroke image to a file
@@ -734,26 +734,49 @@ $pdfGrafica = new PDF();
 //Agrego una página al documento:
 $pdfGrafica->AddPage();
 
-$timestamp = date('Ymd_His');
+$timestamp = date('dmY_His');
+
+///Caracteres a ser reemplazados en caso de estar presentes en el nombre del producto o la entidad
+///Esto se hace para mejorar la lectura (en caso de espacios en blanco), o por requisito para el nombre de la hoja de excel
+$aguja = array(0=>" ", 1=>".", 2=>"[", 3=>"]", 4=>"*", 5=>"/", 6=>"\\", 7=>"?", 8=>":", 9=>"_", 10=>"-");
+///Se define el tamaño máximo aceptable para el nombre teniendo en cuenta que el excel admite un máximo de 31 caracteres, y que además, 
+///ya se tienen 6 fijos del stock_ (movs_ es uno menos).
+$tamMaximoNombre = 25;
 
 ///A partir del contenido del subtítulo discrimino si es una gráfica para un producto o para una entidad
 ///y en base a esto, elijo el tipo de gráfica a mostrar:
 $producto = strpos($mensaje, 'producto');
 if ($producto !== FALSE) {
-  $nombreGrafica = "graficaProducto";
-  $nombreArchivo = $nombreGrafica.$timestamp.".pdf";
-  $salida = $dirGraficas.$nombreArchivo;
-  $pdfGrafica->graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, 'pdf');
-  $pdfGrafica->Output('F', $salida);
-  $pdfGrafica->graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, '');
+  $tempProd = explode("del producto ", $mensaje);
+}  
+else {
+  $tempProd = explode("de ", $mensaje);
+}  
+$tempProd1 = stripos($tempProd[1], " entre");
+if ($tempProd1 !== false){
+  $tempProd2 = explode(" entre", $tempProd[1]);
+  $nombreProducto = trim($tempProd2[0]);
 }
 else {
-  $nombreGrafica = "graficaEntidad";
-  $nombreArchivo = $nombreGrafica.$timestamp.".pdf";
-  $salida = $dirGraficas.$nombreArchivo;
-  $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, 'pdf');
-  $pdfGrafica->Output('F', $salida);
-  $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, '');
+  $tempProd3 = stripos($tempProd[1], " de");
+  if ($tempProd3 !== false){
+    $tempProd4 = explode(" de", $tempProd[1]);
+    $nombreProducto = trim($tempProd4[0]);
+  }
+  else {
+    $tempProd5 = explode(" del", $tempProd[1]);
+    $nombreProducto = trim($tempProd5[0]);
+  }
 }
+$nombreProductoMostrar1 = str_replace($aguja, "", $nombreProducto);
+$nombreProductoMostrar = substr($nombreProductoMostrar1, 0, $tamMaximoNombre);
+$nombreGrafica = "grafica_".$nombreProductoMostrar."_";
+
+$nombreArchivo = $nombreGrafica.$timestamp.".pdf";
+$salida = $dirGraficas.$nombreArchivo;
+
+$pdfGrafica->graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, 'pdf', $nombreGrafica);
+$pdfGrafica->Output('F', $salida);
+$pdfGrafica->graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, '', $nombreGrafica);
 
 ?>

@@ -65,6 +65,13 @@ $temp = explode('-', $largos);
 
 $x = $_POST["x"];
 
+$zipSeguridad = $_POST["zip"];
+$planilla = $_POST["planilla"];
+$marcaAgua = $_POST["marcaAgua"];
+$pwdZipManual = $_POST["zipManual"];
+$pwdPlanillaManual = $_POST["planillaManual"];
+//echo "zip: ".$zipSeguridad."<br>zipManual: ".$pwdZipManual."<br>planilla: ".$planilla."<br>planillaManual: ".$pwdPlanillaManual."<br>marca agua: ".$marcaAgua;
+
 if (isset($_POST["idProd"])){
   $idProd = $_POST["idProd"];
 }
@@ -138,7 +145,7 @@ switch ($id) {
             break;
   case "4": $tituloTabla = "MOVIMIENTOS DE LA/S ENTIDAD/ES";
             $titulo = "MOVIMIENTOS POR ENTIDAD";
-            $nombreReporte = "movs_".$entidadMostrar;
+            //$nombreReporte = "movs".$entidadMostrar;
             $asunto = "Reporte con los movimientos de la Entidad";
             //$nombreCampos = "(select 'Fecha', 'Hora', 'Entidad', 'Nombre', 'BIN', 'Tipo', 'Cantidad', 'Comentarios')";
             $indiceStock = 12;
@@ -152,7 +159,7 @@ switch ($id) {
             break;
   case "5": $tituloTabla = "MOVIMIENTOS DEL PRODUCTO";
             $titulo = "MOVIMIENTOS POR PRODUCTO";
-            $nombreReporte = "movs_".$nombreProductoMostrar;
+            //$nombreReporte = "movs".$nombreProductoMostrar;
             $asunto = "Reporte con los movimientos del Producto";
             $indiceStock = 12;
             if (isset($inicio)) {
@@ -171,24 +178,24 @@ if (($id === "4")||($id === "5")){
     $subTipo = " POR ENTIDAD";
   }
   else {
-    $nombre = "_".$nombreProductoMostrar;
+    $nombre = $nombreProductoMostrar;
     $subTipo = " DEL PRODUCTO";
   }
   switch ($tipo){
     case "todos": $tit = "MOVIMIENTOS";
-                  $nomRep = "movs";
+                  $nomRep = "movs_";
                   break;
     case "Retiro": $tit = "RETIROS"; 
-                   $nomRep = "retiros";
+                   $nomRep = "retiros_";
                    break;
     case "Ingreso": $tit = "INGRESOS";
-                    $nomRep = "ingresos";
+                    $nomRep = "ingresos_";
                     break;
     case "Renovación": $tit = "RENOVACIONES";
-                       $nomRep = "renos";
+                       $nomRep = "renos_";
                        break;
     case "Destrucción": $tit = "DESTRUCCIONES";
-                        $nomRep = "destrucciones";
+                        $nomRep = "destrucciones_";
                         break;
     default: break;
   }
@@ -288,6 +295,22 @@ $salida = $dir.$nombreArchivo;
 $pdfResumen->Output($salida, 'F');
 $pdfResumen->Output($salida, 'I');
 
+///****************************************************** ESTABLECER CONTRASEÑA PARA EL ZIP  ************************************************
+///*********************************** (requerida por el EXCEL, por esto se pone antes de la generación del mismo)  *************************
+switch ($zipSeguridad){
+  case "nada": $pwdZip = '';
+               break;
+  case "fecha": $pwdZip = $timestamp; 
+                break;
+  case "random": $pwdZip = 'test';
+                 break;
+  case "manual": $pwdZip = $pwdZipManual;
+                 break;
+  default: break;
+}
+///******************************************************* FIN ESTABLECER CONTRASEÑA PARA EL ZIP ********************************************
+
+///****************************************************************** GENERACIÓN DEL EXCEL **************************************************
 ///Según el ID, genero los listados en Excel:
 switch ($id) {
   case "1": $archivo = generarExcelStock($registros1);
@@ -301,7 +324,8 @@ switch ($id) {
   case "5": $archivo = generarExcelMovimientos($registros1);
             break;
   default: break;
-}    
+}  
+///****************************************************************** FIN GENERACIÓN DEL EXCEL **********************************************
 
 /*
 /// Exportación de la consulta a CSV:
@@ -327,12 +351,12 @@ if ($zip->open($fileDir, ZIPARCHIVE::CREATE ) !== TRUE)
 $zip->addFile($salida, $nombreArchivo);
 $zip->addFile($excel, $archivo);
 
+if ($zipSeguridad !== 'nada'){
+  $zip->setPassword($pwdZip);
+  $zip->setEncryptionName($archivo, ZipArchive::EM_AES_256);
+  $zip->setEncryptionName($nombreArchivo, ZipArchive::EM_AES_256);
+}
 
-///****************************************************** ESTABLECER CONTRASEÑA PARA LOS ARCHIVOS *******************************************
-$zip->setPassword('Emsa1234');
-$zip->setEncryptionName($archivo, ZipArchive::EM_AES_256);
-$zip->setEncryptionName($nombreArchivo, ZipArchive::EM_AES_256);
-///**************************************************** FIN ESTABLECER CONTRASEÑA PARA LOS ARCHIVOS *****************************************
 
 
 $zip->close();

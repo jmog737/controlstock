@@ -57,7 +57,7 @@ class PDF extends PDF_MC_Table
   //Cabecera de página
   function Header()
     {
-    global $fecha, $hora, $titulo, $x;// $hHeader;
+    global $fecha, $hora, $titulo, $x, $marcaAgua;// $hHeader;
     
     $anchoPage = $this->GetPageWidth();
     $anchoDia = 20;
@@ -104,11 +104,12 @@ class PDF extends PDF_MC_Table
     $this->Cell($anchoDia, 5, $hora, 0, 0, 'C', false);
 
     ///*************************** AGREGADO DE UNA MARCA DE AGUA: *********************************************
-    //Put the watermark
-    $this->SetFont('Arial','B',110);
-    $this->SetTextColor(255,180,203);
-    $this->RotatedText(35,270,'CONFIDENCIAL',55);
-    
+    if ($marcaAgua !== "false") {
+      //Put the watermark
+      $this->SetFont('Arial','B',110);
+      $this->SetTextColor(255,180,203);
+      $this->RotatedText(35,270,'CONFIDENCIAL',55);
+    }
     ///************************ FIN AGREGADO DE UNA MARCA DE AGUA *********************************************
     
     //Dejo el cursor donde debe empezar a escribir:

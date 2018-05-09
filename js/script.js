@@ -2250,9 +2250,19 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
  * @param {String} mensajeTipo String con el tipo de consulta realizada (si fue stock o movimientos y de que entidad o producto). 
  * @param {String} mensajeUsuario String con el usuario seleccionado, sólo en el caso se haya filtrado por algún usuario involucrado.
  * @param {String} mensajeFecha String con el rango de fechas elegido para la consulta, o todo el rango en caso de no haberlo seleccionado.
+ * @param {String} zip String que indica el tipo de seguridad que se requiere para el archivo ZIP que se genera.
+ * @param {String} zipManual String con la contraseña elegida para el ZIP que se genera en caso de haber elegido por el tipo manual.
+ * @param {String} planilla String que indica el tipo de seguridad que se requiere para la planilla EXCEL que se genera.
+ * @param {String} planillaManual String con la contraseña elegida para la planilla EXCEL que se genera en caso de haber elegido por el tipo manual.
+ * @param {Boolean} marcaAgua Booleano que indica si se quiere agregar o no la marca de agua de seguridad en los PDFs generados.
+ * @param {String} p String que indica el tipo de filtro de fechas que se usó para la consulta.
+ * @param {String} d1 String que indica la primer fecha del rango (puede ser una fecha o el mes en caso de que sea por meses).
+ * @param {String} d2 String que indica la segunda fecha del rango (puede ser una fecha o el año en caso de que sea por meses).
+ * @param {String} tipo String que indica el tipo movimiento que se quiere filtrar.
+ * @param {String} user String que indica el usuario involucrado que se usó para filtrar.
  * @returns {String} String con el HTML que contiene los títulos y la tabla a mostrar. La tabla la generará mostrarTabla a la cual se llama desde acá.
  */
-function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha){
+function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, p, d1, d2, tipo, user){
   var url = "data/selectQueryJSON.php";
 
   $("#main-content").empty();
@@ -2375,6 +2385,16 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                     <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="p" name="p" value="'+p+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="d1" name="d1" value="'+d1+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="d2" name="d2" value="'+d2+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="user" name="user" value="'+user+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="zip" name="zip" value="'+zip+'"></td>\n\
+                                                    <td style="display:none"><input type="password" id="zipManual" name="zipManual" value="'+zipManual+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="planilla" name="planilla" value="'+planilla+'"></td>\n\
+                                                    <td style="display:none"><input type="password" id="planillaManual" name="planillaManual" value="'+planillaManual+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="marcaAgua" name="marcaAgua" value="'+marcaAgua+'"></td>\n\
                                                   </tr>';
                                 break;
           case 'productoStock': campos = "Id-Entidad-Nombre-BIN-C&oacute;d. EMSA-C&oacute;d. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje";
@@ -2394,6 +2414,16 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                     <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="p" name="p" value="'+p+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="d1" name="d1" value="'+d1+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="d2" name="d2" value="'+d2+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="user" name="user" value="'+user+'"></td>\n\\n\
+                                                    <td style="display:none"><input type="text" id="zip" name="zip" value="'+zip+'"></td>\n\
+                                                    <td style="display:none"><input type="password" id="zipManual" name="zipManual" value="'+zipManual+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="planilla" name="planilla" value="'+planilla+'"></td>\n\
+                                                    <td style="display:none"><input type="password" id="planillaManual" name="planillaManual" value="'+planillaManual+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="marcaAgua" name="marcaAgua" value="'+marcaAgua+'"></td>\n\
                                                   </tr>';
                                 break;
           case 'totalStock':  campos = 'Id-Entidad-Stock';
@@ -2411,6 +2441,16 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                 <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
                                                 <td style="display:none"><input type="text" id="tipoConsulta_0" name="tipoConsulta_0" value="'+mensajeConsulta+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="p" name="p" value="'+p+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="d1" name="d1" value="'+d1+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="d2" name="d2" value="'+d2+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="user" name="user" value="'+user+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="zip" name="zip" value="'+zip+'"></td>\n\
+                                                <td style="display:none"><input type="password" id="zipManual" name="zipManual" value="'+zipManual+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="planilla" name="planilla" value="'+planilla+'"></td>\n\
+                                                <td style="display:none"><input type="password" id="planillaManual" name="planillaManual" value="'+planillaManual+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="marcaAgua" name="marcaAgua" value="'+marcaAgua+'"></td>\n\
                                               </tr>';
                              break;
           case 'entidadMovimiento': campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios-IdMov';
@@ -2430,6 +2470,16 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                         <td style="display:none"><input type="text" id="entidad_'+j+'" name="entidad_'+j+'" value="'+entidadesMovimiento[j]+'"></td>\n\
                                                         <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
                                                         <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="p" name="p" value="'+p+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="d1" name="d1" value="'+d1+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="d2" name="d2" value="'+d2+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="user" name="user" value="'+user+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="zip" name="zip" value="'+zip+'"></td>\n\
+                                                        <td style="display:none"><input type="password" id="zipManual" name="zipManual" value="'+zipManual+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="planilla" name="planilla" value="'+planilla+'"></td>\n\
+                                                        <td style="display:none"><input type="password" id="planillaManual" name="planillaManual" value="'+planillaManual+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="marcaAgua" name="marcaAgua" value="'+marcaAgua+'"></td>\n\
                                                       </tr>';
                                     break;
           case 'productoMovimiento':  campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios-IdMov';
@@ -2450,6 +2500,16 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                           <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProds[j]+'"></td>\n\
                                                           <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
                                                           <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="p" name="p" value="'+p+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="d1" name="d1" value="'+d1+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="d2" name="d2" value="'+d2+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="user" name="user" value="'+user+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="zip" name="zip" value="'+zip+'"></td>\n\
+                                                          <td style="display:none"><input type="password" id="zipManual" name="zipManual" value="'+zipManual+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="planilla" name="planilla" value="'+planilla+'"></td>\n\
+                                                          <td style="display:none"><input type="password" id="planillaManual" name="planillaManual" value="'+planillaManual+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="marcaAgua" name="marcaAgua" value="'+marcaAgua+'"></td>\n\
                                                         </tr>';
                                       break;
           default: break;
@@ -2508,7 +2568,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         if (idProds[j] === undefined) {
           idProds[j] = '';
         }
-        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&id='+idProds[j]+'&ent='+ent[j]+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds[j]+'&ent='+ent[j]+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipo+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         mostrar += '</div>';
         $("#pills-tabContent").append(mostrar);
@@ -2517,7 +2577,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         }/// FIN del if de totalDatos>1  
       else {
         mostrar += "<br><hr><h3>No existen registros para la consulta realizada.</h3><hr>";
-        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&id='+idProds[j]+'&ent='+ent[j]+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds[j]+'&ent='+ent[j]+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipo+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         mostrar += '</div>';
         $("#pills-tabContent").append(mostrar);
@@ -2571,6 +2631,25 @@ function realizarBusqueda(){
     var fin = $("#fin").val();
     var mes = $("#mes").val();
     var año = $("#año").val();
+    var d1 = '';
+    var d2 = '';
+    var zip = $("#zip").val();
+    var planilla = $("#planilla").val();
+    var zipManual = '';
+    var planillaManual = '';
+    if (zip !== 'nada') {
+      zipManual = $("#zipManual").val();
+    }
+    if (planilla !== 'nada'){
+      planillaManual = $("#planillaManual").val();
+    }
+    var marcaAgua = '';
+    if($("#marcaAgua").is(':checked')) {  
+      marcaAgua = true;
+    } 
+    else {  
+      marcaAgua = false;  
+    }  
     var rangoFecha = null;
     var prodHint = '';
     var ent = new Array();
@@ -2781,6 +2860,8 @@ function realizarBusqueda(){
                               }
                             }
                           } /// FIN validación de las fechas intervalo.
+                          d1 = inicio;
+                          d2 = fin;
                           break;
         case 'mes': if (mes === 'todos') {
                       inicio = año+"-01-01";
@@ -2832,6 +2913,8 @@ function realizarBusqueda(){
                     }
                     validado = true;
                     rangoFecha = " and (fecha >='"+inicio+"') and (fecha <'"+fin+"')";
+                    d1 = mes;
+                    d2 = año;
                     break;
         case 'todos': break;
         default: break;
@@ -2875,7 +2958,7 @@ function realizarBusqueda(){
           consultasCSV[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";
         }
       }  
-      mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha);
+      mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, radioFecha, d1, d2, tipo, idUser);
     }/// Fin del IF de validado
     else {
       alert('NO validado');//Igualmente no llega a esta etapa dado que al no ser válida retorna falso y sale.    
@@ -2890,8 +2973,16 @@ function realizarBusqueda(){
  * @param {String} tipo String que indica si la consulta es de stock o de movimientos.
  * @param {String} idProd String con el identificador del producto previamente seleccionado (si corresponde).
  * @param {String} entidadSeleccionada String con de la entidad previamente seleccionada (si corresponde).
+ * @param {String} zip String con la seguridad para el ZIP previamente seleccionada (si corresponde).
+ * @param {String} planilla String con la seguridad para la planilla de EXCEL previamente seleccionada (si corresponde).
+ * @param {Boolean} marcaAgua Booleano que indica si previamente se eligió o no agregar la marca de agua (si corresponde).
+ * @param {String} p String con el criterio de fechas previamente seleccionada (si corresponde).
+ * @param {String} d1 String con la primer fecha previamente seleccionada (si corresponde).
+ * @param {String} d2 String con la segunda fecha previamente seleccionada (si corresponde).
+ * @param {String} tipoFiltro String con el tipo de movimiento a filtrar que previamente se seleccionó (si corresponde).
+ * @param {Integer} user Integer con el ID del usuario que previamente se usó para filtrar (si corresponde).
  */
-function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
+function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, zip, planilla, marcaAgua, p, d1, d2, tipoFiltro, user){
   var url = "data/selectQuery.php";
   var consultarProductos = "select idprod, nombre_plastico as nombre from productos order by nombre_plastico asc";
   
@@ -2929,8 +3020,11 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
         var tabla = '<table id="parametros" name="parametros" class="tabla2">\n\
                       <caption>Formulario para realizar las consultas</caption>';
         var tr = '<tr>\n\
-                    <th colspan="5" class="tituloTabla">STOCK</th>\n\
+                    <th colspan="5" class="tituloTabla">TIPO DE CONSULTA</th>\n\
                   </tr>';
+        tr += '<tr>\n\
+                <th colspan="5" class="subTituloTabla1">STOCK</th>\n\
+              </tr>';
         tr += '<tr>\n\
                 <td class="fondoVerde">\n\
                   <input type="radio" name="criterio" title="Elegir el tipo de consulta a realizar\nSeleccionar si se quiere conocer el stock de una entidad" value="entidadStock" checked="checked">\n\
@@ -2962,7 +3056,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
                 <td colspan="4" class="negrita" style="text-align: left">Total de plásticos en bóveda</td>\n\
               </tr>';
         tr += '<tr>\n\
-                <th colspan="5" class="centrado">MOVIMIENTOS</th>\n\
+                <th colspan="5" class="subTituloTabla1">MOVIMIENTOS</th>\n\
               </tr>';
         tr += '<tr>\n\
                 <td class="fondoVerde">\n\
@@ -2987,6 +3081,12 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
                 <td align="center" colspan="3">\n\
                   <input type="text" id="productoMovimiento" name="producto" placeholder="Producto" title="Ingresar el producto" class="agrandar" size="9" tabindex="4" onkeyup=\'showHint(this.value, "#productoMovimiento", "")\'>\n\
                 </td>\n\
+              </tr>';
+        tr += '<tr>\n\
+                <th colspan="5">FILTROS</th>\n\
+              </tr>';
+        tr += '<tr>\n\
+                <th colspan="5" class="subTituloTabla2">PER&Iacute;ODO</th>\n\
               </tr>';
         tr += '<tr>\n\
                   <td class="fondoNaranja">\n\
@@ -3038,10 +3138,14 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
                 <td class="fondoNaranja">\n\
                   <input type="radio" name="criterioFecha" title="Elegir el período a buscar\nSeleccionar si se quieren TODOS los movimientos" value="todos" checked="checked">\n\
                 </td>\n\
-                <th>TODOS</th>';
+                <th>TODOS</th>\n\
+              </tr>';
+        tr += '<tr>\n\
+                <th colspan="5" class="subTituloTabla2">TIPO DE MOVIMIENTO</th>\n\
+              </tr>';
         tr += '<tr>\n\
                 <th>Tipo:</th>\n\
-                <td>\n\
+                <td colspan="2">\n\
                   <select id="tipo" name="tipo" title="Elegir el tipo de consulta a buscar" tabindex="10" style="width:100%">\n\
                     <option value="Todos" selected="yes">---TODOS---</option>\n\
                     <option value="Retiro">Retiro</option>\n\
@@ -3052,8 +3156,11 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
                 </td>\n\
               </tr>';
         tr += '<tr>\n\
+                <th colspan="5" class="subTituloTabla2">USUARIO</th>\n\
+              </tr>';
+        tr += '<tr>\n\
                 <th>Usuario:</th>\n\
-                <td colspan="3">\n\
+                <td colspan="2">\n\
                   <select name="usuario" id="usuario" title="Elegir un usuario" tabindex="11" style="width: 100%">\n\
                     <option value="todos">---TODOS---</option>';
         for (var j in nombresUsuarios) {
@@ -3063,8 +3170,46 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
                 </td>\n\
               </tr>';
         tr += '<tr>\n\
+                <th colspan="5">SEGURIDAD</th>\n\
+              </tr>';
+        tr += '<tr>\n\
+                <th>ZIP:</th>\n\
+                <td colspan="2">\n\
+                  <select id="zip" name="zip" title="Elegir el tipo de seguridad para abrir el ZIP" tabindex="12" style="width:100%">\n\
+                    <option value="nada" selected="yes">--- SIN SEGURIDAD ---</option>\n\
+                    <option value="fecha">Seg&uacute;n Fecha</option>\n\
+                    <option value="random">Rand&oacute;mico</option>\n\
+                    <option value="manual">Manual</option>\n\
+                  </select>\n\
+                </td>\n\
+                <td colspan="2">\n\
+                  <input type="password" id="zipManual" name="zipManual" disabled="yes">\n\
+                </td>\n\
+              </tr>';
+        tr += '<tr>\n\
+                <th>Planilla:</th>\n\
+                <td colspan="2">\n\
+                  <select id="planilla" name="planilla" title="Elegir el tipo de seguridad para modificar los datos de la planilla" tabindex="13" style="width:100%">\n\
+                    <option value="misma" selected="yes">--- MISMA QUE EL ZIP ---</option>\n\
+                    <option value="nada">SIN SEGURIDAD</option>\n\
+                    <option value="fecha">Seg&uacute;n Fecha</option>\n\
+                    <option value="random">Rand&oacute;mico</option>\n\
+                    <option value="manual">Manual</option>\n\
+                  </select>\n\
+                </td>\n\
+                <td colspan="2">\n\
+                  <input type="password" id="planillaManual" name="planillaManual" disabled="yes">\n\
+                </td>\n\
+              </tr>';
+        tr += '<tr>\n\
+                <th>Marca de Agua</th>\n\
+                <td>\n\
+                  <input type="checkbox" name="marcaAgua" id="marcaAgua" title="Seleccionar si se quiere o no que aparezca la marca de agua." tabindex="14" checked="checked">\n\
+                </td>\n\
+              </tr>';
+        tr += '<tr>\n\
                 <td colspan="5" class="pieTabla">\n\
-                  <input type="button" class="btn btn-success" name="consultar" id="realizarBusqueda" title="Ejecutar la consulta" tabindex="12" value="Consultar" align="center">\n\
+                  <input type="button" class="btn btn-success" name="consultar" id="realizarBusqueda" title="Ejecutar la consulta" tabindex="15" value="Consultar" align="center">\n\
                 </td>\n\
               </tr>';
         tabla += tr;
@@ -3110,7 +3255,37 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada){
           $("[name=criterio]").val(["totalStock"]);
           $("#realizarBusqueda").focus();
         }
-        
+        if (zip !== ''){
+          $("#zip").val(zip);
+        }
+        if (planilla !== ''){
+          $("#planilla").val(planilla);
+        }
+        if (marcaAgua === "true"){
+          $("#marcaAgua").attr("checked", true);
+        }
+        else {
+          $("#marcaAgua").attr("checked", false);
+        }
+        if (p !== ''){
+          switch (p){
+            case 'intervalo': $("#inicio").val(d1);
+                              $("#fin").val(d2);     
+                              break;
+            case 'mes': $("#mes").val(d1);
+                        $("#año").val(d2);
+                        break;
+            case 'todos': break;
+            default: break;
+          }
+          $("input:radio[name=criterioFecha][value="+p+"]").prop("checked", true);
+        }
+        if (tipoFiltro !== ''){
+          $("#tipo").val(tipoFiltro);
+        }
+        if (user !== ''){
+          $("#usuario").val(user);
+        }
       });  
     });  
   });
@@ -3996,14 +4171,31 @@ function todo () {
                                           var temp3 = temp1[1].split('=');
                                           var temp4 = temp1[2].split('=');
                                           var temp5 = temp1[3].split('=');
+                                          var temp6 = temp1[4].split('=');
+                                          var temp7 = temp1[5].split('=');
+                                          var temp8 = temp1[6].split('=');
+                                          var temp9 = temp1[7].split('=');
+                                          var temp10 = temp1[8].split('=');
+                                          var temp11 = temp1[9].split('=');
+                                          var temp12 = temp1[10].split('=');
+                                          var temp13 = temp1[11].split('=');
+                                          
                                           var hint = temp2[1];
                                           var tipMov = temp3[1];
-                                          var id = temp4[1];
-                                          var ent = temp5[1];
-                                          setTimeout(function(){cargarFormBusqueda("#fila", hint, tipMov, id, ent)}, 30); 
+                                          var zip = temp4[1];
+                                          var planilla = temp5[1];
+                                          var marcaAgua = temp6[1];
+                                          var id = temp7[1];
+                                          var ent = temp8[1];
+                                          var p = temp9[1];
+                                          var d1 = temp10[1];
+                                          var d2 = temp11[1];
+                                          var tipo = temp12[1];
+                                          var user = temp13[1];
+                                          setTimeout(function(){cargarFormBusqueda("#fila", hint, tipMov, id, ent, zip, planilla, marcaAgua, p, d1, d2, tipo, user)}, 30); 
                                         }
                                         else {
-                                          setTimeout(function(){cargarFormBusqueda("#fila", '', '', '', '')}, 30);
+                                          setTimeout(function(){cargarFormBusqueda("#fila", '', '', '', '', '', '', '')}, 30);
                                         }
                                         break;
                                         }
@@ -5191,6 +5383,30 @@ $(document).on("change", "#inicio", function (){
 ///Lo que hace es seleccionar automáticamente el radio button correspondiente.
 $(document).on("change", "#fin", function (){
   $(this).parent().prev().prev().prev().prev().children().prop("checked", true);
+});
+
+///Disparar función al cambiar el tipo de seguridad para el archivo ZIP generado.
+///Si se eligió el tipo de pwd manual se debe agregar un input para poder ingresar el pwd.
+$(document).on("change", "#zip", function (){
+  if ($(this).val() === 'manual'){
+    $("#zipManual").prop("disabled", false);
+    $("#zipManual").focus();
+  }
+  else {
+    $("#zipManual").prop("disabled", true);
+  }
+});
+
+///Disparar función al cambiar el tipo de seguridad para el archivo EXCEL generado.
+///Si se eligió el tipo de pwd manual se debe agregar un input para poder ingresar el pwd.
+$(document).on("change", "#planilla", function (){
+  if ($(this).val() === 'manual'){
+    $("#planillaManual").prop("disabled", false);
+    $("#planillaManual").focus();
+  }
+  else {
+    $("#planillaManual").prop("disabled", true);
+  }
 });
 
 ///Disparar función al hacer click en el botón de CONSULTAR en la parte de búsquedas.

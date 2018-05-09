@@ -27,7 +27,7 @@ require_once("data/config.php");
 ///*********************************************************************** FIN SETEO DE CARPETAS **************************************************************
 
 function generarExcelStock($registros) {
-  global $nombreReporte;
+  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip;
   
   $spreadsheet = new Spreadsheet();
 
@@ -332,14 +332,28 @@ function generarExcelStock($registros) {
     $hoja->getColumnDimension(chr($col))->setAutoSize(true);   
   }
   
-  ///Agrego protección para la hoja activa:
-  $hoja->getProtection()->setPassword('Emsa1234');
-  $hoja->getProtection()->setSheet(true);
+  $timestamp = date('dmY_His');
+  
+  switch ($planilla){
+    case "nada": break;
+    case "misma": $pwdPlanilla = $pwdZipManual;
+    case "fecha": $pwdPlanilla = $timestamp; 
+                  break;
+    case "random": $pwdPlanilla = 'test';
+                   break;
+    case "manual": $pwdPlanilla = $pwdPlanillaManual;
+                   break;
+    default: break;
+  } 
+  if ($planilla !== 'nada'){
+    ///Agrego protección para la hoja activa:
+    $hoja->getProtection()->setPassword($pwdPlanilla);
+    $hoja->getProtection()->setSheet(true);
+  }
   
   // Se guarda como Excel 2007:
   $writer = new Xlsx($spreadsheet);
-
-  $timestamp = date('dmY_His');
+  
   $nombreArchivo = $nombreReporte."_".$timestamp.".Xlsx";
   $salida = $GLOBALS["dirExcel"]."/".$nombreArchivo;
   $writer->save($salida);
@@ -348,7 +362,7 @@ function generarExcelStock($registros) {
 }
 
 function generarExcelBoveda($registros) {
-  global $nombreReporte;
+  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip;
   
   $spreadsheet = new Spreadsheet();
 
@@ -501,14 +515,31 @@ function generarExcelBoveda($registros) {
   $rangoStock = 'C2:C'.$i.'';
   $hoja->getStyle($rangoStock)->applyFromArray($styleColumnaStock);
   
-  ///Agrego protección para la hoja activa:
-  $hoja->getProtection()->setPassword('Emsa1234');
-  $hoja->getProtection()->setSheet(true);
+  $timestamp = date('dmY_His');
+  
+  switch ($planilla){
+    case "nada": break;
+    case "misma": if ($zipSeguridad !== 'nada') {
+                    $pwdPlanilla = $pwdZip;
+                  }
+                  break;
+    case "fecha": $pwdPlanilla = $timestamp; 
+                  break;
+    case "random": $pwdPlanilla = 'test';
+                   break;
+    case "manual": $pwdPlanilla = $pwdPlanillaManual;
+                   break;
+    default: break;
+  } 
+  if ((($planilla !== "nada")&&($planilla !== 'misma'))||(($planilla === "misma")&&($zipSeguridad !== "nada"))){
+    ///Agrego protección para la hoja activa:
+    $hoja->getProtection()->setPassword($pwdPlanilla);
+    $hoja->getProtection()->setSheet(true);
+  }
   
   // Se guarda como Excel 2007:
   $writer = new Xlsx($spreadsheet);
 
-  $timestamp = date('dmY_His');
   $nombreArchivo = $nombreReporte."_".$timestamp.".Xlsx";
   $salida = $GLOBALS["dirExcel"]."/".$nombreArchivo;
   $writer->save($salida);
@@ -517,7 +548,7 @@ function generarExcelBoveda($registros) {
 }
 
 function generarExcelMovimientos($registros) {
-  global $nombreReporte;
+  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip;
   
   $spreadsheet = new Spreadsheet();
 
@@ -1098,14 +1129,27 @@ function generarExcelMovimientos($registros) {
   $hoja->getColumnDimension($colVacia1)->setWidth(2);
   ///****************************************** FIN AJUSTE ANCHO COLUMNAS ******************************
   
-  ///Agrego protección para la hoja activa:
-  $hoja->getProtection()->setPassword('Emsa1234');
-  $hoja->getProtection()->setSheet(true);
+  $timestamp = date('dmY_His');
+  
+  switch ($planilla){
+    case "nada": break;
+    case "fecha": $pwdPlanilla = $timestamp; 
+                  break;
+    case "random": $pwdPlanilla = 'test';
+                   break;
+    case "manual": $pwdPlanilla = $pwdPlanillaManual;
+                   break;
+    default: break;
+  } 
+  if ($planilla !== 'nada'){
+    ///Agrego protección para la hoja activa:
+    $hoja->getProtection()->setPassword($pwdPlanilla);
+    $hoja->getProtection()->setSheet(true);
+  }
   
   /// Se guarda como Excel 2007:
   $writer = new Xlsx($spreadsheet);
 
-  $timestamp = date('dmY_His');
   $nombreArchivo = $nombreReporte."_".$timestamp.".Xlsx";
   $salida = $GLOBALS["dirExcel"]."/".$nombreArchivo;
   $writer->save($salida);
