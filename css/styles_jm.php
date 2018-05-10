@@ -294,6 +294,7 @@ hr {
 .tituloTablaDerecho {
   border-radius: 0 25px 0 0;
 }
+
 .tabla1 {
   border: white 2px solid;
   background-color: #48403e;
@@ -388,7 +389,19 @@ hr {
   text-align: center;
   padding: 0px;
 }
-
+.tabla2 .subTituloTabla1 {
+  background-color:#57805e;
+  text-align: center;
+  color: #071c40;
+  font-size: 10pt;
+}
+.tabla2 .subTituloTabla2 {
+  background-color:#9fadea;
+  background-color: #f5d684;
+  text-align: center;
+  color: #071c40;
+  font-size: 10pt;
+}
 #snapshot {
   padding: 10px;
 }

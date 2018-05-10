@@ -3162,7 +3162,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, z
                 <th>Usuario:</th>\n\
                 <td colspan="2">\n\
                   <select name="usuario" id="usuario" title="Elegir un usuario" tabindex="11" style="width: 100%">\n\
-                    <option value="todos">---TODOS---</option>';
+                    <option value="todos" selected="yes">---TODOS---</option>';
         for (var j in nombresUsuarios) {
             tr += '<option value="'+idusers[j]+'">'+nombresUsuarios[j]+' '+apellidosUsuarios[j]+'</option>';
           }      
@@ -4195,7 +4195,7 @@ function todo () {
                                           setTimeout(function(){cargarFormBusqueda("#fila", hint, tipMov, id, ent, zip, planilla, marcaAgua, p, d1, d2, tipo, user)}, 30); 
                                         }
                                         else {
-                                          setTimeout(function(){cargarFormBusqueda("#fila", '', '', '', '', '', '', '')}, 30);
+                                          setTimeout(function(){cargarFormBusqueda("#fila", '', '', '', '', '', '', '', '', '', '', '', '')}, 30);
                                         }
                                         break;
                                         }
@@ -5471,6 +5471,44 @@ $(document).on("click", ".exportar", function (){
   var campos = $("#campos").val();
   var mostrar = $("#mostrar").val();
   var tipoConsulta = $("#tipoConsulta_"+indice+"").val();
+  
+  var zip = $("#zip").val();
+  var planilla = $("#planilla").val();
+  var zipRandom = false;
+  var planillaRandom = false;
+  
+  if (zip === 'random'){
+//    var min = 10;
+//    var max = 1000;
+//    var pwdRandom = Math.round(Math.random()*(max-min)+parseInt(min));
+    
+    var caracteres = "abcdefghijkmnpqrtuvwxyzABCDEFGHIJKLMNPQRTUVWXYZ2346789";
+    var pwdZip = "";
+    for (i=0; i<10; i++) pwdZip += caracteres.charAt(Math.floor(Math.random()*caracteres.length));
+      
+    zipRandom = true;
+    $("#zipManual").val(pwdZip);
+    
+  }
+  if (planilla === 'random'){
+    var caracteres = "abcdefghijkmnpqrtuvwxyzABCDEFGHIJKLMNPQRTUVWXYZ2346789";
+    var pwdPlanilla = "";
+    for (i=0; i<10; i++) pwdPlanilla += caracteres.charAt(Math.floor(Math.random()*caracteres.length));
+    
+    planillaRandom = true; 
+    $("#planillaManual").val(pwdPlanilla);
+  }
+  if ((zipRandom === true)&&(planillaRandom === true)){
+    alert('La contraseña generada para el ZIP es: \n'+pwdZip+'\n\ny la generada para la PLANILLA es:\n'+pwdPlanilla+"\n\n¡¡¡POR FAVOR ANÓTELAS!!!");
+  }
+  else {
+    if (zipRandom === true){
+      alert('La contraseña generada para el ZIP es: \n'+pwdZip+"\n\n¡¡¡POR FAVOR ANÓTELA!!!");
+    }
+    else {
+      alert('La contraseña generada para la PLANILLA es: \n'+pwdPlanilla+"\n\n¡¡¡POR FAVOR ANÓTELA!!!");
+    }
+  }
   //alert(query);
   switch (id) {
     case "1": var entidad = $("#entidad_"+indice+"").val();

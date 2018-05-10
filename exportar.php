@@ -302,14 +302,14 @@ switch ($zipSeguridad){
                break;
   case "fecha": $pwdZip = $timestamp; 
                 break;
-  case "random": $pwdZip = 'test';
+  case "random": $pwdZip = $pwdZipManual;//random_int ( 1, 1000);
                  break;
   case "manual": $pwdZip = $pwdZipManual;
                  break;
   default: break;
 }
 ///******************************************************* FIN ESTABLECER CONTRASEÑA PARA EL ZIP ********************************************
-
+echo "PWD: ".$pwdZip;
 ///****************************************************************** GENERACIÓN DEL EXCEL **************************************************
 ///Según el ID, genero los listados en Excel:
 switch ($id) {

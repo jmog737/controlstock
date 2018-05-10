@@ -336,7 +336,10 @@ function generarExcelStock($registros) {
   
   switch ($planilla){
     case "nada": break;
-    case "misma": $pwdPlanilla = $pwdZipManual;
+    case "misma": if ($zipSeguridad !== 'nada') {
+                    $pwdPlanilla = $pwdZip;
+                  }
+                  break;
     case "fecha": $pwdPlanilla = $timestamp; 
                   break;
     case "random": $pwdPlanilla = 'test';
@@ -345,7 +348,7 @@ function generarExcelStock($registros) {
                    break;
     default: break;
   } 
-  if ($planilla !== 'nada'){
+  if ((($planilla !== "nada")&&($planilla !== 'misma'))||(($planilla === "misma")&&($zipSeguridad !== "nada"))){
     ///Agrego protección para la hoja activa:
     $hoja->getProtection()->setPassword($pwdPlanilla);
     $hoja->getProtection()->setSheet(true);
@@ -1133,15 +1136,19 @@ function generarExcelMovimientos($registros) {
   
   switch ($planilla){
     case "nada": break;
+    case "misma": if ($zipSeguridad !== 'nada') {
+                    $pwdPlanilla = $pwdZip;
+                  }
+                  break;
     case "fecha": $pwdPlanilla = $timestamp; 
                   break;
-    case "random": $pwdPlanilla = 'test';
+    case "random": $pwdPlanilla = random_int ( 1, 1000);
                    break;
     case "manual": $pwdPlanilla = $pwdPlanillaManual;
                    break;
     default: break;
   } 
-  if ($planilla !== 'nada'){
+  if ((($planilla !== "nada")&&($planilla !== 'misma'))||(($planilla === "misma")&&($zipSeguridad !== "nada"))){
     ///Agrego protección para la hoja activa:
     $hoja->getProtection()->setPassword($pwdPlanilla);
     $hoja->getProtection()->setSheet(true);
