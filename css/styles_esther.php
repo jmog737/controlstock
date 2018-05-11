@@ -402,6 +402,8 @@ hr {
   color: #071c40;
   font-size: 10pt;
 }
+/* FIN TABLAS */
+
 #snapshot {
   padding: 10px;
 }
@@ -574,12 +576,34 @@ a.linkHistorial:hover{
   font-size: 1.4em;
 }
 
+/* MODAL */
 .tituloModal {
   background-color: #023184;
 }
 .tblModal {
   color: #000;
 }
+
+#modalExportar .modal-header {
+  background-color: #e44040;
+  color: #000;
+  font-size: 18px;
+  text-align: center;
+}
+#modalExportar .modal-body {
+  background-color: #d2d2d2;
+  color: #000;
+  font-size: 16px;
+  text-align: center;
+}
+#modalExportar .modal-footer {
+  background-color: #d2d2d2;
+  color: #000;
+  font-size: 14px;
+  text-align: center;
+}
+/* FIN MODAL */
+
 /************************* END HOME PAGE *************************************/
 
 /********************************* PAGINAS ***********************************/

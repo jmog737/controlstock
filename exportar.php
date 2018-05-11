@@ -302,14 +302,14 @@ switch ($zipSeguridad){
                break;
   case "fecha": $pwdZip = $timestamp; 
                 break;
-  case "random": $pwdZip = $pwdZipManual;//random_int ( 1, 1000);
+  case "random": $pwdZip = $pwdZipManual;
                  break;
   case "manual": $pwdZip = $pwdZipManual;
                  break;
   default: break;
 }
 ///******************************************************* FIN ESTABLECER CONTRASEÑA PARA EL ZIP ********************************************
-echo "PWD: ".$pwdZip;
+
 ///****************************************************************** GENERACIÓN DEL EXCEL **************************************************
 ///Según el ID, genero los listados en Excel:
 switch ($id) {
@@ -356,8 +356,6 @@ if ($zipSeguridad !== 'nada'){
   $zip->setEncryptionName($archivo, ZipArchive::EM_AES_256);
   $zip->setEncryptionName($nombreArchivo, ZipArchive::EM_AES_256);
 }
-
-
 
 $zip->close();
 ///********************************************************** FIN GENERACION ZIP FILE *******************************************************

@@ -47,6 +47,7 @@ function verificarSesion() {
   xmlhttp.open("GET", "data/estadoSesion.php", true);
   xmlhttp.send();
 }
+/********** fin verificarSesion() **********/
 
 /**
  * \brief Función que vacía el contenido del div cuyo Id se pasa como parámetro.
@@ -55,13 +56,13 @@ function verificarSesion() {
 function vaciarContent (id) {
   $(id).empty();
 }
+/********** fin vaciarContent(id) **********/
 
 /**
   \brief Función que valida que el parámetro pasado sea un entero.
   @param valor Dato a validar.                  
 */
-function validarEntero(valor)
-  {
+function validarEntero(valor) {
   valor = parseInt(valor);
   //Compruebo si es un valor num�rico
   if (isNaN(valor)) {
@@ -73,6 +74,7 @@ function validarEntero(valor)
       return true;
   }
 }
+/********** fin validarEntero(valor) **********/
 
 /**
  * 
@@ -211,6 +213,7 @@ function showHint(str, id, seleccionado) {
     });
   }
 }
+/********** fin showHint(str, id, seleccionado) **********/
 
 /**
  * \brief Función que muestra en pantalla el botón para disparar el popover con el historial
@@ -259,6 +262,7 @@ function mostrarHistorial(prod){
     }
   });
 }
+/********** fin mostrarHistorial(prod) **********/
 
 /**
  * \brief Función que muestra en pantalla el botón para disparar el popover con el historial general
@@ -304,6 +308,7 @@ function mostrarHistorialGeneral(id){
     }
   });
 }
+/********** fin mostrarHistorialGeneral(id) **********/
 
 /**
  * 
@@ -382,6 +387,7 @@ function showHintProd(str, id, seleccionado) {
     });
   }
 }
+/********** fin showHintProd(str, id, seleccionado) **********/
 
 /***********************************************************************************************************************
 /// ********************************************** FIN FUNCIONES GENÉRICAS *********************************************
@@ -398,8 +404,7 @@ function showHintProd(str, id, seleccionado) {
  * \brief Función que valida los datos pasados para el movimiento.
  * @returns {Boolean} Devuelve un booleano que indica si se pasó o no la validación de los datos para el movimiento.
  */
-function validarMovimiento()
-  {
+function validarMovimiento() {
   var seguir = false;
   var cantidad = document.getElementById("cantidad").value;
   //var cantidad2 = document.getElementById("cantidad2").value;
@@ -489,6 +494,7 @@ function validarMovimiento()
   if (seguir) return true;
   else return false;
 }
+/********** fin validarMovimiento() **********/
 
 /**
   \brief Función que carga en el selector pasado como parámetro la tabla para agregar un movimiento.
@@ -625,6 +631,7 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
     }
   });    
 }
+/********** fin cargarMovimiento(selector, hint, prod, tipo, fecha) **********/
 
 /**
  * \brief Función que hace el agregado del movimiento en la base de datos. 
@@ -762,6 +769,7 @@ function agregarMovimiento(){
     }
   //}
 }
+/********** fin agregarMovimiento() **********/
 
 /**
  * \brief Función que hace la actualización del movimiento en la base de datos. 
@@ -810,6 +818,7 @@ function actualizarMovimiento(){
     }
   //}
 }
+/********** fin actualizarMovimiento() **********/
 
 /**
   \brief Función que deshabilita los input del form editarMovimiento.
@@ -824,6 +833,7 @@ function inhabilitarMovimiento(){
   document.getElementById("editarMovimiento").value = "EDITAR";
   document.getElementById("actualizarMovimiento").disabled = true;
 }
+/********** fin inhabilitarMovimiento() **********/
 
 /**
   \brief Función que habilita los input del form editarMovimiento.
@@ -839,6 +849,7 @@ function habilitarMovimiento(){
   document.getElementById("editarMovimiento").value = "BLOQUEAR";
   document.getElementById("actualizarMovimiento").disabled = false;
 }
+/********** fin habilitarMovimiento() **********/
 
 /**
   \brief Función que carga en el selector pasado como parámetro la tabla para ver el movimiento.
@@ -942,6 +953,7 @@ function cargarEditarMovimiento(idMov, selector){
     
   }); 
 }
+/********** fin cargarEditarMovimiento(idMov, selector) **********/
 
 /***********************************************************************************************************************
 /// ********************************************* FIN FUNCIONES MOVIMIENTOS ********************************************
@@ -1018,6 +1030,7 @@ function cargarUsuarios(selector, user){
     
   });
 }
+/********** fin cargarUsuarios(selector, user) **********/
 
 /**
   \brief Función que recupera y carga los datos del usuario pasado como parámetro.
@@ -1116,6 +1129,7 @@ function cargarDetalleUsuario(user) {
     $("#content").html(cargar);
   });
 }
+/********** fin cargarDetalleUsuario(user) **********/
 
 /**
   \brief Función que deshabilita los input del form Usuario.
@@ -1130,6 +1144,7 @@ function inhabilitarUsuario(){
   document.getElementById("editarUsuario").value = "EDITAR";
   document.getElementById("actualizarUsuario").disabled = true;
 }
+/********** fin inhabilitarUsuario() **********/
 
 /**
   \brief Función que habilita los input del form Usuario.
@@ -1144,13 +1159,13 @@ function habilitarUsuario(){
   document.getElementById("editarUsuario").value = "BLOQUEAR";
   document.getElementById("actualizarUsuario").disabled = false;
 }
+/********** fin habilitarUsuario() **********/
 
 /**
  * \brief Función que valida los datos pasados para el usuario.
  * @returns {Boolean} Devuelve un booleano que indica si se pasó o no la validación de los datos para el usuario.
  */
-function validarUsuario()
-  {
+function validarUsuario() {
   var seguir = false;
   
   if (document.getElementById("nombre").value.length === 0)
@@ -1194,12 +1209,12 @@ function validarUsuario()
   if (seguir) return true;
   else return false;
 }
+/********** fin validarUsuario() **********/
 
 /**
  * \brief Función que primero valida la info ingresada, y de ser válida, hace la actualización del pwd del usuario del sistema.
  */
-function actualizarUser ()
-  {
+function actualizarUser() {
 //  var timestamp = Math.round(Date.now() / 1000);
 //      
 //  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
@@ -1260,12 +1275,12 @@ function actualizarUser ()
     }
   //}
 }
+/********** fin actualizarUser() **********/
 
 /**
  * \brief Función que primero valida la info ingresada, y de ser válida, hace la actualización de los parámetros del usuario.
  */
-function actualizarParametros ()
-  {
+function actualizarParametros()  {
 //  var timestamp = Math.round(Date.now() / 1000);
 //      
 //  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
@@ -1404,6 +1419,7 @@ function actualizarParametros ()
     }///************ FIN IF SEGUIR ***************
   //}///************* FIN IF SESION ****************
 }
+/********** fin actualizarParametros() **********/
 
 /***********************************************************************************************************************
 /// *********************************************** FIN FUNCIONES USUARIOS *********************************************
@@ -1423,6 +1439,7 @@ function actualizarParametros ()
 function validarBusqueda() {
   
 }
+/********** fin validarBusqueda() **********/
 
 /**
  * \brief Función que muestra el resultado de la consulta en pantalla. Arma la tabla con los datos pasados y luego la muestra en pantalla.
@@ -2233,6 +2250,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
   
   return tabla;
 } 
+/********** fin mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, totalPlasticos) **********/
 
 /**
  * \brief Función que, en base a los parámetros pasados, ejecuta la o las consultas pertinentes
@@ -2418,7 +2436,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                     <td style="display:none"><input type="text" id="d1" name="d1" value="'+d1+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="d2" name="d2" value="'+d2+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="user" name="user" value="'+user+'"></td>\n\\n\
+                                                    <td style="display:none"><input type="text" id="user" name="user" value="'+user+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="zip" name="zip" value="'+zip+'"></td>\n\
                                                     <td style="display:none"><input type="password" id="zipManual" name="zipManual" value="'+zipManual+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="planilla" name="planilla" value="'+planilla+'"></td>\n\
@@ -2568,7 +2586,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         if (idProds[j] === undefined) {
           idProds[j] = '';
         }
-        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds[j]+'&ent='+ent[j]+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipo+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds[j]+'&ent='+ent+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipo+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         mostrar += '</div>';
         $("#pills-tabContent").append(mostrar);
@@ -2577,7 +2595,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         }/// FIN del if de totalDatos>1  
       else {
         mostrar += "<br><hr><h3>No existen registros para la consulta realizada.</h3><hr>";
-        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds[j]+'&ent='+ent[j]+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipo+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds[j]+'&ent='+ent+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipo+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         mostrar += '</div>';
         $("#pills-tabContent").append(mostrar);
@@ -2588,6 +2606,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
   mostrarGlobal += '</div>';
   $("#main-content").append(mostrarGlobal);
   }
+/********** fin mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, p, d1, d2, tipo, user) **********/
 
 /**
  * \brief Función que ejecuta la búsqueda y muestra el resultado.
@@ -2637,10 +2656,10 @@ function realizarBusqueda(){
     var planilla = $("#planilla").val();
     var zipManual = '';
     var planillaManual = '';
-    if (zip !== 'nada') {
+    if (zip === 'manual') {
       zipManual = $("#zipManual").val();
     }
-    if (planilla !== 'nada'){
+    if (planilla === 'manual'){
       planillaManual = $("#planillaManual").val();
     }
     var marcaAgua = '';
@@ -2965,6 +2984,7 @@ function realizarBusqueda(){
     } 
   //}
 }
+/********** fin realizarBusqueda() **********/
 
 /**
  * \brief Función que genera el formulario para realizar las consultas.
@@ -3183,7 +3203,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, z
                   </select>\n\
                 </td>\n\
                 <td colspan="2">\n\
-                  <input type="password" id="zipManual" name="zipManual" disabled="yes">\n\
+                  <input type="text" id="zipManual" name="zipManual" placeholder="Contraseña para el ZIP" disabled="yes">\n\
                 </td>\n\
               </tr>';
         tr += '<tr>\n\
@@ -3198,7 +3218,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, z
                   </select>\n\
                 </td>\n\
                 <td colspan="2">\n\
-                  <input type="password" id="planillaManual" name="planillaManual" disabled="yes">\n\
+                  <input type="text" id="planillaManual" name="planillaManual" placeholder="Contraseña para la PLANILLA" disabled="yes">\n\
                 </td>\n\
               </tr>';
         tr += '<tr>\n\
@@ -3239,6 +3259,8 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, z
           }    
         }
         else {
+          $("#productoMovimiento").val('');
+          $("#productoStock").val('');
           var sel = '';
           if (tipo === 'entStock') {
             $('#entidadStock option[value="'+entidadSeleccionada+'"]').attr("selected", true);
@@ -3257,9 +3279,21 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, z
         }
         if (zip !== ''){
           $("#zip").val(zip);
+          if (zip === 'manual'){
+            $("#productoMovimiento").val('');
+            $("#productoStock").val('');
+            $("#zipManual").attr("disabled", false);
+            $("#zipManual").val('');
+          }
         }
         if (planilla !== ''){
           $("#planilla").val(planilla);
+          if (planilla === 'manual'){
+            $("#productoMovimiento").val('');
+            $("#productoStock").val('');
+            $("#planillaManual").attr("disabled", false);
+            $("#planillaManual").val('');
+          }
         }
         if (marcaAgua === "true"){
           $("#marcaAgua").attr("checked", true);
@@ -3290,6 +3324,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, z
     });  
   });
 }
+/********** fin cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, zip, planilla, marcaAgua, p, d1, d2, tipoFiltro, user) **********/
 
 /***********************************************************************************************************************
 /// *********************************************** FIN FUNCIONES BÚSQUEDAS *********************************************
@@ -3425,6 +3460,7 @@ function cargarProducto(idProd, selector){
     inhabilitarProducto();
   }); 
 }
+/********** fin cargarProducto(idProd, selector) **********/
 
 /**
   \brief Función que carga en el selector pasado como parámetro la tabla con el campo para la búsqueda de productos.
@@ -3445,6 +3481,7 @@ function cargarBusquedaProductos(selector) {
   $(selector).html(mostrar);
   $("#productoBusqueda").focus();
 }
+/********** fin cargarBusquedaProductos(selector) **********/
 
 /**
  * \brief Función que valida los datos pasados para el producto
@@ -3563,6 +3600,7 @@ function validarProducto(nuevo) {
   }
   
 }
+/********** fin validarProducto(nuevo) **********/
 
 /**
   \brief Función que deshabilita los input del form Producto.
@@ -3583,6 +3621,7 @@ function inhabilitarProducto(){
   document.getElementById("editarProducto").value = "EDITAR";
   document.getElementById("actualizarProducto").disabled = true;
 }
+/********** fin inhabilitarProducto() **********/
 
 /**
   \brief Función que habilita los input del form Producto.
@@ -3603,6 +3642,7 @@ function habilitarProducto(){
   document.getElementById("editarProducto").value = "BLOQUEAR";
   document.getElementById("actualizarProducto").disabled = false;
 }
+/********** fin habilitarProducto() **********/
 
 /***********************************************************************************************************************
 /// ********************************************** FIN FUNCIONES PRODUCTOS *********************************************
@@ -3773,6 +3813,7 @@ function cargarFormEstadisticas(selector){
     $(selector).html(mostrar);
   });
 }
+/********** fin cargarFormEstadisticas(selector) **********/
 
 /**
   \brief Función que carga en el selector pasado como parámetro una imágen con la gráfica.
@@ -3797,6 +3838,7 @@ function cargarGrafica(selector){
   mostrar += '<br><br>';
   $(selector).html(mostrar);
 }
+/********** fin cargarGrafica(selector) **********/
 
 /**
   \brief Función que se encarga de realizar la gráfica.
@@ -4102,6 +4144,7 @@ function realizarGrafica(){
     }  
   //}
 }
+/********** fin realizarGrafica() **********/
 
 /**************************************************************************************************************************
 /// ********************************************** FIN FUNCIONES ESTADISTICAS *********************************************
@@ -5477,39 +5520,6 @@ $(document).on("click", ".exportar", function (){
   var zipRandom = false;
   var planillaRandom = false;
   
-  if (zip === 'random'){
-//    var min = 10;
-//    var max = 1000;
-//    var pwdRandom = Math.round(Math.random()*(max-min)+parseInt(min));
-    
-    var caracteres = "abcdefghijkmnpqrtuvwxyzABCDEFGHIJKLMNPQRTUVWXYZ2346789";
-    var pwdZip = "";
-    for (i=0; i<10; i++) pwdZip += caracteres.charAt(Math.floor(Math.random()*caracteres.length));
-      
-    zipRandom = true;
-    $("#zipManual").val(pwdZip);
-    
-  }
-  if (planilla === 'random'){
-    var caracteres = "abcdefghijkmnpqrtuvwxyzABCDEFGHIJKLMNPQRTUVWXYZ2346789";
-    var pwdPlanilla = "";
-    for (i=0; i<10; i++) pwdPlanilla += caracteres.charAt(Math.floor(Math.random()*caracteres.length));
-    
-    planillaRandom = true; 
-    $("#planillaManual").val(pwdPlanilla);
-  }
-  if ((zipRandom === true)&&(planillaRandom === true)){
-    alert('La contraseña generada para el ZIP es: \n'+pwdZip+'\n\ny la generada para la PLANILLA es:\n'+pwdPlanilla+"\n\n¡¡¡POR FAVOR ANÓTELAS!!!");
-  }
-  else {
-    if (zipRandom === true){
-      alert('La contraseña generada para el ZIP es: \n'+pwdZip+"\n\n¡¡¡POR FAVOR ANÓTELA!!!");
-    }
-    else {
-      alert('La contraseña generada para la PLANILLA es: \n'+pwdPlanilla+"\n\n¡¡¡POR FAVOR ANÓTELA!!!");
-    }
-  }
-  //alert(query);
   switch (id) {
     case "1": var entidad = $("#entidad_"+indice+"").val();
               break;
@@ -5599,10 +5609,80 @@ $(document).on("click", ".exportar", function (){
               break;
     default: break;
   }
-  //alert(query);
-  //$("#param").val(param);
-  $("#resultadoBusqueda_"+indice).submit();
+  
+  var caracteres = "abcdefghijkmnpqrtuvwxyzABCDEFGHIJKLMNPQRTUVWXYZ2346789";
+  if (zip === 'random'){
+//    var min = 10;
+//    var max = 1000;
+//    var pwdRandom = Math.round(Math.random()*(max-min)+parseInt(min));
+    var pwdZip = "";
+    for (i=0; i<10; i++) pwdZip += caracteres.charAt(Math.floor(Math.random()*caracteres.length));
+      
+    zipRandom = true;
+    $("#zipManual").val(pwdZip); 
+  }
+  if (planilla === 'random'){
+    var pwdPlanilla = "";
+    for (i=0; i<10; i++) pwdPlanilla += caracteres.charAt(Math.floor(Math.random()*caracteres.length));
+    
+    planillaRandom = true; 
+    $("#planillaManual").val(pwdPlanilla);
+  }
+  if ((zipRandom === true)||(planillaRandom === true)){
+    var msgAlerta = '';
+    if ((zipRandom === true)&&(planillaRandom === true)){
+      msgAlerta = 'La contraseña generada para el ZIP es: <br><br><strong>'+pwdZip+'</strong><br><br>y la generada para la PLANILLA es:<br><br><strong>'+pwdPlanilla+"</strong><br><br>¡¡¡POR FAVOR ANÓTELAS!!!";
+    }
+    else {
+      if ((zipRandom === true)&&(planilla === 'misma')){
+        msgAlerta = 'La contraseña generada para el ZIP y para la PLANILLA es: <br><br><strong>'+pwdZip+"</strong><br><br>¡¡¡POR FAVOR ANÓTELA!!!";
+      }
+      else {
+        if (zipRandom === true){
+          msgAlerta = 'La contraseña generada para el ZIP es: <br><br><strong>'+pwdZip+"</strong><br><br>¡¡¡POR FAVOR ANÓTELA!!!";
+        }
+        else {
+          msgAlerta = 'La contraseña generada para la PLANILLA es: <br><br><strong>'+pwdPlanilla+"</strong><br><br>¡¡¡POR FAVOR ANÓTELA!!!";
+        }
+      }
+    }
+    var alerta = '<div class="modal" id="modalExportar">\n\
+                    <div class="modal-dialog">\n\
+                      <div class="modal-content">\n\
+                        <!-- Modal Header -->\n\
+                        <div class="modal-header">\n\
+                          <h4 class="modal-title">ATENCIÓN</h4>\n\
+                          <button type="button" class="close" data-dismiss="modal">&times;</button>\n\
+                        </div>\n\
+                        \n\
+                        <!-- Modal body -->\n\
+                        <div class="modal-body">\n\
+                         '+msgAlerta+'..\n\
+                        </div>\n\
+                        \n\
+                        <!-- Modal footer -->\n\
+                        <div class="modal-footer">\n\
+                          <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>\n\
+                        </div>\n\
+                      </div>\n\
+                    </div>\n\
+                  </div>';
+    //alert('antes de agregar');
+    $("#resultadoBusqueda_"+indice).append(alerta);
+    $('#modalExportar').modal('show');
+  }
+  else {
+    $("#resultadoBusqueda_"+indice).submit();
+  }
+  
 });//*** fin del click .exportar ***
+
+///Disparar función al cerrar el modal de exportar.
+///Básicamente hace el submit del form:
+$(document).on("hidden.bs.modal", "#modalExportar", function(){
+  var padre = $(this).parent().attr("id");
+  $("#"+padre+"").submit();
+});
 
 ///Disparar función al hacer click en alguno de los links con las PÁGINAS de los resultados.
 ///Básicamente arma la consulta para mostrar la pagina solicitada y llama a la función para ejecutarla.

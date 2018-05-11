@@ -342,7 +342,7 @@ function generarExcelStock($registros) {
                   break;
     case "fecha": $pwdPlanilla = $timestamp; 
                   break;
-    case "random": $pwdPlanilla = 'test';
+    case "random": $pwdPlanilla = $pwdPlanillaManual;
                    break;
     case "manual": $pwdPlanilla = $pwdPlanillaManual;
                    break;
@@ -528,7 +528,7 @@ function generarExcelBoveda($registros) {
                   break;
     case "fecha": $pwdPlanilla = $timestamp; 
                   break;
-    case "random": $pwdPlanilla = 'test';
+    case "random": $pwdPlanilla = $pwdPlanillaManual;
                    break;
     case "manual": $pwdPlanilla = $pwdPlanillaManual;
                    break;
@@ -1142,7 +1142,7 @@ function generarExcelMovimientos($registros) {
                   break;
     case "fecha": $pwdPlanilla = $timestamp; 
                   break;
-    case "random": $pwdPlanilla = random_int ( 1, 1000);
+    case "random": $pwdPlanilla = $pwdPlanillaManual;
                    break;
     case "manual": $pwdPlanilla = $pwdPlanillaManual;
                    break;
