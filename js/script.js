@@ -3295,11 +3295,13 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, z
             $("#planillaManual").val('');
           }
         }
-        if (marcaAgua === "true"){
-          $("#marcaAgua").attr("checked", true);
+        if (marcaAgua !== ''){
+          if (marcaAgua !== "true"){
+            $("#marcaAgua").attr("checked", false);
+          }
         }
         else {
-          $("#marcaAgua").attr("checked", false);
+            $("#marcaAgua").attr("checked", true);
         }
         if (p !== ''){
           switch (p){
