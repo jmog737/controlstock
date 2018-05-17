@@ -786,18 +786,46 @@ function actualizarMovimiento(){
     verificarSesion();
     var idmov = $("input[name='idMov']").val();
     var comentarios = $("#comentarios").val();
+    var fecha = $("#fecha").val();
 
+    var hoy = new Date();
+    var diaHoy = hoy.getDate();
+    var mesHoy = hoy.getMonth()+1;
+    if (diaHoy < 10) 
+      {
+      diaHoy = '0'+diaHoy;
+    }                     
+    if (mesHoy < 10) 
+      {
+      mesHoy = '0'+mesHoy;
+    }
+    var hoyFecha = hoy.getFullYear()+'-'+mesHoy+'-'+diaHoy;
+    var validar = true;
+    
+    if (fecha === ''){
+      alert('Por favor ingrese la fecha del movimiento.');
+      $("#fecha").focus();
+      validar = false;
+    }
+    else {
+      if (fecha > hoyFecha){
+        alert('La fecha seleccionada es posterior al día de hoy. \n¡Por favor verifique!.');
+        $("#fecha").focus();
+        validar = false;
+      }
+    }
+    
     ///Se comenta la validación del movimiento pues por el momento SÓLO se puede EDITAR el comentario el cual es opcional.
     ///De en un futuro querer editar algo más habrá que crear la función validarMovimiento. Se setea la variable validar a TRUE
     //var validar = validarMovimiento();
-    var validar = true;
+    //var validar = true;
 
     if (validar) {
       //var confirmar = confirm('¿Confirma la modificación del movimiento con los siguientes datos?\n\nFecha: '+fecha+'\nHora: '+hora+'\nProducto: '+nombre+'\nTipo: '+tipo+'\nCantidad: '+cantidad+'\nComentarios: '+comentarios+"\n?");
       var confirmar = true;
       if (confirmar) {
         var url = "data/updateQuery.php";
-        var query = 'update movimientos set comentarios="'+comentarios+'" where idmov='+idmov;
+        var query = 'update movimientos set comentarios="'+comentarios+'", fecha="'+fecha+'" where idmov='+idmov;
         var log = "SI";
         //alert(query);
         $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
@@ -840,7 +868,8 @@ function inhabilitarMovimiento(){
 */
 function habilitarMovimiento(){
   ///******* Queda hecho para poder editar el resto de los campos, pero la idea es SOLO poder editar los comentarios. **********
-  //document.getElementById("fecha").disabled = false;
+  ///******* Ahora (17/5/2018) se agrega también la edición de la fecha por lo que también se habilita la misma. ***************
+  document.getElementById("fecha").disabled = false;
   //document.getElementById("hora").disabled = false;
   //document.getElementById("nombre").disabled = false;
   //document.getElementById("tipo").disabled = false;
@@ -865,13 +894,13 @@ function cargarEditarMovimiento(idMov, selector){
     var total = request["rows"];
     if (total >= 1) {
       var cantidad = parseInt(resultado[0]['cantidad'], 10);
-      var fechaTemp = resultado[0]['fecha'];
-      var fecha = '';
+      var fecha = resultado[0]['fecha'];
+      //var fecha = '';
       var hora = '';
-      if (fechaTemp !== null) {
-        var temp = fechaTemp.split('-');
-        fecha = temp[2]+"/"+temp[1]+"/"+temp[0];
-      }
+//      if (fechaTemp !== null) {
+//        var temp = fechaTemp.split('-');
+//        fecha = temp[2]+"/"+temp[1]+"/"+temp[0];
+//      }
       var horaTemp = resultado[0]['hora'];
       if (horaTemp !== null) {
         var temp = horaTemp.split(':');
@@ -892,7 +921,7 @@ function cargarEditarMovimiento(idMov, selector){
 
     tr += '<tr>\n\
             <th align="left" width="15"><font class="negra">Fecha:</font></th>\n\
-            <td align="center" colspan="2"><input type="text" name="fecha" id="fecha" title="Elegir fecha del movimiento\n(NO editable)" placeholder="Fecha" class="agrandar" style="width:100%; text-align: center" disabled></td>\n\
+            <td align="center" colspan="2"><input type="date" name="fecha" id="fecha" title="Elegir fecha del movimiento\n(NO editable)" placeholder="Fecha" class="agrandar" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Hora:</font></th>\n\
@@ -2762,10 +2791,10 @@ function realizarBusqueda(){
                                   query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
                                   consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
                                   if (entidadesMovimiento[i] !== 'todos') {
-                                    ent = entidadesMovimiento[i];
-                                      query += "and productos.entidad='"+entidadesMovimiento[i]+"'";
-                                      consultaCSV += "and productos.entidad='"+entidadesMovimiento[i]+"'";
-                                      tipoConsulta = 'Movimientos de <b><i>'+entidadesMovimiento[i]+"</i></b>";
+                                    ent.push(entidadesMovimiento[i]);
+                                    query += "and productos.entidad='"+entidadesMovimiento[i]+"'";
+                                    consultaCSV += "and productos.entidad='"+entidadesMovimiento[i]+"'";
+                                    tipoConsulta = 'Movimientos de <b><i>'+entidadesMovimiento[i]+"</i></b>";
                                   } 
                                   else {
                                     tipoConsulta = 'Movimientos de <b><i>todas las entidades</i></b>';
@@ -3052,7 +3081,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, z
                 <th>Entidad:</th>\n\
                   <td colspan="3">\n\
                     <select name="entidad" id="entidadStock" tabindex="1" style="width: 100%" multiple title="Seleccionar la entidad" size="6">\n\
-                      <option value="todos" selected="yes">---TODOS---</option>';
+                      <option value="todos">---TODOS---</option>';
         for (var j in entidades) {
           var entidad = entidades[j].trim();
           tr += '<option value="'+entidad+'">'+entidad+'</option>';
@@ -3085,7 +3114,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, z
                 <th>Entidad:</th>\n\
                   <td colspan="3">\n\
                     <select name="entidad" id="entidadMovimiento" title="Seleccionar la entidad" tabindex="3" multiple style="width: 100%" size="6">\n\
-                      <option value="todos" selected="yes">---TODOS---</option>';
+                      <option value="todos">---TODOS---</option>';
         for (var j in entidades) {
           var entidad1 = entidades[j].trim();
           tr += '<option value="'+entidad1+'">'+entidad1+'</option>';
@@ -3262,16 +3291,25 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, z
           $("#productoMovimiento").val('');
           $("#productoStock").val('');
           var sel = '';
-          if (tipo === 'entStock') {
-            $('#entidadStock option[value="'+entidadSeleccionada+'"]').attr("selected", true);
-            sel = '#entidadStock';
+          if (entidadSeleccionada !== ''){
+            var entTemp = entidadSeleccionada.split(',');
+            for (var i = 0; i < entTemp.length; i++) { 
+              if (tipo === 'entStock') {
+                $('#entidadStock option[value="'+entTemp[i]+'"]').attr("selected", true);
+                sel = '#entidadStock';
+              }
+              else {
+                $('#entidadMovimiento option[value="'+entTemp[i]+'"]').attr("selected", true);
+                sel = '#entidadMovimiento';
+              }
+              $(sel).parent().prev().prev().children().prop("checked", true);
+              $(sel).focus();
+            }
           }
           else {
-            $('#entidadMovimiento option[value="'+entidadSeleccionada+'"]').attr("selected", true);
-            sel = '#entidadMovimiento';
+            $('#entidadStock option[value="todos"]').attr("selected", true);
+            $('#entidadMovimiento option[value="todos"]').attr("selected", true);
           }
-          $(sel).parent().prev().prev().children().prop("checked", true);
-          $(sel).focus();
         }
         if (tipo === 'totalStock') {
           $("[name=criterio]").val(["totalStock"]);
