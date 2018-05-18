@@ -831,7 +831,7 @@ function actualizarMovimiento(){
         $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
           var resultado = request["resultado"];
           if (resultado === "OK") {
-            //alert('Los datos del movimiento se actualizaron correctamente!.');
+            alert('Los datos del movimiento se actualizaron correctamente!.');
             cargarEditarMovimiento(idmov, "main-content");
             inhabilitarMovimiento();
           }
@@ -910,6 +910,9 @@ function cargarEditarMovimiento(idMov, selector){
       var codigo = resultado[0]['codigo_emsa'];
       var entidad = resultado[0]['entidad'];
       var comentarios = resultado[0]['comentarios'];
+      if ((comentarios === 'undefined')||(comentarios === null)){
+        comentarios = '';
+      }
       var producto = resultado[0]['nombre_plastico'];
     }
     var mostrar = "";
