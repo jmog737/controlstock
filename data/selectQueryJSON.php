@@ -36,7 +36,18 @@ for ($i = 0; $i < count($query); $i++){
   
   if ($tipo === 'entidadStock'){
     $temp = explode("where", $query[$i]);
-    $consultaSuma = "select sum(stock) as total from productos where ".$temp[1];
+    $test = stripos($temp[1], " and (fecha >");
+    if ($test !== false){
+      $temp0 = explode(" and (fecha >", $temp[1]);
+      $parte1 = $temp0[0];
+      $temp1 = explode("order", $temp[1]);
+      $parte2 = $temp1[1];
+      $consultaSuma = "select sum(stock) as total from productos where ".$parte1." order ".$parte2;
+      $query[$i] = $temp[0]."where".$parte1." order ".$parte2;
+    }
+    else {
+      $consultaSuma = "select sum(stock) as total from productos where ".$temp[1];
+    }
     $result0 = consultarBD($consultaSuma, $dbc);
     while (($fila0 = $result0->fetch_array(MYSQLI_ASSOC)) != NULL) { 
       $datos["$i"]['suma'] = $fila0["total"];
@@ -51,7 +62,7 @@ for ($i = 0; $i < count($query); $i++){
     }
   }
   
-  if ($tipo === 'entidadMovimiento'){
+  if (($tipo === 'entidadMovimiento')||($tipo === 'entidadStockViejo')){
     $test = stripos($query[$i], "productos.entidad='");
     $entidad = '';
     if ($test !== false){
@@ -131,7 +142,7 @@ for ($i = 0; $i < count($query); $i++){
     }
   }
   
-  if ($tipo === 'productoMovimiento'){
+  if (($tipo === 'productoMovimiento')||($tipo === 'productoStockViejo')){
     $test = stripos($query[$i], "where idprod=");
     $idprod = '';
     if ($test !== false){
@@ -199,7 +210,7 @@ for ($i = 0; $i < count($query); $i++){
       } 
     }  
   }
-  
+
   ///Ejecuto consulta "total" para concer el total de datos a devolver
   ///Sin embargo, sólo consulto el total de registros para que sea más rápido:
   $totalConsulta[$i] = '';

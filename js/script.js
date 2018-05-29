@@ -95,7 +95,7 @@ function showHint(str, id, seleccionado) {
   } 
   else {
     var url = "data/selectQuery.php";
-    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2, comentarios, ultimoMovimiento from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') and estado='activo' order by productos.entidad asc, productos.nombre_plastico asc";
+    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2, comentarios, ultimoMovimiento from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%' or productos.idprod like '%"+str+"%') and estado='activo' order by productos.entidad asc, productos.nombre_plastico asc";
     //alert(query);
     $.getJSON(url, {query: ""+query+""}).done(function(request) {
       var sugerencias = request.resultado;
@@ -114,7 +114,7 @@ function showHint(str, id, seleccionado) {
           mostrar = '<select name="hint" id="hint" class="hint" multiple size="15">';
         }
         if (totalSugerencias > 1) {
-          mostrar += '<option value="NADA" name="NADA" selected>--Seleccionar--</option>';
+          mostrar += '<option value="NADA" name="NADA">--Seleccionar--</option>';
         }
         for (var i in sugerencias) {
           if (totalSugerencias === 1){
@@ -328,7 +328,7 @@ function showHintProd(str, id, seleccionado) {
     return;
   } else {
     var url = "data/selectQuery.php";
-    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2, ultimoMovimiento from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%') and estado='activo' order by productos.nombre_plastico asc";
+    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2, ultimoMovimiento from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%' or productos.idprod like '%"+str+"%') and estado='activo' order by productos.nombre_plastico asc";
     //alert(query);
     $.getJSON(url, {query: ""+query+""}).done(function(request) {
       var sugerencias = request.resultado;
@@ -340,7 +340,7 @@ function showHintProd(str, id, seleccionado) {
       if (totalSugerencias >= 1) {
         mostrar = '<select name="hintProd" id="hintProd" tabindex="2" class="hint">';
         if (totalSugerencias > 1) {
-          mostrar += '<option value="NADA" name="NADA" selected>--Seleccionar--</option>';
+          mostrar += '<option value="NADA" name="NADA">--Seleccionar--</option>';
         }
         for (var i in sugerencias) {
           var bin = sugerencias[i]["bin"];
@@ -406,91 +406,110 @@ function showHintProd(str, id, seleccionado) {
  */
 function validarMovimiento() {
   var seguir = false;
-  var cantidad = document.getElementById("cantidad").value;
+  var cantidad = $("#cantidad").val();
   //var cantidad2 = document.getElementById("cantidad2").value;
-  var fecha = document.getElementById("fecha").value;
+  var fecha = $("#fecha").val();
   //var usuarioBoveda = document.getElementById("usuarioBoveda").value;
   //var usuarioGrabaciones = document.getElementById("usuarioGrabaciones").value;
-  
-  if (fecha === "") {
-    alert('Se debe seleccionar la Fecha');
-    document.getElementById("fecha").focus();
+  var hoy = new Date();
+  var diaHoy = hoy.getDate();
+  var mesHoy = hoy.getMonth()+1;
+  if (diaHoy < 10) 
+    {
+    diaHoy = '0'+diaHoy;
+  }                     
+  if (mesHoy < 10) 
+    {
+    mesHoy = '0'+mesHoy;
+  }
+  var hoyFecha = hoy.getFullYear()+'-'+mesHoy+'-'+diaHoy;
+      
+  if (fecha === ''){
+    alert('Por favor ingrese la fecha del movimiento.');
+    $("#fecha").focus();
     seguir = false;
   }
   else {
-    if (($("#hint").find('option:selected').val() === "NADA") || ($("#producto").val() === ''))
-      {
-      alert('Debe seleccionar el nombre del plástico.');
-      document.getElementById("hint").focus();
+    if (fecha > hoyFecha){
+      alert('La fecha seleccionada es posterior al día de hoy. \n¡Por favor verifique!.');
+      $("#fecha").focus();
       seguir = false;
     }
-    else
-      {
-      var cant = validarEntero(document.getElementById("cantidad").value);
-
-      if ((cantidad <= 0) || (cantidad === "null") || !cant)
+    else {
+      if (($("#hint").find('option:selected').val() === "NADA") || ($("#producto").val() === ''))
         {
-        alert('La cantidad de tarjetas debe ser un entero mayor o igual a 1.');
-        $("#cantidad").val("");
-        document.getElementById("cantidad").focus();
+        alert('Debe seleccionar el nombre del plástico.');
+        document.getElementById("hint").focus();
         seguir = false;
-      } 
+      }
       else
         {
-          /// Se quitan el doble ingreso de la cantidad, y el ingreso de las personas involucradas a pedido de Diego:
-////        var cant2 = validarEntero(document.getElementById("cantidad2").value);  
-////
-////        if ((cantidad2 <= 0) || (cantidad2 === "null") || !cant2)
-////          {
-////          alert('La repetición de la cantidad de tarjetas debe ser un entero mayor o igual a 1.');
-////          $("#cantidad2").val("");
-////          document.getElementById("cantidad2").focus();
-////          seguir = false;
-////        } 
-////        else
-////          {
-////          if (cantidad !== cantidad2)
-////            {
-////            alert('Las cantidades de tarjetas ingresadas deben coincidir. Por favor verifique!.');
-////            $("#cantidad").val("");
-////            $("#cantidad2").val("");
-////            document.getElementById("cantidad").focus();
-////            seguir = false;
-//////          } 
-////          else
-////            {
-//            if (usuarioBoveda === "ninguno")
-//              {
-//              alert('Se debe seleccionar al controlador 1. Por favor verifique!.');
-//              document.getElementById("usuarioBoveda").focus();
-//              seguir = false;
-//            } 
-//            else
-//              {
-//              if (usuarioGrabaciones === "ninguno")
-//                {
-//                alert('Se debe seleccionar al controlador 2. Por favor verifique!.');
-//                document.getElementById("usuarioGrabaciones").focus();
-//                seguir = false;
-//              } 
-//              else
-//                {
-//                if (usuarioGrabaciones === usuarioBoveda) {
-//                  alert('NO puede estar el mismo usuario en ambos controles. Por favor verifique!.');
-//                  document.getElementById("usuarioGrabaciones").focus();
-//                  seguir = false;
-//                } 
-//                else {  
-//                  seguir = true;
-//                }
-//              //}// usuarioGrabaciones
-//            //}// usuarioBoveda  
-//          //}// cantidad != cantidad2
-//        //}// cantidad 2
-      seguir = true;
-      }// cantidad
-    }// nombre_plastico
-  }//
+        var cant = validarEntero(document.getElementById("cantidad").value);
+
+        if ((cantidad <= 0) || (cantidad === "null") || !cant)
+          {
+          alert('La cantidad de tarjetas debe ser un entero mayor o igual a 1.');
+          $("#cantidad").val("");
+          document.getElementById("cantidad").focus();
+          seguir = false;
+        } 
+        else
+          {
+            /// Se quitan el doble ingreso de la cantidad, y el ingreso de las personas involucradas a pedido de Diego:
+  ////        var cant2 = validarEntero(document.getElementById("cantidad2").value);  
+  ////
+  ////        if ((cantidad2 <= 0) || (cantidad2 === "null") || !cant2)
+  ////          {
+  ////          alert('La repetición de la cantidad de tarjetas debe ser un entero mayor o igual a 1.');
+  ////          $("#cantidad2").val("");
+  ////          document.getElementById("cantidad2").focus();
+  ////          seguir = false;
+  ////        } 
+  ////        else
+  ////          {
+  ////          if (cantidad !== cantidad2)
+  ////            {
+  ////            alert('Las cantidades de tarjetas ingresadas deben coincidir. Por favor verifique!.');
+  ////            $("#cantidad").val("");
+  ////            $("#cantidad2").val("");
+  ////            document.getElementById("cantidad").focus();
+  ////            seguir = false;
+  //////          } 
+  ////          else
+  ////            {
+  //            if (usuarioBoveda === "ninguno")
+  //              {
+  //              alert('Se debe seleccionar al controlador 1. Por favor verifique!.');
+  //              document.getElementById("usuarioBoveda").focus();
+  //              seguir = false;
+  //            } 
+  //            else
+  //              {
+  //              if (usuarioGrabaciones === "ninguno")
+  //                {
+  //                alert('Se debe seleccionar al controlador 2. Por favor verifique!.');
+  //                document.getElementById("usuarioGrabaciones").focus();
+  //                seguir = false;
+  //              } 
+  //              else
+  //                {
+  //                if (usuarioGrabaciones === usuarioBoveda) {
+  //                  alert('NO puede estar el mismo usuario en ambos controles. Por favor verifique!.');
+  //                  document.getElementById("usuarioGrabaciones").focus();
+  //                  seguir = false;
+  //                } 
+  //                else {  
+  //                  seguir = true;
+  //                }
+  //              //}// usuarioGrabaciones
+  //            //}// usuarioBoveda  
+  //          //}// cantidad != cantidad2
+  //        //}// cantidad 2
+        seguir = true;
+        }// cantidad
+      }// nombre_plastico
+    }// fecha menor a hoy
+  }// fecha no seleccionada
   if (seguir) return true;
   else return false;
 }
@@ -638,13 +657,6 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
  *        Se separó del evento agregarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento cantidad.
  */
 function agregarMovimiento(){
-//  var timestamp = Math.round(Date.now() / 1000);
-//      
-//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-//    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-//    window.location.href = "../controlstock/index.php";
-//  }
-//  else {
     verificarSesion();
   
     var fecha = $("#fecha").val();
@@ -674,7 +686,8 @@ function agregarMovimiento(){
     /// Esto elimina también la necesidad de chequear la variable confirmar en el if más abajo
     //var confirmar = confirm("¿Confirma el ingreso de los siguientes datos? \n\nFecha: "+fechaMostrar+"\nProducto: "+nombreProducto+"\nTipo: "+tipo+"\nCantidad: "+cantidad+"\nControl 1: "+userBoveda+"\nControl 2: "+userGrabaciones+"\nComentarios: "+comentarios);
 
-    /// Si el movimiento NO es una devolución, calculo el nuevo stock. De serlo, NO se quita de stock pues las tarjetas se reponen.
+    /// Si el movimiento NO es una devolución, calculo el nuevo stock. 
+    // De serlo, NO se quita de stock pues las tarjetas se reponen (igualmente, por ahora no existe el tipo "Devolución"):
     if (tipo !== 'Ingreso') {
       nuevoStock = stockActual - cantidad;
     }
@@ -776,74 +789,200 @@ function agregarMovimiento(){
  *        Se separó del evento actualizarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento comentarios.
  */
 function actualizarMovimiento(){
-//  var timestamp = Math.round(Date.now() / 1000);
-//      
-//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-//    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-//    window.location.href = "../controlstock/index.php";
-//  }
-//  else {
-    verificarSesion();
-    var idmov = $("input[name='idMov']").val();
-    var comentarios = $("#comentarios").val();
-    var fecha = $("#fecha").val();
-
-    var hoy = new Date();
-    var diaHoy = hoy.getDate();
-    var mesHoy = hoy.getMonth()+1;
-    if (diaHoy < 10) 
-      {
-      diaHoy = '0'+diaHoy;
-    }                     
-    if (mesHoy < 10) 
-      {
-      mesHoy = '0'+mesHoy;
+  verificarSesion();
+  var idmov = $("input[name='idMov']").val();
+  var idprod = $("#idprod").val();
+  var comentarios = $("#comentarios").val();
+  var fecha = $("#fecha").val();
+  var tipo = $("#tipo").val();
+  if (tipo === null){
+    tipo = 'Ingreso';
+  }
+  var ultimoMovimiento = $("#ultimoMovimiento").val();
+  var tempUltimo = ultimoMovimiento.split(" ");
+  var fechaAnteriorTemp = tempUltimo[0].split("/");
+  var fechaAnterior = fechaAnteriorTemp[2] +'-'+ fechaAnteriorTemp[1] +'-'+ fechaAnteriorTemp[0];
+  var restoUltimo = tempUltimo[1]+' '+tempUltimo[2]+' '+tempUltimo[3]+' '+tempUltimo[4];
+  var cantidad = parseInt($("#cantidad").val(), 10);
+  
+  var stockViejo = parseInt($("#stockViejo").val(), 10);
+  var comentariosViejos = $("#comentariosViejos").val();
+  var tipoViejo = $("#tipoViejo").val();
+  var fechaVieja = $("#fechaVieja").val();
+  
+  var nuevoStock = stockViejo;
+  var cambiarTipo = false;
+  var cambiarComentarios = false;
+  var cambiarFecha = false;
+  var cambiarStock = false;
+  
+  if (comentariosViejos !== comentarios){
+    cambiarComentarios = true;
+  }
+  
+  if (tipoViejo !== tipo){
+    var tipoCambio = tipoViejo+'-'+tipo;
+    cambiarTipo = true;
+    switch (tipoCambio){
+      case 'Retiro-Renovación': break;
+      case 'Renovación-Retiro': break;
+      case 'Retiro-Destrucción': break;
+      case 'Destrucción-Retiro': break;
+      case 'Retiro-Ingreso':  nuevoStock = stockViejo + 2*cantidad;
+                              cambiarStock = true;
+                              break;
+      case 'Ingreso-Retiro':  nuevoStock = stockViejo - 2*cantidad;
+                              cambiarStock = true;
+                              break;
+      case 'Renovación-Destrucción': break;
+      case 'Destrucción-Renovación': break;
+      case 'Renovación-Ingreso':  nuevoStock = stockViejo + 2*cantidad;
+                                  cambiarStock = true;
+                                  break;
+      case 'Ingreso-Renovación':  nuevoStock = stockViejo - 2*cantidad;
+                                  cambiarStock = true;
+                                  break;
+      case 'Destrucción-Ingreso': nuevoStock = stockViejo + 2*cantidad;
+                                  cambiarStock = true;
+                                  break;
+      case 'Ingreso-Destrucción': nuevoStock = stockViejo - 2*cantidad;
+                                  cambiarStock = true;
+                                  break;
+      default: break;
     }
-    var hoyFecha = hoy.getFullYear()+'-'+mesHoy+'-'+diaHoy;
-    var validar = true;
-    
-    if (fecha === ''){
-      alert('Por favor ingrese la fecha del movimiento.');
+  }
+  
+  //alert('tipo viejo: '+tipoViejo+'\ntipo nuevo: '+tipo+'\ncomentarios viejo: '+comentariosViejos+'\ncomentarios nuevos: '+comentarios);
+  //alert('tipo cambio: '+tipoCambio+'\nstock viejo: '+stockViejo+'\nnuevoStock: '+nuevoStock);
+  
+  var hoy = new Date();
+  var diaHoy = hoy.getDate();
+  var mesHoy = hoy.getMonth()+1;
+  if (diaHoy < 10) 
+    {
+    diaHoy = '0'+diaHoy;
+  }                     
+  if (mesHoy < 10) 
+    {
+    mesHoy = '0'+mesHoy;
+  }
+  var hoyFecha = hoy.getFullYear()+'-'+mesHoy+'-'+diaHoy;
+  var validar = true;
+
+  if (fecha === ''){
+    alert('Por favor ingrese la fecha del movimiento.');
+    $("#fecha").focus();
+    validar = false;
+  }
+  else {
+    if (fecha > hoyFecha){
+      alert('La fecha seleccionada es posterior al día de hoy. \n¡Por favor verifique!.');
       $("#fecha").focus();
       validar = false;
     }
     else {
-      if (fecha > hoyFecha){
-        alert('La fecha seleccionada es posterior al día de hoy. \n¡Por favor verifique!.');
-        $("#fecha").focus();
-        validar = false;
+      if (fecha !== fechaVieja){
+        cambiarFecha = true;
       }
     }
-    
-    ///Se comenta la validación del movimiento pues por el momento SÓLO se puede EDITAR el comentario el cual es opcional.
-    ///De en un futuro querer editar algo más habrá que crear la función validarMovimiento. Se setea la variable validar a TRUE
-    //var validar = validarMovimiento();
-    //var validar = true;
+  }
 
-    if (validar) {
-      //var confirmar = confirm('¿Confirma la modificación del movimiento con los siguientes datos?\n\nFecha: '+fecha+'\nHora: '+hora+'\nProducto: '+nombre+'\nTipo: '+tipo+'\nCantidad: '+cantidad+'\nComentarios: '+comentarios+"\n?");
-      var confirmar = true;
-      if (confirmar) {
+  ///Se comenta la validación del movimiento pues por el momento SÓLO se puede EDITAR el comentario el cual es opcional.
+  ///De en un futuro querer editar algo más habrá que crear la función validarMovimiento. Se setea la variable validar a TRUE
+  //var validar = validarMovimiento();
+  //var validar = true;
+
+  if (validar) {
+    //var confirmar = confirm('¿Confirma la modificación del movimiento con los siguientes datos?\n\nFecha: '+fecha+'\nHora: '+hora+'\nProducto: '+nombre+'\nTipo: '+tipo+'\nCantidad: '+cantidad+'\nComentarios: '+comentarios+"\n?");
+    var confirmar = true;
+    if (confirmar) {
+      // Según lo que se haya o no cambiado, armo la consulta para la actualización:
+      if (cambiarFecha || cambiarComentarios || cambiarTipo){
         var url = "data/updateQuery.php";
-        var query = 'update movimientos set comentarios="'+comentarios+'", fecha="'+fecha+'" where idmov='+idmov;
+        var query = 'update movimientos set ';
+        
+        if (cambiarFecha){
+          query += 'fecha="'+fecha+'"';// where idmov='+idmov;
+          if (cambiarTipo){
+            query += ', tipo="'+tipo+'"';
+            if (cambiarComentarios){
+              query += ', comentarios="'+comentarios+'"';
+            }
+          }
+          else {
+            if (cambiarComentarios){
+              query += ', comentarios="'+comentarios+'"';
+            }
+          }
+        }
+        else {
+          if (cambiarTipo){
+            query += 'tipo="'+tipo+'"';
+            if (cambiarComentarios){
+              query += ', comentarios="'+comentarios+'"';
+            }
+          }
+          else {
+            query += 'comentarios="'+comentarios+'"';
+          }
+        }
+        query += ' where idmov='+idmov;
+           
         var log = "SI";
         //alert(query);
         $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
           var resultado = request["resultado"];
           if (resultado === "OK") {
-            alert('Los datos del movimiento se actualizaron correctamente!.');
-            cargarEditarMovimiento(idmov, "main-content");
-            inhabilitarMovimiento();
+            //si se hizo la actualización de los datos y se cambió la fecha, 
+            //hay que actualizar la fecha del último movimiento:
+            if (cambiarFecha || cambiarStock){
+              var query = 'update productos set ';
+              if ((cambiarFecha)&&(fecha > fechaAnterior)){
+                //alert('anterior: '+fechaAnterior+'\nnueva: '+fecha); 
+                var tempFecha = fecha.split("-");
+                var fechaUltimo = tempFecha[2]+'/'+tempFecha[1]+'/'+tempFecha[0];
+                query += 'ultimoMovimiento="'+fechaUltimo+' '+restoUltimo+'"';
+                
+                if (cambiarStock){
+                  query += ', stock='+nuevoStock+'';
+                }
+              }
+              else {
+                query += 'stock='+nuevoStock+'';
+              }
+              query += ' where idprod='+idprod+'';
+
+              alert(query);
+              $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
+                var resultado1 = request["resultado"];
+                if (resultado1 === "OK") {
+                  alert('¡Los datos del movimiento se actualizaron correctamente!.');
+                  cargarEditarMovimiento(idmov, "main-content");
+                  inhabilitarMovimiento();
+                }
+                else {
+                  alert('Hubo un problema en la actualización de la fecha del último movimiento.\n¡Por favor verifique!.');
+                }
+              });
+            }
+            // si no se cambió la fecha, se confirma modificación del resto y termina:
+            else {
+              alert('¡Los datos del movimiento se actualizaron correctamente!.');
+              cargarEditarMovimiento(idmov, "main-content");
+              inhabilitarMovimiento();
+            }  
           }
           else {
-            alert('Hubo un problema en la actualización. Por favor verifique.');
+            alert('Hubo un problema en la actualización de los datos.\n¡Por favor verifique!.');
           }
         });
-      }
+      }// if or cambiarFecha, cambiarTipo, cambiarComentarios     
       else {
-        alert('Se optó por no actualizar el movimiento!.');
+        alert('¡NO hubo modificaciones al movimiento!.');
+        inhabilitarMovimiento();
       }
-    }
+    }// if confirmar
+  }// if validar
   //}
 }
 /********** fin actualizarMovimiento() **********/
@@ -870,9 +1009,9 @@ function habilitarMovimiento(){
   ///******* Queda hecho para poder editar el resto de los campos, pero la idea es SOLO poder editar los comentarios. **********
   ///******* Ahora (17/5/2018) se agrega también la edición de la fecha por lo que también se habilita la misma. ***************
   document.getElementById("fecha").disabled = false;
+  document.getElementById("tipo").disabled = false;
   //document.getElementById("hora").disabled = false;
   //document.getElementById("nombre").disabled = false;
-  //document.getElementById("tipo").disabled = false;
   //document.getElementById("cantidad").disabled = false;
   document.getElementById("comentarios").disabled = false;
   document.getElementById("editarMovimiento").value = "BLOQUEAR";
@@ -887,14 +1026,17 @@ function habilitarMovimiento(){
 */
 function cargarEditarMovimiento(idMov, selector){
   var url = "data/selectQuery.php";
-  var query = 'select movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.comentarios, movimientos.tipo, productos.entidad, productos.codigo_emsa, productos.nombre_plastico from movimientos inner join productos on movimientos.producto=productos.idprod where movimientos.idmov='+idMov;
+  var query = 'select movimientos.fecha, movimientos.hora, movimientos.cantidad, movimientos.comentarios, movimientos.tipo, productos.entidad, productos.codigo_emsa, productos.nombre_plastico, productos.ultimoMovimiento, productos.idprod, productos.stock from movimientos inner join productos on movimientos.producto=productos.idprod where movimientos.idmov='+idMov;
   
   $.getJSON(url, {query: ""+query+""}).done(function(request) {
     var resultado = request["resultado"];
     var total = request["rows"];
     if (total >= 1) {
       var cantidad = parseInt(resultado[0]['cantidad'], 10);
+      var stockViejo = parseInt(resultado[0]['stock'], 10);
+      var idprod = parseInt(resultado[0]['idprod']);
       var fecha = resultado[0]['fecha'];
+      var ultimoMovimiento = resultado[0]['ultimoMovimiento'];
       //var fecha = '';
       var hora = '';
 //      if (fechaTemp !== null) {
@@ -921,10 +1063,25 @@ function cargarEditarMovimiento(idMov, selector){
     var tabla = '<table class="tabla2" name="editarMovimiento">\n\
                   <caption>Formulario para editar el movimiento</caption>';
     var tr = '<th colspan="3" class="centrado tituloTabla">DATOS DEL MOVIMIENTO</th>';
+    var selRetiro = '';
+    var selReno = '';
+    var selIngreso = '';
+    var selDestruccion = '';
+    switch (tipo){
+      case 'Retiro': selRetiro = 'selected';
+                     break;
+      case 'Renovación':  selReno = 'selected';
+                          break;
+      case 'Ingreso': selIngreso = 'selected';
+                      break;
+      case 'Destrucción': selDestruccion = 'selected';
+                          break
+      default: break;
+    }
 
     tr += '<tr>\n\
             <th align="left" width="15"><font class="negra">Fecha:</font></th>\n\
-            <td align="center" colspan="2"><input type="date" name="fecha" id="fecha" title="Elegir fecha del movimiento\n(NO editable)" placeholder="Fecha" class="agrandar" style="width:100%; text-align: center"></td>\n\
+            <td align="center" colspan="2"><input type="date" name="fecha" id="fecha" title="Elegir fecha del movimiento\n" placeholder="Fecha" class="agrandar" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Hora:</font></th>\n\
@@ -944,8 +1101,15 @@ function cargarEditarMovimiento(idMov, selector){
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Tipo:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" name="tipo" id="tipo" title="Ingresar el tipo de movimiento realizado\n(NO editable)" placeholder="Tipo de movimiento" class="agrandar" maxlength="35" style="width:100%; text-align: center" disabled></td>\n\
-          </tr>';
+              <td align="center">\n\
+                <select id="tipo" name="tipo" tabindex="4" style="width:100%" title="Seleccionar el tipo de movimiento" placeholder="Tipo de movimiento" >\n\
+                  <option value="Retiro" '+selRetiro+'>Retiro</option>\n\
+                  <option value="Ingreso" '+selIngreso+' disabled>Ingreso</option>\n\
+                  <option value="Renovaci&oacute;n" '+selReno+'>Renovaci&oacute;n</option>\n\
+                  <option value="Destrucci&oacute;n" '+selDestruccion+'>Destrucci&oacute;n</option>\n\
+                </select>\n\
+              </td>\n\
+            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Cantidad:</font></th>\n\
               <td align="center" colspan="2"><input type="text" id="cantidad" name="cantidad" title="Ingresar la cantidad" placeholder="Cantidad" class="agrandar" maxlength="35" size="9" disabled></td>\n\
@@ -958,6 +1122,13 @@ function cargarEditarMovimiento(idMov, selector){
               <td class="pieTablaIzquierdo" style="width: 50%;border-right: 0px;"><input type="button" value="BLOQUEAR" id="editarMovimiento" name="editarMovimiento" title="Habilitar/Deshabilitar la edición del movimiento" class="btn btn-primary" align="center"/></td>\n\
               <td class="pieTablaDerecho" style="width: 50%;border-left: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarMovimiento" name="actualizarMovimiento" title="Realizar la edición del movimiento" tabindex="2" class="btn btn-warning" align="center"/></td>\n\
               <td style="display:none"><input type="text" name="idMov" value="'+idMov+'"></td>\n\
+              <td style="display:none"><input type="text" id="fechaVieja" name="fechaVieja" value="'+fecha+'"></td>\n\
+              <td style="display:none"><input type="text" id="idprod" name="idprod" value="'+idprod+'"></td>\n\
+              <td style="display:none"><input type="text" id="tipoViejo" name="tipoViejo" value="'+tipo+'"></td>\n\
+              <td style="display:none"><input type="text" id="comentariosViejos" name="comentariosViejos" value="'+comentarios+'"></td>\n\
+              <td style="display:none"><input type="text" id="ultimoMovimiento" name="ultimoMovimiento" value="'+ultimoMovimiento+'"></td>\n\
+              <td style="display:none"><input type="text" id="stockViejo" name="stockViejo" value="'+stockViejo+'"></td>\n\
+              <td style="display:none"><input type="text" id="cantidad" name="cantidad" value="'+cantidad+'"></td>\n\
           </tr>';
     tabla += tr;
     tabla += '</table>';
@@ -974,7 +1145,12 @@ function cargarEditarMovimiento(idMov, selector){
       $("#fecha").val(fecha);
       $("#hora").val(hora);
       $("#entidad").val(entidad);
-      $("#tipo").val(tipo);
+      if (selIngreso === 'selected'){
+        $("#tipo").val('Ingreso');
+      }
+      else {
+        $("#tipo").val(tipo);
+      }
       $("#nombre").val(producto);
       $("#codigo").val(codigo);
       $("#cantidad").val(cantidad.toLocaleString());
@@ -1714,6 +1890,101 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     </tr>\n\
                                   </table>';
                           break;
+      case 'productoStockViejo':  var bin = datos[0]['bin'];
+                                  var produ = datos[0]['idprod'];
+                                  if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
+                                      {
+                                      bin = 'N/D o N/C';
+                                    }
+                                  var codigo_origen = datos[0]['codigo_origen'];
+                                  if ((codigo_origen === '')||(codigo_origen === null)) 
+                                      {
+                                      codigo_origen = 'NO Ingresado';
+                                    }
+                                  var codigo_emsa = datos[0]['codigo_emsa'];
+                                  if ((codigo_emsa === '')||(codigo_emsa === null)) 
+                                      {
+                                      codigo_emsa = 'NO Ingresado';
+                                    }   
+                                  var alarma1 = parseInt(datos[0]['alarma1'], 10);
+                                  var alarma2 = parseInt(datos[0]['alarma2'], 10);
+                                  var stock = parseInt(subtotales["stockViejo"][produ], 10);
+                                  var snapshot = datos[0]['snapshot'];
+                                  var ultimoMovimiento = datos[0]['ultimoMovimiento'];
+                                  if (ultimoMovimiento === null) {
+                                      ultimoMovimiento = '';
+                                    }
+                                  var contacto = datos[0]['contacto'];
+                                  if (contacto === null) 
+                                      {
+                                      contacto = '';
+                                    }
+                                  var prodcom = datos[0]['prodcom'];
+                                  var claseComentario = "";
+                                  if ((prodcom === "undefined")||(prodcom === null)||(prodcom === "")) 
+                                    {
+                                    prodcom = "";
+                                  }
+                                  else {
+                                    var patron = "dif";
+                                    var buscar = prodcom.search(new RegExp(patron, "i"));
+                                    if (buscar !== -1){
+                                      claseComentario = "resaltarDiferencia";
+                                    }
+                                    else {
+                                      var patron = "stock";
+                                      var buscar = prodcom.search(new RegExp(patron, "i"));
+                                      if (buscar !== -1){
+                                        claseComentario = "resaltarStock";
+                                      }
+                                      else {
+                                        var patron = "plastico";
+                                        var buscar = prodcom.search(new RegExp(patron, "i"));
+                                        var patron1 = "plástico";
+                                        var buscar1 = prodcom.search(new RegExp(patron1, "i"));
+                                        if ((buscar !== -1)||(buscar1 !== -1)){
+                                          claseComentario = "resaltarPlastico";
+                                        }
+                                        else {
+                                          claseComentario = "resaltarComentario";
+                                        }
+                                      }
+                                    }
+                                  }  
+
+                                  var claseResaltado = "italica";
+                                  if ((stock < alarma1) && (stock > alarma2)){
+                                    claseResaltado = "alarma1";
+                                  }
+                                  else {
+                                    if (stock < alarma2) {
+                                      claseResaltado = "alarma2";
+                                    }
+                                    else {
+                                      claseResaltado = "resaltado italica";
+                                    }
+                                  }
+                                  tabla += '<caption>Stock del producto <b><i>'+datos[0]['nombre_plastico']+'</i></b></caption>';
+                                  tabla += '<tr>\n\
+                                              <th colspan="2" class="tituloTabla">DETALLES</th>\n\
+                                           </tr>';                       
+                                  tabla += '<tr><th style="text-align:left">Nombre:</th><td>'+datos[0]['nombre_plastico']+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">C&oacute;digo EMSA:</th><td>'+codigo_emsa+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">C&oacute;digo Origen:</th><td>'+codigo_origen+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">BIN:</th><td nowrap>'+bin+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
+                                  tabla += '<tr><th style="text-align:left">Contacto:</th><td>'+contacto+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">Comentarios:</th><td class="'+claseComentario+'">'+prodcom+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">&Uacute;ltimo Movimiento:</th><td>'+ultimoMovimiento+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
+                                  tabla += '<tr>\n\
+                                              <td class="pieTabla" colspan="2">\n\
+                                                <input type="button" id="2" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                              </td>\n\
+                                            </tr>\n\
+                                          </table>';
+                                  break;                    
       case 'totalStock':  tabla += '<caption><b><i>Stock total en b&oacute;veda.</i></b></caption>';
                           tabla += '<tr>\n\
                                       <th colspan="3" class="tituloTabla">DETALLES</th>\n\
@@ -1759,6 +2030,110 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     </tr>\n\
                                   </table>';              
                           break;
+      case 'entidadStockViejo': tabla += '<tr><th class="tituloTabla" colspan="10">CONSULTA DE STOCK</th></tr>';
+                                tabla += '<tr>\n\
+                                            <th>Item</th>\n\
+                                            <th>Entidad</th>\n\
+                                            <th>Nombre</th>\n\
+                                            <th>BIN</th>\n\
+                                            <th>Cód. EMSA</th>\n\
+                                            <th>Cód. Origen</th>\n\
+                                            <th>Snapshot</th>\n\
+                                            <th>&Uacute;ltimo Movimiento</th>\n\
+                                            <th>Stock</th>\n\
+                                            <th>Mensaje</th>\n\
+                                         </tr>';
+                                for (var i=0; i<max; i++) {
+                                  ///************************* INICIO RECUPERACIÓN DATOS ******************************************************************
+                                  var produ = parseInt(datos[i]["idprod"], 10);
+                                  var entidad = datos[i]["entidad"];
+                                  var nombre = datos[i]['nombre_plastico'].trim();
+                                  var bin = datos[i]['bin'];
+                                  var codigo_emsa = datos[i]['codigo_emsa'];
+                                  if ((codigo_emsa === '')||(codigo_emsa === null)) 
+                                      {
+                                      codigo_emsa = 'NO Ingresado';
+                                    }
+                                  var codigo_origen = datos[i]['codigo_origen'];
+                                  if ((codigo_origen === '')||(codigo_origen === null)) 
+                                    {
+                                    codigo_origen = 'NO Ingresado';
+                                  }
+                                  var snapshot = datos[i]['snapshot'];  
+                                  var ultimoMovimiento = datos[i]['ultimoMovimiento'];
+                                  if (ultimoMovimiento === null) {
+                                      ultimoMovimiento = '';
+                                    }
+                                  var alarma1 = parseInt(datos[i]['alarma1'], 10);
+                                  var alarma2 = parseInt(datos[i]['alarma2'], 10);
+                                  stock = parseInt(subtotales["stockViejo"][produ], 10);
+                                  var claseResaltado = '';
+                                  if ((stock < alarma1) && (stock > alarma2)){
+                                    claseResaltado = "alarma1";
+                                  }
+                                  else {
+                                    if (stock < alarma2) {
+                                      claseResaltado = "alarma2";
+                                    }
+                                    else {
+                                      claseResaltado = "resaltado";
+                                    }
+                                  }
+                                  var comentarios = datos[i]['comentarios'];
+                                  if ((comentarios === "undefined")||(comentarios === null)) {
+                                      comentarios = "";
+                                    }
+                                  if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
+                                    {
+                                    bin = 'N/D o N/C';
+                                  }
+                                  ///************************* FIN RECUPERACIÓN DATOS *********************************************************************
+                                  
+                                  ///Muestro el renglón con los datos del movimiento:
+                                  tabla += '<tr>\n\
+                                              <td>'+offset+'</td>\n\
+                                              <td>'+entidad+'</td>\n\
+                                              <td>'+nombre+'</td>\n\
+                                              <td nowrap>'+bin+'</td>\n\
+                                              <td nowrap>'+codigo_emsa+'</td>\n\
+                                              <td nowrap>'+codigo_origen+'</td>\n\
+                                              <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="75" width="120"></img></td>\n\
+                                              <td>'+ultimoMovimiento+'</td>\n\
+                                              <td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td>\n\
+                                              <td>'+comentarios+'</td>\n\
+                                            </tr>'; 
+                                  offset++;  
+                                }/// FIN DEL FOR ********************************************************
+                                
+                                ///************************ CAPTION segun si es TODOS o alguna ENTIDAD *******************************************
+                                if (!todos){
+                                  tabla += '<caption>Stock de <b><i>'+entidad+'</i></b></caption>';
+                                }
+                                else {
+                                  tabla += '<caption>Stock de <b><i>todas las entidades</i></b></caption>';
+                                }
+                                ///************************ FIN CAPTION segun si es TODOS o alguna ENTIDAD ***************************************
+
+                                var subtitulo = '';
+                                if (fin){
+                                  subtitulo = 'SUB-TOTAL';
+                                } 
+                                else {
+                                  subtitulo = 'TOTAL';
+                                  totalPlasticos = parseInt(totalPlasticos, 10);
+                                  tabla += '<tr><th colspan="8" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+totalPlasticos.toLocaleString()+'</td><th></th></tr>';
+                                }
+                                var subtotalesJson = JSON.stringify(subtotales);
+                                tabla += '<tr>\n\
+                                            <td class="pieTabla" colspan="10">\n\
+                                              <input type="button" id="1" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                            </td>\n\
+                                          </tr>';
+                                tabla += "<tr>\n\
+                                            <td style='display:none'><input type='text' id='subtotales_"+j+"' value="+subtotalesJson+"></td>\n\
+                                          </tr>\n\
+                                        </table>";
+                                break;                   
       case 'entidadMovimiento': tabla += '<tr><th class="tituloTabla" colspan="12">MOVIMIENTOS</th></tr>';
                                 tabla += '<tr>\n\
                                             <th>Item</th>\n\
@@ -2313,8 +2688,14 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
  * @returns {String} String con el HTML que contiene los títulos y la tabla a mostrar. La tabla la generará mostrarTabla a la cual se llama desde acá.
  */
 function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, p, d1, d2, tipo, user){
-  var url = "data/selectQueryJSON.php";
-
+  var url = '';
+  if ((radio === 'entidadStockViejo')||(radio === 'productoStockViejo')){
+    url = "data/stockViejoJSON.php";
+  }
+  else {
+    url = "data/selectQueryJSON.php";
+  }
+  
   $("#main-content").empty();
 
   var mostrarGlobal = '<ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">';
@@ -2349,8 +2730,19 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
       var totalRenovaciones = request[j]["renovaciones"];
       var totalDestrucciones = request[j]["destrucciones"];
       var totalIngresos = request[j]["ingresos"];
+      var stockViejo = '';
+      if ((radio === 'entidadStockViejo')||(radio === 'productoStockViejo')){
+        stockViejo = request[j]["stockViejo"];
+        queries[j] = request[j].query;
+        
+      }
+      else {
+        stockViejo = null;
+      }
+      var jsonStockViejo = JSON.stringify(stockViejo);
       var totalDatos = parseInt(request[j].totalRows, 10);
-      //alert('total: '+totalDatos+'\nplasticos: '+totalPlasticos+'\nretiros:'+totalRetiros+'\nrenos: '+totalRenovaciones+'\ndestrucciones: '+totalDestrucciones+'\ningresos: '+totalIngresos);
+      
+      //alert('total: '+totalDatos+'\nplasticos: '+totalPlasticos+'\nretiros:'+totalRetiros+'\nrenos: '+totalRenovaciones+'\ndestrucciones: '+totalDestrucciones+'\ningresos: '+totalIngresos+'\nstock Viejo: '+stockViejo);
       
       if (j == 0) {
         activo = 'fade show active';
@@ -2388,24 +2780,31 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
           case 'productoStock': break;
           case 'totalStock':  mensajeTotalDatos = "<h3>Total de entidades: <font class='naranja'>"+totalDatos+"</font></h3>";
                               break;
+          case 'entidadStockViejo': if (entidadesStock[0] === 'todos'){
+                                      todos = true;
+                                    }
+                                    mensajeTotalDatos = "<h3>Total de productos: <font class='naranja'>"+totalDatos+"</font></h3>";
+                                    break;                   
           case 'entidadMovimiento': if (entidadesMovimiento[0] === 'todos'){
                                       todos = true;
                                     }
                                     mensajeTotalDatos = "<h3>Total de movimientos: <font class='naranja'>"+totalDatos+"</font></h3>";
                                     break;
+          case 'productoStockViejo':  break;
           case 'productoMovimiento':  mensajeTotalDatos = "<h3>Total de movimientos: <font class='naranja'>"+totalDatos+"</font></h3>";
                                       break;
           default: break;
         }
         
-        var subtotales = {"retiros":totalRetiros, "renovaciones":totalRenovaciones, "destrucciones":totalDestrucciones, "ingresos":totalIngresos};
+        var subtotales = {"retiros":totalRetiros, "renovaciones":totalRenovaciones, "destrucciones":totalDestrucciones, "ingresos":totalIngresos, "stockViejo": stockViejo};
+        
         ///Vuelvo a definir una variable local tamPagina para actualizar el valor que ya tiene.
         ///Esto es para que tome el último valor en caso de que se haya modificado desde el modal (que no cambia hasta recargar la página).
         var tamPagina = parseInt($("#tamPagina").val(), 10);
         var max = parseInt(tamPagina, 10);
         var parcial = true; 
         ///Chequeo en que caso estoy pues la parte de movimientos funciona con parcial invertido:
-        if ((radio === 'entidadMovimiento') || (radio === 'productoMovimiento')){
+        if ((radio === 'entidadMovimiento') || (radio === 'productoMovimiento') || (radio === 'entidadStockViejo') || (radio === 'productoStockViejo')){
           parcial = false;
         }
         if (totalDatos < tamPagina){
@@ -2419,12 +2818,15 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         
         var datosOcultos = '<table id="datosOcultos_'+j+'" name="datosOcultos" class="tabla2" style="display:none">';
         switch (radio){
-          case 'entidadStock':  campos = "Id-Entidad-Nombre-BIN-C&oacute;d. EMSA-C&oacute;d. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje";
-                                largos = "0.8-1.2-2.5-0.8-1.9-1.5-1-1-1.2-1.6-1-2-1.7";
-                                mostrarCamposQuery = "1-1-1-0-1-1-0-0-1-1-0-0-0";
+          case 'entidadStockViejo':
+          case 'entidadStock':  campos = "Id-IdProd-Entidad-Nombre-BIN-C&oacute;d. EMSA-C&oacute;d. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje";
+                                largos = "0.8-0.5-1.2-2.5-0.8-1.9-1.5-1-1-1.2-1.6-1-2-1.7";
+                                mostrarCamposQuery = "1-0-1-1-0-1-1-0-0-1-1-0-0-0";
                                 x = 20;
                                 tipMov = 'entStock';
                                 datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="subtotales_'+j+'" name="subtotales_'+j+'" value='+jsonStockViejo+'></td>\n\
+                                                    <td style="display:none"><input type="text" id="radio_'+j+'" name="radio_'+j+'" value="'+radio+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="1"></td>\n\
                                                     <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
                                                     <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
@@ -2447,12 +2849,15 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                     <td style="display:none"><input type="text" id="marcaAgua" name="marcaAgua" value="'+marcaAgua+'"></td>\n\
                                                   </tr>';
                                 break;
-          case 'productoStock': campos = "Id-Entidad-Nombre-BIN-C&oacute;d. EMSA-C&oacute;d. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje";
-                                largos = "0.8-1.2-2.5-0.8-2-1.5-1-1-1.2-1.4-1-2-1.7";
-                                mostrarCamposQuery = "1-1-1-0-1-1-0-0-1-1-0-0-0";
+          case 'productoStockViejo':                      
+          case 'productoStock': campos = "Id-IdProd-Entidad-Nombre-BIN-C&oacute;d. EMSA-C&oacute;d. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje";
+                                largos = "0.8-0.5-1.2-2.5-0.8-2-1.5-1-1-1.2-1.4-1-2-1.7";
+                                mostrarCamposQuery = "1-0-1-1-0-1-1-0-0-1-1-0-0-0";
                                 x = 22;
                                 tipMov = 'prodStock';
                                 datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="subtotales_'+j+'" name="subtotales_'+j+'" value='+jsonStockViejo+'></td>\n\
+                                                    <td style="display:none"><input type="text" id="radio_'+j+'" name="radio_'+j+'" value="'+radio+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="2"></td>\n\
                                                     <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
                                                     <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
@@ -2484,6 +2889,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                               datosOcultos += '<tr><td style="display:none"><input type="text" id="query_0" name="query_0" value="'+queries[j]+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="3"></td>\n\
                                                 <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                                <td style="display:none"><input type="text" id="radio_'+j+'" name="radio_'+j+'" value="'+radio+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="consultaCSV_0" name="consultaCSV_0" value="'+consultasCSV[j]+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
@@ -2510,6 +2916,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                     x = 40;
                                     tipMov = 'entMov';
                                     datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="radio_'+j+'" name="radio_'+j+'" value="'+radio+'"></td>\n\
                                                         <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="4"></td>\n\
                                                         <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
                                                         <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
@@ -2539,6 +2946,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                       x = 40;
                                       tipMov = 'prodMov';
                                       datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="radio_'+j+'" name="radio_'+j+'" value="'+radio+'"></td>\n\
                                                           <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="5"></td>\n\
                                                           <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
                                                           <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
@@ -2715,7 +3123,17 @@ function realizarBusqueda(){
     var validarTipo = false;
     var validarUser = false;
     var ordenFecha = false;
-        
+     
+    ///Agrego condición para detectar el caso en que se quiera el stock de un producto o entidad a una fecha anterior a la actual:
+    if ((radioFecha === 'intervalo')&&((radio === 'entidadStock')||(radio === 'productoStock'))){
+      if (radio === 'entidadStock'){
+        radio = 'entidadStockViejo';
+      }
+      else {
+        radio = 'productoStockViejo';
+      }
+    }
+  
     switch (radio) {
       case 'entidadStock':  delete nombres;
                             var nombres = new Array();
@@ -2724,7 +3142,7 @@ function realizarBusqueda(){
                               delete (consultaCSV);
                               delete (tipoConsulta);
                               var tipoConsulta = '';
-                              var query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                              var query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                               var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
                               if (entidadesStock[i] !== 'todos') {
                                 ent.push(entidadesStock[i]);
@@ -2743,6 +3161,10 @@ function realizarBusqueda(){
                               tipoConsultas.push(tipoConsulta);
                               idProds.push(entidadesStock[i]);
                               nombres.push(entidadesStock[i]);
+                              //se habiliata la validación de la fecha para el caso que haya que calcular el stock a una fecha anterior:
+                              validarFecha = true;
+                              validarTipo = false;
+                              validarUser = false;
                             }
                             if (todos && (entidadesStock.length > 1)){
                               alert('No se puede consultar "TODOS" junto con otras entidades. Por favor verifique.');
@@ -2754,7 +3176,7 @@ function realizarBusqueda(){
                               $("#entidadStock").focus();
                               return;
                             }
-                           break;
+                            break;
       case 'productoStock': for (var i in idProds){
                               if ((idProds[i] === 'NADA') || (nombresProductos[i] === '')){
                                 alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
@@ -2763,7 +3185,7 @@ function realizarBusqueda(){
                                 return false;
                               }
                               else {
-                                query = 'select productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                                query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                                 query += " from productos where idProd="+idProds[i];
                                 consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
                                 consultaCSV += " from productos where idProd="+idProds[i];
@@ -2771,10 +3193,13 @@ function realizarBusqueda(){
                                 queries.push(query);
                                 consultasCSV.push(consultaCSV);
                                 tipoConsultas.push(tipoConsulta);
+                                //se habiliata la validación de la fecha para el caso que haya que calcular el stock a una fecha anterior:
+                                validarFecha = true;
+                                validarTipo = false;
+                                validarUser = false;
                               }
                               prodHint = $("#productoStock").val();
                             }  
-                            
                             break;
       case 'totalStock':  query = "select entidad, sum(stock) as subtotal from productos where estado='activo' group by entidad";
                           queries[0] = query;
@@ -2786,7 +3211,44 @@ function realizarBusqueda(){
                           delete nombres;
                           var nombres = new Array();
                           nombres[0] = "Stock en Bóveda";
-                          break;                    
+                          break;   
+      case 'entidadStockViejo': delete nombres;
+                                var nombres = new Array();
+                                for (var i in entidadesStock){
+                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                                  query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
+                                  consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
+                                  if (entidadesStock[i] !== 'todos') {
+                                    ent.push(entidadesStock[i]);
+                                    query += "and productos.entidad='"+entidadesStock[i]+"'";
+                                    consultaCSV += "and productos.entidad='"+entidadesStock[i]+"'";
+                                    tipoConsulta = 'Stock de <b><i>'+entidadesStock[i]+"</i></b>";
+                                  } 
+                                  else {
+                                    tipoConsulta = 'Stock de <b><i>todas las entidades</i></b>';
+                                    todos = true;
+                                  }
+                                  queries.push(query);
+                                  consultasCSV.push(consultaCSV);
+                                  tipoConsultas.push(tipoConsulta);
+                                  idProds.push(entidadesStock[i]);
+                                  nombres.push(entidadesStock[i]);
+                                }
+                                if (todos && (entidadesStock.length > 1)){
+                                  alert('No se puede consultar "TODOS" junto con otras entidades. Por favor verifique.');
+                                  $("#entidadStock").focus();
+                                  return;
+                                }
+                                if (entidadesStock.length > limiteSeleccion) {
+                                  alert("Se superó el máximo de "+limiteSeleccion+" opciones elegidas. Por favor verifique.");
+                                  $("#entidadStock").focus();
+                                  return;
+                                }
+                                validarFecha = true;
+                                validarTipo = false;
+                                validarUser = false;
+                                ordenFecha = true;
+                                break;                  
       case 'entidadMovimiento': delete nombres;
                                 var nombres = new Array();
                                 for (var i in entidadesMovimiento){
@@ -2823,7 +3285,33 @@ function realizarBusqueda(){
                                 validarTipo = true;
                                 validarUser = true;
                                 ordenFecha = true;
-                                break;                       
+                                break;   
+      case 'productoStockViejo':  for (var k in idProds){
+                                    query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                                    query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where ";
+                                    //consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
+                                    consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";                                 
+                                    if ((idProds[k] === 'NADA') || (nombresProductos[k] === '')){
+                                      alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
+                                      document.getElementById("productoStock").focus();
+                                      validado = false;
+                                      return false;
+                                    }
+                                    else {
+                                      query += "idprod="+idProds[k];
+                                      consultaCSV += "and idprod="+idProds[k];
+                                      queries.push(query);
+                                      consultasCSV.push(consultaCSV);
+                                      validarFecha = true;
+                                      validarTipo = false;
+                                      validarUser = false;
+                                      ordenFecha = true;
+                                    }
+                                    tipoConsulta = 'Stock del producto <b><i>'+nombres[k]+"</i></b>";
+                                    tipoConsultas.push(tipoConsulta);
+                                    prodHint = $("#productoStock").val();
+                                  }
+                                  break;
       case 'productoMovimiento':  for (var k in idProds){
                                     query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                                     query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where ";
@@ -2867,50 +3355,78 @@ function realizarBusqueda(){
     var hoyFecha = hoy.getFullYear()+'-'+mesHoy+'-'+diaHoy;
     if (validarFecha) {
       switch (radioFecha) {
-        case 'intervalo': ///Comienzo la validación de las fechas:  
-                          if ((inicio === '') && (fin === '')) 
-                            {
-                            alert('Debe seleccionar al menos una de las dos fechas. Por favor verifique!.');
-                            document.getElementById("inicio").focus();
-                            validado = false;
-                            return false;
-                          }
-                          else 
-                            {
-                            if (inicio === '') 
-                              {
-                              inicio = $("#inicio" ).attr("min");
-                              }
-                            if ((fin === '') || (fin > hoyFecha))
-                              {
-                              fin = hoyFecha;
+        case 'intervalo': if ((radio === 'entidadStockViejo')||(radio === 'productoStockViejo')){
+                            if (inicio === ''){
+                              alert('Debe seleccionar la fecha de inicio. Por favor verifique!.');
+                              document.getElementById("inicio").focus();
+                              validado = false;
+                              return false;
                             }
-
-                            if (inicio>fin) 
+                            else {
+                              fin = hoyFecha;
+                              if (inicio>fin) 
+                                {
+                                alert('Error. La fecha inicial NO puede ser mayor a la fecha actual. Por favor verifique.');
+                                validado = false;
+                                return false;
+                              }
+                              else {
+                                validado = true;  
+                                var inicioTemp = inicio.split('-');
+                                var inicioMostrar = inicioTemp[2]+"/"+inicioTemp[1]+"/"+inicioTemp[0];
+                                var finTemp = fin.split('-');
+                                var finMostrar = finTemp[2]+"/"+finTemp[1]+"/"+finTemp[0];
+                                rangoFecha = " and (fecha >'"+inicio+"') and (fecha <='"+fin+"')";
+                                mensajeFecha = "al día: "+inicioMostrar;
+                              }
+                            }
+                          }
+                          else {
+                            ///Comienzo la validación de las fechas:  
+                            if ((inicio === '') && (fin === '')) 
                               {
-                              alert('Error. La fecha inicial NO puede ser mayor que la fecha final. Por favor verifique.');
+                              alert('Debe seleccionar al menos una de las dos fechas. Por favor verifique!.');
+                              document.getElementById("inicio").focus();
                               validado = false;
                               return false;
                             }
                             else 
                               {
-                              validado = true;  
-                              if (inicio === fin){
-                                var diaTemp = inicio.split('-');
-                                var diaMostrar = diaTemp[2]+"/"+diaTemp[1]+"/"+diaTemp[0];
-                                rangoFecha = " and (fecha ='"+inicio+"')";
-                                mensajeFecha = "del día: "+diaMostrar;
+                              if (inicio === '') 
+                                {
+                                inicio = $("#inicio" ).attr("min");
+                                }
+                              if ((fin === '') || (fin > hoyFecha))
+                                {
+                                fin = hoyFecha;
                               }
-                              else {
-                                var inicioTemp = inicio.split('-');
-                                var inicioMostrar = inicioTemp[2]+"/"+inicioTemp[1]+"/"+inicioTemp[0];
-                                var finTemp = fin.split('-');
-                                var finMostrar = finTemp[2]+"/"+finTemp[1]+"/"+finTemp[0];
-                                rangoFecha = " and (fecha >='"+inicio+"') and (fecha <='"+fin+"')";
-                                mensajeFecha = "entre las fechas: "+inicioMostrar+" y "+finMostrar;
+
+                              if (inicio>fin) 
+                                {
+                                alert('Error. La fecha inicial NO puede ser mayor que la fecha final. Por favor verifique.');
+                                validado = false;
+                                return false;
                               }
-                            }
-                          } /// FIN validación de las fechas intervalo.
+                              else 
+                                {
+                                validado = true;  
+                                if (inicio === fin){
+                                  var diaTemp = inicio.split('-');
+                                  var diaMostrar = diaTemp[2]+"/"+diaTemp[1]+"/"+diaTemp[0];
+                                  rangoFecha = " and (fecha ='"+inicio+"')";
+                                  mensajeFecha = "del día: "+diaMostrar;
+                                }
+                                else {
+                                  var inicioTemp = inicio.split('-');
+                                  var inicioMostrar = inicioTemp[2]+"/"+inicioTemp[1]+"/"+inicioTemp[0];
+                                  var finTemp = fin.split('-');
+                                  var finMostrar = finTemp[2]+"/"+finTemp[1]+"/"+finTemp[0];
+                                  rangoFecha = " and (fecha >='"+inicio+"') and (fecha <='"+fin+"')";
+                                  mensajeFecha = "entre las fechas: "+inicioMostrar+" y "+finMostrar;
+                                }
+                              }
+                            } /// FIN validación de las fechas intervalo.
+                          }  
                           d1 = inicio;
                           d2 = fin;
                           break;
@@ -2971,7 +3487,7 @@ function realizarBusqueda(){
         default: break;
       }
     }
-    
+
     if (validado) 
       {
       for (var n in queries){//alert(queries[n]);
@@ -2987,7 +3503,7 @@ function realizarBusqueda(){
             mensajeTipo = "del tipo "+tipo;
           }
           else {
-            mensajeTipo = "de todos los tipos";
+              mensajeTipo = "de todos los tipos";
           };
         }
 
@@ -4329,6 +4845,7 @@ $(document).on("focus", ".agrandar", function (){
   //$(this).css("max-width", "100%");
   //$(this).parent().prev().prev().children().prop("checked", true);
 });
+/********** fin on("focus", ".agrandar", function () **********/
 
 ///Disparar funcion cuando algún elemento de la clase agrandar pierda el foco.
 ///Se usa para volver al estado "normal" el elemento que dejó de estar seleccionado.
@@ -4338,7 +4855,8 @@ $(document).on("blur", ".agrandar", function (){
   $(this).css("font-weight", "inherit");
   $(this).css("color", "inherit");
 });
-  
+/********** fin on("blur", ".agrandar", function () **********/
+
 /*****************************************************************************************************************************
 /// ***************************************************** FIN RESALTADO ******************************************************
 ******************************************************************************************************************************
@@ -4431,6 +4949,7 @@ $(document).on("change focusin", "#hint", function (){
   //setTimeout(function(){mostrarHistorial(prod)}, 100);
   mostrarHistorial(prod);
 });
+/********** fin on("change focusin", "#hint", function () **********/ 
   
 /// ****** COMENTO EVENTO CLICK POR SER REDUNDANTE CON EL CHANGE ***************************  
 /////Disparar función al hacer CLICK en alguna de las option del select #hint.
@@ -4547,6 +5066,7 @@ $(document).on("keydown", "#hint", function (e){
     default: break;
   }  
 }); 
+/********** fin on("keydown", "#hint", function (e) **********/
 
 ///Disparar funcion al hacer clic en el botón para agregar el movimiento.
 $(document).on("click", "#agregarMovimiento", function (){
@@ -4558,6 +5078,7 @@ $(document).on("click", "#agregarMovimiento", function (){
     agregarMovimiento();
   }
 });
+/********** fin on("click", "#agregarMovimiento", function () **********/
 
 ///Disparar función al hacer enter estando en el elemento Cantidad.
 ///Básicamente, la idea es hacer "el submit" cosa de ahorrar tiempo en el ingreso.
@@ -4570,6 +5091,7 @@ $(document).on("keypress", "#cantidad", function(e) {
     }
   }  
 });
+/********** fin on("keypress", "#cantidad", function(e) **********/
 
 ///Disparar función al hacer click en el botón de EDITAR del form para los movimientos.
 ///Cambia entre habilitar o deshabilitar los input del form cosa de poder hacer la edición del movimiento.
@@ -4582,6 +5104,7 @@ $(document).on("click", "#editarMovimiento", function (){
     inhabilitarMovimiento();
   }
 });
+/********** fin on("click", "#editarMovimiento", function () **********/
 
 ///Dispara función para realizar los cambios con las modificaciones para el movimiento.
 $(document).on("click", "#actualizarMovimiento", function (){
@@ -4594,6 +5117,7 @@ $(document).on("click", "#actualizarMovimiento", function (){
   */
   actualizarMovimiento();
 });
+/********** fin on("click", "#actualizarMovimiento", function () **********/
 
 ///Disparar función al hacer enter estando en el elemento Comentarios.
 ///Básicamente, la idea es hacer "el submit" cosa de ahorrar tiempo en la actualización del comentario.
@@ -4617,6 +5141,7 @@ $(document).on("keypress", "#comentarios", function(e) {
     default: break;
   }  
 });
+/********** fin on("keypress", "#comentarios", function(e) **********/
 
 ///Disparar función al hacer enter estando en el elemento Producto.
 ///Básicamente, la idea es pasar el foco al select hint cosa de ahorrar tiempo en el ingreso.
@@ -4626,12 +5151,14 @@ $(document).on("keypress", "#producto", function(e) {
     $("#hint").focus();
   }  
 });
+/********** fin on("keypress", "#producto", function(e) **********/
 
 ///Llamar a verificarSesion() para actualizar los parámetros de la sesión. 
 ///En caso de estar vencidos, cierra la sesión y pide nuevo logueo.
 $(document).on("change focusin", "#entidadStock, #entidadMovimiento, #entidadGrafica", function (){
   //verificarSesion();
 });
+/********** fin on("change focusin", "#entidadStock, #entidadMovimiento, #entidadGrafica", function () **********/
 
 /*****************************************************************************************************************************
 /// ***************************************************** FIN MOVIMIENTOS ****************************************************
@@ -4714,6 +5241,7 @@ $(document).on("change focusin", "#hintProd", function (){
     $("#comentarios").val('');
   }
 });
+/********** fin on("change focusin", "#hintProd", function () **********/
 
 ///Disparar función al hacer CLICK con el mouse sobre alguna de las OPTION del select HINTPROD ó al darle ENTER sobre los mismos. 
 ///Básicamente, la idea es que al presionar ENTER o al hacer CLICK, se pase automáticamente al elemento Cantidad cosa de ahorrar tiempo.  
@@ -4731,6 +5259,7 @@ $(document).on("keypress", "#hintProd", function (e){
     $("#entidad").focus();
   }  
 }); 
+/********** fin on("keypress", "#hintProd", function (e) **********/
 
 ///Disparar función al hacer enter estando en el elemento productoBusqueda.
 ///Esto hace que se pase el foco al select hintProd para ahorrar tiempo.
@@ -4739,6 +5268,7 @@ $(document).on("keypress", "#productoBusqueda", function(e) {
     $("#hintProd").focus();
   }  
 });
+/********** fin on("keypress", "#productoBusqueda", function(e) **********/
 
 ///Dispara función para realizar los cambios con las modificaciones para el producto (luego de validar los datos obviamente).
 $(document).on("click", "#actualizarProducto", function (){
@@ -4857,6 +5387,7 @@ $(document).on("click", "#actualizarProducto", function (){
     }
   //}
 });
+/********** fin on("click", "#actualizarProducto", function () **********/
 
 ///Disparar función al hacer enter estando en alguno de los input de la edición del Producto
 ///Esto hace que se pase el foco al siguiente input del form para ahorrar tiempo.
@@ -4868,7 +5399,7 @@ $(document).on("keypress", "#productUpdate input", function(e) {
     $('[tabindex=' + tabindex + ']').focus();
   }
 });
-
+/********** fin on("keypress", "#productUpdate input", function(e) **********/
 
 ///Dispara función que da de baja el producto. NO lo borra, sino que le cambia su estado a INACTIVO.
 $(document).on("click", "#eliminarProducto", function (){
@@ -4917,6 +5448,7 @@ $(document).on("click", "#eliminarProducto", function (){
   }
   
 });
+/********** fin on("keypress", "#productUpdate input", function(e) **********/
 
 ///Disparar función al hacer click en el botón de EDITAR del form para los productos.
 ///Cambia entre habilitar o deshabilitar los input del form cosa de poder hacer la edición del producto.
@@ -4938,6 +5470,7 @@ $(document).on("click", "#editarProducto", function (){
     }
   //}
 });
+/********** fin on("click", "#editarProducto", function () **********/
 
 ///Disparar función al hacer click en el botón AGREGAR (o NUEVO) del form productos.
 ///Según si dice NUEVO o AGREGAR, vacío el form para poder agregar los datos o envío los datos para agregarlo a la base de datos.
@@ -5022,6 +5555,7 @@ $(document).on("click", "#agregarProducto", function (){
     }  
   }   
 });
+/********** fin on("click", "#agregarProducto", function () **********/
 
 /*****************************************************************************************************************************
 /// ***************************************************** FIN PRODUCTOS ******************************************************
@@ -5092,7 +5626,8 @@ $(document).on("click", "#eliminarUsuario", function () {
   else {
     //alert('no quiso borrar');
   }
-});//*** fin del click eliminarUsuario ***
+});
+/********** fin on("click", "#eliminarUsuario", function () **********/
 
 ///Disparar funcion al hacer clic en el botón actualizar.
 ///Se validan todos los campos antes de hacer la actualización, y una vez hecha se inhabilita el form y parte de los botones.
@@ -5145,8 +5680,9 @@ $(document).on("click", "#actualizarUsuario", function (){
         }
       });  
     }
-  });//*** fin del click actualizarUsuario ***
-  
+  });
+/********** fin on("click", "#actualizarUsuario", function () **********/
+
 ///Disparar función al hacer click en el botón Nuevo Usuario.
 ///Se vuelve al DIV #main-content y se genera un form en blanco para agregar los datos del usuario.
 $(document).on("click", "#nuevoUsuario", function() {
@@ -5196,7 +5732,8 @@ $(document).on("click", "#nuevoUsuario", function() {
   cargar += volver;
   vaciarContent("#main-content");
   $("#main-content").html(cargar);  
-});//*** fin del click nuevoUsuario ***
+});
+/********** fin on("click", "#nuevoUsuario", function() **********/
 
 ///Disparar función al hacer click en el botón Agregar Usuario.
 ///Se validan los datos para el usuario, luego 
@@ -5258,7 +5795,8 @@ $(document).on("click", "#agregarUsuario", function(){
       }
     });
   }
-});//*** fin del click agregarUsuario ***
+});
+/********** fin on("click", "#agregarUsuario", function() **********/
 
 ///Disparar función al hacer enter estando en el elemento nombreUsuario.
 ///Básicamente, la idea es pasar el foco al elemento password cosa de ahorrar tiempo en el ingreso.
@@ -5268,7 +5806,8 @@ $(document).on("keypress", "#nombreUsuario", function(e) {
     $("#password").focus();
   }  
 });
-    
+/********** fin on("keypress", "#nombreUsuario", function(e) **********/
+
 /*****************************************************************************************************************************
 /// **************************************************** FIN USUARIOS ********************************************************
 ******************************************************************************************************************************
@@ -5285,6 +5824,7 @@ $(document).on("click", "#user", function(){
   verificarSesion();
   $("#modalPwd").modal("show");
 });
+/********** fin on("click", "#user", function() **********/
 
 ///Disparar función al abrirse el modal para cambiar la contraseña.
 ///Lo único que hace es limpiar el form para poder ingresar los nuevos datos.
@@ -5294,6 +5834,7 @@ $(document).on("shown.bs.modal", "#modalPwd", function() {
   $("#pw1").attr("autofocus", true);
   $("#pw1").focus();
 });
+/********** fin on("shown.bs.modal", "#modalPwd", function() **********/
 
 ///Disparar función al hacer click en el botón de ACTUALIZAR que está en el MODAL.
 ///Primero valida que la info ingresada sea válida (pwd no nulos e iguales entre sí), y luego 
@@ -5301,6 +5842,7 @@ $(document).on("shown.bs.modal", "#modalPwd", function() {
 $(document).on("click", "#btnModal", function(){
   actualizarUser();
 });
+/********** fin on("click", "#btnModal", function() **********/
 
 ///Disparar función al hacer ENTER estando en el elemento pw1 del MODAL.
 ///Esto hace que se pase el foco al siguiente input del MODAL (pw2) cosa de ahorrar tiempo.
@@ -5309,6 +5851,7 @@ $(document).on("keypress", "#pw1", function(e) {
     $("#pw2").focus();
   }  
 });
+/********** fin on("keypress", "#pw1", function(e) **********/
 
 ///Disparar función al hacer ENTER estando en el elemento pw2 del MODAL.
 ///Esto hace que se llame a la función correspondiente (actualizarUser()) cosa de ahorrar tiempo.
@@ -5317,6 +5860,7 @@ $(document).on("keypress", "#pw2", function(e) {
     actualizarUser();
   }  
 });
+/********** fin on("keypress", "#pw2", function(e) **********/
 
 /*****************************************************************************************************************************
 /// **************************************************** FIN MODAL USARIO ****************************************************
@@ -5336,6 +5880,7 @@ $(document).on("click", "#param", function(){
   verificarSesion();
   $("#modalParametros").modal("show");
 });
+/********** fin on("click", "#param", function() **********/
 
 ///Disparar función al abrirse el modal para cambiar los parámetros.
 ///Lo único que hace es limpiar el form para poder ingresar los nuevos datos.
@@ -5347,12 +5892,14 @@ $(document).on("shown.bs.modal", "#modalParametros", function() {
   $("#pageSize").attr("autofocus", true);
   $("#pageSize").focus();
 });
+/********** fin on("shown.bs.modal", "#modalParametros", function() **********/
 
 ///Disparar función al hacer click en el botón de ACTUALIZAR que está en el MODAL.
 ///Llama a la función que se encarga de actualizar los parámetros.
 $(document).on("click", "#btnParam", function(){
   actualizarParametros();
 });
+/********** fin on("click", "#btnParam", function() **********/
 
 ///Disparar función al hacer ENTER estando en el elemento pageSize del MODAL.
 ///Esto hace que se pase el foco al siguiente input del MODAL (tamSelects) cosa de ahorrar tiempo.
@@ -5361,6 +5908,7 @@ $(document).on("keypress", "#pageSize", function(e) {
     $("#tamSelects").focus();
   }  
 });
+/********** fin on("keypress", "#pageSize", function(e) **********/
 
 ///Disparar función al hacer ENTER estando en el elemento tamSelects del MODAL.
 ///Esto hace que se pase el foco al siguiente input del MODAL (tamHistorialGeneral) cosa de ahorrar tiempo.
@@ -5369,6 +5917,7 @@ $(document).on("keypress", "#tamSelects", function(e) {
     $("#tamHistorialGeneral").focus();
   }  
 });
+/********** fin on("keypress", "#tamSelects", function(e) **********/
 
 ///Disparar función al hacer ENTER estando en el elemento tamHistorialGeneral del MODAL.
 ///Esto hace que se pase el foco al siguiente input del MODAL (tamHistorialProducto) cosa de ahorrar tiempo.
@@ -5377,6 +5926,7 @@ $(document).on("keypress", "#tamHistorialGeneral", function(e) {
     $("#tamHistorialProducto").focus();
   }  
 });
+/********** fin on("keypress", "#tamHistorialGeneral", function(e) **********/
 
 ///Disparar función al hacer ENTER estando en el elemento tamHistorialProducto del MODAL.
 ///Esto hace que se llame a la función correspondiente (actualizarParametros()) cosa de ahorrar tiempo.
@@ -5385,6 +5935,14 @@ $(document).on("keypress", "#tamHistorialProducto", function(e) {
     actualizarParametros();
   }  
 });
+/********** fin on("keypress", "#tamHistorialProducto", function(e) **********/
+
+///Disparar función al hacer CLICK a uno de los links del POPOVER con el HISTORIALGRAL.
+///Esto hace que se cierre el popover.
+$(document).on("click", ".linkHistorial", function(){
+  $("#historialGeneral").popover('hide');
+});
+/********** fin on("click", ".linkHistorial", function() **********/
 
 /*****************************************************************************************************************************
 /// **************************************************** FIN MODAL PARÁMETROS ************************************************
@@ -5406,7 +5964,8 @@ $(document).on("keypress", "#productoStock, #productoMovimiento, #productoGrafic
     $("#hint").focus();
   }
 });      
-   
+/********** fin on("keypress", "#productoStock, #productoMovimiento, #productoGrafica", function(e) **********/
+
 ///Disparar función al presionar el TAB estando en alguno de los input del form para las búsquedas.
 ///Es un complemento del anterior que detecta primero si se presionó el TAB. En ese caso, chequea primero
 ///que haya alguna sugerencia en HINT, y si la hay pasa el foco al select cosa de ahorrar tiempo.
@@ -5436,12 +5995,14 @@ $(document).on("keydown", "#parametros input, #movimiento input", function(e) {
     } 
   } 
 });      
-       
+/********** fin on("keydown", "#parametros input, #movimiento input", function(e) **********/
+
 ///Disparar función al cambiar la entidad elegida en el select ENTIDAD. 
 ///Lo que hace es seleccionar automáticamente el radio button correspondiente.
 $(document).on("change", "[name=entidad]", function (){
   $(this).parent().prev().prev().children().prop("checked", true);
 });
+/********** fin on("change", "[name=entidad]", function () **********/
 
 ///Disparar función al cambiar el mes elegido como parámetro para la búsqueda.
 ///Si se eligió algún mes quiere decir que la búsqueda es de movimientos y por mes/año 
@@ -5449,6 +6010,7 @@ $(document).on("change", "[name=entidad]", function (){
 $(document).on("change", "#mes", function (){
   $(this).parent().prev().prev().children().prop("checked", true);
 });
+/********** fin on("change", "#mes", function () **********/
 
 ///Disparar función al cambiar el año elegido como parámetro para la búsqueda.
 ///Si se eligió algún año quiere decir que la búsqueda es de movimientos y por mes/año 
@@ -5456,6 +6018,7 @@ $(document).on("change", "#mes", function (){
 $(document).on("change", "#año", function (){
   $(this).parent().prev().prev().prev().prev().children().prop("checked", true);
 });
+/********** fin on("change", "#año", function () **********/
 
 ///Disparar función al cambiar el mes elegido como parámetro para la búsqueda.
 ///Si se eligió alguna fecha de inicio quiere decir que la búsqueda es de movimientos y por rango (inicio/fin) 
@@ -5463,6 +6026,7 @@ $(document).on("change", "#año", function (){
 $(document).on("change", "#inicio", function (){
   $(this).parent().prev().prev().children().prop("checked", true);
 });
+/********** fin on("change", "#inicio", function () **********/
 
 ///Disparar función al cambiar el mes elegido como parámetro para la búsqueda.
 ///Si se eligió alguna fecha de fin quiere decir que la búsqueda es de movimientos y por rango (inicio/fin) 
@@ -5470,6 +6034,7 @@ $(document).on("change", "#inicio", function (){
 $(document).on("change", "#fin", function (){
   $(this).parent().prev().prev().prev().prev().children().prop("checked", true);
 });
+/********** fin on("change", "#fin", function () **********/
 
 ///Disparar función al cambiar el tipo de seguridad para el archivo ZIP generado.
 ///Si se eligió el tipo de pwd manual se debe agregar un input para poder ingresar el pwd.
@@ -5482,6 +6047,7 @@ $(document).on("change", "#zip", function (){
     $("#zipManual").prop("disabled", true);
   }
 });
+/********** fin on("change", "#zip", function () **********/
 
 ///Disparar función al cambiar el tipo de seguridad para el archivo EXCEL generado.
 ///Si se eligió el tipo de pwd manual se debe agregar un input para poder ingresar el pwd.
@@ -5494,6 +6060,7 @@ $(document).on("change", "#planilla", function (){
     $("#planillaManual").prop("disabled", true);
   }
 });
+/********** fin on("change", "#planilla", function () **********/
 
 ///Disparar función al hacer click en el botón de CONSULTAR en la parte de búsquedas.
 ///Valida y arma la consulta, luego la ejecuta y muestra los resultados con un botón de EXPORTAR
@@ -5501,6 +6068,7 @@ $(document).on("change", "#planilla", function (){
 $(document).on("click", "#realizarBusqueda", function () {
   realizarBusqueda();
 });
+/********** fin on("click", "#realizarBusqueda", function () **********/
 
 ///Disparar función darle ENTER sobre los select ENTIDADSTOCK o ENTIDADMOVIMIENTO. 
 ///Básicamente, la idea es que al presionar ENTER se haga directamente el submit cosa de ahorrar tiempo.  
@@ -5535,6 +6103,7 @@ $(document).on("keypress", "#entidadStock, #entidadMovimiento", function (e){
     }
   }  
 }); 
+/********** fin on("keypress", "#entidadStock, #entidadMovimiento", function (e) **********/
 
 ///Disparar función al hacer click en botón de exportar.
 ///Esto hace que se recupere el id que corresponde a este tipo de exportación (listado de actividades) y se 
@@ -5719,6 +6288,7 @@ $(document).on("click", ".exportar", function (){
   }
   
 });//*** fin del click .exportar ***
+/********** fin on("click", ".exportar", function () **********/
 
 ///Disparar función al cerrar el modal de exportar.
 ///Básicamente hace el submit del form:
@@ -5726,6 +6296,7 @@ $(document).on("hidden.bs.modal", "#modalExportar", function(){
   var padre = $(this).parent().attr("id");
   $("#"+padre+"").submit();
 });
+/********** fin on("hidden.bs.modal", "#modalExportar", function() **********/
 
 ///Disparar función al hacer click en alguno de los links con las PÁGINAS de los resultados.
 ///Básicamente arma la consulta para mostrar la pagina solicitada y llama a la función para ejecutarla.
@@ -5869,7 +6440,7 @@ $(document).on("click", ".paginate", function (){
     $('html, body').animate({scrollTop:136}, '10');
   });  
 });
-
+/********** fin on("click", ".paginate", function () **********/
 
 $(document).on("shown.bs.tab", "a[data-toggle='pill']",  function () {
   /*var page = $(".nav-link.active").attr("activepage");
@@ -5904,6 +6475,7 @@ $(document).on("shown.bs.tab", "a[data-toggle='pill']",  function () {
     }
   }); */
 });
+/********** fin on("shown.bs.tab", "a[data-toggle='pill']",  function () **********/
 
 /*****************************************************************************************************************************
 /// *************************************************** FIN BÚSQUEDAS ********************************************************
@@ -5922,6 +6494,7 @@ $(document).on("shown.bs.tab", "a[data-toggle='pill']",  function () {
 $(document).on("click", "#realizarGrafica", function (){
   realizarGrafica();
 });
+/********** fin on("click", "#realizarGrafica", function () **********/
 
 /*****************************************************************************************************************************
 /// *************************************************** FIN GRAFICAS *********************************************************
@@ -5944,6 +6517,7 @@ $(window).scroll(function() {
     $('.arrow').fadeOut(400);
   }
 });
+/********** fin scroll(function() **********/
 
 ///Función que desplaza el foco hacia el final de la página:
 $(document).on("click", ".arrow-bottom", function() {
@@ -5951,6 +6525,7 @@ $(document).on("click", ".arrow-bottom", function() {
   $('html, body').animate({scrollTop:$(document).height()}, '1000');
         return false;
 });
+/********** fin on("click", ".arrow-bottom", function() **********/
 
 ///Función que desplaza el foco hacia el comienzo de la página:
 $(document).on("click", ".arrow-top", function() {
@@ -5958,6 +6533,7 @@ $(document).on("click", ".arrow-top", function() {
   $('html, body').animate({scrollTop:136}, '1000');
   return false;
 });
+/********** fin on("click", ".arrow-top", function() **********/
 
 /*****************************************************************************************************************************
 /// *************************************************** FIN DESPLAZAMIENTO ***************************************************
@@ -5969,4 +6545,5 @@ $(document).on("click", ".arrow-top", function() {
 /**
  * \brief Función que envuelve todos los eventos JQUERY con sus respectivos handlers.
  */
-$(document).on("ready", todo());//*** fin del ready ***
+$(document).on("ready", todo());
+/********** fin on("ready", todo()) **********/

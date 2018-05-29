@@ -41,7 +41,10 @@ $indice = $_POST["indice"];
 $query = $_POST["query_$indice"];
 $consultaCSV = $_POST["consultaCSV_$indice"];
 
+$subtotales = (array)json_decode($_POST["subtotales_$indice"]);
+
 $tipoConsulta = strip_tags($_POST["tipoConsulta_$indice"]);
+$radio = strip_tags($_POST["radio_$indice"]);
 
 $buscarTipo = stripos($tipoConsulta, "de todos los tipos");
 $tipo = '';
@@ -127,14 +130,14 @@ switch ($id) {
             $nombreReporte = "stock_".$entidadMostrar;
             $asunto = "Reporte con el Stock de la Entidad";
             //$nombreCampos = "(select 'Entidad', 'Nombre', 'BIN', 'Stock')";
-            $indiceStock = 9;
+            $indiceStock = 10;
             break;
   case "2": $tituloTabla = "STOCK DEL PRODUCTO";
             $titulo = "STOCK DEL PRODUCTO";
             $nombreReporte = "stock_".$nombreProductoMostrar;
             $asunto = "Reporte con el stock del Producto";
             //$nombreCampos = "(select 'Entidad', 'Nombre', 'BIN', 'Stock')";
-            $indiceStock = 9;
+            $indiceStock = 10;
             break;
   case "3": $tituloTabla = "STOCK TOTAL EN BÓVEDA";
             $titulo = "PLÁSTICOS EN BÓVEDA";
@@ -233,7 +236,12 @@ foreach($filas as $fila)
   array_unshift($fila, $i);
   $i++;
   //Acumulo el total de plásticos ya sea en stock o movidos:
-  $total = $total + $fila[$indiceStock];
+  if ($radio === 'entidadStockViejo'){
+    $total = $total + $subtotales[$fila[1]];
+  }
+  else {
+    $total = $total + $fila[$indiceStock];
+  }
   $registros[] = $fila;
 }
 //echo "total: ".$total."<br>";

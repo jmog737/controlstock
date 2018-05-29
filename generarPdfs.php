@@ -131,7 +131,7 @@ class PDF extends PDF_MC_Table
   function tablaStockEntidad($total, $tipo)
     {
     global $x,$h, $totalCampos, $totalRegistros;
-    global $registros, $campos, $largoCampos, $tituloTabla, $tipoConsulta, $entidad, $mostrar;
+    global $registros, $subtotales, $campos, $largoCampos, $tituloTabla, $tipoConsulta, $entidad, $mostrar;
     
     $tamTabla = $largoCampos[$totalCampos];
     $anchoPagina = $this->GetPageWidth();
@@ -153,8 +153,9 @@ class PDF extends PDF_MC_Table
     //Defino tipo de letra y tamaño para el Título:
     $this->SetFont('Courier', 'B', 12);
     //$this->SetY(20);
-    
-    $tipoTotal = "Stock de $entidad";
+
+    //$tipoTotal = "Stock de $entidad";
+    $tipoTotal = $tipoConsulta;
     $tam = $this->GetStringWidth($tipoTotal);
     $xInicio = $xTipo + (($anchoTipo-$tam)/2);
     $this->SetX($xInicio);
@@ -162,7 +163,19 @@ class PDF extends PDF_MC_Table
     $nbTitulo = $this->NbLines($anchoTipo,$tipoTotal);
     $hTitulo=$h*$nbTitulo;
     
-    $tam1 = $this->GetStringWidth("Stock de");
+    //Save the current position
+    $x1=$this->GetX();
+    $y=$this->GetY();
+    $tam1 = $this->GetStringWidth("Stock de ");
+    
+    $fraccionado = false;
+    $parteTipo = stripos($tipoTotal, ":");
+    if ($parteTipo !== false){
+      $parte2 = explode(":", $tipoTotal);
+      $ultimaParte = utf8_decode(" al día:".$parte2[1]);
+      $fraccionado = true;
+      $tamUlitmaParte = $this->GetStringWidth($ultimaParte);
+    }
     
     if ($tipo) {
       ///Si es Total de stock en bóveda, le agrego itálica a todo el título:
@@ -174,19 +187,27 @@ class PDF extends PDF_MC_Table
     else {
       if ($nbTitulo > 1) {
         $this->SetTextColor(0);
-        $this->Cell($tam1,$h, "Stock de",0, 0, 'R', 0);
+        $this->Cell($tam1,$h, "Stock de ",0, 0, 'R', 0);
         $this->SetTextColor(255, 0, 0);
         $this->SetFont('Courier', 'BI', 12);
-        $this->Cell($tamEntidad,$h, utf8_decode($entidad),0, 0,'L', 0);
+        $tamNombre1 = $this->GetStringWidth($entidad);
+        $this->Cell($tamNombre1,$h, utf8_decode($entidad),0, 0,'L', 0);
         $this->SetTextColor(0);
+        if ($fraccionado){
+          $this->Cell($tamUlitmaParte,$h, $ultimaParte,0, 0, 'L', 0);
+        }
       }
       else {
         $this->SetTextColor(0);
         $this->Cell($tam1,$hTitulo, "Stock de",0, 0,'R', 0);
         $this->SetTextColor(255, 0, 0);
         $this->SetFont('Courier', 'BI', 12);
-        $this->Cell($tamEntidad,$hTitulo, utf8_decode($entidad),0, 0,'L', 0);
+        $tamNombre1 = $this->GetStringWidth($entidad);
+        $this->Cell($tamNombre1,$hTitulo, utf8_decode($entidad),0, 0,'L', 0);
         $this->SetTextColor(0);
+        if ($fraccionado){
+          $this->Cell($tamUlitmaParte,$hTitulo, $ultimaParte,0, 0, 'L', 0);
+        }
       }  
     }
     ///************************************************************** FIN TITULO ************************************************************
@@ -424,7 +445,12 @@ class PDF extends PDF_MC_Table
             //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:
             $alarma1 = $dato[$i+1];
             $alarma2 = $dato[$i+2];
-            $stock = $dato[$i];
+            if ($subtotales[$dato[1]] === null){
+              $stock = $dato[$i];
+            }
+            else {
+              $stock = $subtotales[$dato[1]];
+            }
             $datito = number_format($stock, 0, ",", ".");
             $a = 'C';
             $fillActual = $fill;
@@ -2526,16 +2552,31 @@ class PDF extends PDF_MC_Table
   function tablaProducto()
     {
     global $h, $c1;
-    global $registros, $codigo, $bin, $rutaFotos, $nombreProducto;
+    global $registros, $subtotales, $tipoConsulta, $codigoEMSA, $bin, $rutaFotos, $nombreProducto;
     
     $cCampo = 2.2*$c1;
     $cResto = 4*$c1;
     $cFoto = 3.4*$c1;
-    $nombre = trim(utf8_decode($registros[0][2]));
-    $entidad = trim(utf8_decode($registros[0][1]));
+    
+    $entidad = trim(utf8_decode($registros[0][2]));
+    $nombre = trim(utf8_decode($registros[0][3]));
+    $bin = $registros[0][4];
+    $codigoOrigen = $registros[0][6];
+    $contacto = $registros[0][7];
+    $foto = $registros[0][8];
+    $ultimoMovimiento = trim(utf8_decode($registros[0][9]));
+    $idprod = $registros[0][1];
+    $stock = $subtotales[$idprod];
+    if ($stock === null){
+      $stock = $registros[0][10];  
+    }
+    $alarma1 = $registros[0][11];
+    $alarma2 = $registros[0][12];    
+    $comentarios = trim(utf8_decode($registros[0][13]));
+    
     $tamEntidad = $this->GetStringWidth($entidad);
     $tamNombre = $this->GetStringWidth($nombre);
-    $tamCodigo = $this->GetStringWidth($codigo);
+    $tamCodigo = $this->GetStringWidth($codigoEMSA);
     if ((($tamNombre) || ($tamEntidad)) < $cResto) {
       $cResto = 1.52*$tamCodigo;
     }
@@ -2560,43 +2601,60 @@ class PDF extends PDF_MC_Table
     //Establezco las coordenadas del borde de arriba a la izquierda de la tabla:
     //$this->SetY(20);
     
-    $tipoTotal = "Stock del producto $nombre";
+    //$tipoTotal = "Stock del producto $nombre";
+    $tipoTotal = $tipoConsulta;
     $tam = $this->GetStringWidth($tipoTotal);
     $xInicio = $xTipo + (($anchoTipo-$tam)/2);
     $this->SetX($xInicio);
-
+    
     $nbTitulo = $this->NbLines($anchoTipo,$tipoTotal);
     $hTitulo=$h*$nbTitulo;
     
     //Save the current position
     $x1=$this->GetX();
     $y=$this->GetY();
-    $tam1 = $this->GetStringWidth("Stock del producto");
+    $tam1 = $this->GetStringWidth("Stock del producto ");
     
+    $fraccionado = false;
+    $parteTipo = stripos($tipoTotal, ":");
+    if ($parteTipo !== false){
+      $parte2 = explode(":", $tipoTotal);
+      $ultimaParte = utf8_decode(" al día:".$parte2[1]);
+      $fraccionado = true;
+      $tamUlitmaParte = $this->GetStringWidth($ultimaParte);
+    }
+    //echo "tam: $tam<br>ultima: $ultimaParte<br>tamUltima: $tamUlitmaParte<br>nombre: $tamNombre";
     //Print the text
     if ($nbTitulo > 1) {
       //$this->MultiCell($anchoTipo,$h, trim(utf8_decode($tipoConsulta)),0,'C', 0);
-      $this->Cell($tam1,$h, "Stock del producto",0, 0, 'R', 0);
+      $this->Cell($tam1,$h, "Stock del producto ",0, 0, 'R', 0);
       $this->SetTextColor(255, 0, 0);
       $this->SetFont('Courier', 'BI', 12);
-      $this->Cell($tamNombre,$h, $nombreProducto,0, 0,'L', 0);
+      $tamNombre1 = $this->GetStringWidth($nombre);
+      $this->Cell($tamNombre1,$h, $nombreProducto,0, 0,'L', 0);
       $this->SetTextColor(0);
-      }
+      if ($fraccionado){
+        $this->Cell($tamUlitmaParte,$h, $ultimaParte,0, 0, 'L', 0);
+      } 
+    }
     else {
       //$this->MultiCell($anchoTipo,$h, trim(utf8_decode($tipoConsulta)),0,'C', 0);
-      $this->Cell($tam1,$hTitulo, "Stock del producto",0, 0,'R', 0);
+      $this->Cell($tam1,$hTitulo, "Stock del producto ",0, 0,'R', 0);
       $this->SetTextColor(255, 0, 0);
       $this->SetFont('Courier', 'BI', 12);
-      $this->Cell($tamNombre,$hTitulo, $nombreProducto,0, 0,'L', 0);
+      $tamNombre1 = $this->GetStringWidth($nombre);
+      $this->Cell($tamNombre1,$h, $nombreProducto,0, 0,'L', 0);
       $this->SetTextColor(0);
-      }  
-
+      if ($fraccionado){
+        $this->Cell($tamUlitmaParte,$hTitulo, $ultimaParte,0, 0, 'L', 0);
+      } 
+    }  
+    
     $this->SetXY($x,$y+$hTitulo);
     ///**************************************************************** FIN TITULO ***********************************************************
     
     ///***************************************************************** FOTO ****************************************************************
     ///Agrego un snapshot de la tarjeta debajo de la tabla (si es que existe!!):
-    $foto = $registros[0][7];
     if (($foto !== null) && ($foto !== '')) {
       $this->Ln(3);
       $rutita = $rutaFotos."/".$foto;
@@ -2685,21 +2743,20 @@ class PDF extends PDF_MC_Table
     ///**************************************************************** FIN CAMPO ENTIDAD *****************************************************
     
     ///************************************************************** CAMPO CODIGO EMSA *******************************************************
-    if (($codigo === '')||($codigo === null)) {
-      $codigo = 'No Ingresado';
+    if (($codigoEMSA === '')||($codigoEMSA === null)) {
+      $codigoEMSA = 'No Ingresado';
     }
     $this->SetTextColor(255, 255, 255);
     $this->SetFont('Courier', 'B', 10);
     $this->Cell($cCampo, $h, utf8_decode("Código EMSA:"), 'LRBT', 0, 'L', true);
     $this->SetFont('Courier', '', 9);
     $this->SetTextColor(0);
-    $this->Cell($cResto, $h, $codigo, 'LRBT', 0, 'C', false);
+    $this->Cell($cResto, $h, $codigoEMSA, 'LRBT', 0, 'C', false);
     $this->Ln();
     $this->SetX($x);
     ///************************************************************* FIN CAMPO CODIGO EMSA ****************************************************
     
     ///************************************************************ CAMPO CODIGO ORIGEN *******************************************************
-    $codigoOrigen = $registros[0][5];
     if (($codigoOrigen === '')||($codigoOrigen === null)) {
       $codigoOrigen = 'No Ingresado';
     }
@@ -2714,7 +2771,6 @@ class PDF extends PDF_MC_Table
     ///************************************************************ FIN CAMPO CODIGO ORIGEN ***************************************************
     
     ///**************************************************************** CAMPO BIN *************************************************************
-    $bin = $registros[0][3];
     if (($bin === '')||($bin === null)) {
       $bin = 'N/D o N/C';
     }
@@ -2729,7 +2785,6 @@ class PDF extends PDF_MC_Table
     ///**************************************************************** FIN CAMPO BIN *********************************************************
     
     ///**************************************************************** CAMPO CONTACTO ********************************************************
-    $contacto = $registros[0][6];
     if (($contacto === '')||($contacto === null)) {
       $contacto = '';
     }
@@ -2745,7 +2800,6 @@ class PDF extends PDF_MC_Table
     ///**************************************************************** FIN CAMPO CONTACTO ****************************************************
     
     ///**************************************************************** CAMPO COMENTARIOS *****************************************************
-    $comentarios = trim(utf8_decode($registros[0][12]));
     if (($comentarios === '')||($comentarios === null)) {
       $comentarios = '';
     }
@@ -2819,7 +2873,6 @@ class PDF extends PDF_MC_Table
     ///**************************************************************** FIN CAMPO COMENTARIOS *************************************************
     
     ///**************************************************************** CAMPO ULT. MOV ********************************************************
-    $ultimoMovimiento = trim(utf8_decode($registros[0][8]));
     if (($ultimoMovimiento === '')||($ultimoMovimiento === null)) {
       $ultimoMovimiento = '';
     }
@@ -2849,11 +2902,7 @@ class PDF extends PDF_MC_Table
     ///**************************************************************** FIN CAMPO ULT. MOV ****************************************************
     
     ///**************************************************************** CAMPO STOCK ***********************************************************
-    //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:
-    $alarma1 = $registros[0][10];
-    $alarma2 = $registros[0][11];
-    $stock = $registros[0][9];
-       
+    //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:       
     $this->SetFont('Courier', 'B', 10);
     $this->SetTextColor(255, 255, 255);
     $this->Cell($cCampo, $h, "Stock:", 'LRBT', 0, 'L', true);
