@@ -44,6 +44,14 @@ $consultaCSV = $_POST["consultaCSV_$indice"];
 $subtotales = (array)json_decode($_POST["subtotales_$indice"]);
 
 $tipoConsulta = strip_tags($_POST["tipoConsulta_$indice"]);
+$parteTipo = stripos($tipoConsulta, ": ");
+if ($parteTipo !== false){
+  $parte2 = explode(": ", $tipoConsulta);
+  $tempParte2 = explode("/", $parte2[1]);
+  $fechaTemp0 = $tempParte2[0].$tempParte2[1].$tempParte2[2];
+  $ultimaParte = utf8_decode("al_".$fechaTemp0);
+}
+
 $radio = strip_tags($_POST["radio_$indice"]);
 
 $buscarTipo = stripos($tipoConsulta, "de todos los tipos");
@@ -205,6 +213,11 @@ if (($id === "4")||($id === "5")){
   $titulo = $tit.$subTipo;
   $nombreReporte = $nomRep.$nombre;
 }
+else {
+  if (($radio === "entidadStockViejo")||($radio === "productoStockViejo")){
+    $nombreReporte = $nombreReporte."_".$ultimaParte;
+  }
+}
 
 // Conectar con la base de datos
 $con = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
@@ -245,12 +258,14 @@ foreach($filas as $fila)
   $registros[] = $fila;
 }
 //echo "total: ".$total."<br>";
+//echo $consultaCSV."<br>";
 ///Ejecuto consulta para la generación del excel:
 $resultado2 = consultarBD($consultaCSV, $con);
 $filas1 = obtenerResultadosArray($resultado2);
 $registros1 = array();
 $j = 1;
 $total1 = 0;
+
 foreach($filas1 as $fila)
   {
   if (($id == 4)||($id == 5)){
@@ -266,9 +281,20 @@ foreach($filas1 as $fila)
       $al2 = array_pop($fila);
       $al1 = array_pop($fila);
       $stock = array_pop($fila);
+      
       ///Comento el agregado de la columna con los comentarios del producto pues la misma se quita del EXCEL a pedido de Diego:
       //array_push($fila, $coment);
-      array_push($fila, $stock);
+      
+      $idProdTemp = array_shift($fila);
+      
+      if (($radio === 'entidadStockViejo')||($radio === 'productoStockViejo')){
+        $stockTemp = $subtotales[$idProdTemp];
+        array_push($fila, $stockTemp);
+      }
+      else {
+        array_push($fila, $stock);
+      }
+
       array_push($fila, $al1);
       array_push($fila, $al2);
     }
@@ -276,7 +302,12 @@ foreach($filas1 as $fila)
   }
   $j++;
   //Acumulo el total de plásticos ya sea en stock o movidos:
-  $total1 = $total1 + $fila[5];
+  if (($radio === 'entidadStockViejo')||($radio === 'productoStockViejo')){
+    $total1 = $total1 + $subtotales[$fila[1]];
+  }
+  else {
+    $total1 = $total1 + $fila[5];
+  }
   $registros1[] = $fila;
 }
 

@@ -59,10 +59,10 @@ for ($i = 0; $i < count($query); $i++){
         $fecha = " and (fecha =".$temp7[0];
       }
     }
-    $consultaRetiros = "select productos.idprod as idprod, sum(cantidad) as retiros from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='retiro'".$fecha;
-    $consultaRenovaciones = "select productos.idprod as idprod, sum(cantidad) as renovaciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='renovación'".$fecha;
-    $consultaDestrucciones = "select productos.idprod as idprod, sum(cantidad) as destrucciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='destrucción'".$fecha;
-    $consultaIngresos = "select productos.idprod as idprod, sum(cantidad) as ingresos from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='ingreso'".$fecha;
+    $consultaRetiros = "select productos.idprod as idprod, sum(cantidad) as retiros from productos inner join movimientos on movimientos.producto=productos.idprod where estado='activo' and tipo='retiro'".$fecha;
+    $consultaRenovaciones = "select productos.idprod as idprod, sum(cantidad) as renovaciones from productos inner join movimientos on movimientos.producto=productos.idprod where estado='activo' and tipo='renovación'".$fecha;
+    $consultaDestrucciones = "select productos.idprod as idprod, sum(cantidad) as destrucciones from productos inner join movimientos on movimientos.producto=productos.idprod where estado='activo' and tipo='destrucción'".$fecha;
+    $consultaIngresos = "select productos.idprod as idprod, sum(cantidad) as ingresos from productos inner join movimientos on movimientos.producto=productos.idprod where estado='activo' and tipo='ingreso'".$fecha;
     
     if ($entidad !== ''){
       $consultaRetiros = $consultaRetiros." and productos.entidad='".$entidad."'";
@@ -102,7 +102,7 @@ for ($i = 0; $i < count($query); $i++){
     
     ///Ejecuto consulta "total" para concer el total de datos a devolver
     ///Sin embargo, sólo consulto el total de registros para que sea más rápido:
-    $totalConsulta[$i] = "select count(*) as total from productos where entidad='".$entidad."'";
+    $totalConsulta[$i] = "select count(*) as total from productos where estado='activo' and entidad='".$entidad."'";
     
     $result1 = consultarBD($totalConsulta[$i], $dbc);
     while (($fila1 = $result1->fetch_array(MYSQLI_ASSOC)) != NULL) { 

@@ -2104,7 +2104,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                             </tr>'; 
                                   offset++;  
                                 }/// FIN DEL FOR ********************************************************
-                                
+                               
                                 ///************************ CAPTION segun si es TODOS o alguna ENTIDAD *******************************************
                                 if (!todos){
                                   tabla += '<caption>Stock de <b><i>'+entidad+'</i></b></caption>';
@@ -2123,6 +2123,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   totalPlasticos = parseInt(totalPlasticos, 10);
                                   tabla += '<tr><th colspan="8" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+totalPlasticos.toLocaleString()+'</td><th></th></tr>';
                                 }
+                                
                                 var subtotalesJson = JSON.stringify(subtotales);
                                 tabla += '<tr>\n\
                                             <td class="pieTabla" colspan="10">\n\
@@ -2716,6 +2717,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
     mostrarGlobal += '<li class="nav-item  rounded-right rounded-left">\n\
                         <a class="nav-link '+activo+'" id="pills-'+idProds[n]+'-tab" activepage="1" data-toggle="pill" href="#'+idProds[n]+'" role="tab" aria-controls="'+nombres[n]+'" aria-selected="true">'+nombres[n]+'</a>\n\
                       </li>'; 
+    //alert(queries[n]);
   }
   mostrarGlobal += '</ul>';
   mostrarGlobal += '<div class="tab-content rounded-right" id="pills-tabContent">';
@@ -2742,7 +2744,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
       var jsonStockViejo = JSON.stringify(stockViejo);
       var totalDatos = parseInt(request[j].totalRows, 10);
       
-      //alert('total: '+totalDatos+'\nplasticos: '+totalPlasticos+'\nretiros:'+totalRetiros+'\nrenos: '+totalRenovaciones+'\ndestrucciones: '+totalDestrucciones+'\ningresos: '+totalIngresos+'\nstock Viejo: '+stockViejo);
+      //alert('total: '+totalDatos+'\nplasticos: '+totalPlasticos+'\nretiros:'+totalRetiros[53]+'\nrenos: '+totalRenovaciones[53]+'\ndestrucciones: '+totalDestrucciones[53]+'\ningresos: '+totalIngresos[53]+'\nstock Viejo: '+stockViejo[53]);
       
       if (j == 0) {
         activo = 'fade show active';
@@ -2766,7 +2768,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
       } 
       mostrar += "<h3>"+mensajeConsulta+"</h3>";
       var mensajeTotalDatos = '';
-      
+
       var todos = false;
       if (totalDatos >= 1) 
         {
@@ -3133,7 +3135,36 @@ function realizarBusqueda(){
         radio = 'productoStockViejo';
       }
     }
-  
+    
+    var hoy = new Date();
+    var diaHoy = hoy.getDate();
+    var mesHoy = hoy.getMonth()+1;
+    if (diaHoy < 10) 
+      {
+      diaHoy = '0'+diaHoy;
+    }                     
+    if (mesHoy < 10) 
+      {
+      mesHoy = '0'+mesHoy;
+    }
+    var hoyFecha = hoy.getFullYear()+'-'+mesHoy+'-'+diaHoy;
+    var hoyMostrar = diaHoy+'/'+mesHoy+'/'+hoy.getFullYear();
+    var hourTemp = hoy.getHours();
+    var minTemp = hoy.getMinutes();
+    var secTemp = hoy.getSeconds();
+    if (hourTemp < 10) 
+      {
+      hourTemp = '0'+hourTemp;
+    } 
+    if (minTemp < 10) 
+      {
+      minTemp = '0'+minTemp;
+    } 
+    if (secTemp < 10) 
+      {
+      secTemp = '0'+secTemp;
+    } 
+    var horaMostrar = hourTemp+':'+minTemp;
     switch (radio) {
       case 'entidadStock':  delete nombres;
                             var nombres = new Array();
@@ -3143,17 +3174,17 @@ function realizarBusqueda(){
                               delete (tipoConsulta);
                               var tipoConsulta = '';
                               var query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
-                              var consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
+                              var consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
                               if (entidadesStock[i] !== 'todos') {
                                 ent.push(entidadesStock[i]);
                                 query += " from productos where entidad='"+entidadesStock[i]+"' and estado='activo'";
                                 consultaCSV += " from productos where entidad='"+entidadesStock[i]+"' and estado='activo'";
-                                tipoConsulta = 'Stock de <b><i>'+entidadesStock[i]+"</i></b>";
+                                tipoConsulta = 'Stock de <b><i>'+entidadesStock[i]+'</i></b> al d&iacute;a: '+hoyMostrar+' ('+horaMostrar+')';
                               } 
                               else {
                                 query += " from productos where estado='activo'";
                                 consultaCSV += " from productos where estado='activo'";
-                                tipoConsulta = 'Stock de <b><i>todas las entidades</i></b>';
+                                tipoConsulta = 'Stock de <b><i>todas las entidades</i></b> al d&iacute;a: '+hoyMostrar+' ('+horaMostrar+')';
                                 todos = true;
                               }
                               queries.push(query);
@@ -3161,8 +3192,7 @@ function realizarBusqueda(){
                               tipoConsultas.push(tipoConsulta);
                               idProds.push(entidadesStock[i]);
                               nombres.push(entidadesStock[i]);
-                              //se habiliata la validación de la fecha para el caso que haya que calcular el stock a una fecha anterior:
-                              validarFecha = true;
+                              validarFecha = false;
                               validarTipo = false;
                               validarUser = false;
                             }
@@ -3187,14 +3217,13 @@ function realizarBusqueda(){
                               else {
                                 query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                                 query += " from productos where idProd="+idProds[i];
-                                consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
+                                consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
                                 consultaCSV += " from productos where idProd="+idProds[i];
-                                tipoConsulta = 'Stock del producto <b><i>'+nombres[i]+"</i></b>";
+                                tipoConsulta = 'Stock del producto <b><i>'+nombres[i]+'</i></b> al d&iacute;a: '+hoyMostrar+' ('+horaMostrar+')';
                                 queries.push(query);
                                 consultasCSV.push(consultaCSV);
                                 tipoConsultas.push(tipoConsulta);
-                                //se habiliata la validación de la fecha para el caso que haya que calcular el stock a una fecha anterior:
-                                validarFecha = true;
+                                validarFecha = false;
                                 validarTipo = false;
                                 validarUser = false;
                               }
@@ -3217,7 +3246,7 @@ function realizarBusqueda(){
                                 for (var i in entidadesStock){
                                   query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                                   query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
-                                  consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
+                                  var consultaCSV = "select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios from productos where productos.estado='activo' ";
                                   if (entidadesStock[i] !== 'todos') {
                                     ent.push(entidadesStock[i]);
                                     query += "and productos.entidad='"+entidadesStock[i]+"'";
@@ -3288,9 +3317,9 @@ function realizarBusqueda(){
                                 break;   
       case 'productoStockViejo':  for (var k in idProds){
                                     query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
-                                    query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where ";
-                                    //consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
-                                    consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";                                 
+                                    query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where idprod="+idProds[k];
+                                    consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
+                                    consultaCSV += " from productos where idProd="+idProds[k];
                                     if ((idProds[k] === 'NADA') || (nombresProductos[k] === '')){
                                       alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
                                       document.getElementById("productoStock").focus();
@@ -3298,8 +3327,6 @@ function realizarBusqueda(){
                                       return false;
                                     }
                                     else {
-                                      query += "idprod="+idProds[k];
-                                      consultaCSV += "and idprod="+idProds[k];
                                       queries.push(query);
                                       consultasCSV.push(consultaCSV);
                                       validarFecha = true;
@@ -3341,18 +3368,6 @@ function realizarBusqueda(){
       default: break;
     }
     
-    var hoy = new Date();
-    var diaHoy = hoy.getDate();
-    var mesHoy = hoy.getMonth()+1;
-    if (diaHoy < 10) 
-      {
-      diaHoy = '0'+diaHoy;
-    }                     
-    if (mesHoy < 10) 
-      {
-      mesHoy = '0'+mesHoy;
-    }
-    var hoyFecha = hoy.getFullYear()+'-'+mesHoy+'-'+diaHoy;
     if (validarFecha) {
       switch (radioFecha) {
         case 'intervalo': if ((radio === 'entidadStockViejo')||(radio === 'productoStockViejo')){
@@ -3493,7 +3508,7 @@ function realizarBusqueda(){
       for (var n in queries){//alert(queries[n]);
         if (rangoFecha !== null) {
           queries[n] += rangoFecha;
-          consultasCSV[n] += rangoFecha; 
+          //consultasCSV[n] += rangoFecha; 
         }
         var mensajeTipo = null;  
         if (validarTipo) {   
@@ -3518,7 +3533,12 @@ function realizarBusqueda(){
 
         if (ordenFecha) {
           queries[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod, movimientos.fecha desc, hora desc";
-          consultasCSV[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod, movimientos.fecha desc, hora desc";
+          if ((radio !== 'entidadStockViejo')&&(radio !== 'productoStockViejo')){
+            consultasCSV[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod, movimientos.fecha desc, hora desc";
+          }
+          else {
+            consultasCSV[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";
+          }
         }
         else {
           queries[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";

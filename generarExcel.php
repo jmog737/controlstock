@@ -26,7 +26,7 @@ require_once("data/config.php");
 
 ///*********************************************************************** FIN SETEO DE CARPETAS **************************************************************
 
-function generarExcelStock($registros) {
+function generarExcelStock($reg) {
   global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip;
   
   $spreadsheet = new Spreadsheet();
@@ -34,7 +34,6 @@ function generarExcelStock($registros) {
   $locale = 'es_UY'; 
   $validLocale = \PhpOffice\PhpSpreadsheet\Settings::setLocale($locale); 
   if (!$validLocale) { echo 'Unable to set locale to '.$locale." - reverting to en_us<br />\n"; }
-
 
   // Set document properties
   $spreadsheet->getProperties()->setCreator("Juan Martín Ortega")
@@ -47,7 +46,23 @@ function generarExcelStock($registros) {
 
   /// Declaro hoja activa:
   $hoja = $spreadsheet->getSheet(0);
-
+  
+  ///Trabajo con el nombre para la hoja activa debido a la limitante del largo (31 caracteres):
+  ///Además, ya se tienen 8 de la fecha a la cual se consultó el stock
+  $test = stripos($nombreReporte, "_al_");
+  if ($test !== false){
+    $nombreReporteTemp = explode("_al_", $nombreReporte);
+    $parte1 = $nombreReporteTemp[0];
+    if (strlen($parte1) > 23){
+      $parte1Nuevo = substr($parte1, 0, 23);
+    }
+    else {
+      $parte1Nuevo = $parte1;
+    }
+    $parte2 = $nombreReporteTemp[1];
+    $nombreReporte = $parte1Nuevo.$parte2;
+  }
+  
   $hoja->setTitle($nombreReporte);
   $hoja->getTabColor()->setRGB('023184');
   
@@ -63,17 +78,7 @@ function generarExcelStock($registros) {
   $colStock = chr(ord($colId)+6);
   $colAl1 = chr(ord($colId)+7);
   $colAl2 = chr(ord($colId)+8); 
-  
-  $mostrarId = 1;
-  $mostrarEntidad = 1;
-  $mostrarNombre = 1;
-  $mostrarBin = 1;
-  $mostrarCodEMSA = 1;
-  $mostrarCodOrigen = 1;
-  $mostrarComent = 1;
-  $mostrarStock = 1;
-  $mostrarAl1 = 1;
-  $mostrarAl2 = 1;
+
   /**************** FIN PARAMETRIZACIÓN ***************************************/
 
   // Agrego los títulos:
@@ -103,7 +108,7 @@ function generarExcelStock($registros) {
   $hoja->getStyle($header)->applyFromArray($styleHeader);
 
   /// Datos de los campos:
-  foreach ($registros as $i => $dato) {
+  foreach ($reg as $i => $dato) {
     $al2 = array_pop($dato);
     $al1 = array_pop($dato);
     $stock = array_pop($dato);
@@ -126,7 +131,7 @@ function generarExcelStock($registros) {
     array_push($dato, $stock);
     array_push($dato, $al1);
     array_push($dato, $al2);
-    
+
     /// Acomodo el índice pues empieza en 0, y en el 1 están los nombres de los campos:
     $i = $i + 2;
     $celda = $colId.$i;

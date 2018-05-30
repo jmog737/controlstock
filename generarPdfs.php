@@ -169,10 +169,10 @@ class PDF extends PDF_MC_Table
     $tam1 = $this->GetStringWidth("Stock de ");
     
     $fraccionado = false;
-    $parteTipo = stripos($tipoTotal, ":");
+    $parteTipo = stripos($tipoTotal, ": ");
     if ($parteTipo !== false){
-      $parte2 = explode(":", $tipoTotal);
-      $ultimaParte = utf8_decode(" al día:".$parte2[1]);
+      $parte2 = explode(": ", $tipoTotal);
+      $ultimaParte = utf8_decode(" al día: ".$parte2[1]);
       $fraccionado = true;
       $tamUlitmaParte = $this->GetStringWidth($ultimaParte);
     }
@@ -2616,10 +2616,10 @@ class PDF extends PDF_MC_Table
     $tam1 = $this->GetStringWidth("Stock del producto ");
     
     $fraccionado = false;
-    $parteTipo = stripos($tipoTotal, ":");
+    $parteTipo = stripos($tipoTotal, ": ");
     if ($parteTipo !== false){
-      $parte2 = explode(":", $tipoTotal);
-      $ultimaParte = utf8_decode(" al día:".$parte2[1]);
+      $parte2 = explode(": ", $tipoTotal);
+      $ultimaParte = utf8_decode(" al día: ".$parte2[1]);
       $fraccionado = true;
       $tamUlitmaParte = $this->GetStringWidth($ultimaParte);
     }
