@@ -319,15 +319,82 @@ class PDF extends PDF_MC_Table
       if($this->GetY()+$h0>$this->PageBreakTrigger){
         $this->AddPage($this->CurOrientation);
         ///***************************************************************** TITULO ************************************************************
-        //Defino tipo de letra y tamaño para el Título:
+      //Defino tipo de letra y tamaño para el Título:
+    $this->SetFont('Courier', 'B', 12);
+    //$this->SetY(20);
+
+    //$tipoTotal = "Stock de $entidad";
+    $tipoTotal = $tipoConsulta;
+    $tam = $this->GetStringWidth($tipoTotal);
+    $xInicio = $xTipo + (($anchoTipo-$tam)/2);
+    $this->SetX($xInicio);
+
+    $nbTitulo = $this->NbLines($anchoTipo,$tipoTotal);
+    $hTitulo=$h*$nbTitulo;
+    
+    //Save the current position
+    $x1=$this->GetX();
+    $y=$this->GetY();
+    $tam1 = $this->GetStringWidth("Stock de ");
+    
+    $fraccionado = false;
+    $parteTipo = stripos($tipoTotal, ": ");
+    if ($parteTipo !== false){
+      $parte2 = explode(": ", $tipoTotal);
+      $ultimaParte = utf8_decode(" al día: ".$parte2[1]);
+      $fraccionado = true;
+      $tamUlitmaParte = $this->GetStringWidth($ultimaParte);
+    }
+    
+    if ($tipo) {
+      ///Si es Total de stock en bóveda, le agrego itálica a todo el título:
+      $this->SetFont('Courier', 'BI', 12);
+      $this->SetTextColor(0);
+      $this->SetX($xTipo);
+      $this->MultiCell($anchoTipo, $h, utf8_decode($tipoConsulta), 0, 'C', 0);
+    }
+    else {
+      if ($nbTitulo > 1) {
+        $this->SetTextColor(0);
+        $this->Cell($tam1,$h, "Stock de ",0, 0, 'R', 0);
+        $this->SetTextColor(255, 0, 0);
+        $this->SetFont('Courier', 'BI', 12);
+        $tamNombre1 = $this->GetStringWidth($entidad);
+        $this->Cell($tamNombre1,$h, utf8_decode($entidad),0, 0,'L', 0);
+        $this->SetTextColor(0);
+        if ($fraccionado){
+          $this->Cell($tamUlitmaParte,$h, $ultimaParte,0, 0, 'L', 0);
+        }
+      }
+      else {
+        $this->SetTextColor(0);
+        $this->Cell($tam1,$hTitulo, "Stock de",0, 0,'R', 0);
+        $this->SetTextColor(255, 0, 0);
+        $this->SetFont('Courier', 'BI', 12);
+        $tamNombre1 = $this->GetStringWidth($entidad);
+        $this->Cell($tamNombre1,$hTitulo, utf8_decode($entidad),0, 0,'L', 0);
+        $this->SetTextColor(0);
+        if ($fraccionado){
+          $this->Cell($tamUlitmaParte,$hTitulo, $ultimaParte,0, 0, 'L', 0);
+        }
+      }  
+    }
+
+
+////*****************************************************************************************************************************************************
+        /*
+//Defino tipo de letra y tamaño para el Título:
         $this->SetFont('Courier', 'B', 12);
         $this->SetTextColor(0);
         $this->SetY(25);
         $this->SetX($xInicio);
 
         if ($tipo) {
-          $this->SetX($xTipo);
-          $this->MultiCell($anchoTipo, $h, utf8_decode($tipoConsulta)."(cont.)", 0, 'C', 0);
+          ///Si es Total de stock en bóveda, le agrego itálica a todo el título:
+        $this->SetFont('Courier', 'BI', 12);
+        $this->SetTextColor(0);
+        $this->SetX($xTipo);
+        $this->MultiCell($anchoTipo, $h, utf8_decode($tipoConsulta), 0, 'C', 0);
         }
         else {
           if ($nbTitulo > 1) {
@@ -343,6 +410,7 @@ class PDF extends PDF_MC_Table
             $this->SetTextColor(0);
           }  
         }
+        */
         $this->Ln(10);
         $y = $this->GetY();
         ///************************************************************** FIN TITULO ************************************************************
@@ -2613,8 +2681,8 @@ class PDF extends PDF_MC_Table
     //Save the current position
     $x1=$this->GetX();
     $y=$this->GetY();
-    $tam1 = $this->GetStringWidth("Stock del producto ");
     
+    $tam1 = $this->GetStringWidth("Stock del producto ");
     $fraccionado = false;
     $parteTipo = stripos($tipoTotal, ": ");
     if ($parteTipo !== false){

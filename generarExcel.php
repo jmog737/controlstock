@@ -49,9 +49,9 @@ function generarExcelStock($reg) {
   
   ///Trabajo con el nombre para la hoja activa debido a la limitante del largo (31 caracteres):
   ///Además, ya se tienen 8 de la fecha a la cual se consultó el stock
-  $test = stripos($nombreReporte, "_al_");
+  $test = stripos($nombreReporte, "al_");
   if ($test !== false){
-    $nombreReporteTemp = explode("_al_", $nombreReporte);
+    $nombreReporteTemp = explode("al_", $nombreReporte);
     $parte1 = $nombreReporteTemp[0];
     if (strlen($parte1) > 23){
       $parte1Nuevo = substr($parte1, 0, 23);
@@ -111,7 +111,8 @@ function generarExcelStock($reg) {
   foreach ($reg as $i => $dato) {
     $al2 = array_pop($dato);
     $al1 = array_pop($dato);
-    $stock = array_pop($dato);
+    $stock = (integer)array_pop($dato);
+    
     $codOrigen = array_pop($dato);
     if (($codOrigen === null)||($codOrigen === '')){
       $codOrigen = 'NO ingresado';
@@ -131,11 +132,11 @@ function generarExcelStock($reg) {
     array_push($dato, $stock);
     array_push($dato, $al1);
     array_push($dato, $al2);
-
+    
     /// Acomodo el índice pues empieza en 0, y en el 1 están los nombres de los campos:
     $i = $i + 2;
     $celda = $colId.$i;
-    $hoja->fromArray($dato, ' ', $celda);
+    $hoja->fromArray($dato, '""', $celda);
   }
 
   /// Agrego línea con el total del stock:
@@ -236,7 +237,6 @@ function generarExcelStock($reg) {
     $valorAlarma1 = $hoja->getCell($al1)->getValue();
     $valorAlarma2 = $hoja->getCell($al2)->getValue();
     $valorCelda = $hoja->getCell($celda)->getValue();
-
     if (($valorCelda > $valorAlarma2) && ($valorCelda < $valorAlarma1)){
       $hoja->getStyle($celda)->applyFromArray($styleAl1);
     }

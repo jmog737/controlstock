@@ -102,7 +102,12 @@ for ($i = 0; $i < count($query); $i++){
     
     ///Ejecuto consulta "total" para concer el total de datos a devolver
     ///Sin embargo, sólo consulto el total de registros para que sea más rápido:
-    $totalConsulta[$i] = "select count(*) as total from productos where estado='activo' and entidad='".$entidad."'";
+    if ($test !== false){
+      $totalConsulta[$i] = "select count(*) as total from productos where estado='activo' and entidad='".$entidad."'";
+    }
+    else {
+      $totalConsulta[$i] = "select count(*) as total from productos where estado='activo'";
+    }
     
     $result1 = consultarBD($totalConsulta[$i], $dbc);
     while (($fila1 = $result1->fetch_array(MYSQLI_ASSOC)) != NULL) { 
@@ -110,7 +115,13 @@ for ($i = 0; $i < count($query); $i++){
     }
 
     ///Recupero primera página para mostrar:
-    $query[$i] = "select idprod, entidad, nombre_plastico, bin, codigo_emsa, codigo_origen, contacto, snapshot, ultimoMovimiento, stock, alarma1, alarma2, comentarios from productos where entidad='".$entidad."' and estado='activo' order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";// limit ".$limite;
+    if ($test !== false){
+      $query[$i] = "select idprod, entidad, nombre_plastico, bin, codigo_emsa, codigo_origen, contacto, snapshot, ultimoMovimiento, stock, alarma1, alarma2, comentarios from productos where entidad='".$entidad."' and estado='activo' order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";// limit ".$limite;
+    }
+    else {
+      $query[$i] = "select idprod, entidad, nombre_plastico, bin, codigo_emsa, codigo_origen, contacto, snapshot, ultimoMovimiento, stock, alarma1, alarma2, comentarios from productos where estado='activo' order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";
+    }
+    
     $result = consultarBD($query[$i], $dbc);
 
     while (($fila = $result->fetch_array(MYSQLI_ASSOC)) != NULL) { 

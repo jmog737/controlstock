@@ -1660,9 +1660,10 @@ function validarBusqueda() {
  * @param {Object} subtotales Objeto con los subtotales, a saber, subtotales{retiros: XX, renovaciones: xx, destrucciones: XX, ingresos: XX}.
  * @param {Integer} max Entero con el total de datos a mostrar en la tabla.
  * @param {Integer} totalPlasticos Entero con el total acumulado del stock. SÓLO se usa en consultas de stock de entidades.
+ * @param {String} tipoConsulta String con el mensaje del tipo de consulta para usarlo en el captio en los casos de stocks viejos.
  * @returns {String} String con el HTML para mostrar la tabla.
  */
-function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, totalPlasticos){
+function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, totalPlasticos, tipoConsulta){
   var tabla = '<table name="resultados" id="resultados_'+j+'" class="tabla2">';
   var rutaFoto = 'images/snapshots/';
   
@@ -1776,14 +1777,17 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                           }
                           
                           var subtitulo = '';
+                          var totalPlasticos1 = '';
                           if (fin){
-                            subtitulo = 'SUB-TOTAL';
+                            //subtitulo = 'SUB-TOTAL';
+                            //totalPlasticos1 = total;
                           } 
                           else {
                             subtitulo = 'TOTAL';
-                            tabla += '<tr><th colspan="8" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos, 10).toLocaleString()+'</td><th></th></tr>';
-                            //totalMostrar = totalStock.toLocaleString();
-                          }
+                            totalPlasticos1 = parseInt(totalPlasticos, 10);
+                            tabla += '<tr><th colspan="8" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos1, 10).toLocaleString()+'</td><th></th></tr>';
+                          }  
+
                           var subtotalesJson = JSON.stringify(subtotales);
                           tabla += '<tr>\n\
                                       <td class="pieTabla" colspan="10">\n\
@@ -1964,7 +1968,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       claseResaltado = "resaltado italica";
                                     }
                                   }
-                                  tabla += '<caption>Stock del producto <b><i>'+datos[0]['nombre_plastico']+'</i></b></caption>';
+                                  tabla += '<caption>'+tipoConsulta+'</caption>';
                                   tabla += '<tr>\n\
                                               <th colspan="2" class="tituloTabla">DETALLES</th>\n\
                                            </tr>';                       
@@ -2043,6 +2047,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                             <th>Stock</th>\n\
                                             <th>Mensaje</th>\n\
                                          </tr>';
+                                //var total = 0;
                                 for (var i=0; i<max; i++) {
                                   ///************************* INICIO RECUPERACIÓN DATOS ******************************************************************
                                   var produ = parseInt(datos[i]["idprod"], 10);
@@ -2065,8 +2070,10 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       ultimoMovimiento = '';
                                     }
                                   var alarma1 = parseInt(datos[i]['alarma1'], 10);
-                                  var alarma2 = parseInt(datos[i]['alarma2'], 10);
-                                  stock = parseInt(subtotales["stockViejo"][produ], 10);
+                                  var alarma2 = parseInt(datos[i]['alarma2'], 10);//alert(alarma1);
+                                  var stock = parseInt(subtotales['stockViejo'][produ], 10);//alert('offset: '+offset+' - produ: '+produ+' : '+stock);
+                                  //total += stock;
+                                  //var stock = parseInt(datos[i]['stock'], 10);
                                   var claseResaltado = '';
                                   if ((stock < alarma1) && (stock > alarma2)){
                                     claseResaltado = "alarma1";
@@ -2106,24 +2113,20 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                 }/// FIN DEL FOR ********************************************************
                                
                                 ///************************ CAPTION segun si es TODOS o alguna ENTIDAD *******************************************
-                                if (!todos){
-                                  tabla += '<caption>Stock de <b><i>'+entidad+'</i></b></caption>';
-                                }
-                                else {
-                                  tabla += '<caption>Stock de <b><i>todas las entidades</i></b></caption>';
-                                }
+                                tabla += '<caption>'+tipoConsulta+'</caption>';
                                 ///************************ FIN CAPTION segun si es TODOS o alguna ENTIDAD ***************************************
-
                                 var subtitulo = '';
+                                var totalPlasticos1 = '';
                                 if (fin){
-                                  subtitulo = 'SUB-TOTAL';
+                                  //subtitulo = 'SUB-TOTAL';
+                                  //totalPlasticos1 = total;
                                 } 
                                 else {
                                   subtitulo = 'TOTAL';
-                                  totalPlasticos = parseInt(totalPlasticos, 10);
-                                  tabla += '<tr><th colspan="8" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+totalPlasticos.toLocaleString()+'</td><th></th></tr>';
-                                }
-                                
+                                  totalPlasticos1 = parseInt(totalPlasticos, 10);
+                                  tabla += '<tr><th colspan="8" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos1, 10).toLocaleString()+'</td><th></th></tr>';
+                                } 
+                          
                                 var subtotalesJson = JSON.stringify(subtotales);
                                 tabla += '<tr>\n\
                                             <td class="pieTabla" colspan="10">\n\
@@ -2327,7 +2330,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     }
                                     
                                     productoViejo = produ;
-                                    tabla += '<th colspan="11">&nbsp;\n\
+                                    tabla += '<th colspan="12">&nbsp;\n\
                                           </th>';
                                   }
                                   
@@ -2736,7 +2739,6 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
       if ((radio === 'entidadStockViejo')||(radio === 'productoStockViejo')){
         stockViejo = request[j]["stockViejo"];
         queries[j] = request[j].query;
-        
       }
       else {
         stockViejo = null;
@@ -2806,7 +2808,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         var max = parseInt(tamPagina, 10);
         var parcial = true; 
         ///Chequeo en que caso estoy pues la parte de movimientos funciona con parcial invertido:
-        if ((radio === 'entidadMovimiento') || (radio === 'productoMovimiento') || (radio === 'entidadStockViejo') || (radio === 'productoStockViejo')){
+        if ((radio === 'entidadMovimiento') || (radio === 'productoMovimiento')){
           parcial = false;
         }
         if (totalDatos < tamPagina){
@@ -2814,7 +2816,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
           parcial = false;
         }
         
-        var tabla = mostrarTabla(radio, datos, j, todos, 1, parcial, subtotales, max, totalPlasticos); 
+        var tabla = mostrarTabla(radio, datos, j, todos, 1, parcial, subtotales, max, totalPlasticos, mensajeConsulta); 
         
         formu += tabla;
         
@@ -2998,7 +3000,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         }
         
         mostrar += formu;
-        
+
         if (totalPaginas > 1) {
           var paginas = '<div class="pagination" id="paginas" indice="'+j+'">\n\
                           <ul>';
@@ -3508,7 +3510,9 @@ function realizarBusqueda(){
       for (var n in queries){//alert(queries[n]);
         if (rangoFecha !== null) {
           queries[n] += rangoFecha;
-          //consultasCSV[n] += rangoFecha; 
+          if ((radio !== 'entidadStockViejo')&&(radio !== 'productoStockViejo')){
+            consultasCSV[n] += rangoFecha;
+          } 
         }
         var mensajeTipo = null;  
         if (validarTipo) {   
@@ -3892,6 +3896,10 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, z
             default: break;
           }
           $("input:radio[name=criterioFecha][value="+p+"]").prop("checked", true);
+        }
+        else {
+          $("#mes").val('todos');
+          $("#año").val('2018');alert('fsa');
         }
         if (tipoFiltro !== ''){
           $("#tipo").val(tipoFiltro);
@@ -6327,6 +6335,7 @@ $(document).on("click", ".paginate", function (){
   var totalPaginas = parseInt($("#totalPaginas_"+indice).val(), 10);
   var totalRegistros = parseInt($("#totalRegistros_"+indice).val(), 10);
   var totalPlasticos = parseInt($("#totalPlasticos_"+indice).val(), 10);
+  var tipoConsulta = $("#tipoConsulta_"+indice).val();
   ///Vuelvo a definir una variable local tamPagina para actualizar el valor que ya tiene.
   ///Esto es para que tome el último valor en caso de que se haya modificado desde el modal (que no cambia hasta recargar la página).
   var tamPagina = parseInt($("#tamPagina").val(), 10);
@@ -6359,36 +6368,35 @@ $(document).on("click", ".paginate", function (){
   }
   
   query += " limit "+limite+" offset "+offset;
-
-//alert(query);
-  var idTipo = $("#idTipo").val();
-  var radio = '';
+  
+  //var idTipo = $("#idTipo").val();
+  var radio = $("#radio_"+indice).val();
   var entidad = '';
   var todos = false;
-  switch (idTipo){
-    case "1": radio = 'entidadStock';
-              entidad = $("#entidad_"+indice+"").val();
-              var subtotales = JSON.parse($("#subtotales_"+indice).val());
-              break;
-    case "2": radio = 'productoStock';
-              break;
-    case "3": radio = 'totalStock';
-              var subtotales = JSON.parse($("#subtotales_"+indice).val());
-              break;
-    case "4": radio = 'entidadMovimiento';
-              entidad = $("#entidad_"+indice+"").val();
-              var subtotales = JSON.parse($("#subtotales_"+indice).val());
-              break;
-    case "5": radio = 'productoMovimiento';
-              var subtotales = JSON.parse($("#subtotales_"+indice).val());
-              break;
+  var stockViejo = JSON.parse($("#subtotales_"+indice).val());
+  
+  var url = "data/selectQuery.php";
+  switch (radio){
+    case 'entidadStockViejo': var subtotales = {'stockViejo': stockViejo};
+                              break;
+    case 'entidadMovimiento':
+    case 'entidadStock':  entidad = $("#entidad_"+indice+"").val();
+                          var subtotales = JSON.parse($("#subtotales_"+indice).val());
+                          break;
+    case 'productoStockViejo': 
+    case 'productoStock': break;
+    case 'totalStock':  var subtotales = JSON.parse($("#subtotales_"+indice).val());
+                        break;
+    case 'productoMovimiento':  subtotales = JSON.parse($("#subtotales_"+indice).val());
+                                break;
     default: break;
   }
+    
   if (entidad === 'todos'){
     todos = true;
   }
+  //alert(query);
   
-  var url = "data/selectQuery.php";
   $.getJSON(url, {query: ""+query+""}).done(function(request){
     var datos = request.resultado;
 
@@ -6397,32 +6405,30 @@ $(document).on("click", ".paginate", function (){
     /// Como es la misma variable, en MOVIMIENTOS se USA INVERTIDA!!. Cuando sigue en la otra página se pasa TRUE.
     var fin = false;
     switch (radio){
+      case "entidadStockViejo":
       case "entidadStock":  if (page < totalPaginas){
                               fin = true;
                             }
                             break;
-      case "productoStock": radio = 'productoStock';
-                            break;
-      case "totalStock":  radio = 'totalStock';
-                          if (page < totalPaginas){
+      case "productoStockViejo":
+      case "productoStock": break;
+      case "totalStock":  if (page < totalPaginas){
                             fin = true;
                           }
                           break;
-      case "entidadMovimiento": radio = 'entidadMovimiento';
-                                entidad = $("#entidad_"+indice+"").val();
+      case "entidadMovimiento": entidad = $("#entidad_"+indice+"").val();
                                 if (page < totalPaginas){
                                   if (((datos[limite-1]['idprod']) !== (datos[limite-2]['idprod']))){
                                     fin = true;
                                   }
                                 }
                                 break;
-      case "procutoMovimiento": radio = 'productoMovimiento';
-                                break;
+      case "productoMovimiento": break;
       default: break;
     }
     
-    var tabla = mostrarTabla(radio, datos, indice, todos, primerRegistro, fin, subtotales, max, totalPlasticos);
-
+    var tabla = mostrarTabla(radio, datos, indice, todos, primerRegistro, fin, subtotales, max, totalPlasticos, tipoConsulta);
+    
     $("#resultados_"+indice+"").remove();
     if ($("#detallesProducto_"+indice+"").length > 0){
       $("#detallesProducto_"+indice+"").remove();

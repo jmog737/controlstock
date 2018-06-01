@@ -90,6 +90,7 @@ if (isset($_POST["idProd"])){
 ///Caracteres a ser reemplazados en caso de estar presentes en el nombre del producto o la entidad
 ///Esto se hace para mejorar la lectura (en caso de espacios en blanco), o por requisito para el nombre de la hoja de excel
 $aguja = array(0=>" ", 1=>".", 2=>"[", 3=>"]", 4=>"*", 5=>"/", 6=>"\\", 7=>"?", 8=>":", 9=>"_", 10=>"-");
+
 ///Se define el tamaño máximo aceptable para el nombre teniendo en cuenta que el excel admite un máximo de 31 caracteres, y que además, 
 ///ya se tienen 6 fijos del stock_ (movs_ es uno menos).
 $tamMaximoNombre = 25;
@@ -112,7 +113,7 @@ if (isset($_POST["entidad_$indice"])){
   $entidadMostrar1 = str_replace($aguja, "", $entidad);
   $entidadMostrar = substr($entidadMostrar1, 0, $tamMaximoNombre);
   if ($entidad === 'todos') {
-    $entidad = 'todas las entidades.';
+    $entidad = 'todas las entidades';
     $entidadMostrar = 'Todos';
   }
 }
@@ -137,28 +138,23 @@ switch ($id) {
             $titulo = "STOCK POR ENTIDAD";
             $nombreReporte = "stock_".$entidadMostrar;
             $asunto = "Reporte con el Stock de la Entidad";
-            //$nombreCampos = "(select 'Entidad', 'Nombre', 'BIN', 'Stock')";
             $indiceStock = 10;
             break;
   case "2": $tituloTabla = "STOCK DEL PRODUCTO";
             $titulo = "STOCK DEL PRODUCTO";
             $nombreReporte = "stock_".$nombreProductoMostrar;
             $asunto = "Reporte con el stock del Producto";
-            //$nombreCampos = "(select 'Entidad', 'Nombre', 'BIN', 'Stock')";
             $indiceStock = 10;
             break;
   case "3": $tituloTabla = "STOCK TOTAL EN BÓVEDA";
             $titulo = "PLÁSTICOS EN BÓVEDA";
             $nombreReporte = "stockBoveda";
             $asunto = "Reporte con el total de tarjetas en stock";
-            //$nombreCampos = "(select 'Entidad', 'Stock')";
             $indiceStock = 2;
             break;
   case "4": $tituloTabla = "MOVIMIENTOS DE LA/S ENTIDAD/ES";
             $titulo = "MOVIMIENTOS POR ENTIDAD";
-            //$nombreReporte = "movs".$entidadMostrar;
             $asunto = "Reporte con los movimientos de la Entidad";
-            //$nombreCampos = "(select 'Fecha', 'Hora', 'Entidad', 'Nombre', 'BIN', 'Tipo', 'Cantidad', 'Comentarios')";
             $indiceStock = 12;
             $orientacion = 'L';
             if (isset($inicio)) {
@@ -170,7 +166,6 @@ switch ($id) {
             break;
   case "5": $tituloTabla = "MOVIMIENTOS DEL PRODUCTO";
             $titulo = "MOVIMIENTOS POR PRODUCTO";
-            //$nombreReporte = "movs".$nombreProductoMostrar;
             $asunto = "Reporte con los movimientos del Producto";
             $indiceStock = 12;
             if (isset($inicio)) {
@@ -250,7 +245,7 @@ foreach($filas as $fila)
   $i++;
   //Acumulo el total de plásticos ya sea en stock o movidos:
   if ($radio === 'entidadStockViejo'){
-    $total = $total + $subtotales[$fila[1]];
+    $total = $total + $subtotales[$fila[1]];//echo $fila[3]." -- ".$subtotales[$fila[1]]."<br>";
   }
   else {
     $total = $total + $fila[$indiceStock];
@@ -288,7 +283,7 @@ foreach($filas1 as $fila)
       $idProdTemp = array_shift($fila);
       
       if (($radio === 'entidadStockViejo')||($radio === 'productoStockViejo')){
-        $stockTemp = $subtotales[$idProdTemp];
+        $stockTemp = $subtotales[$idProdTemp];//echo "$idProdTemp : $stockTemp<br>";
         array_push($fila, $stockTemp);
       }
       else {
