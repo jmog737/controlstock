@@ -1661,9 +1661,10 @@ function validarBusqueda() {
  * @param {Integer} max Entero con el total de datos a mostrar en la tabla.
  * @param {Integer} totalPlasticos Entero con el total acumulado del stock. SÓLO se usa en consultas de stock de entidades.
  * @param {String} tipoConsulta String con el mensaje del tipo de consulta para usarlo en el captio en los casos de stocks viejos.
+ * @param {Integer} totalPaginas Integer con el total de páginas del resultado.
  * @returns {String} String con el HTML para mostrar la tabla.
  */
-function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, totalPlasticos, tipoConsulta){
+function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, totalPlasticos, tipoConsulta, totalPaginas){
   var tabla = '<table name="resultados" id="resultados_'+j+'" class="tabla2">';
   var rutaFoto = 'images/snapshots/';
   
@@ -1769,13 +1770,13 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                             offset++;
                             total += stock;
                           }
-                          if (!todos){
-                            tabla += '<caption>Stock de <b><i>'+entidad+'</i></b></caption>';
-                          }
-                          else {
-                            tabla += '<caption>Stock de <b><i>todas las entidades</i></b></caption>';
-                          }
-                          
+//                          if (!todos){
+//                            tabla += '<caption>Stock de <b><i>'+entidad+'</i></b></caption>';
+//                          }
+//                          else {
+//                            tabla += '<caption>Stock de <b><i>todas las entidades</i></b></caption>';
+//                          }
+                          tabla += '<caption><b><i>'+tipoConsulta+'</i></b></caption>';
                           var subtitulo = '';
                           var totalPlasticos1 = '';
                           if (fin){
@@ -1873,7 +1874,8 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                               claseResaltado = "resaltado italica";
                             }
                           } 
-                          tabla += '<caption>Stock del producto <b><i>'+datos[0]['nombre_plastico']+'</i></b></caption>';
+                          //tabla += '<caption>Stock del producto <b><i>'+datos[0]['nombre_plastico']+'</i></b></caption>';
+                          tabla += '<caption><b><i>'+tipoConsulta+'</i></b></caption>';
                           tabla += '<tr>\n\
                                       <th colspan="2" class="tituloTabla">DETALLES</th>\n\
                                    </tr>';                       
@@ -2341,14 +2343,16 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                 ///Detecto si es o no la primer página.
                                 ///En caso de serlo seteo el total de Páginas a 0 para que NO muestre el resumen para el último producto
                                 var pagActual = parseInt($(".nav-link.active").attr("activepage"), 10);
-                                ///Agrego if para saber si la variable con el total de páginas existe o no pues solo existirá si el total de datos 
-                                ///es mayor al tamaño de página elegida (de lo contrario no se crea el div con los datosOcultos
-                                if ($("#totalPaginas_"+j).length > 0){
-                                  var totalPaginas = parseInt($("#totalPaginas_"+j).val(), 10);
-                                }
-                                else {
-                                  totalPaginas = 1;
-                                }
+                                /// SE COMENTA PUES totalPaginas ahora se pasa como parámetro
+                                  ///Agrego if para saber si la variable con el total de páginas existe o no pues solo existirá si el total de datos 
+                                  ///es mayor al tamaño de página elegida (de lo contrario no se crea el div con los datosOcultos
+//                                  if ($("#totalPaginas_"+j).length > 0){
+//                                    totalPaginas = parseInt($("#totalPaginas_"+j).val(), 10);alert('en el if');
+//                                  }
+//                                  else {
+//                                    totalPaginas = 1;
+//                                  }
+                                
                                 if (offset === tamPagina+1){
                                   totalPaginas = 0;
                                 }
@@ -2519,7 +2523,8 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   tabla += '<tr><th>Comentarios:</th><td class="'+claseComentario+'">'+comentarios+'</td></tr>';
                                   tabla += '<tr><th>&Uacute;ltimo Moviemiento:</th><td>'+ultimoMovimiento+'</td></tr>';
                                   tabla += '<tr><th>Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
-                                  tabla += '<tr><th colspan="2" class="pieTabla centrado">FIN</th></tr></table>';
+                                  tabla += '<tr><th colspan="2" class="pieTabla centrado">FIN</th></tr>';
+                                  tabla += '</table>';
                                   ///********************************************* TABLA DEL PRODUCTO *****************************************************
                                   
                                   tabla += '<br>';
@@ -2580,15 +2585,16 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   }
                                   ///************************************ COMIENZO RESUMEN DEL PRODUCTO ***************************************************
                                   var pagActual = parseInt($(".nav-link.active").attr("activepage"), 10);
+                                  /// SE COMENTA PUES totalPaginas ahora se pasa como parámetro
                                   ///Agrego if para saber si la variable con el total de páginas existe o no pues solo existirá si el total de datos 
                                   ///es mayor al tamaño de página elegida (de lo contrario no se crea el div con los datosOcultos
-                                  if ($("#totalPaginas_"+j).length > 0){
-                                    totalPaginas = parseInt($("#totalPaginas_"+j).val(), 10);
-                                  }
-                                  else {
-                                    totalPaginas = 1;
-                                  }
-                                  
+//                                  if ($("#totalPaginas_"+j).length > 0){
+//                                    totalPaginas = parseInt($("#totalPaginas_"+j).val(), 10);alert('en el if');
+//                                  }
+//                                  else {
+//                                    totalPaginas = 1;
+//                                  }
+
                                   if (pagActual === totalPaginas){
                                     var totalConsumos = 0;
                                     var retiros1 = 0;
@@ -2658,6 +2664,8 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   break;
       default: break;
     }
+    
+  $('html, body').animate({scrollTop:136}, '100');
   
   return tabla;
 } 
@@ -2815,10 +2823,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
           max = totalDatos%tamPagina;
           parcial = false;
         }
-        
-        var tabla = mostrarTabla(radio, datos, j, todos, 1, parcial, subtotales, max, totalPlasticos, mensajeConsulta); 
-        
-        formu += tabla;
+        var totalPaginas = Math.ceil(totalDatos/tamPagina);
         
         var datosOcultos = '<table id="datosOcultos_'+j+'" name="datosOcultos" class="tabla2" style="display:none">';
         switch (radio){
@@ -2977,8 +2982,11 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
           default: break;
         }
         datosOcultos += '</table>';
-        
         formu += datosOcultos;
+        
+        var tabla = mostrarTabla(radio, datos, j, todos, 1, parcial, subtotales, max, totalPlasticos, mensajeConsulta, totalPaginas);
+        formu += tabla;
+        
         formu += '</form>';
         
         if (mensajeTotalDatos !== ''){
@@ -2988,7 +2996,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
 
         ///************************************ Comienzo paginación **********************************************************
         
-        var totalPaginas = Math.ceil(totalDatos/tamPagina);
+        
         var page = 1;
         var ultimoRegistro = tamPagina;
         if (tamPagina > totalDatos){
@@ -3035,8 +3043,8 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         mostrar += '</div>';
         $("#pills-tabContent").append(mostrar);
         delete(totalDatos);
-        delete(datos);  
-        }/// FIN del if de totalDatos>1  
+        delete(datos);   
+      }/// FIN del if de totalDatos>1  
       else {
         mostrar += "<br><hr><h3>No existen registros para la consulta realizada.</h3><hr>";
         var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds[j]+'&ent='+ent+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipo+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
@@ -3188,6 +3196,7 @@ function realizarBusqueda(){
                                 consultaCSV += " from productos where estado='activo'";
                                 tipoConsulta = 'Stock de <b><i>todas las entidades</i></b> al d&iacute;a: '+hoyMostrar+' ('+horaMostrar+')';
                                 todos = true;
+                                ent.push('todos');
                               }
                               queries.push(query);
                               consultasCSV.push(consultaCSV);
@@ -3258,6 +3267,7 @@ function realizarBusqueda(){
                                   else {
                                     tipoConsulta = 'Stock de <b><i>todas las entidades</i></b>';
                                     todos = true;
+                                    ent.push('todos');
                                   }
                                   queries.push(query);
                                   consultasCSV.push(consultaCSV);
@@ -3295,6 +3305,7 @@ function realizarBusqueda(){
                                   else {
                                     tipoConsulta = 'Movimientos de <b><i>todas las entidades</i></b>';
                                     todos = true;
+                                    ent.push('todos');
                                   }
                                   queries.push(query);
                                   consultasCSV.push(consultaCSV);
@@ -3889,8 +3900,14 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, z
             case 'intervalo': $("#inicio").val(d1);
                               $("#fin").val(d2);     
                               break;
-            case 'mes': $("#mes").val(d1);
-                        $("#año").val(d2);
+            case 'mes': if (d1 === ''){
+                          $("#mes").val('todos');
+                          $("#año").val('2018');
+                        }
+                        else {
+                          $("#mes").val(d1);
+                          $("#año").val(d2);
+                        }
                         break;
             case 'todos': break;
             default: break;
@@ -3899,7 +3916,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, z
         }
         else {
           $("#mes").val('todos');
-          $("#año").val('2018');alert('fsa');
+          $("#año").val('2018');
         }
         if (tipoFiltro !== ''){
           $("#tipo").val(tipoFiltro);
@@ -6427,7 +6444,7 @@ $(document).on("click", ".paginate", function (){
       default: break;
     }
     
-    var tabla = mostrarTabla(radio, datos, indice, todos, primerRegistro, fin, subtotales, max, totalPlasticos, tipoConsulta);
+    var tabla = mostrarTabla(radio, datos, indice, todos, primerRegistro, fin, subtotales, max, totalPlasticos, tipoConsulta, totalPaginas);
     
     $("#resultados_"+indice+"").remove();
     if ($("#detallesProducto_"+indice+"").length > 0){
