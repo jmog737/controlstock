@@ -30,7 +30,7 @@
       <section id='address' class='col-sm-4 d-none d-sm-block'>
         <span>Dirección:</span><br>
         Buenos Aires 486<br>
-        Montevideo, Uruguay<br>v.2.0<br>
+        Montevideo, Uruguay<br>v.3.0<br>
         &copy; Copyright EMSA SERV. TEC. 2017
         <hr class='d-block d-sm-none'>
       </section>
