@@ -177,12 +177,16 @@ class PDF extends PDF_MC_Table
       $tamUlitmaParte = $this->GetStringWidth($ultimaParte);
     }
     
+    $dia = date('d');
+    $mes = date('m');
+    $año = date('y');
+    $fecha = $dia.'/'.$mes.'/'.$año;
     if ($tipo) {
       ///Si es Total de stock en bóveda, le agrego itálica a todo el título:
       $this->SetFont('Courier', 'BI', 12);
       $this->SetTextColor(0);
       $this->SetX($xTipo);
-      $this->MultiCell($anchoTipo, $h, utf8_decode($tipoConsulta), 0, 'C', 0);
+      $this->MultiCell($anchoTipo, $h, utf8_decode($tipoConsulta."al: ".$fecha), 0, 'C', 0);
     }
     else {
       if ($nbTitulo > 1) {

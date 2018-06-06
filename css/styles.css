@@ -447,13 +447,17 @@ hr {
   font-weight: bolder;
 }
 
-a.linkHistorial {
+a.linkHistorialGeneral {
+  color: blue;
+}
+a.linkHistorialProducto {
   color: black;
 }
-a.linkHistorial:hover{
+a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
   background-color: #ffff00;
-  font-size: 1.5em;
+  font-size: 1.2em;
 }
+
 .transparente {
   background-color:transparent;
 }

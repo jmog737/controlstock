@@ -221,12 +221,15 @@ function showHint(str, id, seleccionado) {
  * @param {String} prod String con el id del producto a consultar.
 */
 function mostrarHistorial(prod){
-  $("#historial").popover('dispose');
-  $("#historial").remove();
+  if ($("#historial").length > 0){
+    $("#historial").popover('dispose');
+    $("#historial").remove();
+  }
+  
   ///Vuelvo a redefinir limiteHistorialProducto para que tome el último valor en caso de que se haya cambiado con el modal.
   var limiteHistorialProducto = parseInt($("#limiteHistorialProducto").val(), 10);
   var url = "data/selectQuery.php";
-  var query = "select productos.nombre_plastico as nombre, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i:%s') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios as comentarios from movimientos inner join productos on productos.idprod=movimientos.producto where productos.idprod="+prod+" order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorialProducto+"";
+  var query = "select movimientos.idmov, productos.nombre_plastico as nombre, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i:%s') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios as comentarios from movimientos inner join productos on productos.idprod=movimientos.producto where productos.idprod="+prod+" order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorialProducto+"";
   //alert(query);
   $.getJSON(url, {query: ""+query+""}).done(function(request){
     var datos = request.resultado;
@@ -243,9 +246,9 @@ function mostrarHistorial(prod){
         else {
           comentario = "&nbsp;["+comentario+"]";
         }
-        mostrar += j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"<br>";
+        mostrar += "<a href='editarMovimiento.php?id="+datos[i]["idmov"]+"' target='_blank' class='linkHistorialProducto'>"+j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"</a><br>";
       }
-      var popover = '<a role="button" tabindex="0" id="historial" class="btn btn-danger historial" title="Historial de '+datos[i]["nombre"]+'" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="right" data-content="'+mostrar+'">Historial</a>';
+      var popover = '<a role="button" tabindex="0" id="historial" class="btn btn-danger historial" title="Historial de '+datos[i]["nombre"]+'" data-container="body" data-toggle="popover" data-trigger="click" data-placement="right" data-content="'+mostrar+'">Historial</a>';
       
       $("#historial").popover('dispose');
       $("#historial").remove();
@@ -295,7 +298,7 @@ function mostrarHistorialGeneral(id){
           comentario = "&nbsp;["+comentario+"]";
         }
         //mostrar += j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["entidad"]+"/"+datos[i]["nombre"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"<br>";
-        mostrar += "<a href='editarMovimiento.php?id="+datos[i]["idmov"]+"' target='_blank' class='linkHistorial'>"+j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["codigo"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"</a><br>";
+        mostrar += "<a href='editarMovimiento.php?id="+datos[i]["idmov"]+"' target='_blank' class='linkHistorialGeneral'>"+j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["codigo"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"</a><br>";
       }
       var titulo = '&Uacute;ltimos '+limiteHistorialGeneral+' movimientos:';
       var popover = '<a role="button" tabindex="0" id="historialGeneral" class="btn btn-primary" title="'+titulo+'" data-container="#gralHistory" data-toggle="popover" data-trigger="click" data-placement="left" data-content="'+mostrar+'">Últimos '+limiteHistorialGeneral+' Movimientos</a>';
@@ -3038,7 +3041,9 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         if (idProds[j] === undefined) {
           idProds[j] = '';
         }
-        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds[j]+'&ent='+ent+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipo+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        var tipoUrl = encodeURI(tipo);
+        
+        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds[j]+'&ent='+ent+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipoUrl+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         mostrar += '</div>';
         $("#pills-tabContent").append(mostrar);
@@ -3047,7 +3052,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
       }/// FIN del if de totalDatos>1  
       else {
         mostrar += "<br><hr><h3>No existen registros para la consulta realizada.</h3><hr>";
-        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds[j]+'&ent='+ent+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipo+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds[j]+'&ent='+ent+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipoUrl+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         mostrar += '</div>';
         $("#pills-tabContent").append(mostrar);
@@ -3559,7 +3564,7 @@ function realizarBusqueda(){
           queries[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";
           consultasCSV[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";
         }
-      }  
+      }
       mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, radioFecha, d1, d2, tipo, idUser);
     }/// Fin del IF de validado
     else {
@@ -4837,7 +4842,7 @@ function todo () {
                                           var p = temp9[1];
                                           var d1 = temp10[1];
                                           var d2 = temp11[1];
-                                          var tipo = temp12[1];
+                                          var tipo = decodeURI(temp12[1]);
                                           var user = temp13[1];
                                           setTimeout(function(){cargarFormBusqueda("#fila", hint, tipMov, id, ent, zip, planilla, marcaAgua, p, d1, d2, tipo, user)}, 30); 
                                         }
@@ -5984,10 +5989,17 @@ $(document).on("keypress", "#tamHistorialProducto", function(e) {
 
 ///Disparar función al hacer CLICK a uno de los links del POPOVER con el HISTORIALGRAL.
 ///Esto hace que se cierre el popover.
-$(document).on("click", ".linkHistorial", function(){
+$(document).on("click", ".linkHistorialGeneral", function(){
   $("#historialGeneral").popover('hide');
 });
-/********** fin on("click", ".linkHistorial", function() **********/
+/********** fin on("click", ".linkHistorialGeneral", function() **********/
+
+///Disparar función al hacer CLICK a uno de los links del POPOVER con el HISTORIAL PRODUCTO.
+///Esto hace que se cierre el popover.
+$(document).on("click", ".linkHistorialProducto", function(){
+  $("#historial").popover('hide');
+});
+/********** fin on("click", ".linkHistorialGeneral", function() **********/
 
 /*****************************************************************************************************************************
 /// **************************************************** FIN MODAL PARÁMETROS ************************************************

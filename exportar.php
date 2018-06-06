@@ -48,7 +48,8 @@ $parteTipo = stripos($tipoConsulta, ": ");
 if ($parteTipo !== false){
   $parte2 = explode(": ", $tipoConsulta);
   $tempParte2 = explode("/", $parte2[1]);
-  $fechaTemp0 = $tempParte2[0].$tempParte2[1].$tempParte2[2];
+  $añoCorto = substr($tempParte2[2], 2, 2);
+  $fechaTemp0 = $tempParte2[0].$tempParte2[1].$añoCorto;
   $ultimaParte = utf8_decode("al_".$fechaTemp0);
 }
 
@@ -93,7 +94,8 @@ $aguja = array(0=>" ", 1=>".", 2=>"[", 3=>"]", 4=>"*", 5=>"/", 6=>"\\", 7=>"?", 
 
 ///Se define el tamaño máximo aceptable para el nombre teniendo en cuenta que el excel admite un máximo de 31 caracteres, y que además, 
 ///ya se tienen 6 fijos del stock_ (movs_ es uno menos).
-$tamMaximoNombre = 25;
+$tamMaximoNombreEntidad = 20;
+$tamMaximoNombreProducto = 20;
 
 if (isset($_POST["nombreProducto"])){
   $nombreProducto1 = $_POST["nombreProducto"];
@@ -106,15 +108,15 @@ if (isset($_POST["nombreProducto"])){
   $entidad1 = explode("-", $tempo[1]);
   $nombreProducto = trim($entidad1[3]);
   $nombreProductoMostrar1 = str_replace($aguja, "", $nombreProducto);
-  $nombreProductoMostrar = substr($nombreProductoMostrar1, 0, $tamMaximoNombre);
+  $nombreProductoMostrar = substr($nombreProductoMostrar1, 0, $tamMaximoNombreProducto);
 }
 if (isset($_POST["entidad_$indice"])){
   $entidad = $_POST["entidad_$indice"];
   $entidadMostrar1 = str_replace($aguja, "", $entidad);
-  $entidadMostrar = substr($entidadMostrar1, 0, $tamMaximoNombre);
+  $entidadMostrar = substr($entidadMostrar1, 0, $tamMaximoNombreEntidad);
   if ($entidad === 'todos') {
     $entidad = 'todas las entidades';
-    $entidadMostrar = 'Todos';
+    $entidadMostrar = 'TODOS';
   }
 }
 //echo "id: $id<br>query: $query<br>consultaCSV: $consultaCSV<br>campos: $campos1<br>largos: $largos<br>mostrar: $mostrar1<br>tipoConsulta: $tipoConsulta<br>idProd: $idProd<br>nombreProducto: $nombreProducto<br>entidad: $entidad"
@@ -136,19 +138,22 @@ array_push($largoCampos, $largoTotal);
 switch ($id) {
   case "1": $tituloTabla = "LISTADO DE STOCK";
             $titulo = "STOCK POR ENTIDAD";
-            $nombreReporte = "stock_".$entidadMostrar;
+            $nombreReporte = "stk_".$entidadMostrar;
+            if ($entidadMostrar === 'TODOS'){
+              $nombreReporte = "stk".$entidadMostrar;
+            }
             $asunto = "Reporte con el Stock de la Entidad";
             $indiceStock = 10;
             break;
   case "2": $tituloTabla = "STOCK DEL PRODUCTO";
             $titulo = "STOCK DEL PRODUCTO";
-            $nombreReporte = "stock_".$nombreProductoMostrar;
+            $nombreReporte = "stk_".$nombreProductoMostrar;
             $asunto = "Reporte con el stock del Producto";
             $indiceStock = 10;
             break;
   case "3": $tituloTabla = "STOCK TOTAL EN BÓVEDA";
             $titulo = "PLÁSTICOS EN BÓVEDA";
-            $nombreReporte = "stockBoveda";
+            $nombreReporte = "stkBOVEDA";
             $asunto = "Reporte con el total de tarjetas en stock";
             $indiceStock = 2;
             break;
@@ -189,19 +194,19 @@ if (($id === "4")||($id === "5")){
   }
   switch ($tipo){
     case "todos": $tit = "MOVIMIENTOS";
-                  $nomRep = "movs_";
+                  $nomRep = "mov_";
                   break;
     case "Retiro": $tit = "RETIROS"; 
-                   $nomRep = "retiros_";
+                   $nomRep = "ret_";
                    break;
     case "Ingreso": $tit = "INGRESOS";
-                    $nomRep = "ingresos_";
+                    $nomRep = "ing_";
                     break;
     case "Renovación": $tit = "RENOVACIONES";
-                       $nomRep = "renos_";
+                       $nomRep = "ren_";
                        break;
     case "Destrucción": $tit = "DESTRUCCIONES";
-                        $nomRep = "destrucciones_";
+                        $nomRep = "des_";
                         break;
     default: break;
   }
@@ -321,7 +326,7 @@ switch ($id) {
   default: break;
 }    
 
-$timestamp = date('dmY_His');
+$timestamp = date('dmy_His');
 $nombreArchivo = $nombreReporte."_".$timestamp.".pdf";
 $salida = $dir.$nombreArchivo;
 

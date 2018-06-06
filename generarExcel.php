@@ -27,7 +27,7 @@ require_once("data/config.php");
 ///*********************************************************************** FIN SETEO DE CARPETAS **************************************************************
 
 function generarExcelStock($reg) {
-  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip;
+  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta;
   
   $spreadsheet = new Spreadsheet();
 
@@ -49,21 +49,27 @@ function generarExcelStock($reg) {
   
   ///Trabajo con el nombre para la hoja activa debido a la limitante del largo (31 caracteres):
   ///Además, ya se tienen 8 de la fecha a la cual se consultó el stock
-  $test = stripos($nombreReporte, "al_");
+  
+  $timestamp = date('dmy_His');
+  $timestampCorto = date('dmy');
+  
+  $test = stripos($nombreReporte, "_al_");
   if ($test !== false){
-    $nombreReporteTemp = explode("al_", $nombreReporte);
+    $nombreReporteTemp = explode("_al_", $nombreReporte);
     $parte1 = $nombreReporteTemp[0];
-    if (strlen($parte1) > 23){
-      $parte1Nuevo = substr($parte1, 0, 23);
+    if (strlen($parte1) >= 26){
+      $parte1Nuevo = substr($parte1, 0, 25);
     }
     else {
       $parte1Nuevo = $parte1;
     }
-    $parte2 = $nombreReporteTemp[1];
-    $nombreReporte = $parte1Nuevo.$parte2;
+    $fecha = $nombreReporteTemp[1];
+    $nombreReporte1 = $parte1Nuevo."_".$fecha;
   }
-  
-  $hoja->setTitle($nombreReporte);
+  else {
+    $nombreReporte1 = $nombreReporte."_".$timestampCorto;
+  }
+  $hoja->setTitle($nombreReporte1);
   $hoja->getTabColor()->setRGB('023184');
   
   /*
@@ -81,18 +87,52 @@ function generarExcelStock($reg) {
 
   /**************** FIN PARAMETRIZACIÓN ***************************************/
 
+  $filaEncabezado = '3';
+  $filaUnoDatos = $filaEncabezado + 1;
+  
+  ///*************************************** INICIO formato tipo consulta ******************************
+  $hoja->mergeCells($colId.'1:'.$colStock.'1');
+  $hoja->setCellValue($colId."1", $tipoConsulta);
+  /// Formato del mensaje con el tipo de consulta:
+  $mensajeTipo = $colId.'1:'.$colStock.'1';
+
+  $styleMensajeTipo = array(
+      'font' => array(
+          'bold' => true,
+          'underline' => true,
+        ),
+      'borders' => array(
+              'allBorders' => array(
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                'color' => array('rgb' => '023184'),
+                ),
+              ), 
+    'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'center',
+         'vertical' => 'middle',
+      ),
+      'fill' => array(
+          'color' => array('rgb' => '4acba7'),
+          'fillType' => 'solid',
+        ),
+      );
+  $hoja->getStyle($mensajeTipo)->applyFromArray($styleMensajeTipo);
+  ///***************************************** FIN formato tipo consulta *******************************
+  
+  
   // Agrego los títulos:
   $spreadsheet->setActiveSheetIndex(0)
-              ->setCellValue($colId.'1', 'Id')
-              ->setCellValue($colEntidad.'1', 'Entidad')
-              ->setCellValue($colNombre.'1', 'Nombre')
-              ->setCellValue($colBin.'1', 'BIN')
-              ->setCellValue($colCodEMSA.'1', 'Cód. EMSA')
-              ->setCellValue($colCodOrigen.'1', 'Cód. Origen')
+              ->setCellValue($colId.$filaEncabezado, 'Id')
+              ->setCellValue($colEntidad.$filaEncabezado, 'Entidad')
+              ->setCellValue($colNombre.$filaEncabezado, 'Nombre')
+              ->setCellValue($colBin.$filaEncabezado, 'BIN')
+              ->setCellValue($colCodEMSA.$filaEncabezado, 'Cód. EMSA')
+              ->setCellValue($colCodOrigen.$filaEncabezado, 'Cód. Origen')
               //->setCellValue($colComent.'1', 'Comentarios')
-              ->setCellValue($colStock.'1', 'Stock');
+              ->setCellValue($colStock.$filaEncabezado, 'Stock');
   /// Formato de los títulos:
-  $header = $colId.'1:'.$colStock.'1';
+  $header = $colId.$filaEncabezado.':'.$colStock.$filaEncabezado;
   $styleHeader = array(
     'fill' => array(
         'color' => array('rgb' => 'AEE2FA'),
@@ -134,7 +174,7 @@ function generarExcelStock($reg) {
     array_push($dato, $al2);
     
     /// Acomodo el índice pues empieza en 0, y en el 1 están los nombres de los campos:
-    $i = $i + 2;
+    $i = $i + $filaEncabezado + 1;
     $celda = $colId.$i;
     $hoja->fromArray($dato, '""', $celda);
   }
@@ -146,7 +186,7 @@ function generarExcelStock($reg) {
   $celdaTotalTarjetas = $colStock.$j;
   ///Se comenta agregado de línea con el total pasado dado que ahora el total se calcula usando una fórmula de excel:
   //$hoja->setCellValue($celdaTotalTarjetas, $total);
-  $hoja->setCellValue($celdaTotalTarjetas, '=sum('.$colStock.'2:'.$colStock.$i.')');
+  $hoja->setCellValue($celdaTotalTarjetas, '=sum('.$colStock.$filaUnoDatos.':'.$colStock.$i.')');
 
 
   /// Defino el formato para la celda con el total de tarjetas:
@@ -211,7 +251,7 @@ function generarExcelStock($reg) {
           'formatCode' => '[Blue]#,##0',
       ),
   );
-  $rangoStock = ''.$colStock.'2:'.$colStock.$i.'';
+  $rangoStock = ''.$colStock.$filaUnoDatos.':'.$colStock.$i.'';
   $hoja->getStyle($rangoStock)->applyFromArray($styleColumnaStock);
 
   /// Defino estilos para las alarmas 1 y 2:
@@ -230,7 +270,7 @@ function generarExcelStock($reg) {
   );
 
   /// Aplico color de fondo de la columna de stock según el valor y las alarmas para dicho produco:
-  for ($k = 2; $k <= $i; $k++) {
+  for ($k = $filaUnoDatos; $k <= $i; $k++) {
     $al1 = $colAl1.$k;
     $al2 = $colAl2.$k;
     $celda = $colStock.$k;
@@ -315,7 +355,7 @@ function generarExcelStock($reg) {
 */
 
   /// Defino el rango de celdas con datos para poder darle formato a todas juntas:
-  $rango = $colId."1:".$colStock.$j;
+  $rango = $colId.$filaEncabezado.":".$colStock.$j;
   /// Defino el formato para las celdas:
   $styleGeneral = array(
       'borders' => array(
@@ -336,8 +376,6 @@ function generarExcelStock($reg) {
     {
     $hoja->getColumnDimension(chr($col))->setAutoSize(true);   
   }
-  
-  $timestamp = date('dmY_His');
   
   switch ($planilla){
     case "nada": break;
@@ -370,7 +408,7 @@ function generarExcelStock($reg) {
 }
 
 function generarExcelBoveda($registros) {
-  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip;
+  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta;
   
   $spreadsheet = new Spreadsheet();
 
@@ -391,16 +429,57 @@ function generarExcelBoveda($registros) {
   /// Declaro hoja activa:
   $hoja = $spreadsheet->getSheet(0);
 
-  $hoja->setTitle($nombreReporte);
+  $timestamp = date('dmy_His');
+  $timestampCorto = date('dmy');
+  $dia = date('d');
+  $mes = date('m');
+  $año = date('y');
+  $fecha = $dia.'/'.$mes.'/'.$año;
+  
+  $hoja->setTitle($nombreReporte."_".$timestampCorto);
   $hoja->getTabColor()->setRGB('46A743');
 
+  $filaEncabezado = '3';
+  $filaUnoDatos = $filaEncabezado + 1;
+  
+  ///*************************************** INICIO formato tipo consulta ******************************
+  $hoja->mergeCells('A1:C1');
+  $hoja->setCellValue('A1', $tipoConsulta." al: ".$fecha);
+  /// Formato del mensaje con el tipo de consulta:
+  $mensajeTipo = 'A1:C1';
+
+  $styleMensajeTipo = array(
+      'font' => array(
+          'bold' => true,
+          'underline' => true,
+        ),
+      'borders' => array(
+              'allBorders' => array(
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                'color' => array('rgb' => '023184'),
+                ),
+              ), 
+    'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'center',
+         'vertical' => 'middle',
+      ),
+      'fill' => array(
+          'color' => array('rgb' => '4acba7'),
+          'fillType' => 'solid',
+        ),
+      );
+  $hoja->getStyle($mensajeTipo)->applyFromArray($styleMensajeTipo);
+  ///***************************************** FIN formato tipo consulta *******************************
+  
   // Agrego los títulos:
   $spreadsheet->setActiveSheetIndex(0)
-              ->setCellValue('A1', 'Id')
-              ->setCellValue('B1', 'Entidad')
-              ->setCellValue('C1', 'Stock');
+              ->setCellValue('A'.$filaEncabezado, 'Id')
+              ->setCellValue('B'.$filaEncabezado, 'Entidad')
+              ->setCellValue('C'.$filaEncabezado, 'Stock');
+  
   /// Formato de los títulos:
-  $header = 'A1:C1';
+  $header = 'A'.$filaEncabezado.':C'.$filaEncabezado;
   $styleHeader = array(
     'fill' => array(
         'color' => array('rgb' => 'AEE2FA'),
@@ -418,7 +497,7 @@ function generarExcelBoveda($registros) {
   /// Datos de los campos:
   foreach ($registros as $i => $dato) {
     /// Acomodo el índice pues empieza en 0, y en el 1 están los nombres de los campos:
-    $i = $i + 2;
+    $i = $i + $filaUnoDatos;
     $celda = 'A'.$i;
     $hoja->fromArray($dato, ' ', $celda);
   }
@@ -430,8 +509,7 @@ function generarExcelBoveda($registros) {
   $celdaTotalTarjetas = "C".$j;
   ///Se comenta agregado de línea con el total pasado dado que ahora el total se calcula usando una fórmula de excel:
   //$hoja->setCellValue($celdaTotalTarjetas, $total);
-  $hoja->setCellValue($celdaTotalTarjetas, '=sum(C2:C'.$i.')');
-
+  $hoja->setCellValue($celdaTotalTarjetas, '=sum(C'.$filaUnoDatos.':C'.$i.')');
 
   /// Defino el formato para la celda con el total de tarjetas:
   $styleTotalPlasticos = array(
@@ -504,7 +582,7 @@ function generarExcelBoveda($registros) {
   }
 
   /// Defino el rango de celdas con datos para poder darle formato a todas juntas:
-  $rango = "A1:C".$j;
+  $rango = "A".$filaEncabezado.":C".$j;
   /// Defino el formato para las celdas:
   $styleGeneral = array(
       'borders' => array(
@@ -520,10 +598,8 @@ function generarExcelBoveda($registros) {
   );
   $hoja->getStyle($rango)->applyFromArray($styleGeneral);
 
-  $rangoStock = 'C2:C'.$i.'';
+  $rangoStock = 'C'.$filaUnoDatos.':C'.$i.'';
   $hoja->getStyle($rangoStock)->applyFromArray($styleColumnaStock);
-  
-  $timestamp = date('dmY_His');
   
   switch ($planilla){
     case "nada": break;
@@ -531,7 +607,7 @@ function generarExcelBoveda($registros) {
                     $pwdPlanilla = $pwdZip;
                   }
                   break;
-    case "fecha": $pwdPlanilla = $timestamp; 
+    case "fecha": $pwdPlanilla = $timestampCorto; 
                   break;
     case "random": $pwdPlanilla = $pwdPlanillaManual;
                    break;
@@ -556,7 +632,7 @@ function generarExcelBoveda($registros) {
 }
 
 function generarExcelMovimientos($registros) {
-  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip;
+  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta;
   
   $spreadsheet = new Spreadsheet();
 
@@ -579,7 +655,10 @@ function generarExcelMovimientos($registros) {
   /// Declaro hoja activa:
   $hoja = $spreadsheet->getSheet(0);
 
-  $hoja->setTitle($nombreReporte);
+  $timestamp = date('dmy_His');
+  $timestampCorto = date('dmy');
+  
+  $hoja->setTitle($nombreReporte."_".$timestampCorto);
   $hoja->getTabColor()->setRGB('E02309');
   ///************************************ FIN PARAMETROS BASICOS ***************************************
 
@@ -604,23 +683,58 @@ function generarExcelMovimientos($registros) {
   $colDestrucciones = chr(ord($colId)+14);
   $colConsumos = chr(ord($colId)+15);
   $colIngresos = chr(ord($colId)+16);
+  
+  $filaEncabezado = '3';
+  $filaUnoDatos = $filaEncabezado + 1;
+  
+  ///*************************************** INICIO formato tipo consulta ******************************
+  $hoja->mergeCells($colId.'1:'.$colCantidad.'1');
+  $hoja->setCellValue($colId."1", $tipoConsulta);
+  /// Formato del mensaje con el tipo de consulta:
+  $mensajeTipo = $colId.'1:'.$colCantidad.'1';
+
+  $styleMensajeTipo = array(
+      'font' => array(
+          'bold' => true,
+          'underline' => true,
+        ),
+      'borders' => array(
+              'allBorders' => array(
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                'color' => array('rgb' => '023184'),
+                ),
+              ), 
+    'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'center',
+         'vertical' => 'middle',
+      ),
+      'fill' => array(
+          'color' => array('rgb' => '4acba7'),
+          'fillType' => 'solid',
+        ),
+      );
+  $hoja->getStyle($mensajeTipo)->applyFromArray($styleMensajeTipo);
+  ///***************************************** FIN formato tipo consulta *******************************
+  
+  
   ///**************************************** INICIO formato encabezado ********************************
   // Agrego los títulos:
   $spreadsheet->setActiveSheetIndex(0)
-              ->setCellValue($colId.'1', 'Id')
-              ->setCellValue($colFecha.'1', 'Fecha')
-              ->setCellValue($colHora.'1', 'Hora')
-              ->setCellValue($colEntidad.'1', 'Entidad')
-              ->setCellValue($colNombre.'1', 'Nombre')
-              ->setCellValue($colBin.'1', 'BIN')
-              ->setCellValue($colCodEMSA.'1', 'Cód. EMSA')
-              ->setCellValue($colCodOrigen.'1', 'Cód. Origen')
-              ->setCellValue($colTipo.'1', 'Tipo')
-              ->setCellValue($colCantidad.'1', 'Cantidad')
+              ->setCellValue($colId.$filaEncabezado, 'Id')
+              ->setCellValue($colFecha.$filaEncabezado, 'Fecha')
+              ->setCellValue($colHora.$filaEncabezado, 'Hora')
+              ->setCellValue($colEntidad.$filaEncabezado, 'Entidad')
+              ->setCellValue($colNombre.$filaEncabezado, 'Nombre')
+              ->setCellValue($colBin.$filaEncabezado, 'BIN')
+              ->setCellValue($colCodEMSA.$filaEncabezado, 'Cód. EMSA')
+              ->setCellValue($colCodOrigen.$filaEncabezado, 'Cód. Origen')
+              ->setCellValue($colTipo.$filaEncabezado, 'Tipo')
+              ->setCellValue($colCantidad.$filaEncabezado, 'Cantidad')
               /*->setCellValue($colComent.'1', 'Comentarios')*/;
   
   /// Formato de los títulos:
-  $header = $colId.'1:'.$colCantidad.'1';
+  $header = $colId.$filaEncabezado.':'.$colCantidad.$filaEncabezado;
   $styleHeader = array(
       'font' => array(
           'bold' => true,
@@ -668,7 +782,7 @@ function generarExcelMovimientos($registros) {
     array_push($dato, $tipo);
     array_push($dato, $cantidad);
     /// Acomodo el índice pues empieza en 0, y en el 1 están los nombres de los campos:
-    $i = $i + 2;
+    $i = $i + $filaEncabezado + 1;
     $celda = $colId.$i;
     $hoja->fromArray($dato, ' ', $celda);
   }
@@ -1080,7 +1194,7 @@ function generarExcelMovimientos($registros) {
           'formatCode' => '[Blue]#,##0',
       ),
   );
-  $rangoStock = $colCantidad.'2:'.$colCantidad.$i.'';
+  $rangoStock = $colCantidad.$filaUnoDatos.':'.$colCantidad.$i.'';
   $hoja->getStyle($rangoStock)->applyFromArray($styleColumnaCantidad);
   ///*********************************** FIN Formato para la CANTIDAD ************************************
   
@@ -1099,13 +1213,13 @@ function generarExcelMovimientos($registros) {
           'formatCode' => 'DD/MM/YYYY',
       ),
   );
-  $rangoFecha = $colFecha.'2:'.$colFecha.$i.'';
+  $rangoFecha = $colFecha.$filaUnoDatos.':'.$colFecha.$i.'';
   $hoja->getStyle($rangoFecha)->applyFromArray($styleColumnaFecha);
   ///*********************************** FIN Formato para la FECHA: ************************************
   
   ///**************************************** FORMATO GENERAL: *****************************************
   /// Defino el rango de celdas con datos para poder darle formato a todas juntas:
-  $rango = $colId."1:".$colCantidad.$i;
+  $rango = $colId.$filaEncabezado.":".$colCantidad.$i;
   /// Defino el formato para las celdas:
   $styleGeneral = array(
       'borders' => array(
@@ -1137,15 +1251,13 @@ function generarExcelMovimientos($registros) {
   $hoja->getColumnDimension($colVacia1)->setWidth(2);
   ///****************************************** FIN AJUSTE ANCHO COLUMNAS ******************************
   
-  $timestamp = date('dmY_His');
-  
   switch ($planilla){
     case "nada": break;
     case "misma": if ($zipSeguridad !== 'nada') {
                     $pwdPlanilla = $pwdZip;
                   }
                   break;
-    case "fecha": $pwdPlanilla = $timestamp; 
+    case "fecha": $pwdPlanilla = $timestampCorto; 
                   break;
     case "random": $pwdPlanilla = $pwdPlanillaManual;
                    break;
