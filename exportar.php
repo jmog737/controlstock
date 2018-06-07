@@ -139,9 +139,9 @@ switch ($id) {
   case "1": $tituloTabla = "LISTADO DE STOCK";
             $titulo = "STOCK POR ENTIDAD";
             $nombreReporte = "stk_".$entidadMostrar;
-            if ($entidadMostrar === 'TODOS'){
-              $nombreReporte = "stk".$entidadMostrar;
-            }
+//            if ($entidadMostrar === 'TODOS'){
+//              $nombreReporte = "stk".$entidadMostrar;
+//            }
             $asunto = "Reporte con el Stock de la Entidad";
             $indiceStock = 10;
             break;
@@ -153,7 +153,7 @@ switch ($id) {
             break;
   case "3": $tituloTabla = "STOCK TOTAL EN BÓVEDA";
             $titulo = "PLÁSTICOS EN BÓVEDA";
-            $nombreReporte = "stkBOVEDA";
+            $nombreReporte = "stk_BOVEDA";
             $asunto = "Reporte con el total de tarjetas en stock";
             $indiceStock = 2;
             break;

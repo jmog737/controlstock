@@ -221,10 +221,10 @@ function showHint(str, id, seleccionado) {
  * @param {String} prod String con el id del producto a consultar.
 */
 function mostrarHistorial(prod){
-  if ($("#historial").length > 0){
+  //if ($("#historial").length > 0){
     $("#historial").popover('dispose');
-    $("#historial").remove();
-  }
+    $("#historial").remove();//alert('fsd');
+  //}
   
   ///Vuelvo a redefinir limiteHistorialProducto para que tome el último valor en caso de que se haya cambiado con el modal.
   var limiteHistorialProducto = parseInt($("#limiteHistorialProducto").val(), 10);
@@ -3180,6 +3180,7 @@ function realizarBusqueda(){
       secTemp = '0'+secTemp;
     } 
     var horaMostrar = hourTemp+':'+minTemp;
+    
     switch (radio) {
       case 'entidadStock':  delete nombres;
                             var nombres = new Array();
@@ -3223,28 +3224,35 @@ function realizarBusqueda(){
                               return;
                             }
                             break;
-      case 'productoStock': for (var i in idProds){
-                              if ((idProds[i] === 'NADA') || (nombresProductos[i] === '')){
-                                alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
-                                document.getElementById("productoStock").focus();
-                                validado = false;
-                                return false;
+      case 'productoStock': if (idProds.length > 0){
+                              for (var i in idProds){
+                                if ((idProds[i] === 'NADA') || (nombresProductos[i] === '')){
+                                  alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
+                                  document.getElementById("productoStock").focus();
+                                  validado = false;
+                                  return false;
+                                }
+                                else {
+                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                                  query += " from productos where idProd="+idProds[i];
+                                  consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
+                                  consultaCSV += " from productos where idProd="+idProds[i];
+                                  tipoConsulta = 'Stock del producto <b><i>'+nombres[i]+'</i></b> al d&iacute;a: '+hoyMostrar+' ('+horaMostrar+')';
+                                  queries.push(query);
+                                  consultasCSV.push(consultaCSV);
+                                  tipoConsultas.push(tipoConsulta);
+                                  validarFecha = false;
+                                  validarTipo = false;
+                                  validarUser = false;
+                                }
+                                prodHint = $("#productoStock").val();
                               }
-                              else {
-                                query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
-                                query += " from productos where idProd="+idProds[i];
-                                consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
-                                consultaCSV += " from productos where idProd="+idProds[i];
-                                tipoConsulta = 'Stock del producto <b><i>'+nombres[i]+'</i></b> al d&iacute;a: '+hoyMostrar+' ('+horaMostrar+')';
-                                queries.push(query);
-                                consultasCSV.push(consultaCSV);
-                                tipoConsultas.push(tipoConsulta);
-                                validarFecha = false;
-                                validarTipo = false;
-                                validarUser = false;
-                              }
-                              prodHint = $("#productoStock").val();
-                            }  
+                            }
+                            else {
+                              alert('Para realizar una consulta de stock por producto hay que elegir al menos un producto.\n¡Por favor verifique!.');
+                              $("#productoStock").focus();
+                              validado = false;
+                            } 
                             break;
       case 'totalStock':  query = "select entidad, sum(stock) as subtotal from productos where estado='activo' group by entidad";
                           queries[0] = query;
@@ -3333,7 +3341,8 @@ function realizarBusqueda(){
                                 validarUser = true;
                                 ordenFecha = true;
                                 break;   
-      case 'productoStockViejo':  for (var k in idProds){
+      case 'productoStockViejo':  if (idProds.length > 0){
+                                    for (var k in idProds){
                                     query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                                     query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where idprod="+idProds[k];
                                     consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
@@ -3356,8 +3365,15 @@ function realizarBusqueda(){
                                     tipoConsultas.push(tipoConsulta);
                                     prodHint = $("#productoStock").val();
                                   }
+                                  }
+                                  else {
+                                    alert('Para realizar una consulta de stock por producto hay que elegir al menos un producto.\n¡Por favor verifique!.');
+                                    $("#productoStock").focus();
+                                    validado = false;
+                                  }
                                   break;
-      case 'productoMovimiento':  for (var k in idProds){
+      case 'productoMovimiento':  if (idProds.length > 0){
+                                  for (var k in idProds){
                                     query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                                     query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where ";
                                     //consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
@@ -3381,6 +3397,12 @@ function realizarBusqueda(){
                                     tipoConsulta = 'Movimientos del producto <b><i>'+nombres[k]+"</i></b>";
                                     tipoConsultas.push(tipoConsulta);
                                     prodHint = $("#productoMovimiento").val();
+                                  }
+                                  }
+                                  else {
+                                    alert('Para realizar una consulta de movimientos por producto hay que elegir al menos un producto.\n¡Por favor verifique!.');
+                                    $("#productoMovimiento").focus();
+                                    validado = false;
                                   }
                                   break;
       default: break;
@@ -3568,7 +3590,7 @@ function realizarBusqueda(){
       mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, radioFecha, d1, d2, tipo, idUser);
     }/// Fin del IF de validado
     else {
-      alert('NO validado');//Igualmente no llega a esta etapa dado que al no ser válida retorna falso y sale.    
+      //alert('NO validado');//Igualmente no llega a esta etapa dado que al no ser válida retorna falso y sale.    
     } 
   //}
 }

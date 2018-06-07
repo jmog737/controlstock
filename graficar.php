@@ -734,7 +734,7 @@ $pdfGrafica = new PDF();
 //Agrego una página al documento:
 $pdfGrafica->AddPage();
 
-$timestamp = date('dmY_His');
+$timestamp = date('dmy_His');
 
 ///Caracteres a ser reemplazados en caso de estar presentes en el nombre del producto o la entidad
 ///Esto se hace para mejorar la lectura (en caso de espacios en blanco), o por requisito para el nombre de la hoja de excel
@@ -770,7 +770,7 @@ else {
 }
 $nombreProductoMostrar1 = str_replace($aguja, "", $nombreProducto);
 $nombreProductoMostrar = substr($nombreProductoMostrar1, 0, $tamMaximoNombre);
-$nombreGrafica = "grafica_".$nombreProductoMostrar."_";
+$nombreGrafica = "gca_".$nombreProductoMostrar."_";
 
 $nombreArchivo = $nombreGrafica.$timestamp.".pdf";
 $salida = $dirGraficas.$nombreArchivo;
