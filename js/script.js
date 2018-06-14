@@ -1692,6 +1692,9 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                             var nombre = datos[i]['nombre_plastico'];
                             var bin = datos[i]['bin'];
                             var snapshot = datos[i]['snapshot'];
+                            if ((snapshot === '')||(snapshot === undefined)||(snapshot === null)){
+                              snapshot = 'noDisponible1.png';
+                            }
                             var codigo_emsa = datos[i]['codigo_emsa'];
                             var codigo_origen = datos[i]['codigo_origen'];
                             if ((codigo_origen === '')||(codigo_origen === null)) 
@@ -1761,7 +1764,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                             tabla += '<tr>\n\
                                         <td>'+offset+'</td>\n\
                                         <td style="text-align: left">'+entidad+'</td>\n\
-                                        <td>'+nombre+'</td>\n\
+                                        <td nowrap>'+nombre+'</td>\n\
                                         <td nowrap>'+bin+'</td>\n\
                                         <td>'+codigo_emsa+'</td>\n\
                                         <td>'+codigo_origen+'</td>\n\
@@ -1823,6 +1826,9 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                           var alarma2 = parseInt(datos[0]['alarma2'], 10);
                           var stock = parseInt(datos[0]['stock'], 10);
                           var snapshot = datos[0]['snapshot'];
+                          if ((snapshot === '')||(snapshot === undefined)||(snapshot === null)){
+                            snapshot = 'noDisponible1.png';
+                          }
                           var ultimoMovimiento = datos[0]['ultimoMovimiento'];
                           if (ultimoMovimiento === null) {
                               ultimoMovimiento = '';
@@ -1919,6 +1925,9 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   var alarma2 = parseInt(datos[0]['alarma2'], 10);
                                   var stock = parseInt(subtotales["stockViejo"][produ], 10);
                                   var snapshot = datos[0]['snapshot'];
+                                  if ((snapshot === '')||(snapshot === undefined)||(snapshot === null)){
+                                    snapshot = 'noDisponible1.png';
+                                  }
                                   var ultimoMovimiento = datos[0]['ultimoMovimiento'];
                                   if (ultimoMovimiento === null) {
                                       ultimoMovimiento = '';
@@ -2069,7 +2078,10 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     {
                                     codigo_origen = 'NO Ingresado';
                                   }
-                                  var snapshot = datos[i]['snapshot'];  
+                                  var snapshot = datos[i]['snapshot'];
+                                  if ((snapshot === '')||(snapshot === undefined)||(snapshot === null)){
+                                    snapshot = 'noDisponible1.png';
+                                  }
                                   var ultimoMovimiento = datos[i]['ultimoMovimiento'];
                                   if (ultimoMovimiento === null) {
                                       ultimoMovimiento = '';
@@ -2105,7 +2117,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   tabla += '<tr>\n\
                                               <td>'+offset+'</td>\n\
                                               <td>'+entidad+'</td>\n\
-                                              <td>'+nombre+'</td>\n\
+                                              <td nowrap>'+nombre+'</td>\n\
                                               <td nowrap>'+bin+'</td>\n\
                                               <td nowrap>'+codigo_emsa+'</td>\n\
                                               <td nowrap>'+codigo_origen+'</td>\n\
@@ -2181,6 +2193,9 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   }
                                   var tipo1 = datos[i]['tipo'];
                                   var snapshot = datos[i]['snapshot'];
+                                  if ((snapshot === '')||(snapshot === undefined)||(snapshot === null)){
+                                    snapshot = 'noDisponible1.png';
+                                  }
                                   var fecha = datos[i]['fecha'];
                                   var hora = datos[i]["hora"];    
 
@@ -2272,7 +2287,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                               <td>'+fecha+'</td>\n\
                                               <td>'+hora+'</td>\n\
                                               <td>'+entidad+'</td>\n\
-                                              <td>'+nombre+'</td>\n\
+                                              <td nowrap>'+nombre+'</td>\n\
                                               <td nowrap>'+bin+'</td>\n\
                                               <td nowrap>'+codigo_emsa+'</td>\n\
                                               <td nowrap>'+codigo_origen+'</td>\n\
@@ -2494,6 +2509,9 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       bin = 'N/D o N/C';
                                     }
                                   var snapshot = datos[0]['snapshot'];
+                                  if ((snapshot === '')||(snapshot === undefined)||(snapshot === null)){
+                                    snapshot = 'noDisponible1.png';
+                                  }
                                   var alarma1 = parseInt(datos[0]['alarma1'], 10);
                                   var alarma2 = parseInt(datos[0]['alarma2'], 10);
                                   var stock = parseInt(datos[0]['stock'],10);
