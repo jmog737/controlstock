@@ -714,10 +714,31 @@ class PDF extends PDF_MC_Table
     if ($q1 !== FALSE) {
       $temp1 = explode(" de todos los tipos", $temp0[1]);
       $nombre1 = strtoupper($temp1[0]);
+      $mostrarResumenProducto = true;
     }
     else {
+      $t0 = stripos($temp0[1], "Retiro");
+      if ($t0 !== FALSE){
+        $tipoMov = "retiros";
+      }
+      else {
+        $t1 = stripos($temp0[1], "Ingreso");
+        if ($t1 !== FALSE){
+          $tipoMov = "ingresos";
+        }
+        else {
+          $t2 = stripos($temp0[1], utf8_decode("Renovación"));
+          if ($t2 !== FALSE){
+            $tipoMov = "renovaciones";
+          }
+          else {
+            $tipoMov = "destrucciones";
+          }
+        }
+      }
       $temp1 = explode(" del tipo", $temp0[1]);
       $nombre1 = strtoupper($temp1[0]);
+      $mostrarResumenProducto = false;
     }
     
     if ($tablaProducto){
@@ -1243,11 +1264,11 @@ class PDF extends PDF_MC_Table
     if ($mostrar[$indTipo]) {
       $this->Cell($largoCampos[$indTipo], $h, $campos[$indTipo], 'LRBT', 0, 'C', true);
     }
-    if ($mostrar[$indCantidad]) {
-      $this->Cell($largoCampos[$indCantidad], $h, $campos[$indCantidad], 'LRBT', 0, 'C', true);
-    }
     if ($mostrar[$indComentarios]) {
       $this->Cell($largoCampos[$indComentarios], $h, $campos[$indComentarios], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indCantidad]) {
+      $this->Cell($largoCampos[$indCantidad], $h, $campos[$indCantidad], 'LRBT', 0, 'C', true);
     }
     if ($mostrar[$indStock]) {
       $this->Cell($largoCampos[$indStock], $h, $campos[$indStock], 'LRBT', 0, 'C', true);
@@ -1287,6 +1308,10 @@ class PDF extends PDF_MC_Table
     $subtotalDestruccionMostrar = 0;
     $totalConsumos = 0;
     $totalConsumosMostrar = 0;
+    $totalRetiro = 0;
+    $totalIngreso = 0;
+    $totalReno = 0;
+    $totalDestruccion = 0;
     ///********************************************************** FIN INICIALIZACIÓN DE CONTADORES ******************************************  
       
     ///*********************************************************** INICIO RECORRIDA REGISTROS ***********************************************
@@ -1315,322 +1340,336 @@ class PDF extends PDF_MC_Table
       //En base a la cantidad de líneas requeridas, calculo el alto de la fila;
       $h0=$h*$nb;
       ///*************************************************** FIN INICIO CÁLCULO DEL ALTO DE LA FILA *****************************************
-      //
+      
+      
       ///***************************************************** INICIO CAMBIO DE PRODUCTO ****************************************************
       ///Chequeo si hay o no un cambio de producto.
       ///Si lo hay, imprimo los contadores del producto anterior, los reseteo, y agrego un espacio de separación:
       if ($productoViejo !== $idProd) {
-        $productoViejo = $idProd;    
-        /// A definir más adelante el color para el fondo del separador. Por ahora es blanco (es decir, fill está como false):
-        $this->setFillColor(220, 223, 232);
-        //Issue a page break first if needed
-        //$this->CheckPageBreak($h);
-        ///***************************************************** INICIO ESCRITURA RESUMEN ***************************************************
-        $tamSubTotal = $largoCampos[$indCantidad] + $largoCampos[$indComentarios];
-        $tamTextoSubtotal = $tamTabla-$tamSubTotal;
+        $productoViejo = $idProd;
         
-        if ($subtotalRetiro > 0) {
-          $this->SetFont('Courier', 'B', 9);
+        ///Solo si la consulta es de TODOS los TIPOS muestro el detalle:
+        if ($mostrarResumenProducto){  
+          /// A definir más adelante el color para el fondo del separador. Por ahora es blanco (es decir, fill está como false):
           $this->setFillColor(220, 223, 232);
-          $this->SetTextColor(0);  
-          $this->SetX($x);
-          $this->Cell($tamTextoSubtotal,$h, "Total Retiros:",1,0,'C', false);
+          //Issue a page break first if needed
+          //$this->CheckPageBreak($h);
+          ///***************************************************** INICIO ESCRITURA RESUMEN ***************************************************
+          $tamSubTotal = $largoCampos[$indCantidad];// + $largoCampos[$indComentarios];
+          $tamTextoSubtotal = $tamTabla-$tamSubTotal;
 
-          $this->SetFont('Courier', 'BI', 14);
-          //$this->setFillColor(165, 156, 149);
-          //$this->setFillColor(200, 202, 212);
-          $this->setFillColor(137, 216, 255);
-          $this->SetTextColor(0);  
-          $this->Cell($tamSubTotal,$h, $subtotalRetiroMostrar,1,1,'C', true);
-          
-          $subtotalRetiro = 0;
-          $subtotalRetiroMostrar = 0;
-        }
-        
-        if ($subtotalReno > 0){
-          $this->SetFont('Courier', 'B', 9);
-          $this->setFillColor(220, 223, 232);
-          $this->SetTextColor(0); 
-          $this->SetX($x);
-          $this->Cell($tamTextoSubtotal,$h, "Total Renovaciones:",1,0,'C', false);
+          if ($subtotalRetiro > 0) {
+            $this->SetFont('Courier', 'B', 9);
+            $this->setFillColor(220, 223, 232);
+            $this->SetTextColor(0);  
+            $this->SetX($x);
+            $this->Cell($tamTextoSubtotal,$h, "Total Retiros:",1,0,'C', false);
 
-          $this->SetFont('Courier', 'BI', 14);
-          //$this->setFillColor(165, 156, 149);
-          //$this->setFillColor(200, 202, 212);
-          $this->setFillColor(137, 216, 255);
-          $this->SetTextColor(0);  
-          $this->Cell($tamSubTotal,$h, $subtotalRenoMostrar,1,1,'C', true);
-          
-          $subtotalReno = 0;
-          $subtotalRenoMostrar = 0;
-        }
-        
-        if ($subtotalDestruccion > 0) {
-          $this->SetFont('Courier', 'B', 9);
-          $this->setFillColor(220, 223, 232);
-          $this->SetTextColor(0);  
-          $this->SetX($x);
-          $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total Destrucciones:"),1,0,'C', false);
+            $this->SetFont('Courier', 'BI', 14);
+            //$this->setFillColor(165, 156, 149);
+            //$this->setFillColor(200, 202, 212);
+            $this->setFillColor(137, 216, 255);
+            $this->SetTextColor(0);  
+            $this->Cell($tamSubTotal,$h, $subtotalRetiroMostrar,1,1,'R', true);
 
-          $this->SetFont('Courier', 'BI', 14);
-          //$this->setFillColor(165, 156, 149);
-          //$this->setFillColor(200, 202, 212);
-          $this->setFillColor(137, 216, 255);
-          $this->SetTextColor(0);  
-          $this->Cell($tamSubTotal,$h, $subtotalDestruccionMostrar,1,1,'C', true);
-          
-          $subtotalDestruccion = 0;
-          $subtotalDestruccionMostrar = 0;
-        }
-        
-        if ($totalConsumos > 0) {
-          $this->SetFont('Courier', 'B', 9);
-          $this->setFillColor(220, 223, 232);
-          $this->SetTextColor(0);  
-          $this->SetX($x);
-          $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total de Consumos:"),1,0,'C', false);
+            $subtotalRetiro = 0;
+            $subtotalRetiroMostrar = 0;
+          }
 
-          $this->SetFont('Courier', 'BI', 14);
-          //$this->setFillColor(220, 223, 232);
-          $this->setFillColor(2, 185, 240);
-          $this->SetTextColor(0);  
-          $this->Cell($tamSubTotal,$h, $totalConsumosMostrar,1,1,'C', true);
-          
-          $totalConsumos = 0;
-          $totalConsumosMostrar = 0;
-        }
-        
-        if ($subtotalIngreso > 0) {
-          $this->SetFont('Courier', 'B', 9);
-          $this->setFillColor(220, 223, 232);
-          $this->SetTextColor(0);  
-          $this->SetX($x);
-          $this->Cell($tamTextoSubtotal,$h, "Total de Ingresos:",1,0,'C', false);
+          if ($subtotalReno > 0){
+            $this->SetFont('Courier', 'B', 9);
+            $this->setFillColor(220, 223, 232);
+            $this->SetTextColor(0); 
+            $this->SetX($x);
+            $this->Cell($tamTextoSubtotal,$h, "Total Renovaciones:",1,0,'C', false);
 
-          $this->SetFont('Courier', 'BI', 14);
-          //$this->setFillColor(220, 223, 232);
-          //$this->setFillColor(127, 128, 129);
-          $this->setFillColor(95, 243, 137);
-          $this->SetTextColor(0);  
-          $this->Cell($tamSubTotal,$h, $subtotalIngresoMostrar,1,1,'C', true);
-          
-          $subtotalIngreso = 0;
-          $subtotalIngresoMostrar = 0;
-        }
-        ///*************************************************** FIN ESCRITURA RESUMEN ********************************************************
+            $this->SetFont('Courier', 'BI', 14);
+            //$this->setFillColor(165, 156, 149);
+            //$this->setFillColor(200, 202, 212);
+            $this->setFillColor(137, 216, 255);
+            $this->SetTextColor(0);  
+            $this->Cell($tamSubTotal,$h, $subtotalRenoMostrar,1,1,'R', true);
+
+            $subtotalReno = 0;
+            $subtotalRenoMostrar = 0;
+          }
+
+          if ($subtotalDestruccion > 0) {
+            $this->SetFont('Courier', 'B', 9);
+            $this->setFillColor(220, 223, 232);
+            $this->SetTextColor(0);  
+            $this->SetX($x);
+            $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total Destrucciones:"),1,0,'C', false);
+
+            $this->SetFont('Courier', 'BI', 14);
+            //$this->setFillColor(165, 156, 149);
+            //$this->setFillColor(200, 202, 212);
+            $this->setFillColor(137, 216, 255);
+            $this->SetTextColor(0);  
+            $this->Cell($tamSubTotal,$h, $subtotalDestruccionMostrar,1,1,'R', true);
+
+            $subtotalDestruccion = 0;
+            $subtotalDestruccionMostrar = 0;
+          }
+
+          if ($totalConsumos > 0) {
+            $this->SetFont('Courier', 'B', 9);
+            $this->setFillColor(220, 223, 232);
+            $this->SetTextColor(0);  
+            $this->SetX($x);
+            $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total de Consumos:"),1,0,'C', false);
+
+            $this->SetFont('Courier', 'BI', 14);
+            //$this->setFillColor(220, 223, 232);
+            $this->setFillColor(2, 185, 240);
+            $this->SetTextColor(0);  
+            $this->Cell($tamSubTotal,$h, $totalConsumosMostrar,1,1,'R', true);
+
+            $totalConsumos = 0;
+            $totalConsumosMostrar = 0;
+          }
+
+          if ($subtotalIngreso > 0) {
+            $this->SetFont('Courier', 'B', 9);
+            $this->setFillColor(220, 223, 232);
+            $this->SetTextColor(0);  
+            $this->SetX($x);
+            $this->Cell($tamTextoSubtotal,$h, "Total de Ingresos:",1,0,'C', false);
+
+            $this->SetFont('Courier', 'BI', 14);
+            //$this->setFillColor(220, 223, 232);
+            //$this->setFillColor(127, 128, 129);
+            $this->setFillColor(95, 243, 137);
+            $this->SetTextColor(0);  
+            $this->Cell($tamSubTotal,$h, $subtotalIngresoMostrar,1,1,'R', true);
+
+            $subtotalIngreso = 0;
+            $subtotalIngresoMostrar = 0;
+          }
+          ///*************************************************** FIN ESCRITURA RESUMEN ********************************************************
+
+          ///******************************************************* BORDE REDONDEADO DE CIERRE ***********************************************
+          $this->SetFillColor(103, 167, 253);
+          $y = $this->GetY();
+          ///Agrego el rectángulo con el borde redondeado:
+          $this->RoundedRect($x, $y, $largoCampos[$totalCampos], $h, 3.5, '34', 'DF');
+
+          //Genero el espacio en blanco de separación entre los productos:
+          $this->Ln(2*$h);
+          ///*************************************************** FIN BORDE REDONDEADO DE CIERRE ***********************************************
+        }  
         
-        ///******************************************************* BORDE REDONDEADO DE CIERRE ***********************************************
-        $this->SetFillColor(103, 167, 253);
-        $y = $this->GetY();
-        ///Agrego el rectángulo con el borde redondeado:
-        $this->RoundedRect($x, $y, $largoCampos[$totalCampos], $h, 3.5, '34', 'DF');
-        
-        //Genero el espacio en blanco de separación entre los productos:
-        $this->Ln(2*$h);
-        ///*************************************************** FIN BORDE REDONDEADO DE CIERRE ***********************************************
-        
-        ///***************************************** INICIALIZACIÓN CONTADORES PARA NUEVO PRODUCTO ******************************************
+        ///***************************************** INICIALIZACIÓN CONTADORES PARA NUEVO PRODUCTO ********************************************
         switch ($tipo) {
           case "Ingreso": $subtotalIngreso = $cantidad1;
+                          $totalIngreso = $totalIngreso + $cantidad1;
                           $subtotalIngresoMostrar = number_format($subtotalIngreso, 0, ",", ".");
                           break;
           case "Retiro":  $subtotalRetiro = $cantidad1;
+                          $totalRetiro = $totalRetiro + $cantidad1;
                           $subtotalRetiroMostrar = number_format($subtotalRetiro, 0, ",", ".");
                           break;
           case "Renovación":  $subtotalReno = $cantidad1;
-                        $subtotalRenoMostrar = number_format($subtotalReno, 0, ",", ".");
-                        break;
+                              $totalReno = $totalReno + $cantidad1;
+                              $subtotalRenoMostrar = number_format($subtotalReno, 0, ",", ".");
+                              break;
           case "Destrucción": $subtotalDestruccion = $cantidad1;
+                              $totalDestruccion = $totalDestruccion + $cantidad1;
                               $subtotalDestruccionMostrar = number_format($subtotalDestruccion, 0, ",", ".");
                               break;
           default: break;
         }
         $totalConsumos = $subtotalRetiro + $subtotalReno + $subtotalDestruccion;
         $totalConsumosMostrar = number_format($totalConsumos, 0, ",", ".");
-        ///*************************************** FIN INICIALIZACIÓN CONTADORES PARA NUEVO PRODUCTO ****************************************
-        //$this->CheckPageBreak($h);
-        ///********************************************************* AGREGADO DEL ENCABEZADO ************************************************
-        ///Chequeo si en lo que resta de página entra al menos el primer registro del producto cosa de que no quede sólo el encabezado con 
-        ///los campos. Si NO entra, genero una nueva página y agrego el encabezado de la tabla:
-        if($this->GetY()+$h+$h0>$this->PageBreakTrigger){
-          $this->AddPage($this->CurOrientation);
-          ///************************************************************* TITULO ***********************************************************
-          $this->SetFont('Courier', 'B', 12);
-          $this->SetTextColor(0);
-          $this->SetY(25);
-          $this->SetFillColor(167, 166, 173);
-          
-          $sub2 = $subTitulo."(cont.)";
-          $tamSub2 = $this->GetStringWidth($sub2);
-          if ($tamSub2 < $anchoTipo){
-            $anchoSubTitulo = 1.05*$tamSub2;
-          }
-          else {
-            $anchoSubTitulo = $anchoTipo;
-          }
-          $xTipo = round((($anchoPagina - $anchoSubTitulo)/2), 2);
-          $this->SetX($xTipo);
-          
-          $nbSubTitulo1 = $this->NbLines($anchoSubTitulo,$sub2);
-          $hSubTitulo1=$h*$nbSubTitulo1;
-          
-          if ($nbSubTitulo1 > 1) {
-            $this->MultiCell($anchoSubTitulo,$h, $sub2,0, 'C', 1);
-          }
-          else {
-            $this->Cell($anchoSubTitulo,$hSubTitulo1, $sub2,0,0,'C', 1);
+        ///*************************************** FIN INICIALIZACIÓN CONTADORES PARA NUEVO PRODUCTO ******************************************
+        //$this->CheckPageBreak($h);  
+        if ($mostrarResumenProducto){
+          ///********************************************************* AGREGADO DEL ENCABEZADO ************************************************
+          ///Chequeo si en lo que resta de página entra al menos el primer registro del producto cosa de que no quede sólo el encabezado con 
+          ///los campos. Si NO entra, genero una nueva página y agrego el encabezado de la tabla:
+          if($this->GetY()+$h+$h0>$this->PageBreakTrigger){
+            $this->AddPage($this->CurOrientation);
+            ///************************************************************* TITULO ***********************************************************
+            $this->SetFont('Courier', 'B', 12);
+            $this->SetTextColor(0);
+            $this->SetY(25);
+            $this->SetFillColor(167, 166, 173);
+
+            $sub2 = $subTitulo."(cont.)";
+            $tamSub2 = $this->GetStringWidth($sub2);
+            if ($tamSub2 < $anchoTipo){
+              $anchoSubTitulo = 1.05*$tamSub2;
+            }
+            else {
+              $anchoSubTitulo = $anchoTipo;
+            }
+            $xTipo = round((($anchoPagina - $anchoSubTitulo)/2), 2);
+            $this->SetX($xTipo);
+
+            $nbSubTitulo1 = $this->NbLines($anchoSubTitulo,$sub2);
+            $hSubTitulo1=$h*$nbSubTitulo1;
+
+            if ($nbSubTitulo1 > 1) {
+              $this->MultiCell($anchoSubTitulo,$h, $sub2,0, 'C', 1);
+            }
+            else {
+              $this->Cell($anchoSubTitulo,$hSubTitulo1, $sub2,0,0,'C', 1);
+              $this->Ln();
+            }
             $this->Ln();
+            ///************************************************************ FIN TITULO ********************************************************
           }
-          $this->Ln();
-          ///************************************************************ FIN TITULO ********************************************************
-        }
-        ///******************************************************* FIN AGREGADO DEL ENCABEZADO **********************************************
-        
-        ///******************************************************** INICIO CAMPOS NUEVO PRODUCTO ********************************************
-        /// Recupero los índices de cada campo para poder ordenarlos luego:
-        foreach ($campos as $i => $dato3) {
-          switch ($dato3) {
-            case "Id": $indId = $i;
-                       break;
-            case "IdProd": $indProd = $i;
-                           break;
-            case "IdMov": $indMov = $i;
-                           break;             
-            case "Entidad": $indEntidad = $i;
-                            break;
-            case "Nombre": $indNombre = $i;
-                           break;
-            case "Fecha": $indFecha = $i;
-                          break;
-            case "Hora": $indHora = $i;
+          ///******************************************************* FIN AGREGADO DEL ENCABEZADO **********************************************
+          //
+          ///******************************************************** INICIO CAMPOS NUEVO PRODUCTO ********************************************
+          /// Recupero los índices de cada campo para poder ordenarlos luego:
+          foreach ($campos as $i => $dato3) {
+            switch ($dato3) {
+              case "Id": $indId = $i;
                          break;
-            case "Tipo": $indTipo = $i;
-                         break;
-            case "Cantidad":  $indCantidad = $i;
+              case "IdProd": $indProd = $i;
+                             break;
+              case "IdMov": $indMov = $i;
+                             break;             
+              case "Entidad": $indEntidad = $i;
                               break;
-            case "Comentarios": $indComentarios = $i;
+              case "Nombre": $indNombre = $i;
+                             break;
+              case "Fecha": $indFecha = $i;
+                            break;
+              case "Hora": $indHora = $i;
+                           break;
+              case "Tipo": $indTipo = $i;
+                           break;
+              case "Cantidad":  $indCantidad = $i;
                                 break;
-            case "BIN": $indBin = $i;
-                        break;
-            case utf8_decode("Cód. EMSA"): $indCodEMSA = $i;
+              case "Comentarios": $indComentarios = $i;
+                                  break;
+              case "BIN": $indBin = $i;
+                          break;
+              case utf8_decode("Cód. EMSA"): $indCodEMSA = $i;
+                                break;
+              case utf8_decode("Cód. Origen"): $indCodOrigen = $i;
+                                  break;                 
+              case "Contacto":  $indContacto = $i;
+                                break;              
+              case "Snapshot":  $indSnapshot = $i;
+                                break;
+              case "Alarma1": $indAlarma1 = $i;
                               break;
-            case utf8_decode("Cód. Origen"): $indCodOrigen = $i;
-                                break;                 
-            case "Contacto":  $indContacto = $i;
-                              break;              
-            case "Snapshot":  $indSnapshot = $i;
-                              break;
-            case "Alarma1": $indAlarma1 = $i;
-                            break;
-            case "Alarma2": $indAlarma2 = $i;
-                            break;   
-            case "Últ. Mov.":  $indUltMov = $i;
-                              break;
-            case "Stock": $indStock = $i;
-                          break;                 
-            case "ComentariosProd": $indComProd = $i;
-                                    break;  
-            default: break;
+              case "Alarma2": $indAlarma2 = $i;
+                              break;   
+              case "Últ. Mov.":  $indUltMov = $i;
+                                break;
+              case "Stock": $indStock = $i;
+                            break;                 
+              case "ComentariosProd": $indComProd = $i;
+                                      break;  
+              default: break;
+            }
           }
+
+          //$this->SetFillColor(255, 204, 120);
+          $this->SetFillColor(103, 167, 253);
+          $this->SetTextColor(255, 255, 255);
+          $this->SetFont('Courier', 'B', 10);
+          $y = $this->GetY();
+          $this->SetX($x);
+          ///***************************************************** BORDE INICIO NUEVO PRODUCTO ************************************************
+          ///Agrego el rectángulo con el borde redondeado:
+          $this->RoundedRect($x, $y, $largoCampos[$totalCampos], $h, 3.2, '12', 'DF');
+          $this->SetX($x); 
+          ///************************************************** FIN BORDE INICIO NUEVO PRODUCTO ***********************************************
+
+          ///************************************************* INICIO ESCRITURA CAMPOS VISIBLES ***********************************************
+          /// Imprimo los nombres de cada campo, siempre y cuando, se hayan marcado como visibles:
+          /// Esto hay que hacerlo uno a uno para que queden en el orden requerido que es diferente al de la consulta
+          if ($mostrar[$indId]) {
+            $this->Cell($largoCampos[$indId], $h, $campos[$indId], 0, 0, 'C', false);
+          }
+          if ($mostrar[$indFecha]) {
+            $this->Cell($largoCampos[$indFecha], $h, $campos[$indFecha], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indHora]) {
+            $this->Cell($largoCampos[$indHora], $h, $campos[$indHora], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indEntidad]) {
+            $this->Cell($largoCampos[$indEntidad], $h, $campos[$indEntidad], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indProd]) {
+            $this->Cell($largoCampos[$indProd], $h, $campos[$indProd], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indNombre]) {
+            $this->Cell($largoCampos[$indNombre], $h, $campos[$indNombre], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indBin]) {
+            $this->Cell($largoCampos[$indBin], $h, $campos[$indBin], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indCodEMSA]) {
+            $this->Cell($largoCampos[$indCodEMSA], $h, $campos[$indCodEMSA], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indCodOrigen]) {
+            $this->Cell($largoCampos[$indCodOrigen], $h, $campos[$indCodOrigen], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indContacto]) {
+            $this->Cell($largoCampos[$indContacto], $h, $campos[$indContacto], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indSnapshot]) {
+            $this->Cell($largoCampos[$indSnapshot], $h, $campos[$indSnapshot], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indTipo]) {
+            $this->Cell($largoCampos[$indTipo], $h, $campos[$indTipo], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indComentarios]) {
+            $this->Cell($largoCampos[$indComentarios], $h, $campos[$indComentarios], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indCantidad]) {
+            $this->Cell($largoCampos[$indCantidad], $h, $campos[$indCantidad], 0, 0, 'C', false);
+          }
+          if ($mostrar[$indStock]) {
+            $this->Cell($largoCampos[$indStock], $h, $campos[$indStock], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indUltMov]) {
+            $this->Cell($largoCampos[$indUltMov], $h, $campos[$indUltMov], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indAlarma1]) {
+            $this->Cell($largoCampos[$indAlarma1], $h, $campos[$indAlarma1], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indAlarma2]) {
+            $this->Cell($largoCampos[$indAlarma2], $h, $campos[$indAlarma2], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indComProd]) {
+            $this->Cell($largoCampos[$indComProd], $h, $campos[$indComProd], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indMov]) {
+            $this->Cell($largoCampos[$indMov], $h, $campos[$indMov], 'LRBT', 0, 'C', true);
+          }
+          ///*************************************************** FIN ESCRITURA CAMPOS VISIBLES ************************************************
+          $this->Ln();
+          $this->SetX($x);
+          $this->SetFont('Courier', '', 9);
+          $this->SetTextColor(0); 
         }
-        
-        //$this->SetFillColor(255, 204, 120);
-        $this->SetFillColor(103, 167, 253);
-        $this->SetTextColor(255, 255, 255);
-        $this->SetFont('Courier', 'B', 10);
-        $y = $this->GetY();
-        $this->SetX($x);
-        ///***************************************************** BORDE INICIO NUEVO PRODUCTO ************************************************
-        ///Agrego el rectángulo con el borde redondeado:
-        $this->RoundedRect($x, $y, $largoCampos[$totalCampos], $h, 3.2, '12', 'DF');
-        $this->SetX($x); 
-        ///************************************************** FIN BORDE INICIO NUEVO PRODUCTO ***********************************************
-        
-        ///************************************************* INICIO ESCRITURA CAMPOS VISIBLES ***********************************************
-        /// Imprimo los nombres de cada campo, siempre y cuando, se hayan marcado como visibles:
-        /// Esto hay que hacerlo uno a uno para que queden en el orden requerido que es diferente al de la consulta
-        if ($mostrar[$indId]) {
-          $this->Cell($largoCampos[$indId], $h, $campos[$indId], 0, 0, 'C', false);
-        }
-        if ($mostrar[$indFecha]) {
-          $this->Cell($largoCampos[$indFecha], $h, $campos[$indFecha], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indHora]) {
-          $this->Cell($largoCampos[$indHora], $h, $campos[$indHora], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indEntidad]) {
-          $this->Cell($largoCampos[$indEntidad], $h, $campos[$indEntidad], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indProd]) {
-          $this->Cell($largoCampos[$indProd], $h, $campos[$indProd], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indNombre]) {
-          $this->Cell($largoCampos[$indNombre], $h, $campos[$indNombre], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indBin]) {
-          $this->Cell($largoCampos[$indBin], $h, $campos[$indBin], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indCodEMSA]) {
-          $this->Cell($largoCampos[$indCodEMSA], $h, $campos[$indCodEMSA], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indCodOrigen]) {
-          $this->Cell($largoCampos[$indCodOrigen], $h, $campos[$indCodOrigen], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indContacto]) {
-          $this->Cell($largoCampos[$indContacto], $h, $campos[$indContacto], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indSnapshot]) {
-          $this->Cell($largoCampos[$indSnapshot], $h, $campos[$indSnapshot], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indTipo]) {
-          $this->Cell($largoCampos[$indTipo], $h, $campos[$indTipo], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indCantidad]) {
-          $this->Cell($largoCampos[$indCantidad], $h, $campos[$indCantidad], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indComentarios]) {
-          $this->Cell($largoCampos[$indComentarios], $h, $campos[$indComentarios], 0, 0, 'C', false);
-        }
-        if ($mostrar[$indStock]) {
-          $this->Cell($largoCampos[$indStock], $h, $campos[$indStock], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indUltMov]) {
-          $this->Cell($largoCampos[$indUltMov], $h, $campos[$indUltMov], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indAlarma1]) {
-          $this->Cell($largoCampos[$indAlarma1], $h, $campos[$indAlarma1], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indAlarma2]) {
-          $this->Cell($largoCampos[$indAlarma2], $h, $campos[$indAlarma2], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indComProd]) {
-          $this->Cell($largoCampos[$indComProd], $h, $campos[$indComProd], 'LRBT', 0, 'C', true);
-        }
-        if ($mostrar[$indMov]) {
-          $this->Cell($largoCampos[$indMov], $h, $campos[$indMov], 'LRBT', 0, 'C', true);
-        }
-        ///*************************************************** FIN ESCRITURA CAMPOS VISIBLES ************************************************
-        $this->Ln();
-        $this->SetX($x);
-        $this->SetFont('Courier', '', 9);
-        $this->SetTextColor(0); 
-        ///********************************************************** FIN CAMPOS NUEVO PRODUCTO *********************************************
+        ///********************************************************** FIN CAMPOS NUEVO PRODUCTO ***********************************************
+      ///****************************************************** FIN CAMBIO DE PRODUCTO ********************************************************
       }
-      ///****************************************************** FIN CAMBIO DE PRODUCTO ******************************************************
-      
-      ///************************************************************ INCIO ACTUALIZACIÓN CONTADORES ****************************************
       else {
+      ///************************************************************ INCIO ACTUALIZACIÓN CONTADORES ****************************************** 
         switch ($tipo) {
           case "Ingreso": $subtotalIngreso = $subtotalIngreso + $cantidad1;
+                          $totalIngreso = $totalIngreso + $cantidad1;
                           $subtotalIngresoMostrar = number_format($subtotalIngreso, 0, ",", ".");
                           break;
           case "Retiro":  $subtotalRetiro = $subtotalRetiro + $cantidad1;
+                          $totalRetiro = $totalRetiro + $cantidad1;
                           $subtotalRetiroMostrar = number_format($subtotalRetiro, 0, ",", ".");
                           break;
           case "Renovación":  $subtotalReno = $subtotalReno + $cantidad1;
-                        $subtotalRenoMostrar = number_format($subtotalReno, 0, ",", ".");
-                        break;
+                              $totalReno = $totalReno + $cantidad1;
+                              $subtotalRenoMostrar = number_format($subtotalReno, 0, ",", ".");
+                              break;
           case "Destrucción": $subtotalDestruccion = $subtotalDestruccion + $cantidad1;
+                              $totalDestruccion = $totalDestruccion + $cantidad1;
                               $subtotalDestruccionMostrar = number_format($subtotalDestruccion, 0, ",", ".");
                               break;
           default: break;
@@ -1638,9 +1677,10 @@ class PDF extends PDF_MC_Table
         if ($tipo !== 'Ingreso') {
           $totalConsumos = $totalConsumos + $cantidad1;
           $totalConsumosMostrar = number_format($totalConsumos, 0, ",", ".");
-        }
+        }       
       }
       ///************************************************************** FIN ACTUALIZACIÓN CONTADORES ****************************************
+      
       
       ///*********************************************** COMIENZO MANEJO DE DATOS DEL REGISTRO **********************************************       
       /// CAMBIO el CheckPageBreak, por uno personalizado que además de agregar la página, agrega el encabezado:
@@ -1770,11 +1810,11 @@ class PDF extends PDF_MC_Table
         if ($mostrar[$indTipo]) {
           $this->Cell($largoCampos[$indTipo], $h, $campos[$indTipo], 'LRBT', 0, 'C', true);
         }
-        if ($mostrar[$indCantidad]) {
-          $this->Cell($largoCampos[$indCantidad], $h, $campos[$indCantidad], 'LRBT', 0, 'C', true);
-        }
         if ($mostrar[$indComentarios]) {
           $this->Cell($largoCampos[$indComentarios], $h, $campos[$indComentarios], 'LRBT', 0, 'C', true);
+        }
+        if ($mostrar[$indCantidad]) {
+          $this->Cell($largoCampos[$indCantidad], $h, $campos[$indCantidad], 'LRBT', 0, 'C', true);
         }
         if ($mostrar[$indStock]) {
           $this->Cell($largoCampos[$indStock], $h, $campos[$indStock], 'LRBT', 0, 'C', true);
@@ -1961,10 +2001,10 @@ class PDF extends PDF_MC_Table
         //Print the text
         if ($nb1 > 1) {
           $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indEntidad])),1,'C', $fill);
-          }
+        }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indEntidad])),1,'C', $fill);
-          }  
+        }  
         //Put the position to the right of the cell
         $this->SetXY($x1+$w,$y);
       }
@@ -1993,10 +2033,10 @@ class PDF extends PDF_MC_Table
         //Print the text
         if ($nb1 > 1) {
           $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indNombre])),1,'C', $fill);
-          }
+        }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indNombre])),1,'C', $fill);
-          }  
+        }  
         //Put the position to the right of the cell
         $this->SetXY($x1+$w,$y);
       }
@@ -2024,7 +2064,7 @@ class PDF extends PDF_MC_Table
         $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indBin])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indBin])),1,'C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indBin])),1,'C', $fill);
@@ -2043,6 +2083,7 @@ class PDF extends PDF_MC_Table
           {
           $codEMSA = 'NO ingresado';
         }
+        
         $w = $largoCampos[$indCodEMSA];
         $nb1 = $this->NbLines($w, $codEMSA);
 
@@ -2061,7 +2102,7 @@ class PDF extends PDF_MC_Table
         $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h1, $codEMSA,'LRT','C', $fill);
+          $this->MultiCell($w,$h1, $codEMSA,1,'C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, $codEMSA,1,'C', $fill);
@@ -2098,7 +2139,7 @@ class PDF extends PDF_MC_Table
         $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h1, $codOrigen,'LRT','C', $fill);
+          $this->MultiCell($w,$h1, $codOrigen,1,'C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, $codOrigen,1,'C', $fill);
@@ -2130,7 +2171,7 @@ class PDF extends PDF_MC_Table
         $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indUltMov])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indUltMov])),1,'C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indUltMov])),1,'C', $fill);
@@ -2162,7 +2203,7 @@ class PDF extends PDF_MC_Table
         $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indContacto])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indContacto])),1,'C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indContacto])),1,'C', $fill);
@@ -2226,7 +2267,7 @@ class PDF extends PDF_MC_Table
         $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indComProd])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indComProd])),1,'C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indComProd])),1,'C', $fill);
@@ -2258,7 +2299,7 @@ class PDF extends PDF_MC_Table
         $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indTipo])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indTipo])),1,'C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indTipo])),1,'C', $fill);
@@ -2267,6 +2308,38 @@ class PDF extends PDF_MC_Table
         $this->SetXY($x1+$w,$y);
       }
       ///********************************************************** FIN CAMPO TIPO **********************************************************
+      
+      ///******************************************************** CAMPO COMENTARIOS *********************************************************
+      /// Chequeo si se tiene que mostrar el campo Comentarios, y de ser así lo muestro:
+      if ($mostrar[$indComentarios]) 
+        {
+        $w = $largoCampos[$indComentarios];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indComentarios])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indComentarios])),1,'C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indComentarios])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      ///******************************************************** CAMPO COMENTARIOS *********************************************************
       
       ///********************************************************** CAMPO CANTIDAD **********************************************************
       /// Chequeo si se tiene que mostrar el campo Cantidad, y de ser así lo muestro:
@@ -2295,7 +2368,7 @@ class PDF extends PDF_MC_Table
         
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h1, $cantidad,'LRT','R', $fill);
+          $this->MultiCell($w,$h1, $cantidad,1,'R', $fill);
           }
         else {
           $this->MultiCell($w,$h0, $cantidad,1,'R', $fill);
@@ -2332,7 +2405,7 @@ class PDF extends PDF_MC_Table
         $h1 = $h0/$nb1;
         //Print the text
         if ($nb1 > 1) {
-          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indStock])),'LRT','C', $fill);
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indStock])),1,'C', $fill);
           }
         else {
           $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indStock])),1,'C', $fill);
@@ -2405,38 +2478,6 @@ class PDF extends PDF_MC_Table
         $this->SetXY($x1+$w,$y);
       }
       ///******************************************************* FIN CAMPO ALARMA2 **********************************************************
-      
-      ///******************************************************** CAMPO COMENTARIOS *********************************************************
-      /// Chequeo si se tiene que mostrar el campo Comentarios, y de ser así lo muestro:
-      if ($mostrar[$indComentarios]) 
-        {
-        $w = $largoCampos[$indComentarios];
-        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indComentarios])));
-
-        //Save the current position
-        $x1=$this->GetX();
-        $y=$this->GetY();
-        
-        if ($fill) {
-          $f = 'F';
-        }
-        else {
-          $f = '';
-        }
-        //Draw the border
-        $this->Rect($x1,$y,$w,$h0, $f);
-        $h1 = $h0/$nb1;
-        //Print the text
-        if ($nb1 > 1) {
-          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indComentarios])),1,'C', $fill);
-          }
-        else {
-          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indComentarios])),1,'C', $fill);
-          }  
-        //Put the position to the right of the cell
-        $this->SetXY($x1+$w,$y);
-      }
-      ///******************************************************** CAMPO COMENTARIOS *********************************************************
       
       ///************************************************************ CAMPO IDMOV ***********************************************************
       /// Chequeo si se tiene que mostrar el campo IdMov, y de ser así lo muestro:
@@ -2516,102 +2557,129 @@ class PDF extends PDF_MC_Table
     }
     ///******************************************************** FIN AGREGADO DEL ENCABEZADO *************************************************
     
-    ///***************************************************** INICIO RESUMEN DEL ÚLTIMO PRODUCTO *********************************************
-    ///Agrego el resumen para el último producto dado que no habrá nuevo cambio de producto:
-    $tamSubTotal = $largoCampos[$indCantidad] + $largoCampos[$indComentarios];
+    ///********************************************************* AGREGADO DEL RESUMEN FINAL *************************************************
+    $tamSubTotal = $largoCampos[$indCantidad];// + $largoCampos[$indComentarios];
     $tamTextoSubtotal = $tamTabla-$tamSubTotal;
+    ///******************************************************* FIN AGREGADO DEL RESUMEN FINAL ***********************************************
+    if ($mostrarResumenProducto){
+      ///***************************************************** INICIO RESUMEN DEL ÚLTIMO PRODUCTO *******************************************
+      ///Agrego el resumen para el último producto dado que no habrá nuevo cambio de producto:
+      if ($subtotalRetiro > 0) {
+        $this->SetFont('Courier', 'B', 9);
+        $this->setFillColor(220, 223, 232);
+        $this->SetTextColor(0);  
+        $this->SetX($x);
+        $this->Cell($tamTextoSubtotal,$h, "Total Retiros:",1,0,'C', false);
 
-    if ($subtotalRetiro > 0) {
-          $this->SetFont('Courier', 'B', 9);
-          $this->setFillColor(220, 223, 232);
-          $this->SetTextColor(0);  
-          $this->SetX($x);
-          $this->Cell($tamTextoSubtotal,$h, "Total Retiros:",1,0,'C', false);
+        $this->SetFont('Courier', 'BI', 14);
+        //$this->setFillColor(165, 156, 149);
+        //$this->setFillColor(200, 202, 212);
+        $this->setFillColor(137, 216, 255);
+        $this->SetTextColor(0);  
+        $this->Cell($tamSubTotal,$h, $subtotalRetiroMostrar,1,1,'R', true);
 
-          $this->SetFont('Courier', 'BI', 14);
-          //$this->setFillColor(165, 156, 149);
-          //$this->setFillColor(200, 202, 212);
-          $this->setFillColor(137, 216, 255);
-          $this->SetTextColor(0);  
-          $this->Cell($tamSubTotal,$h, $subtotalRetiroMostrar,1,1,'C', true);
-          
-          $subtotalRetiro = 0;
-          $subtotalRetiroMostrar = 0;
-        }
-        
-    if ($subtotalReno > 0){
+        $subtotalRetiro = 0;
+        $subtotalRetiroMostrar = 0;
+      }
+
+      if ($subtotalReno > 0){
+        $this->SetFont('Courier', 'B', 9);
+        $this->setFillColor(220, 223, 232);
+        $this->SetTextColor(0); 
+        $this->SetX($x);
+        $this->Cell($tamTextoSubtotal,$h, "Total Renovaciones:",1,0,'C', false);
+
+        $this->SetFont('Courier', 'BI', 14);
+        //$this->setFillColor(165, 156, 149);
+        //$this->setFillColor(200, 202, 212);
+        $this->setFillColor(137, 216, 255);
+        $this->SetTextColor(0);  
+        $this->Cell($tamSubTotal,$h, $subtotalRenoMostrar,1,1,'R', true);
+
+        $subtotalReno = 0;
+        $subtotalRenoMostrar = 0;
+      }
+
+      if ($subtotalDestruccion > 0) {
+        $this->SetFont('Courier', 'B', 9);
+        $this->setFillColor(220, 223, 232);
+        $this->SetTextColor(0);  
+        $this->SetX($x);
+        $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total Destrucciones:"),1,0,'C', false);
+
+        $this->SetFont('Courier', 'BI', 14);
+        //$this->setFillColor(165, 156, 149);
+        //$this->setFillColor(200, 202, 212);
+        $this->setFillColor(137, 216, 255);
+        $this->SetTextColor(0);  
+        $this->Cell($tamSubTotal,$h, $subtotalDestruccionMostrar,1,1,'R', true);
+
+        $subtotalDestruccion = 0;
+        $subtotalDestruccionMostrar = 0;
+      }
+
+      if ($totalConsumos > 0) {
+        $this->SetFont('Courier', 'B', 9);
+        $this->setFillColor(220, 223, 232);
+        $this->SetTextColor(0);  
+        $this->SetX($x);
+        $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total de Consumos:"),1,0,'C', false);
+
+        $this->SetFont('Courier', 'BI', 14);
+        //$this->setFillColor(220, 223, 232);
+        //$this->setFillColor(239, 165, 105);
+        $this->setFillColor(2, 185, 240);
+        $this->SetTextColor(0);  
+        $this->Cell($tamSubTotal,$h, $totalConsumosMostrar,1,1,'R', true);
+
+        $totalConsumos = 0;
+        $totalConsumosMostrar = 0;
+      }
+
+      if ($subtotalIngreso > 0) {
+        $this->SetFont('Courier', 'B', 9);
+        $this->setFillColor(220, 223, 232);
+        $this->SetTextColor(0);  
+        $this->SetX($x);
+        $this->Cell($tamTextoSubtotal,$h, "Total de Ingresos:",1,0,'C', false);
+
+        $this->SetFont('Courier', 'BI', 14);
+        //$this->setFillColor(220, 223, 232);
+        //$this->setFillColor(127, 128, 129);
+        $this->setFillColor(95, 243, 137);
+        $this->SetTextColor(0);  
+        $this->Cell($tamSubTotal,$h, $subtotalIngresoMostrar,1,1,'R', true);
+
+        $subtotalIngreso = 0;
+        $subtotalIngresoMostrar = 0;
+      }
+      ///***************************************************** FIN RESUMEN DEL ÚLTIMO PRODUCTO **********************************************
+    }
+    else {
       $this->SetFont('Courier', 'B', 9);
       $this->setFillColor(220, 223, 232);
-      $this->SetTextColor(0); 
+      $this->SetTextColor(0);  
       $this->SetX($x);
-      $this->Cell($tamTextoSubtotal,$h, "Total Renovaciones:",1,0,'C', false);
-
+      switch ($tipoMov){
+        case "retiros":  $total = $totalRetiro;
+                        break;
+        case "ingresos": $total = $totalIngreso;              
+                        break;
+        case "renovaciones": $total = $totalReno;
+                           break;
+        case "destrucciones": $total = $totalDestruccion;
+                            break;
+        default: break;                  
+      }
+      $totalMostrar = number_format($total, 0, ",", ".");
+      $this->Cell($tamTextoSubtotal,$h, "Total $tipoMov:",1,0,'C', false);
       $this->SetFont('Courier', 'BI', 14);
       //$this->setFillColor(165, 156, 149);
       //$this->setFillColor(200, 202, 212);
       $this->setFillColor(137, 216, 255);
       $this->SetTextColor(0);  
-      $this->Cell($tamSubTotal,$h, $subtotalRenoMostrar,1,1,'C', true);
-
-      $subtotalReno = 0;
-      $subtotalRenoMostrar = 0;
+      $this->Cell($largoCampos[$indCantidad],$h, $totalMostrar,1,1,'R', true);
     }
-        
-    if ($subtotalDestruccion > 0) {
-      $this->SetFont('Courier', 'B', 9);
-      $this->setFillColor(220, 223, 232);
-      $this->SetTextColor(0);  
-      $this->SetX($x);
-      $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total Destrucciones:"),1,0,'C', false);
-
-      $this->SetFont('Courier', 'BI', 14);
-      //$this->setFillColor(165, 156, 149);
-      //$this->setFillColor(200, 202, 212);
-      $this->setFillColor(137, 216, 255);
-      $this->SetTextColor(0);  
-      $this->Cell($tamSubTotal,$h, $subtotalDestruccionMostrar,1,1,'C', true);
-
-      $subtotalDestruccion = 0;
-      $subtotalDestruccionMostrar = 0;
-    }
-        
-    if ($totalConsumos > 0) {
-      $this->SetFont('Courier', 'B', 9);
-      $this->setFillColor(220, 223, 232);
-      $this->SetTextColor(0);  
-      $this->SetX($x);
-      $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total de Consumos:"),1,0,'C', false);
-
-      $this->SetFont('Courier', 'BI', 14);
-      //$this->setFillColor(220, 223, 232);
-      //$this->setFillColor(239, 165, 105);
-      $this->setFillColor(2, 185, 240);
-      $this->SetTextColor(0);  
-      $this->Cell($tamSubTotal,$h, $totalConsumosMostrar,1,1,'C', true);
-
-      $totalConsumos = 0;
-      $totalConsumosMostrar = 0;
-    }
-        
-    if ($subtotalIngreso > 0) {
-      $this->SetFont('Courier', 'B', 9);
-      $this->setFillColor(220, 223, 232);
-      $this->SetTextColor(0);  
-      $this->SetX($x);
-      $this->Cell($tamTextoSubtotal,$h, "Total de Ingresos:",1,0,'C', false);
-
-      $this->SetFont('Courier', 'BI', 14);
-      //$this->setFillColor(220, 223, 232);
-      //$this->setFillColor(127, 128, 129);
-      $this->setFillColor(95, 243, 137);
-      $this->SetTextColor(0);  
-      $this->Cell($tamSubTotal,$h, $subtotalIngresoMostrar,1,1,'C', true);
-
-      $subtotalIngreso = 0;
-      $subtotalIngresoMostrar = 0;
-    }
-    ///***************************************************** FIN RESUMEN DEL ÚLTIMO PRODUCTO ************************************************
-    
     ///*********************************************************** BORDE FINAL **************************************************************
     $y = $this->GetY();
     $this->SetFillColor(2, 49, 132);

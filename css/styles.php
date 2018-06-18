@@ -568,16 +568,19 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
   background-color:#9db0f3;
   font-weight: bolder;
   font-size: 1.4em;
+  text-align: right;
 }
 .totalConsumos {
   background-color:#efa569;
   font-weight: bolder;
   font-size: 1.4em;
+  text-align: right;
 }
 .totalIngresos {
   background-color:#4b5af3;
   font-weight: bolder;
   font-size: 1.4em;
+  text-align: right;
 }
 
 /* MODAL */

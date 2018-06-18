@@ -1682,8 +1682,8 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       <th>Cód. Origen</th>\n\
                                       <th>Snapshot</th>\n\
                                       <th>&Uacute;ltimo Movimiento</th>\n\
-                                      <th>Stock</th>\n\
                                       <th>Mensaje</th>\n\
+                                      <th>Stock</th>\n\
                                    </tr>';
                           //var total = parseInt(subtotales["stock"], 10);
                           var total = 0;
@@ -1770,8 +1770,8 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                         <td>'+codigo_origen+'</td>\n\
                                         <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="76" width="120"></img></td>\n\
                                         <td>'+ultimoMovimiento+'</td>\n\
-                                        <td class="'+claseResaltado+'" style="text-align: right">'+stock.toLocaleString()+'</td>\n\
                                         <td class="'+claseComentario+'" >'+mensaje+'</td>\n\
+                                        <td class="'+claseResaltado+'" style="text-align: right">'+stock.toLocaleString()+'</td>\n\
                                       </tr>';
                             offset++;
                             total += stock;
@@ -1792,7 +1792,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                           else {
                             subtitulo = 'TOTAL';
                             totalPlasticos1 = parseInt(totalPlasticos, 10);
-                            tabla += '<tr><th colspan="8" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos1, 10).toLocaleString()+'</td><th></th></tr>';
+                            tabla += '<tr><th colspan="9" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos1, 10).toLocaleString()+'</td><th></th></tr>';
                           }  
 
                           var subtotalesJson = JSON.stringify(subtotales);
@@ -2058,8 +2058,8 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                             <th>Cód. Origen</th>\n\
                                             <th>Snapshot</th>\n\
                                             <th>&Uacute;ltimo Movimiento</th>\n\
-                                            <th>Stock</th>\n\
                                             <th>Mensaje</th>\n\
+                                            <th>Stock</th>\n\
                                          </tr>';
                                 //var total = 0;
                                 for (var i=0; i<max; i++) {
@@ -2104,9 +2104,38 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     }
                                   }
                                   var comentarios = datos[i]['comentarios'];
-                                  if ((comentarios === "undefined")||(comentarios === null)) {
-                                      comentarios = "";
+                                  var claseComentario = "";
+                                  if ((comentarios === "undefined")||(comentarios === null)||(comentarios === "")) 
+                                    {
+                                    comentarios = "";
+                                    claseComentario = "";
+                                  }
+                                  else {
+                                    var patron = "dif";
+                                    var buscar = comentarios.search(new RegExp(patron, "i"));
+                                    if (buscar !== -1){
+                                      claseComentario = "resaltarDiferencia";
                                     }
+                                    else {
+                                      var patron = "stock";
+                                      var buscar = comentarios.search(new RegExp(patron, "i"));
+                                      if (buscar !== -1){
+                                        claseComentario = "resaltarStock";
+                                      }
+                                      else {
+                                        var patron = "plastico";
+                                        var buscar = comentarios.search(new RegExp(patron, "i"));
+                                        var patron1 = "plástico";
+                                        var buscar1 = comentarios.search(new RegExp(patron1, "i"));
+                                        if ((buscar !== -1)||(buscar1 !== -1)){
+                                          claseComentario = "resaltarPlastico";
+                                        }
+                                        else {
+                                          claseComentario = "resaltarComentario";
+                                        }
+                                      }
+                                    }
+                                  }  
                                   if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
                                     {
                                     bin = 'N/D o N/C';
@@ -2123,8 +2152,8 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                               <td nowrap>'+codigo_origen+'</td>\n\
                                               <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="75" width="120"></img></td>\n\
                                               <td>'+ultimoMovimiento+'</td>\n\
+                                              <td class="'+claseComentario+'">'+comentarios+'</td>\n\
                                               <td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td>\n\
-                                              <td>'+comentarios+'</td>\n\
                                             </tr>'; 
                                   offset++;  
                                 }/// FIN DEL FOR ********************************************************
@@ -2141,7 +2170,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                 else {
                                   subtitulo = 'TOTAL';
                                   totalPlasticos1 = parseInt(totalPlasticos, 10);
-                                  tabla += '<tr><th colspan="8" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos1, 10).toLocaleString()+'</td><th></th></tr>';
+                                  tabla += '<tr><th colspan="9" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos1, 10).toLocaleString()+'</td><th></th></tr>';
                                 } 
                           
                                 var subtotalesJson = JSON.stringify(subtotales);
@@ -2167,14 +2196,14 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                             <th>Cód. Origen</th>\n\
                                             <th>Snapshot</th>\n\
                                             <th>Tipo</th>\n\
-                                            <th>Cantidad</th>\n\
                                             <th>Comentarios</th>\n\
-                                         </tr>';
+                                            <th>Cantidad</th>\n\
+                                    </tr>';
 
                                 var productoViejo = parseInt(datos[0]['idprod'], 10);
 
                                 for (var i=0; i<max; i++) {
-                                  ///************************* INICIO RECUPERACIÓN DATOS ******************************************************************
+                                  ///************************* INICIO RECUPERACIÓN DATOS ************************************************************
                                   var produ = parseInt(datos[i]["idprod"], 10);
                                   var idmov = datos[i]["idmov"];
                                   var entidad = datos[i]["entidad"];
@@ -2222,65 +2251,75 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     {
                                     bin = 'N/D o N/C';
                                   }
-                                  ///************************* FIN RECUPERACIÓN DATOS *********************************************************************
-                                  
-                                  ///Si hay un cambio de producto, ANTES de poner el primer movimiento del nuevo producto, muestro el resumen del producto viejo:
-                                  if (productoViejo !== produ) {//alert('cambio');
-                                    var totalConsumos = 0;
-                                    var retiros1 = 0;
-                                    var renos1 = 0;
-                                    var destrucciones1 = 0;
-                                    var ingresos1 = 0;//alert(subtotales["retiros"]);
-                                    if (subtotales["retiros"] !== null){
-                                      if (subtotales["retiros"][productoViejo] !== undefined) {
-                                        retiros1 = parseInt(subtotales["retiros"][productoViejo], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="10" class="negrita">Total Retiros:</td>\n\
-                                                    <td class="subtotal" colspan="2">'+retiros1.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                        totalConsumos += retiros1;
-                                      }
-                                    }
-                                    if (subtotales["renovaciones"] !== null){
-                                      if (subtotales["renovaciones"][productoViejo] !== undefined) {
-                                        renos1 = parseInt(subtotales["renovaciones"][productoViejo], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="10" class="negrita">Total Renovaciones:</td>\n\
-                                                    <td class="subtotal" colspan="2">'+renos1.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                        totalConsumos += renos1;
-                                      } 
-                                    }
-                                    if (subtotales["destrucciones"] !== null){
-                                      if (subtotales["destrucciones"][productoViejo] !== undefined) {
-                                        destrucciones1 = parseInt(subtotales["destrucciones"][productoViejo], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="10" class="negrita">Total Destrucciones:</td>\n\
-                                                    <td class="subtotal" colspan="2">'+destrucciones1.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                        totalConsumos += destrucciones1;
-                                      }
-                                    }
-                                    if (totalConsumos > 0) {
-                                      tabla += '<tr>\n\
-                                                  <td colspan="10" class="negrita">Total de Consumos:</td>\n\
-                                                  <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
-                                                </tr>';
-                                    }
-                                    if (subtotales["ingresos"] !== null) {
-                                      if (subtotales["ingresos"][productoViejo] !== undefined) {
-                                        ingresos1 = parseInt(subtotales["ingresos"][productoViejo], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="10" class="negrita">Total de Ingresos:</td>\n\
-                                                    <td class="totalIngresos" colspan="2">'+ingresos1.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                      }         
-                                    }
-                                    productoViejo = produ;
-                                    tabla += '<th colspan="12">&nbsp;\n\
-                                              </th>';
+                                  ///************************* FIN RECUPERACIÓN DATOS ***************************************************************
+                                  var mostrarResumenProducto;
+                                  /// Chequeo si es una consulta de UN solo tipo de movimientos o de todos:
+                                  if (tipoConsulta.indexOf("todos los tipos") > -1){
+                                    mostrarResumenProducto = true;
                                   }
+                                  else {
+                                    mostrarResumenProducto = false;
+                                  }  
                                   
+                                  /// En caso de ser de UN solo tipo, NO agrego el resumen del producto a pedido de Diego:
+                                  if (mostrarResumenProducto){
+                                    ///Si hay un cambio de producto, ANTES de poner el primer movimiento del nuevo producto, muestro el resumen del producto viejo:
+                                    if (productoViejo !== produ) {//alert('cambio');
+                                      var totalConsumos = 0;
+                                      var retiros1 = 0;
+                                      var renos1 = 0;
+                                      var destrucciones1 = 0;
+                                      var ingresos1 = 0;//alert(subtotales["retiros"]);
+                                      if (subtotales["retiros"] !== null){
+                                        if (subtotales["retiros"][productoViejo] !== undefined) {
+                                          retiros1 = parseInt(subtotales["retiros"][productoViejo], 10);
+                                          tabla += '<tr>\n\
+                                                      <td colspan="11" class="negrita">Total Retiros:</td>\n\
+                                                      <td class="subtotal" colspan="1">'+retiros1.toLocaleString()+'</td>\n\
+                                                    </tr>';
+                                          totalConsumos += retiros1;
+                                        }
+                                      }
+                                      if (subtotales["renovaciones"] !== null){
+                                        if (subtotales["renovaciones"][productoViejo] !== undefined) {
+                                          renos1 = parseInt(subtotales["renovaciones"][productoViejo], 10);
+                                          tabla += '<tr>\n\
+                                                      <td colspan="11" class="negrita">Total Renovaciones:</td>\n\
+                                                      <td class="subtotal" colspan="1">'+renos1.toLocaleString()+'</td>\n\
+                                                    </tr>';
+                                          totalConsumos += renos1;
+                                        } 
+                                      }
+                                      if (subtotales["destrucciones"] !== null){
+                                        if (subtotales["destrucciones"][productoViejo] !== undefined) {
+                                          destrucciones1 = parseInt(subtotales["destrucciones"][productoViejo], 10);
+                                          tabla += '<tr>\n\
+                                                      <td colspan="11" class="negrita">Total Destrucciones:</td>\n\
+                                                      <td class="subtotal" colspan="1">'+destrucciones1.toLocaleString()+'</td>\n\
+                                                    </tr>';
+                                          totalConsumos += destrucciones1;
+                                        }
+                                      }
+                                      if (totalConsumos > 0) {
+                                        tabla += '<tr>\n\
+                                                    <td colspan="11" class="negrita">Total de Consumos:</td>\n\
+                                                    <td class="totalConsumos" colspan="1">'+totalConsumos.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                      }
+                                      if (subtotales["ingresos"] !== null) {
+                                        if (subtotales["ingresos"][productoViejo] !== undefined) {
+                                          ingresos1 = parseInt(subtotales["ingresos"][productoViejo], 10);
+                                          tabla += '<tr>\n\
+                                                      <td colspan="11" class="negrita">Total de Ingresos:</td>\n\
+                                                      <td class="totalIngresos" colspan="1">'+ingresos1.toLocaleString()+'</td>\n\
+                                                    </tr>';
+                                        }         
+                                      }
+                                      productoViejo = produ;
+                                      tabla += '<th colspan="12">&nbsp;\n\
+                                                </th>';
+                                    }
+                                  }
                                   ///Muestro el renglón con los datos del movimiento:
                                   tabla += '<tr>\n\
                                               <td>'+offset+'</td>\n\
@@ -2293,8 +2332,8 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                               <td nowrap>'+codigo_origen+'</td>\n\
                                               <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="75" width="120"></img></td>\n\
                                               <td>'+tipo1+'</td>\n\
-                                              <td class="'+claseResaltado+'"><a href="editarMovimiento.php?id='+idmov+'" target="_blank">'+cantidad.toLocaleString()+'</a></td>\n\
                                               <td>'+comentarios+'</td>\n\
+                                              <td class="'+claseResaltado+'"><a href="editarMovimiento.php?id='+idmov+'" target="_blank">'+cantidad.toLocaleString()+'</a></td>\n\
                                             </tr>'; 
                                   if ((fin) && (parseInt(i, 10) === parseInt(tamPagina-1, 10))){
                                     var totalConsumos = 0;
@@ -2307,8 +2346,8 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       if (subtotales["retiros"][productoViejo] !== undefined) {
                                         retiros2 = parseInt(subtotales["retiros"][productoViejo], 10);
                                         tabla += '<tr>\n\
-                                                    <td colspan="10" class="negrita">Total Retiros:</td>\n\
-                                                    <td class="subtotal" colspan="2">'+retiros2.toLocaleString()+'</td>\n\
+                                                    <td colspan="11" class="negrita">Total Retiros:</td>\n\
+                                                    <td class="subtotal" colspan="1">'+retiros2.toLocaleString()+'</td>\n\
                                                   </tr>';
                                         totalConsumos += retiros2;
                                       }
@@ -2317,8 +2356,8 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       if (subtotales["renovaciones"][productoViejo] !== undefined) {
                                         renos2 = parseInt(subtotales["renovaciones"][productoViejo], 10);
                                         tabla += '<tr>\n\
-                                                    <td colspan="10" class="negrita">Total Renovaciones:</td>\n\
-                                                    <td class="subtotal" colspan="2">'+renos2.toLocaleString()+'</td>\n\
+                                                    <td colspan="11" class="negrita">Total Renovaciones:</td>\n\
+                                                    <td class="subtotal" colspan="1">'+renos2.toLocaleString()+'</td>\n\
                                                   </tr>';
                                         totalConsumos += renos2;
                                       } 
@@ -2327,24 +2366,24 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                       if (subtotales["destrucciones"][productoViejo] !== undefined) {
                                         destrucciones2 = parseInt(subtotales["destrucciones"][productoViejo], 10);
                                         tabla += '<tr>\n\
-                                                    <td colspan="10" class="negrita">Total Destrucciones:</td>\n\
-                                                    <td class="subtotal" colspan="2">'+destrucciones2.toLocaleString()+'</td>\n\
+                                                    <td colspan="11" class="negrita">Total Destrucciones:</td>\n\
+                                                    <td class="subtotal" colspan="1">'+destrucciones2.toLocaleString()+'</td>\n\
                                                   </tr>';
                                         totalConsumos += destrucciones2;
                                       }
                                     }
                                     if (totalConsumos > 0) {
                                       tabla += '<tr>\n\
-                                                  <td colspan="10" class="negrita">Total de Consumos:</td>\n\
-                                                  <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
+                                                  <td colspan="11" class="negrita">Total de Consumos:</td>\n\
+                                                  <td class="totalConsumos" colspan="1">'+totalConsumos.toLocaleString()+'</td>\n\
                                                 </tr>';
                                     }
                                     if (subtotales["ingresos"] !== null) {
                                       if (subtotales["ingresos"][productoViejo] !== undefined) {
                                         ingresos2 = parseInt(subtotales["ingresos"][productoViejo], 10);
                                         tabla += '<tr>\n\
-                                                    <td colspan="10" class="negrita">Total de Ingresos:</td>\n\
-                                                    <td class="totalIngresos" colspan="2">'+ingresos2.toLocaleString()+'</td>\n\
+                                                    <td colspan="11" class="negrita">Total de Ingresos:</td>\n\
+                                                    <td class="totalIngresos" colspan="1">'+ingresos2.toLocaleString()+'</td>\n\
                                                   </tr>';
                                       }         
                                     }
@@ -2355,89 +2394,112 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   }
                                   
                                   offset++;  
-                                }/// FIN DEL FOR ********************************************************
+                                }/// FIN DEL FOR ****************************************************************************************************
                                 
-                                ///****************** RESUMEN último producto ********************************************************************
+                                var tipoMov = '';
+                                if (tipoConsulta.indexOf("Retiro") > -1){
+                                  tipoMov = 'retiros';
+                                }
+                                else {
+                                  if (tipoConsulta.indexOf("Ingreso") > -1){
+                                    tipoMov = 'ingresos';
+                                  }
+                                  else {
+                                    if (tipoConsulta.indexOf("Renovación") > -1){
+                                      tipoMov = 'renovaciones';
+                                    }
+                                    else {
+                                      tipoMov = 'destrucciones';
+                                    }
+                                  }
+                                }
+                                
+                                ///****************** RESUMEN último producto ó RESUMEN GENERAL *****************************************************
+                                if (subtotales[""+tipoMov+""] !== null){
+                                  var subtotal = 0;
+                                  for(var i in subtotales[""+tipoMov+""]){
+                                    subtotal += parseInt(subtotales[tipoMov][i], 10);
+                                  } 
+                                }
+                                
                                 ///Detecto si es o no la primer página.
                                 ///En caso de serlo seteo el total de Páginas a 0 para que NO muestre el resumen para el último producto
                                 var pagActual = parseInt($(".nav-link.active").attr("activepage"), 10);
-                                /// SE COMENTA PUES totalPaginas ahora se pasa como parámetro
-                                  ///Agrego if para saber si la variable con el total de páginas existe o no pues solo existirá si el total de datos 
-                                  ///es mayor al tamaño de página elegida (de lo contrario no se crea el div con los datosOcultos
-//                                  if ($("#totalPaginas_"+j).length > 0){
-//                                    totalPaginas = parseInt($("#totalPaginas_"+j).val(), 10);alert('en el if');
-//                                  }
-//                                  else {
-//                                    totalPaginas = 1;
-//                                  }
-                                
+
                                 if (offset === tamPagina+1){
                                   totalPaginas = 0;
                                 }
-                                
                                 if (pagActual === totalPaginas){
-                                  ///Resumen para el último producto: 
-                                  var totalConsumos = 0;
-                                  if (subtotales["retiros"] !== null){
-                                    if (subtotales["retiros"][productoViejo] !== undefined) {
-                                      var retiros3 = parseInt(subtotales["retiros"][productoViejo], 10);
-                                      tabla += '<tr>\n\
-                                                  <td colspan="10" class="negrita">Total Retiros:</td>\n\
-                                                  <td class="subtotal" colspan="2">'+retiros3.toLocaleString()+'</td>\n\
-                                                </tr>';
-                                      totalConsumos += retiros3;
+                                  /// En caso de ser de UN solo tipo, NO agrego el resumen del producto a pedido de Diego:
+                                  if (mostrarResumenProducto){
+                                    ///Resumen para el último producto: 
+                                    var totalConsumos = 0;
+                                    if (subtotales["retiros"] !== null){
+                                      if (subtotales["retiros"][productoViejo] !== undefined) {
+                                        var retiros3 = parseInt(subtotales["retiros"][productoViejo], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="11" class="negrita">Total Retiros:</td>\n\
+                                                    <td class="subtotal" colspan="1">'+retiros3.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        totalConsumos += retiros3;
+                                      }
                                     }
-                                  }
-                                  if (subtotales["renovaciones"] !== null){
-                                    if (subtotales["renovaciones"][productoViejo] !== undefined) {
-                                      var renos3 = parseInt(subtotales["renovaciones"][productoViejo], 10);
-                                      tabla += '<tr>\n\
-                                                  <td colspan="10" class="negrita">Total Renovaciones:</td>\n\
-                                                  <td class="subtotal" colspan="2">'+renos3.toLocaleString()+'</td>\n\
-                                                </tr>';
-                                      totalConsumos += renos3;
-                                    } 
-                                  }
-                                  if (subtotales["destrucciones"] !== null){
-                                    if (subtotales["destrucciones"][productoViejo] !== undefined) {
-                                      var destrucciones3 = parseInt(subtotales["destrucciones"][productoViejo], 10);
-                                      tabla += '<tr>\n\
-                                                  <td colspan="10" class="negrita">Total Destrucciones:</td>\n\
-                                                  <td class="subtotal" colspan="2">'+destrucciones3.toLocaleString()+'</td>\n\
-                                                </tr>';
-                                      totalConsumos += destrucciones3;
+                                    if (subtotales["renovaciones"] !== null){
+                                      if (subtotales["renovaciones"][productoViejo] !== undefined) {
+                                        var renos3 = parseInt(subtotales["renovaciones"][productoViejo], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="11" class="negrita">Total Renovaciones:</td>\n\
+                                                    <td class="subtotal" colspan="1">'+renos3.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        totalConsumos += renos3;
+                                      } 
                                     }
+                                    if (subtotales["destrucciones"] !== null){
+                                      if (subtotales["destrucciones"][productoViejo] !== undefined) {
+                                        var destrucciones3 = parseInt(subtotales["destrucciones"][productoViejo], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="11" class="negrita">Total Destrucciones:</td>\n\
+                                                    <td class="subtotal" colspan="1">'+destrucciones3.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        totalConsumos += destrucciones3;
+                                      }
+                                    }
+                                    if (totalConsumos > 0) {
+                                      tabla += '<tr>\n\
+                                                  <td colspan="11" class="negrita">Total de Consumos:</td>\n\
+                                                  <td class="totalConsumos" colspan="1">'+totalConsumos.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                    }
+                                    if (subtotales["ingresos"] !== null) {
+                                      if (subtotales["ingresos"][productoViejo] !== undefined) {
+                                        var ingresos3 = parseInt(subtotales["ingresos"][productoViejo], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="11" class="negrita">Total de Ingresos:</td>\n\
+                                                    <td class="totalIngresos" colspan="1">'+ingresos3.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                      }         
+                                    }
+                                    productoViejo = produ;
+                                    tabla += '<th colspan="12">&nbsp;\n\
+                                            </th>';
                                   }
-                                  if (totalConsumos > 0) {
+                                  else {
                                     tabla += '<tr>\n\
-                                                <td colspan="10" class="negrita">Total de Consumos:</td>\n\
-                                                <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
+                                                <td colspan="11" class="negrita">Total '+tipoMov+':</td>\n\
+                                                <td class="subtotal" colspan="1">'+subtotal.toLocaleString()+'</td>\n\
                                               </tr>';
                                   }
-                                  if (subtotales["ingresos"] !== null) {
-                                    if (subtotales["ingresos"][productoViejo] !== undefined) {
-                                      var ingresos3 = parseInt(subtotales["ingresos"][productoViejo], 10);
-                                      tabla += '<tr>\n\
-                                                  <td colspan="10" class="negrita">Total de Ingresos:</td>\n\
-                                                  <td class="totalIngresos" colspan="2">'+ingresos3.toLocaleString()+'</td>\n\
-                                                </tr>';
-                                    }         
-                                  }
-                                  productoViejo = produ;
-                                  tabla += '<th colspan="12">&nbsp;\n\
-                                          </th>';
-                                }
+                                }  
+                                ///****************** FIN RESUMEN último producto ó RESUMEN GENERAL *************************************************
                                 
-                                ///****************** RESUMEN último producto ********************************************************************
-                                
-                                ///************************ CAPTION segun si es TODOS o alguna ENTIDAD *******************************************
+                                ///************************ CAPTION segun si es TODOS o alguna ENTIDAD **********************************************
                                 if (!todos){
                                   tabla += '<caption>Movimientos de <b><i>'+entidad+'</i></b></caption>';
                                 }
                                 else {
                                   tabla += '<caption>Movimientos de <b><i>todas las entidades</i></b></caption>';
                                 }
-                                ///************************ FIN CAPTION segun si es TODOS o alguna ENTIDAD ***************************************
+                                ///************************ FIN CAPTION segun si es TODOS o alguna ENTIDAD ******************************************
                                 
                                 var subtotalesJson = JSON.stringify(subtotales);
                                 tabla += "<tr>\n\
@@ -2722,6 +2784,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
  */
 function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, p, d1, d2, tipo, user){
   var url = '';
+  var tipoUrl = encodeURI(tipo);
   if ((radio === 'entidadStockViejo')||(radio === 'productoStockViejo')){
     url = "data/stockViejoJSON.php";
   }
@@ -2941,7 +3004,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                              break;
           case 'entidadMovimiento': campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios-IdMov';
                                     //Orden de la consulta: idprod - entidad - nombre - bin - cod emsa - cod origen - contacto - snapshot - ult.Mov - stock - alarma1 - alarma2 - prodcom - fecha - hora - cantidad - tipo - comentarios - idmov
-                                    largos = '0.6-0.5-1.6-1.9-1-1.8-1.4-1-1-1-1-1-1.1-1.5-1.5-0.8-1.2-1.3-2-0.5';
+                                    largos = '0.6-0.5-1.6-1.9-1-2.0-1.5-1-1-1-1-1-1.1-1.5-1.5-0.8-1.2-1.3-2-0.5';
                                     mostrarCamposQuery = '1-0-1-1-0-1-1-0-0-0-0-0-0-0-1-1-1-1-1-0';
                                     x = 40;
                                     tipMov = 'entMov';
@@ -3059,8 +3122,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         if (idProds[j] === undefined) {
           idProds[j] = '';
         }
-        var tipoUrl = encodeURI(tipo);
-        
+                
         var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds[j]+'&ent='+ent+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipoUrl+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         mostrar += '</div>';
@@ -3080,7 +3142,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
 
   mostrarGlobal += '</div>';
   $("#main-content").append(mostrarGlobal);
-  }
+}
 /********** fin mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, p, d1, d2, tipo, user) **********/
 
 /**
