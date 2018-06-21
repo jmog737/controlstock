@@ -4879,10 +4879,12 @@ function todo () {
     //parametros = unescape(parametros);
     parametros = parametros.replace(remplaza, " ");
   }
-    
+  var res = urlActual.split("/");
+  var tam = res.length;
+  var dir = res[tam-1];
   ///Según en que url esté, es lo que se carga:
-  switch (urlActual) {
-    case "/controlstock/movimiento.php":{
+  switch (dir) {
+    case "movimiento.php":{
                                         if (parametros) {
                                           var temp = parametros.split('?');
                                           var temp1 = temp[1].split('&');
@@ -4901,9 +4903,9 @@ function todo () {
                                         }
                                         break;    
                                       }
-    case "/controlstock/index.php": break;
+    case "index.php": break;
                                     
-    case "/controlstock/producto.php":  if (parametros){
+    case "producto.php":  if (parametros){
                                           var temp = parametros.split('?');
                                           var temp1 = temp[1].split('=');
                                           var id = temp1[1];
@@ -4917,7 +4919,7 @@ function todo () {
                                           setTimeout(function(){cargarProducto(0, "#content")}, 100);
                                         }
                                         break;                                                                      
-    case "/controlstock/busquedas.php": {
+    case "busquedas.php": {
                                         if (parametros) {
                                           var temp = parametros.split('?');
                                           var temp1 = temp[1].split('&');
@@ -4953,7 +4955,7 @@ function todo () {
                                         }
                                         break;
                                         }
-    case "/controlstock/estadisticas.php":  if (parametros) {
+    case "estadisticas.php":  if (parametros) {
                                               var temp = parametros.split('?');
                                               var temp1 = temp[1].split('=');
                                               var hacerGrafica = temp1[1];
@@ -4968,7 +4970,7 @@ function todo () {
                                               setTimeout(function(){cargarFormEstadisticas("#main-content")}, 100);
                                             }  
                                             break;  
-    case "/controlstock/editarMovimiento.php":  if (parametros) {
+    case "editarMovimiento.php":  if (parametros) {
                                                   var temp = parametros.split('?');
                                                   var temp1 = temp[1].split('=');
                                                   var idmov = temp1[1];

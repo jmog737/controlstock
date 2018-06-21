@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_id']))
     {
     //Conexión con la base de datos:
     $dbc = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-
+    
     //Recupero valores ingresados por el usuario:
     $user_username = mysqli_real_escape_string($dbc, trim($_POST['usuario']));
     $user_password = mysqli_real_escape_string($dbc, trim($_POST['password']));
