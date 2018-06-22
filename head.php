@@ -1,7 +1,13 @@
 <?php
-  session_start();
-  $user = $_SESSION["username"];
-  $estilos = 'styles_'.$user.'.php';
+  if(!isset($_SESSION)) 
+    {
+    //Reanudamos la sesión:
+    session_start(); 
+  } 
+  if (isset($_SESSION["username"])){
+    $user = $_SESSION["username"];
+    $estilos = 'styles_'.$user.'.php';
+  }  
   if (!isset($_SESSION["username"])||(!file_exists("css/".$estilos))){
     $estilos = 'styles.php';
   }

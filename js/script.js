@@ -935,6 +935,7 @@ function actualizarMovimiento(){
         //alert(query);
         $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
           var resultado = request["resultado"];
+          //var mensaje = request['mensaje'];//alert(mensaje);
           if (resultado === "OK") {
             //si se hizo la actualización de los datos y se cambió la fecha, 
             //hay que actualizar la fecha del último movimiento:
@@ -955,7 +956,7 @@ function actualizarMovimiento(){
               }
               query += ' where idprod='+idprod+'';
 
-              alert(query);
+              //alert(query);
               $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
                 var resultado1 = request["resultado"];
                 if (resultado1 === "OK") {
@@ -4884,25 +4885,25 @@ function todo () {
   var dir = res[tam-1];
   ///Según en que url esté, es lo que se carga:
   switch (dir) {
-    case "movimiento.php":{
-                                        if (parametros) {
-                                          var temp = parametros.split('?');
-                                          var temp1 = temp[1].split('&');
-                                          var temp2 = temp1[0].split('=');
-                                          var temp3 = temp1[1].split('=');
-                                          var temp4 = temp1[2].split('=');
-                                          var temp5 = temp1[3].split('=');
-                                          var h = temp2[1]; 
-                                          var tipo = decodeURI(temp4[1]);
-                                          var fecha = decodeURI(temp5[1]);
-                                          var idprod = parseInt(temp3[1], 10);
-                                          setTimeout(function(){cargarMovimiento("#main-content", h, idprod, tipo, fecha)}, 100);                                          
-                                        }
-                                        else {
-                                          setTimeout(function(){cargarMovimiento("#main-content", "", "-1", "", "")}, 100);
-                                        }
-                                        break;    
-                                      }
+    case "movimiento.php":  {
+                            if (parametros) {
+                              var temp = parametros.split('?');
+                              var temp1 = temp[1].split('&');
+                              var temp2 = temp1[0].split('=');
+                              var temp3 = temp1[1].split('=');
+                              var temp4 = temp1[2].split('=');
+                              var temp5 = temp1[3].split('=');
+                              var h = temp2[1]; 
+                              var tipo = decodeURI(temp4[1]);
+                              var fecha = decodeURI(temp5[1]);
+                              var idprod = parseInt(temp3[1], 10);
+                              setTimeout(function(){cargarMovimiento("#main-content", h, idprod, tipo, fecha)}, 100);                                          
+                            }
+                            else {
+                              setTimeout(function(){cargarMovimiento("#main-content", "", "-1", "", "")}, 100);
+                            }
+                            break;    
+                          }
     case "index.php": break;
                                     
     case "producto.php":  if (parametros){
@@ -4914,47 +4915,47 @@ function todo () {
                                           setTimeout(function(){habilitarProducto()}, 450);
                                           setTimeout(function(){$("#comentarios").focus()}, 460);
                                         }
-                                        else {
-                                          setTimeout(function(){cargarBusquedaProductos("#selector")}, 100);
-                                          setTimeout(function(){cargarProducto(0, "#content")}, 100);
-                                        }
-                                        break;                                                                      
+                          else {
+                            setTimeout(function(){cargarBusquedaProductos("#selector")}, 100);
+                            setTimeout(function(){cargarProducto(0, "#content")}, 100);
+                          }
+                          break;                                                                      
     case "busquedas.php": {
-                                        if (parametros) {
-                                          var temp = parametros.split('?');
-                                          var temp1 = temp[1].split('&');
-                                          var temp2 = temp1[0].split('=');
-                                          var temp3 = temp1[1].split('=');
-                                          var temp4 = temp1[2].split('=');
-                                          var temp5 = temp1[3].split('=');
-                                          var temp6 = temp1[4].split('=');
-                                          var temp7 = temp1[5].split('=');
-                                          var temp8 = temp1[6].split('=');
-                                          var temp9 = temp1[7].split('=');
-                                          var temp10 = temp1[8].split('=');
-                                          var temp11 = temp1[9].split('=');
-                                          var temp12 = temp1[10].split('=');
-                                          var temp13 = temp1[11].split('=');
-                                          
-                                          var hint = temp2[1];
-                                          var tipMov = temp3[1];
-                                          var zip = temp4[1];
-                                          var planilla = temp5[1];
-                                          var marcaAgua = temp6[1];
-                                          var id = temp7[1];
-                                          var ent = temp8[1];
-                                          var p = temp9[1];
-                                          var d1 = temp10[1];
-                                          var d2 = temp11[1];
-                                          var tipo = decodeURI(temp12[1]);
-                                          var user = temp13[1];
-                                          setTimeout(function(){cargarFormBusqueda("#fila", hint, tipMov, id, ent, zip, planilla, marcaAgua, p, d1, d2, tipo, user)}, 30); 
-                                        }
-                                        else {
-                                          setTimeout(function(){cargarFormBusqueda("#fila", '', '', '', '', '', '', '', '', '', '', '', '')}, 30);
-                                        }
-                                        break;
-                                        }
+                          if (parametros) {
+                            var temp = parametros.split('?');
+                            var temp1 = temp[1].split('&');
+                            var temp2 = temp1[0].split('=');
+                            var temp3 = temp1[1].split('=');
+                            var temp4 = temp1[2].split('=');
+                            var temp5 = temp1[3].split('=');
+                            var temp6 = temp1[4].split('=');
+                            var temp7 = temp1[5].split('=');
+                            var temp8 = temp1[6].split('=');
+                            var temp9 = temp1[7].split('=');
+                            var temp10 = temp1[8].split('=');
+                            var temp11 = temp1[9].split('=');
+                            var temp12 = temp1[10].split('=');
+                            var temp13 = temp1[11].split('=');
+
+                            var hint = temp2[1];
+                            var tipMov = temp3[1];
+                            var zip = temp4[1];
+                            var planilla = temp5[1];
+                            var marcaAgua = temp6[1];
+                            var id = temp7[1];
+                            var ent = temp8[1];
+                            var p = temp9[1];
+                            var d1 = temp10[1];
+                            var d2 = temp11[1];
+                            var tipo = decodeURI(temp12[1]);
+                            var user = temp13[1];
+                            setTimeout(function(){cargarFormBusqueda("#fila", hint, tipMov, id, ent, zip, planilla, marcaAgua, p, d1, d2, tipo, user)}, 30); 
+                          }
+                          else {
+                            setTimeout(function(){cargarFormBusqueda("#fila", '', '', '', '', '', '', '', '', '', '', '', '')}, 30);
+                          }
+                          break;
+                          }
     case "estadisticas.php":  if (parametros) {
                                               var temp = parametros.split('?');
                                               var temp1 = temp[1].split('=');
@@ -4966,20 +4967,20 @@ function todo () {
                                                 alert('ver por que llega hasta acá...');
                                               }
                                             }
-                                            else {
-                                              setTimeout(function(){cargarFormEstadisticas("#main-content")}, 100);
-                                            }  
-                                            break;  
+                              else {
+                                setTimeout(function(){cargarFormEstadisticas("#main-content")}, 100);
+                              }  
+                              break;  
     case "editarMovimiento.php":  if (parametros) {
                                                   var temp = parametros.split('?');
                                                   var temp1 = temp[1].split('=');
                                                   var idmov = temp1[1];
                                                   setTimeout(function(){cargarEditarMovimiento(idmov, "#main-content")}, 30);
                                                 }
-                                                else {
-                                                  setTimeout(function(){cargarEditarMovimiento(-1, "#main-content")}, 1000);
-                                                }  
-                                              break;                                       
+                                  else {
+                                      setTimeout(function(){cargarEditarMovimiento(-1, "#main-content")}, 1000);
+                                    }  
+                                  break;                                       
     default: break;
   }  
 

@@ -1,5 +1,9 @@
 <?php
-session_start();
+if(!isset($_SESSION)) 
+  {
+  //Reanudamos la sesión:
+  session_start(); 
+}
 require_once("connectvars.php");
 
 ///Obtenemos el timestamp del servidor de cuanto se hizo la petición

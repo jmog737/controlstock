@@ -1,6 +1,12 @@
 <?php
-//Reanudamos la sesión:
-session_start();
+if(!isset($_SESSION)) 
+  {
+  //Reanudamos la sesión:
+  session_start(); 
+} 
+error_reporting(NULL);
+ini_set('error_reporting', NULL);
+ini_set('display_errors',0);
 /**
 ******************************************************
 *  @file graficar.php
@@ -11,7 +17,7 @@ session_start();
 *
 *******************************************************/
 require_once("data/baseMysql.php");
-require_once('..\..\fpdf\mc_table.php');
+require_once('../../fpdf/mc_table.php');
 
 /** Include JPgraph files */
 require_once('../../jpgraph/jpgraph.php');
@@ -60,27 +66,6 @@ class PDF extends PDF_MC_Table
     $this->SetTextColor(0);
     $this->Cell(0, $hFooter, 'Pag. ' . $this->PageNo(), 0, 0, 'C');
     }
-  
-  //Función para agregar la gráfica exportada:
-//  function agregarGrafica($nombre)
-//    {
-//    global $dirGraficas;
-//    //************************************** TÍTULO *****************************************************************************************
-//    $xFoto = $this->GetX();
-//    $yFoto = $this->GetY();
-//    //**************************************  FIN TÍTULO ************************************************************************************
-//
-//    $rutaGrafica = $dirGraficas.$nombre;
-//
-//    if (file_exists($rutaGrafica)) {
-//      $this->Ln(10);
-//      $this->Image($rutaGrafica, $xFoto, $yFoto, 0, 0); 
-//      $_SESSION["nombreGrafica"] = null;
-//    } 
-//    else {
-//
-//    }
-//  }  
   
   function graficarBarras($subtitulo, $meses, $totales, $data1, $data2, $data3, $data4, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg5, $destino, $nombreGrafica){
     global $dirGraficas, $h;
@@ -455,6 +440,7 @@ class PDF extends PDF_MC_Table
       //Mandarlo al navegador
       $graph->img->Headers();
       $graph->img->Stream();
+      
     } 
   }
 }
@@ -627,7 +613,9 @@ $totalRenos = array();
 $totalDestrucciones = array();
 $totales = array(0=>$retirosTotal, 1=>$ingresosTotal, 2=>$renosTotal, 3=>$destruccionesTotal);
 foreach ($datos as $index => $valor){
+  ///Extraigo el año a partir del índice:
   $temp = substr($index, 2, 2);
+  ///Extraigo el número de mes a partir del índice:
   $temp1 = substr($index, 4, 2);
   switch ($temp1){
     case '01': $mesCorto = 'Ene';
@@ -748,10 +736,13 @@ $tamMaximoNombre = 25;
 $producto = strpos($mensaje, 'producto');
 if ($producto !== FALSE) {
   $tempProd = explode("del producto ", $mensaje);
+  $tipoGrafica = "producto";
 }  
 else {
   $tempProd = explode("de ", $mensaje);
-}  
+  $tipoGrafica = "entidad";
+} 
+///Discrimino para escribir mensaje de fecha según período elegido:
 $tempProd1 = stripos($tempProd[1], " entre");
 if ($tempProd1 !== false){
   $tempProd2 = explode(" entre", $tempProd[1]);
@@ -775,8 +766,17 @@ $nombreGrafica = "gca_".$nombreProductoMostrar."_";
 $nombreArchivo = $nombreGrafica.$timestamp.".pdf";
 $salida = $dirGraficas.$nombreArchivo;
 
-$pdfGrafica->graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, 'pdf', $nombreGrafica);
-$pdfGrafica->Output('F', $salida);
-$pdfGrafica->graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, '', $nombreGrafica);
-
+if ($tipoGrafica === "producto"){
+  $pdfGrafica->graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, 'pdf', $nombreGrafica);
+  $pdfGrafica->Output('F', $salida);
+  $pdfGrafica->graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, '', $nombreGrafica);
+}
+else {
+  $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, 'pdf', $nombreGrafica);
+  $pdfGrafica->Output('F', $salida);
+  $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, '', $nombreGrafica);
+}
+error_reporting(E_ALL);
+ini_set('error_reporting', E_ALL);
+ini_set('display_errors',1);
 ?>

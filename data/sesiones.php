@@ -1,8 +1,12 @@
 <?php
-session_start();
+if(!isset($_SESSION)) 
+  {
+  //Reanudamos la sesión:
+  session_start(); 
+}
 require_once('connectvars.php');
 ///Evitamos que nos salgan los NOTICES de PHP
-error_reporting(E_ALL ^ E_NOTICE);
+//error_reporting(E_ALL ^ E_NOTICE);
 
 ///Obtenemos el timestamp del servidor de cuanto se hizo la petición
 $hora = $_SERVER["REQUEST_TIME"];

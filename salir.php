@@ -1,6 +1,10 @@
 <?php
+  if(!isset($_SESSION)) 
+    {
+    //Reanudamos la sesión:
+    session_start(); 
+  } 
   // If the user is logged in, delete the session vars to log them out
-  session_start();
   if (isset($_SESSION['user_id'])) 
    {
     // Delete the session vars by clearing the $_SESSION array

@@ -1,5 +1,9 @@
 <?php
-session_start();
+if(!isset($_SESSION)) 
+  {
+  //Reanudamos la sesión:
+  session_start(); 
+}
 require_once ("baseMysql.php");
 
 if (isset($_SESSION["username"])){
@@ -19,17 +23,17 @@ $query = $_GET["query"];
 $log = $_GET["log"];
 
 $result = consultarBD($query, $dbc);
-
+$dato = array();
 if ($result === TRUE) {
   $dato["resultado"] = "OK";
   if ($log === "SI") {
+    //$dato["mensaje"] = 'escritura OK';
     escribirLog($query);
   }
 }
 else {
   $dato["resultado"] = "ERROR";
-  }
+}
 $json = json_encode($dato);
 echo $json;
-
 ?>

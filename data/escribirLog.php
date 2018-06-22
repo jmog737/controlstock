@@ -1,31 +1,36 @@
 <?php
-session_start();
-require_once("connectvars.php");
-require_once("sesiones.php");
+if(!isset($_SESSION)) 
+  {
+  //Reanudamos la sesión:
+  session_start(); 
+}
+//require_once("connectvars.php");
+//require_once("sesiones.php");
+require_once("config.php");
 
 function escribirLog($query){ 
   global $dirLog;
   //recupero la fecha actual para generar nombre del archivo:
   $hoy = getdate();
-  $fecha = $hoy[mday].$hoy[month].$hoy[year];
+  $fecha = $hoy['mday'].$hoy['month'].$hoy['year'];
 
-  if (strlen($hoy[hours]) === 1) {
-    $hora = "0".$hoy[hours];
+  if (strlen($hoy['hours']) === 1) {
+    $hora = "0".$hoy['hours'];
   }
   else {
-    $hora = $hoy[hours];
+    $hora = $hoy['hours'];
   }
-  if (strlen($hoy[minutes]) === 1) {
-    $min = "0".$hoy[minutes];
-  }
-  else {
-    $min = $hoy[minutes];
-  }
-  if (strlen($hoy[seconds]) === 1) {
-    $sec = "0".$hoy[seconds];
+  if (strlen($hoy['minutes']) === 1) {
+    $min = "0".$hoy['minutes'];
   }
   else {
-    $sec = $hoy[seconds];
+    $min = $hoy['minutes'];
+  }
+  if (strlen($hoy['seconds']) === 1) {
+    $sec = "0".$hoy['seconds'];
+  }
+  else {
+    $sec = $hoy['seconds'];
   }
   $horaLog = $hora.":".$min.":".$sec;
 
@@ -44,22 +49,22 @@ function escribirLog($query){
   
   $gestor = fopen($archivo, "cb");
   if (!$gestor)
-      {
-      $mensaje = "No se puede ABRIR el archivo ($archivo). Por favor verifique.";
-      exit;
-      }
+    {
+    $mensaje = "No se puede ABRIR el archivo ($archivo). Por favor verifique.";
+    exit;
+  }
   else {
-  if (fwrite($gestor, $nuevo) === FALSE)
+    if (fwrite($gestor, $nuevo) === FALSE)
       {
       $mensaje = "No se puede ESCRIBIR en el archivo ($archivo). Por favor verifique.";
       exit;
-      }
-  else
+    }
+    else
       {
       $mensaje = "¡¡¡PROCESO CORRECTO!!!";
-      }
-  fclose($gestor);    
-  }
+    }
+    fclose($gestor);    
+  } 
 }
 
 ?>

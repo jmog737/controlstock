@@ -1,11 +1,17 @@
 <?php
-//Reanudamos la sesión:
-session_start();
+if(!isset($_SESSION)) 
+  {
+  //Reanudamos la sesión:
+  session_start(); 
+} 
 require_once("data/sesiones.php");
 require_once('data/baseMysql.php');
 require_once('generarExcel.php');
 require_once('generarPdfs.php');
 require_once('data/config.php');
+error_reporting(NULL);
+ini_set('error_reporting', NULL);
+ini_set('display_errors',0);
 
 //phpinfo();
 //***************************** DESTINATARIOS CORREOS ***********************************************************************************************
@@ -61,8 +67,9 @@ if ($buscarTipo !== false){
   $tipo = 'todos';
 }
 else {
-  $tempTipo = explode("del tipo ", $tipoConsulta);
-  $tempTipo1 = explode(" ", $tempTipo[1]);
+  $tempTipo = explode("del tipo ", "$tipoConsulta");
+  $temp11 = @$tempTipo[1];
+  $tempTipo1 = explode(" ", $temp11);
   $tipo = $tempTipo1[0];
 }
 //echo "consulta: ".$tipoConsulta."<br>tipo: ".$tipo;
@@ -264,7 +271,7 @@ $resultado2 = consultarBD($consultaCSV, $con);
 $filas1 = obtenerResultadosArray($resultado2);
 $registros1 = array();
 $j = 1;
-$total1 = 0;
+//$total1 = 0;
 
 foreach($filas1 as $fila)
   {
@@ -302,12 +309,12 @@ foreach($filas1 as $fila)
   }
   $j++;
   //Acumulo el total de plásticos ya sea en stock o movidos:
-  if (($radio === 'entidadStockViejo')||($radio === 'productoStockViejo')){
-    $total1 = $total1 + $subtotales[$fila[1]];
-  }
-  else {
-    $total1 = $total1 + $fila[5];
-  }
+//  if (($radio === 'entidadStockViejo')||($radio === 'productoStockViejo')){
+//    $total1 = $total1 + $subtotales[$fila[1]];
+//  }
+//  else {
+//    $total1 = $total1 + $fila[5];
+//  }
   $registros1[] = $fila;
 }
 
@@ -412,5 +419,8 @@ if (isset($mails)){
   echo $respuesta;
 }
 ///************************************************************ FIN ENVÍO DE MAILS **********************************************************
+error_reporting(E_ALL);
+ini_set('error_reporting', E_ALL);
+ini_set('display_errors',1);
 
 ?>

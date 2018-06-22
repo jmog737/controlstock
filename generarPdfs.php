@@ -1,5 +1,9 @@
 <?php
-session_start();
+if(!isset($_SESSION)) 
+  {
+  //Reanudamos la sesión:
+  session_start(); 
+} 
 /**
 ******************************************************
 *  @file generarPdfs.php
@@ -259,6 +263,12 @@ class PDF extends PDF_MC_Table
     //Restauro color de fondo y tipo de letra para los nombres de los campos (que será el mismo que para la fila con el total):
     //$this->SetFillColor(255, 204, 120);
     //$this->SetTextColor(0);
+    $indiceStock = '';
+    $indiceEntidad = '';
+    $indiceMensaje = '';
+    $indiceCodEMSA = '';
+    $indiceCodOrigen = '';
+    $indiceUltMov = '' ;
     $this->SetFillColor(103, 167, 253);
     $this->SetTextColor(255, 255, 255);
     $this->SetX($x);
@@ -515,13 +525,13 @@ class PDF extends PDF_MC_Table
           
           if ($i === $indiceStock) {
             //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:
-            $alarma1 = $dato[$i+1];
-            $alarma2 = $dato[$i+2];
-            if ($subtotales[$dato[1]] === null){
-              $stock = $dato[$i];
+            $alarma1 = @$dato[$i+1];
+            $alarma2 = @$dato[$i+2];
+            if ($subtotales[@$dato[1]] === null){
+              $stock = @$dato[$i];
             }
             else {
-              $stock = $subtotales[$dato[1]];
+              $stock = $subtotales[@$dato[1]];
             }
             $datito = number_format($stock, 0, ",", ".");
             $a = 'C';

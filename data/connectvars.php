@@ -1,5 +1,9 @@
 <?php
-session_start();
+if(!isset($_SESSION)) 
+  {
+  //Reanudamos la sesión:
+  session_start(); 
+}
 /*!
   @file connectvars.php
   @brief Archivo que contiene las constantes predefinidas para la conexión. \n
