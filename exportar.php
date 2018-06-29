@@ -9,9 +9,9 @@ require_once('data/baseMysql.php');
 require_once('generarExcel.php');
 require_once('generarPdfs.php');
 require_once('data/config.php');
-error_reporting(NULL);
-ini_set('error_reporting', NULL);
-ini_set('display_errors',0);
+//error_reporting(NULL);
+//ini_set('error_reporting', NULL);
+//ini_set('display_errors',0);
 
 //phpinfo();
 //***************************** DESTINATARIOS CORREOS ***********************************************************************************************
@@ -47,7 +47,9 @@ $indice = $_POST["indice"];
 $query = $_POST["query_$indice"];
 $consultaCSV = $_POST["consultaCSV_$indice"];
 
-$subtotales = (array)json_decode($_POST["subtotales_$indice"]);
+if (isset($_POST["subtotales_$indice"])){
+  $subtotales = (array)json_decode($_POST["subtotales_$indice"]);
+}
 
 $tipoConsulta = strip_tags($_POST["tipoConsulta_$indice"]);
 $parteTipo = stripos($tipoConsulta, ": ");

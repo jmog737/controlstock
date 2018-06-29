@@ -5,6 +5,7 @@ if(!isset($_SESSION))
   session_start(); 
 }
 require_once('connectvars.php');
+
 ///Evitamos que nos salgan los NOTICES de PHP
 //error_reporting(E_ALL ^ E_NOTICE);
 

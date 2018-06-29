@@ -22,15 +22,15 @@ $dbc = crearConexion(DB_HOST, $userDB, $pwDB, DB_NAME);
 
 $tipo = $_GET["tipo"];
 
-$query = array();
+//$query = array();
 $query = (array)json_decode($_GET["query"],true);
 
-///Comento escritura en el log para evitar sobrecargar el archivo.
-//escribirLog($query);
 $limite = $tamPage;
 
 $datos = array();
 for ($i = 0; $i < count($query); $i++){
+  ///Comento escritura en el log para evitar sobrecargar el archivo.
+  //escribirLog($query);
   ///Para las consultas de stock, armo consulta para conocer el total de plásticos de la entidad (a mostrar en la última página):
   $datos["$i"]['suma'] = 0;
   $datos["$i"]['retiros'] = null;
@@ -79,7 +79,7 @@ for ($i = 0; $i < count($query); $i++){
     $consultaRenovaciones = $consultaRenovaciones." group by productos.idprod";
     $consultaDestrucciones = $consultaDestrucciones." group by productos.idprod";
     $consultaIngresos = $consultaIngresos." group by productos.idprod";
-    
+
     $resultRetiros = consultarBD($consultaRetiros, $dbc);
     while (($filaRetiros = $resultRetiros->fetch_array(MYSQLI_ASSOC)) != NULL) {
       $idprod = $filaRetiros["idprod"];
@@ -129,28 +129,40 @@ for ($i = 0; $i < count($query); $i++){
     $result = consultarBD($query[$i], $dbc);
 
     while (($fila = $result->fetch_array(MYSQLI_ASSOC)) != NULL) { 
-      $idprod1 = $fila['idprod'];
-      $stockActual[$idprod1] = $fila['stock'];
-      $datos["$i"]['resultado'][] = $fila;
+      $idprod1 = $fila["idprod"];
+      $stockActual[$idprod1] = $fila["stock"];
+      $datos["$i"]["resultado"][] = $fila;
     }
     
-    foreach($stockActual as $index => $valor){
-      if (!(array_key_exists($index , $datos["$i"]["retiros"]))){
-        $datos["$i"]["retiros"][$index] = 0;
+    foreach($stockActual as $produ => $valor){
+//      if (!(array_key_exists($produ, $datos["$i"]["retiros"]))){
+//        $datos["$i"]["retiros"][$produ] = 0;
+//      }
+//      if (!(array_key_exists($produ, $datos["$i"]["renovaciones"]))){
+//        $datos["$i"]["renovaciones"][$produ] = 0;
+//      }
+//      if (!(array_key_exists($produ, $datos["$i"]["destrucciones"]))){
+//        $datos["$i"]["destrucciones"][$produ] = 0;
+//      }
+//      if (!(array_key_exists($produ, $datos["$i"]["ingresos"]))){
+//        $datos["$i"]["ingresos"][$produ] = 0;
+//      }
+      if (!(isset($datos["$i"]["retiros"][$produ]))){
+        $datos["$i"]["retiros"][$produ] = 0;
       }
-      if (!(array_key_exists($index , $datos["$i"]["renovaciones"]))){
-        $datos["$i"]["renovaciones"][$index] = 0;
+      if (!(isset($datos["$i"]["renovaciones"][$produ]))){
+        $datos["$i"]["renovaciones"][$produ] = 0;
       }
-      if (!(array_key_exists($index , $datos["$i"]["destrucciones"]))){
-        $datos["$i"]["destrucciones"][$index] = 0;
+      if (!(isset($datos["$i"]["destrucciones"][$produ]))){
+        $datos["$i"]["destrucciones"][$produ] = 0;
       }
-      if (!(array_key_exists($index , $datos["$i"]["ingresos"]))){
-        $datos["$i"]["ingresos"][$index] = 0;
+      if (!(isset($datos["$i"]["ingresos"][$produ]))){
+        $datos["$i"]["ingresos"][$produ] = 0;
       }
-      $totalConsumos[$index] = $datos["$i"]["retiros"][$index] + $datos["$i"]["renovaciones"][$index] + $datos["$i"]["destrucciones"][$index];
-      $datos["$i"]["stockViejo"][$index] = $valor + $totalConsumos[$index] - $datos["$i"]["ingresos"][$index];
-      $datos["$i"]['suma'] = $datos["$i"]['suma'] + $datos["$i"]["stockViejo"][$index];
-      $datos["$i"]['query'] = $query[$i];
+      $totalConsumos[$produ] = $datos["$i"]["retiros"][$produ] + $datos["$i"]["renovaciones"][$produ] + $datos["$i"]["destrucciones"][$produ];
+      $datos["$i"]["stockViejo"][$produ] = (string)($valor + $totalConsumos[$produ] - $datos["$i"]["ingresos"][$produ]);
+      $datos["$i"]["suma"] = (string)($datos["$i"]["suma"] + $datos["$i"]["stockViejo"][$produ]);
+      $datos["$i"]["query"] = $query[$i];
     }
   }
   
@@ -178,34 +190,34 @@ for ($i = 0; $i < count($query); $i++){
       }
     }
     
-    $consultaRetiros = "select productos.idprod as idprod, sum(cantidad) as retiros from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='retiro' and productos.idprod='".$idprod."'".$fecha."group by productos.idprod";
+    $consultaRetiros = "select productos.idprod as idprod, sum(cantidad) as retiros from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='retiro' and productos.idprod=".$idprod.$fecha."group by productos.idprod";
     $resultRetiros = consultarBD($consultaRetiros, $dbc);
     while (($filaRetiros = $resultRetiros->fetch_array(MYSQLI_ASSOC)) != NULL) {
       //$idprod = $filaRetiros["idprod"];
       $datos["$i"]["retiros"][$idprod] = $filaRetiros["retiros"];
     }
 
-    $consultaRenovaciones = "select productos.idprod as idprod, sum(cantidad) as renovaciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='renovación' and productos.idprod='".$idprod."'".$fecha."group by productos.idprod";
+    $consultaRenovaciones = "select productos.idprod as idprod, sum(cantidad) as renovaciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='renovación' and productos.idprod=".$idprod.$fecha."group by productos.idprod";
     $resultRenovaciones = consultarBD($consultaRenovaciones, $dbc);
     while (($filaRenovaciones = $resultRenovaciones->fetch_array(MYSQLI_ASSOC)) != NULL) {
       //$idprod = $filaRenovaciones["idprod"];
       $datos["$i"]["renovaciones"][$idprod] = $filaRenovaciones["renovaciones"];
     }
 
-    $consultaDestrucciones = "select productos.idprod as idprod, sum(cantidad) as destrucciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='destrucción' and productos.idprod='".$idprod."'".$fecha."group by productos.idprod";
+    $consultaDestrucciones = "select productos.idprod as idprod, sum(cantidad) as destrucciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='destrucción' and productos.idprod=".$idprod.$fecha."group by productos.idprod";
     $resultDestrucciones = consultarBD($consultaDestrucciones, $dbc);
     while (($filaDestrucciones = $resultDestrucciones->fetch_array(MYSQLI_ASSOC)) != NULL) { 
       //$idprod = $filaDestrucciones["idprod"];
       $datos["$i"]["destrucciones"][$idprod] = $filaDestrucciones["destrucciones"];
     }
 
-    $consultaIngresos = "select productos.idprod as idprod, sum(cantidad) as ingresos from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='ingreso' and productos.idprod='".$idprod."'".$fecha."group by productos.idprod";
+    $consultaIngresos = "select productos.idprod as idprod, sum(cantidad) as ingresos from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='ingreso' and productos.idprod=".$idprod.$fecha."group by productos.idprod";
     $resultIngresos = consultarBD($consultaIngresos, $dbc);
     while (($filaIngresos = $resultIngresos->fetch_array(MYSQLI_ASSOC)) != NULL) { 
       //$idprod = $filaIngresos["idprod"];
       $datos["$i"]["ingresos"][$idprod] = $filaIngresos["ingresos"];
     } 
-    
+
     ///Recupero primera página para mostrar:
     $query[$i] = "select idprod, entidad, nombre_plastico, bin, codigo_emsa, codigo_origen, contacto, snapshot, ultimoMovimiento, stock, alarma1, alarma2, comentarios as prodcom from productos where idprod=".$idprod;
     $result = consultarBD($query[$i], $dbc);
@@ -215,22 +227,34 @@ for ($i = 0; $i < count($query); $i++){
       $datos["$i"]['resultado'][] = $fila;
     }
     
-    foreach($stockActual as $index => $valor){
-      if (!(array_key_exists($index , $datos["$i"]["retiros"]))){
-        $datos["$i"]["retiros"][$index] = 0;
+    foreach($stockActual as $produ => $valor){
+//      if (!(array_key_exists($index , $datos["$i"]["retiros"]))){
+//        $datos["$i"]["retiros"][$index] = 0;
+//      }
+//      if (!(array_key_exists($index , $datos["$i"]["renovaciones"]))){
+//        $datos["$i"]["renovaciones"][$index] = 0;
+//      }
+//      if (!(array_key_exists($index , $datos["$i"]["destrucciones"]))){
+//        $datos["$i"]["destrucciones"][$index] = 0;
+//      }
+//      if (!(array_key_exists($index , $datos["$i"]["ingresos"]))){
+//        $datos["$i"]["ingresos"][$index] = 0;
+//      }
+      if (!(isset($datos["$i"]["retiros"][$produ]))){
+        $datos["$i"]["retiros"][$produ] = 0;
       }
-      if (!(array_key_exists($index , $datos["$i"]["renovaciones"]))){
-        $datos["$i"]["renovaciones"][$index] = 0;
+      if (!(isset($datos["$i"]["renovaciones"][$produ]))){
+        $datos["$i"]["renovaciones"][$produ] = 0;
       }
-      if (!(array_key_exists($index , $datos["$i"]["destrucciones"]))){
-        $datos["$i"]["destrucciones"][$index] = 0;
+      if (!(isset($datos["$i"]["destrucciones"][$produ]))){
+        $datos["$i"]["destrucciones"][$produ] = 0;
       }
-      if (!(array_key_exists($index , $datos["$i"]["ingresos"]))){
-        $datos["$i"]["ingresos"][$index] = 0;
+      if (!(isset($datos["$i"]["ingresos"][$produ]))){
+        $datos["$i"]["ingresos"][$produ] = 0;
       }
-      $totalConsumos[$index] = $datos["$i"]["retiros"][$index] + $datos["$i"]["renovaciones"][$index] + $datos["$i"]["destrucciones"][$index];
-      $datos["$i"]["stockViejo"][$index] = $valor + $totalConsumos[$index] - $datos["$i"]["ingresos"][$index];
-      $datos["$i"]['suma'] = $datos["$i"]['suma'] + $datos["$i"]["stockViejo"][$index];
+      $totalConsumos[$produ] = $datos["$i"]["retiros"][$produ] + $datos["$i"]["renovaciones"][$produ] + $datos["$i"]["destrucciones"][$produ];
+      $datos["$i"]["stockViejo"][$produ] = $valor + $totalConsumos[$produ] - $datos["$i"]["ingresos"][$produ];
+      $datos["$i"]['suma'] = $datos["$i"]['suma'] + $datos["$i"]["stockViejo"][$produ];
       $datos["$i"]['totalRows'] = 1;
       $datos["$i"]['query'] = $query[$i];
     }
@@ -240,5 +264,8 @@ for ($i = 0; $i < count($query); $i++){
 
 ///Devuelvo total de registros y datos SOLO de la primera página:
 $json = json_encode($datos);
+//escribirLog($json);
+//$json = '[{"suma":"23810"]';
 echo $json;
+
 ?>

@@ -269,6 +269,8 @@ class PDF extends PDF_MC_Table
     $indiceCodEMSA = '';
     $indiceCodOrigen = '';
     $indiceUltMov = '' ;
+    $indiceAlarma1 = '';
+    $indiceAlarma2 = '';
     $this->SetFillColor(103, 167, 253);
     $this->SetTextColor(255, 255, 255);
     $this->SetX($x);
@@ -278,6 +280,10 @@ class PDF extends PDF_MC_Table
         $this->Cell($largoCampos[$i], $h, $campos[$i], 'LRBT', 0, 'C', true);
         if ($campos[$i] === 'Stock') {
           $indiceStock = $i;
+          if (!($tipo)){
+            $indiceAlarma1 = $i + 1;
+            $indiceAlarma2 = $i + 2;
+          }
         }
         if ($campos[$i] === 'Entidad') {
           $indiceEntidad = $i;
@@ -303,7 +309,7 @@ class PDF extends PDF_MC_Table
     $this->SetX($x);
     $this->SetFont('Courier', '', 9);    
     $fill = 1;
-    foreach ($registros as $dato) { 
+    foreach ($registros as $dato) {
       ///******* Calculo el alto de la fila según el dato más largo: ************************************************************************
       $nb=0;
       $h0 = 0;
@@ -333,69 +339,69 @@ class PDF extends PDF_MC_Table
       if($this->GetY()+$h0>$this->PageBreakTrigger){
         $this->AddPage($this->CurOrientation);
         ///***************************************************************** TITULO ************************************************************
-      //Defino tipo de letra y tamaño para el Título:
-    $this->SetFont('Courier', 'B', 12);
-    //$this->SetY(20);
+        //Defino tipo de letra y tamaño para el Título:
+        $this->SetFont('Courier', 'B', 12);
+        //$this->SetY(20);
 
-    //$tipoTotal = "Stock de $entidad";
-    $tipoTotal = $tipoConsulta;
-    $tam = $this->GetStringWidth($tipoTotal);
-    $xInicio = $xTipo + (($anchoTipo-$tam)/2);
-    $this->SetX($xInicio);
+        //$tipoTotal = "Stock de $entidad";
+        $tipoTotal = $tipoConsulta;
+        $tam = $this->GetStringWidth($tipoTotal);
+        $xInicio = $xTipo + (($anchoTipo-$tam)/2);
+        $this->SetX($xInicio);
 
-    $nbTitulo = $this->NbLines($anchoTipo,$tipoTotal);
-    $hTitulo=$h*$nbTitulo;
-    
-    //Save the current position
-    $x1=$this->GetX();
-    $y=$this->GetY();
-    $tam1 = $this->GetStringWidth("Stock de ");
-    
-    $fraccionado = false;
-    $parteTipo = stripos($tipoTotal, ": ");
-    if ($parteTipo !== false){
-      $parte2 = explode(": ", $tipoTotal);
-      $ultimaParte = utf8_decode(" al día: ".$parte2[1]);
-      $fraccionado = true;
-      $tamUlitmaParte = $this->GetStringWidth($ultimaParte);
-    }
-    
-    if ($tipo) {
-      ///Si es Total de stock en bóveda, le agrego itálica a todo el título:
-      $this->SetFont('Courier', 'BI', 12);
-      $this->SetTextColor(0);
-      $this->SetX($xTipo);
-      $this->MultiCell($anchoTipo, $h, utf8_decode($tipoConsulta), 0, 'C', 0);
-    }
-    else {
-      if ($nbTitulo > 1) {
-        $this->SetTextColor(0);
-        $this->Cell($tam1,$h, "Stock de ",0, 0, 'R', 0);
-        $this->SetTextColor(255, 0, 0);
-        $this->SetFont('Courier', 'BI', 12);
-        $tamNombre1 = $this->GetStringWidth($entidad);
-        $this->Cell($tamNombre1,$h, utf8_decode($entidad),0, 0,'L', 0);
-        $this->SetTextColor(0);
-        if ($fraccionado){
-          $this->Cell($tamUlitmaParte,$h, $ultimaParte,0, 0, 'L', 0);
+        $nbTitulo = $this->NbLines($anchoTipo,$tipoTotal);
+        $hTitulo=$h*$nbTitulo;
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        $tam1 = $this->GetStringWidth("Stock de ");
+
+        $fraccionado = false;
+        $parteTipo = stripos($tipoTotal, ": ");
+        if ($parteTipo !== false){
+          $parte2 = explode(": ", $tipoTotal);
+          $ultimaParte = utf8_decode(" al día: ".$parte2[1]);
+          $fraccionado = true;
+          $tamUlitmaParte = $this->GetStringWidth($ultimaParte);
         }
-      }
-      else {
-        $this->SetTextColor(0);
-        $this->Cell($tam1,$hTitulo, "Stock de",0, 0,'R', 0);
-        $this->SetTextColor(255, 0, 0);
-        $this->SetFont('Courier', 'BI', 12);
-        $tamNombre1 = $this->GetStringWidth($entidad);
-        $this->Cell($tamNombre1,$hTitulo, utf8_decode($entidad),0, 0,'L', 0);
-        $this->SetTextColor(0);
-        if ($fraccionado){
-          $this->Cell($tamUlitmaParte,$hTitulo, $ultimaParte,0, 0, 'L', 0);
+
+        if ($tipo) {
+          ///Si es Total de stock en bóveda, le agrego itálica a todo el título:
+          $this->SetFont('Courier', 'BI', 12);
+          $this->SetTextColor(0);
+          $this->SetX($xTipo);
+          $this->MultiCell($anchoTipo, $h, utf8_decode($tipoConsulta), 0, 'C', 0);
         }
-      }  
-    }
+        else {
+          if ($nbTitulo > 1) {
+            $this->SetTextColor(0);
+            $this->Cell($tam1,$h, "Stock de ",0, 0, 'R', 0);
+            $this->SetTextColor(255, 0, 0);
+            $this->SetFont('Courier', 'BI', 12);
+            $tamNombre1 = $this->GetStringWidth($entidad);
+            $this->Cell($tamNombre1,$h, utf8_decode($entidad),0, 0,'L', 0);
+            $this->SetTextColor(0);
+            if ($fraccionado){
+              $this->Cell($tamUlitmaParte,$h, $ultimaParte,0, 0, 'L', 0);
+            }
+          }
+          else {
+            $this->SetTextColor(0);
+            $this->Cell($tam1,$hTitulo, "Stock de",0, 0,'R', 0);
+            $this->SetTextColor(255, 0, 0);
+            $this->SetFont('Courier', 'BI', 12);
+            $tamNombre1 = $this->GetStringWidth($entidad);
+            $this->Cell($tamNombre1,$hTitulo, utf8_decode($entidad),0, 0,'L', 0);
+            $this->SetTextColor(0);
+            if ($fraccionado){
+              $this->Cell($tamUlitmaParte,$hTitulo, $ultimaParte,0, 0, 'L', 0);
+            }
+          }  
+        }
 
 
-////*****************************************************************************************************************************************************
+        ////*****************************************************************************************************************************************************
         /*
 //Defino tipo de letra y tamaño para el Título:
         $this->SetFont('Courier', 'B', 12);
@@ -523,46 +529,57 @@ class PDF extends PDF_MC_Table
           $this->Rect($x1,$y,$w,$h0, $f);
           //$this->RoundedRect($x1,$y,$w,$h0, 3.5, '1234', $f);
           
-          if ($i === $indiceStock) {
-            //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:
-            $alarma1 = @$dato[$i+1];
-            $alarma2 = @$dato[$i+2];
-            if ($subtotales[@$dato[1]] === null){
-              $stock = @$dato[$i];
-            }
-            else {
-              $stock = $subtotales[@$dato[1]];
-            }
-            $datito = number_format($stock, 0, ",", ".");
-            $a = 'C';
-            $fillActual = $fill;
-            $this->SetFont('Courier', 'BI', 12);            
-            if (($stock < $alarma1) && ($stock > $alarma2)){
-              /// seteo color alarma de Advertencia (amarilla):
-              $this->SetFillColor(255, 255, 51);
-              $this->SetTextColor(0);
+          if ($i === $indiceStock) {//echo "indStock: ".$indiceStock."<br>indAl1: ".$indiceAlarma1."<br>indAl2: ".$indiceAlarma2."<br>";
+            if ($tipo){
+              /// seteo color de stock regular (verde):
+              $this->SetFillColor(113, 236, 113);
               $fill = 1;
+              $datito = number_format($dato[$indiceStock], 0, ",", ".");
+              $a = 'R';
+              $fillActual = $fill;
+              $this->SetFont('Courier', 'BI', 12);
             }
             else {
-              if ($stock < $alarma2){
-                /// seteo color de alarma Crítica (roja):
-                $this->SetFillColor(231, 56, 67);
-                $this->SetTextColor(255);
+              //Detecto si el stock actual está o no por debajo del valor de alarma. En base a eso elijo el color de fondo del stock:
+              if (isset($dato[$indiceAlarma1])){
+                $alarma1 = $dato[$indiceAlarma1];
+              }
+              if (isset($dato[$indiceAlarma2])){
+                $alarma2 = $dato[$indiceAlarma2];
+              }
+
+              if (!isset($subtotales[$dato[1]])){
+                $stock = $dato[$indiceStock];
+              }
+              else {
+                $stock = $subtotales[$dato[1]];
+              }
+              $datito = number_format($stock, 0, ",", ".");
+              $a = 'C';
+              $fillActual = $fill;
+              $this->SetFont('Courier', 'BI', 12);            
+              if (($stock < $alarma1) && ($stock > $alarma2)){
+                /// seteo color alarma de Advertencia (amarilla):
+                $this->SetFillColor(255, 255, 51);
+                $this->SetTextColor(0);
                 $fill = 1;
               }
               else {
-                if (!$tipo) {
-                  /// seteo color de stock regular (verde):
-                  $this->SetFillColor(113, 236, 113);
+                if ($stock < $alarma2){
+                  /// seteo color de alarma Crítica (roja):
+                  $this->SetFillColor(231, 56, 67);
+                  $this->SetTextColor(255);
                   $fill = 1;
                 }
                 else {
-                  $this->SetFillColor(103, 167, 253);
+                  //$this->SetFillColor(103, 167, 253);
+                  /// seteo color de stock regular (verde):
+                  $this->SetFillColor(113, 236, 113);
                   $this->SetTextColor(0);
-                  $fill = 0;
-                }        
-              }
-            }        
+                  $fill = 1;
+                }
+              } 
+            } 
           }
           else {
             if ($i === $indiceEntidad) {
@@ -1225,7 +1242,7 @@ class PDF extends PDF_MC_Table
                         break;
         case "Alarma2": $indAlarma2 = $i;
                         break;   
-        case "Últ. Mov.":  $indUltMov = $i;
+        case utf8_decode("Últ. Mov."):  $indUltMov = $i;
                           break;
         case "Stock": $indStock = $i;
                       break;                 
@@ -1569,7 +1586,7 @@ class PDF extends PDF_MC_Table
                               break;
               case "Alarma2": $indAlarma2 = $i;
                               break;   
-              case "Últ. Mov.":  $indUltMov = $i;
+              case utf8_decode("Últ. Mov."):  $indUltMov = $i;
                                 break;
               case "Stock": $indStock = $i;
                             break;                 
@@ -1771,7 +1788,7 @@ class PDF extends PDF_MC_Table
                             break;
             case "Alarma2": $indAlarma2 = $i;
                             break;   
-            case "Últ. Mov.":  $indUltMov = $i;
+            case utf8_decode("Últ. Mov."):  $indUltMov = $i;
                               break;
             case "Stock": $indStock = $i;
                           break;                 
@@ -2716,9 +2733,12 @@ class PDF extends PDF_MC_Table
     $foto = $registros[0][8];
     $ultimoMovimiento = trim(utf8_decode($registros[0][9]));
     $idprod = $registros[0][1];
-    $stock = $subtotales[$idprod];
-    if ($stock === null){
+    
+    if (!isset($subtotales[$idprod])){
       $stock = $registros[0][10];  
+    }
+    else {
+      $stock = $subtotales[$idprod];
     }
     $alarma1 = $registros[0][11];
     $alarma2 = $registros[0][12];    

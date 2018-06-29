@@ -4,6 +4,8 @@ if(!isset($_SESSION))
   //Reanudamos la sesión:
   session_start(); 
 } 
+///Se deshabilita el reporte de errores dado que de estar habilitado NO genera la gráfica.
+///Se vuelven a habilitar al finalizar el script.
 error_reporting(NULL);
 ini_set('error_reporting', NULL);
 ini_set('display_errors',0);

@@ -6,12 +6,14 @@ if(!isset($_SESSION))
 } 
 require_once("data/sesiones.php");
 
-if ($_POST["hacerGrafica"] === "yes") {
-  $_SESSION["consulta"] = $_POST["consulta"];
-  $_SESSION["fechaInicio"] = $_POST["fechaInicio"];
-  $_SESSION["fechaFin"] = $_POST["fechaFin"];
-  $_SESSION["mensaje"] = $_POST["mensaje"];
-  $_SESSION["criterioFecha"] = $_POST["criterioFecha"];
+if (isset($_POST["hacerGrafica"])){
+  if ($_POST["hacerGrafica"] === "yes") {
+    $_SESSION["consulta"] = $_POST["consulta"];
+    $_SESSION["fechaInicio"] = $_POST["fechaInicio"];
+    $_SESSION["fechaFin"] = $_POST["fechaFin"];
+    $_SESSION["mensaje"] = $_POST["mensaje"];
+    $_SESSION["criterioFecha"] = $_POST["criterioFecha"];
+  }
 }
 
 /**
