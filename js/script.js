@@ -4391,7 +4391,7 @@ function cargarFormEstadisticas(selector){
             <th>Entidad:</th>\n\
             <td colspan="3">\n\
               <select name="entidad" id="entidadGrafica" title="Seleccionar la entidad" style="width: 100%">\n\
-                <option value="todos" selected="yes">---TODOS---</option>';
+                <option value="todos">---TODOS---</option>';
     for (var i in entidades) {
       tr += '<option value="'+entidades[i]['entidad']+'">'+entidades[i]['entidad']+'</option>';
     }
@@ -4417,46 +4417,46 @@ function cargarFormEstadisticas(selector){
                     <input type="date" name="diaFin" id="diaFin" title="Elegir la fecha de finalización\n(Sólo si se busca por fechas)" tabindex="7" style="width:100%; text-align: center" min="2017-10-01">\n\
                   </td>\n\
                 </tr>';
-        tr += '<tr>\n\
-                <td class="fondoNaranja">\n\
-                  <input type="radio" name="criterioFecha" title="Elegir el período a buscar\nSeleccionar si se quiere consultar por meses" value="mes">\n\
-                </td>\n\
-                <th>Mes Inicial:</th>\n\
-                <td>\n\
-                  <select id="mesInicio" name="mesInicio" title="Elegir el mes de inicio\n(Sólo si se busca por meses)" tabindex="8" style="width:100%">\n\
-                    <option value="todos" selected="yes">--Seleccionar--</option>\n\
-                    <option value="1">Enero</option>\n\
-                    <option value="2">Febrero</option>\n\
-                    <option value="3">Marzo</option>\n\
-                    <option value="4">Abril</option>\n\
-                    <option value="5">Mayo</option>\n\
-                    <option value="6">Junio</option>\n\
-                    <option value="7">Julio</option>\n\
-                    <option value="8">Agosto</option>\n\
-                    <option value="9">Setiembre</option>\n\
-                    <option value="10">Octubre</option>\n\
-                    <option value="11">Noviembre</option>\n\
-                    <option value="12">Diciembre</option>\n\
-                  </select>\n\
-                </td>\n\
-                <th>Año:</th>\n\
-                <td>\n\
-                  <select id="añoInicio" title="Elegir el año de inicio\n(Sólo si se busca por meses)" name="añoInicio" tabindex="9" style="width:100%">\n\
-                    <option value="2017">2017</option>\n\
-                    <option value="2018" selected="yes">2018</option>\n\
-                    <option value="2019">2019</option>\n\
-                    <option value="2020">2020</option>\n\
-                    <option value="2021">2021</option>\n\
-                  </select>\n\
-                </td>\n\
-              </tr>';
+    tr += '<tr>\n\
+            <td class="fondoNaranja">\n\
+              <input type="radio" name="criterioFecha" title="Elegir el período a buscar\nSeleccionar si se quiere consultar por meses" value="mes">\n\
+            </td>\n\
+            <th>Mes Inicial:</th>\n\
+            <td>\n\
+              <select id="mesInicio" name="mesInicio" title="Elegir el mes de inicio\n(Sólo si se busca por meses)" tabindex="8" style="width:100%">\n\
+                <option value="todos">--Seleccionar--</option>\n\
+                <option value="1">Enero</option>\n\
+                <option value="2">Febrero</option>\n\
+                <option value="3">Marzo</option>\n\
+                <option value="4">Abril</option>\n\
+                <option value="5">Mayo</option>\n\
+                <option value="6">Junio</option>\n\
+                <option value="7">Julio</option>\n\
+                <option value="8">Agosto</option>\n\
+                <option value="9">Setiembre</option>\n\
+                <option value="10">Octubre</option>\n\
+                <option value="11">Noviembre</option>\n\
+                <option value="12">Diciembre</option>\n\
+              </select>\n\
+            </td>\n\
+            <th>Año:</th>\n\
+            <td>\n\
+              <select id="añoInicio" title="Elegir el año de inicio\n(Sólo si se busca por meses)" name="añoInicio" tabindex="9" style="width:100%">\n\
+                <option value="2017">2017</option>\n\
+                <option value="2018">2018</option>\n\
+                <option value="2019">2019</option>\n\
+                <option value="2020">2020</option>\n\
+                <option value="2021">2021</option>\n\
+              </select>\n\
+            </td>\n\
+          </tr>';
     tr += '<tr>\n\
                 <td class="fondoNaranja">\n\
                 </td>\n\
                 <th>Mes Final:</th>\n\
                 <td>\n\
                   <select id="mesFin" name="mesFin" title="Elegir el mes de finalización\n(Sólo si se busca por meses)" tabindex="8" style="width:100%">\n\
-                    <option value="todos" selected="yes">--Seleccionar--</option>\n\
+                    <option value="todos">--Seleccionar--</option>\n\
                     <option value="1">Enero</option>\n\
                     <option value="2">Febrero</option>\n\
                     <option value="3">Marzo</option>\n\
@@ -4475,14 +4475,14 @@ function cargarFormEstadisticas(selector){
                 <td>\n\
                   <select id="añoFin" name="añoInicio" title="Elegir el año de finalización\n(Sólo si se busca por meses)" tabindex="9" style="width:100%">\n\
                     <option value="2017">2017</option>\n\
-                    <option value="2018" selected="yes">2018</option>\n\
+                    <option value="2018">2018</option>\n\
                     <option value="2019">2019</option>\n\
                     <option value="2020">2020</option>\n\
                     <option value="2021">2021</option>\n\
                   </select>\n\
                 </td>\n\
               </tr>';
-        tr += '<tr>\n\
+    tr += '<tr>\n\
                 <td class="fondoNaranja">\n\
                   <input type="radio" name="criterioFecha" title="Elegir el período a buscar\nSeleccionar si se quieren TODOS los movimientos" value="todos" checked="checked">\n\
                 </td>\n\
@@ -4522,7 +4522,111 @@ function cargarFormEstadisticas(selector){
     mostrar += titulo;
     mostrar += formu;
     $("#nombreGrafica").val("");
+    
+    var parametros = jQuery(location).attr('search');
+    var criterio = '';
+    var tipo = '';
+    var e = '';
+    var h = '';
+    if (parametros){
+      var temp = parametros.split('?');
+      var temp1 = temp[1].split('&');
+      var tam = temp1.length;
+      
+      if (tam !== 4){
+        var temp2 = temp1[0].split('=');
+        criterio = temp2[1];
+        if (criterio === 'intervalo'){
+          var temp4 = temp1[1].split('=');
+          var temp5 = temp1[2].split('=');
+          var temp6 = temp1[3].split('=');
+          var temp7 = temp1[4].split('=');
+          var temp8 = temp1[5].split('=');
+          var d1 = temp4[1];
+          var d2 = temp5[1];        
+          e = decodeURI(temp6[1]);
+          tipo = decodeURI(temp7[1]);
+          h = decodeURI(temp8[1]);
+        }
+        if (criterio === 'mes'){
+          var temp6 = temp1[1].split('=');
+          var temp7 = temp1[2].split('=');
+          var temp8 = temp1[3].split('=');
+          var temp9 = temp1[4].split('=');
+          var temp10 = temp1[5].split('=');
+          var temp11 = temp1[6].split('=');
+          var temp12 = temp1[7].split('=');
+          var m1 = temp6[1];
+          var a1 = temp7[1];
+          var m2 = temp8[1];
+          var a2 = temp9[1];  
+          e = decodeURI(temp10[1]);
+          tipo = decodeURI(temp11[1]);
+          h = decodeURI(temp12[1]);
+        }
+      }
+      else {
+        var temp2 = temp1[1].split('=');
+        var temp3 = temp1[2].split('=');
+        var temp4 = temp1[3].split('=');
+        e = decodeURI(temp2[1]);
+        tipo = decodeURI(temp3[1]);
+        h = decodeURI(temp4[1]);
+      }
+    }
+    
     $(selector).html(mostrar);
+    
+    if ((criterio === 'todos')||(criterio === '')){
+      ///Seteo valores por defecto en las otras opciones:
+      $("#mesInicio").val('todos');
+      $("#añoInicio").val('2018');
+      $("#mesFin").val('todos');
+      $("#añoFin").val('2018');
+      $("[name=criterioFecha]").val(["todos"]);
+      if ((tipo === '')||(tipo === undefined)){
+        $("#tipo").val('Todos');
+      }
+      else {
+        $("#tipo").val(tipo);
+      }
+    }
+    if (criterio === 'intervalo'){
+      $("#diaInicio").val(d1);
+      $("#diaFin").val(d2);
+      ///Seteo valores por defecto en las otras opciones:
+      $("#mesInicio").val('todos');
+      $("#añoInicio").val('2018');
+      $("#mesFin").val('todos');
+      $("#añoFin").val('2018');
+      $("[name=criterioFecha]").val(["intervalo"]);
+      $("#tipo").val(tipo);
+    }
+    if (criterio === 'mes'){
+      $("#mesInicio").val(m1);
+      $("#añoInicio").val(a1);
+      $("#mesFin").val(m2);
+      $("#añoFin").val(a2);
+      $("[name=criterioFecha]").val(["mes"]);
+      $("#tipo").val(tipo);
+    }
+    
+    if ((e !== '')&&(e !== undefined)){
+      var tem = validarEntero(e);
+      if (tem === true){
+        $("#entidadGrafica").val('todos');
+        $("#productoGrafica").val(h);
+        showHint(h, '#productoGrafica', e);
+      }
+      else {
+        $("#entidadGrafica").val(e);
+        $("#productoGrafica").val('');
+      }
+    }
+    else {
+      $("#entidadGrafica").val('todos');
+      $("#productoGrafica").val('');
+    }
   });
 }
 /********** fin cargarFormEstadisticas(selector) **********/
@@ -4540,7 +4644,61 @@ function cargarGrafica(selector){
                   <img src="graficar.php" id="grafiquita" width="750px" height="350px">\n\
                   <figcaption>Gr&aacute;fica con las estad&iacute;sticas</figcaption>\n\
                 </figure>';
-  var volver = '<a title="Volver a ESTADÍSTICAS" href="estadisticas.php">Volver</a>';
+  
+  var parametros = jQuery(location).attr('search');//alert('en cargar gráfica\np: '+parametros);
+  var temp = parametros.split('?');
+  var temp1 = temp[1].split('&');
+  var tam = temp1.length;
+  
+  //temp1[0] corresponde siempre a g=1 para hacer la gráfica el cual NO se necesita ahora
+  //var temp2 = temp1[0].split('=');
+  
+  var temp3 = temp1[1].split('=');
+  var criterio = temp3[1];
+  var param = '';
+  var e = '';
+  var t = '';
+  var h = '';
+  if (tam === 7){
+    var temp4 = temp1[2].split('=');
+    var temp5 = temp1[3].split('=');
+    var temp6 = temp1[4].split('=');
+    var temp7 = temp1[5].split('=');
+    var temp8 = temp1[6].split('=');
+    var d1 = temp4[1];
+    var d2 = temp5[1];
+    e = decodeURI(temp6[1]);
+    t = decodeURI(temp7[1]);
+    h = decodeURI(temp8[1]);
+    param = '&d1='+d1+'&d2='+d2+'&e='+e+'&t='+t+'&h='+h+'';
+  }
+  if (tam === 9){
+    var temp6 = temp1[2].split('=');
+    var temp7 = temp1[3].split('=');
+    var temp8 = temp1[4].split('=');
+    var temp9 = temp1[5].split('=');
+    var temp10 = temp1[6].split('=');
+    var temp11 = temp1[7].split('=');
+    var temp12 = temp1[8].split('=');
+    var m1 = temp6[1];
+    var a1 = temp7[1];
+    var m2 = temp8[1];
+    var a2 = temp9[1];  
+    e = decodeURI(temp10[1]);
+    t = decodeURI(temp11[1]);
+    h = decodeURI(temp12[1]);
+    param = '&m1='+m1+'&a1='+a1+'&m2='+m2+'&a2='+a2+'&e='+e+'&t='+t+'&h='+h+'';
+  }
+  if (tam === 5){
+    var temp4 = temp1[2].split('=');
+    var temp5 = temp1[3].split('=');
+    var temp6 = temp1[4].split('=');
+    e = decodeURI(temp4[1]);
+    t = decodeURI(temp5[1]);
+    h = decodeURI(temp6[1]);
+    param = '&e='+e+'&t='+t+'&h='+h+'';
+  }
+  var volver = '<a title="Volver a ESTADÍSTICAS" href="estadisticas.php?c='+criterio+param+'"">Volver</a>';
   mostrar += titulo;
   mostrar += formuInicio;
   mostrar += grafica;
@@ -4556,305 +4714,316 @@ function cargarGrafica(selector){
   \brief Función que se encarga de realizar la gráfica.
 */
 function realizarGrafica(){
-//  var timestamp = Math.round(Date.now() / 1000);
-//      
-//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-//    window.location.href = "../consultastock/index.php";
-//  }
-//  else {
-    verificarSesion();
-    var radio = $('input:radio[name=criterio]:checked').val();
-    var entidadGrafica = document.getElementById("entidadGrafica").value;
-    var idProd = $("#hint").val();
-    var nombreProducto = $("#hint").find('option:selected').text( );
-    
-    if ((nombreProducto !== "undefined") && (nombreProducto !== '')) {
-      ///Separo en partes el nombreProducto que contiene [entidad: codigo] --- nombreProducto
-      var tempo = nombreProducto.split("- ");
-      var nombreSolo = tempo[1].trim();
-      //var tempo2 = tempo1.split("{");
-      //var nombreSolo = tempo2[0].trim();
-    }
-    
-    var tipo = $("#tipo").find('option:selected').val( ); 
-    var criterioFecha = $('input:radio[name=criterioFecha]:checked').val();
-    
-    var mensajeFecha = '';
-    var inicio = '';
-    var fin = '';
-    var rangoFecha = '';
-    var hoy = new Date();
-    var tempMonth = parseInt(hoy.getMonth(), 10)+1;
-    var tempDia = hoy.getDate();
-    var tempAño = hoy.getUTCFullYear();
-    if (tempMonth < 10){
-      tempMonth = "0"+tempMonth;
-    }
-    if (tempDia < 10){
-      tempDia = "0"+tempDia;
-    }
-    var meses = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"];
- 
-    var validado = true;
-    
-    switch (criterioFecha) {
-      case "intervalo": var diaInicio = $("#diaInicio").val();
-                        var diaFin = $("#diaFin").val();
-                        if (diaInicio === ''){
-                          diaInicio = $("#diaInicio").attr("min");
-                        }
-                        else {
-                          diaInicio = $("#diaInicio").val();
-                        }
-                        if (diaFin === ''){
-                          diaFin = tempAño+"-"+tempMonth+"-"+tempDia;
-                        }
-                        else {
-                          diaFin = $("#diaFin").val();
-                        }
-                        var inicioDate = new Date(diaInicio+" 00:00:00");
-                        var finDate = new Date(diaFin+" 23:59:59");
-                        if (finDate < inicioDate) {
-                          alert('ERROR. La fecha final NO puede ser anterior a la fecha inicial.\nPor favor verifique.');
-                          $("#diaInicio").focus();
-                          validado = false;
-                        }
-                        else {
-                          var mesTemp = inicioDate.getUTCMonth()+1;
-                          if (mesTemp < 10) {
-                            mesTemp = "0"+mesTemp;
-                          }
-                          var diaTemp = inicioDate.getDate();
-                          if (diaTemp < 10) {
-                            diaTemp = "0"+diaTemp;
-                          }
-                          var dia1 = diaTemp+"/"+mesTemp.toString()+"/"+inicioDate.getUTCFullYear();
-                          inicio = inicioDate.getUTCFullYear()+"-"+mesTemp.toString()+"-"+diaTemp;
-                          
-                          if (finDate > hoy){
-                            var mesTemp1 = hoy.getUTCMonth()+1;
-                            if (mesTemp1 < 10) {
-                              mesTemp1 = "0"+mesTemp1;
-                            }
-                            var diaTemp1 = hoy.getDate();
-                            if (diaTemp1 < 10) {
-                              diaTemp1 = "0"+diaTemp1;
-                            }
-                            fin = hoy.getUTCFullYear()+"-"+mesTemp1.toString()+"-"+diaTemp1;
-                            dia2 = diaTemp1+"/"+mesTemp1.toString()+"/"+hoy.getUTCFullYear();
-                          }
-                          else {
-                            var mesTemp2 = finDate.getUTCMonth()+1;
-                            if (mesTemp2 < 10) {
-                              mesTemp2 = "0"+mesTemp2;
-                            }
-                            var diaTemp2 = finDate.getDate();
-                            if (diaTemp2 < 10) {
-                              diaTemp2 = "0"+diaTemp2;
-                            }
-                            dia2 = diaTemp2+"/"+mesTemp2.toString()+"/"+finDate.getUTCFullYear();
-                            fin = finDate.getUTCFullYear()+"-"+mesTemp2.toString()+"-"+diaTemp2;
-                          }
-                          
-                          if (inicio == fin) {
-                            mensajeFecha = "del día "+dia1;
-                          }
-                          else {
-                            mensajeFecha = "entre el "+dia1+" y el "+dia2;
-                          }                      
-                        }
-                        rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin+"')";
-                        break;
-      case "mes": ///Recupero valores pasados:
-                  var mesInicio = $("#mesInicio").val();
-                  var añoInicio = parseInt($("#añoInicio").val(), 10);
-                  var mesFin = $("#mesFin").val();
-                  var añoFin = parseInt($("#añoFin").val(), 10);   
-                  if (mesInicio === 'todos'){
-                    mesInicio = 1;
-                  }
-                  else {
-                    mesInicio = parseInt(mesInicio, 10);
-                  }
-                  if (mesFin === 'todos'){
-                    mesFin = 12;
-                  }
-                  else {
-                    mesFin = parseInt(mesFin, 10);
-                  }
-                  ///Instancio dos objetos tipo Date con las fechas inicial y final:
-                  var finDate1 = new Date(añoFin,mesFin,0, 23,59,59);
-                  var inicioDate1 = new Date(añoInicio+"-"+mesInicio+"-01 00:00:00");
+  verificarSesion();
+  var radio = $('input:radio[name=criterio]:checked').val();
+  var entidadGrafica = document.getElementById("entidadGrafica").value;
+  var idProd = $("#hint").val();
+  var productoGrafica = $("#productoGrafica").val();
+  var nombreProducto = $("#hint").find('option:selected').text( );
 
-                  var mes1 = '';
-                  var mes2 = '';
-                  var dia1 = '';
-                  var dia2 = '';
+  if ((nombreProducto !== "undefined") && (nombreProducto !== '')) {
+    ///Separo en partes el nombreProducto que contiene [entidad: codigo] --- nombreProducto
+    var tempo = nombreProducto.split("- ");
+    var nombreSolo = tempo[1].trim();
+    //var tempo2 = tempo1.split("{");
+    //var nombreSolo = tempo2[0].trim();
+  }
 
-                  var inicialMonth1 = parseInt(inicioDate1.getUTCMonth(), 10)+1;  
-                  if (inicialMonth1 < 10){
-                    mes1 = '0'+inicialMonth1.toString();
-                  }
-                  else {
-                    mes1 = inicialMonth1.toString();
-                  }
-                  if (inicioDate1.getDate() < 10){
-                    dia1 = '0'+inicioDate1.getDate();
-                  }
-                  else {
-                    dia1 = inicioDate1.getDate();
-                  }
-                  inicio = inicioDate1.getUTCFullYear()+"-"+mes1+"-"+dia1;
-                  
-                  ///Chequeo que la fecha final pasada no sea posterior a hoy:
-                  if (finDate1 > hoy){
-                    fin = tempAño+"-"+tempMonth.toString()+"-"+tempDia;
-                    añoFin = hoy.getUTCFullYear();
-                    mesFin = hoy.getMonth()+1;
-                    //dia2 = hoy.getDate()+"/"+hoy.getMonth()+1+"/"+hoy.getUTCFullYear();
-                  }
-                  else {
-                    var finalMonth1 = parseInt(finDate1.getMonth(), 10)+1;
-                    if (finalMonth1 < 10){
-                      mes2 = '0'+finalMonth1.toString();
-                    }
-                    else {
-                      mes2 = finalMonth1.toString();
-                    }
-                    if (finDate1.getDate() < 10){
-                      dia2 = '0'+finDate1.getDate();
-                    }
-                    else {
-                      dia2 = finDate1.getDate();
-                    }
-                    fin = finDate1.getFullYear()+"-"+mes2+"-"+dia2;
-                  }
-                       
-                  ///Comienzo validación del rango elegido:
-                  if (añoFin < añoInicio) {
-                    alert('ERROR. El año final NO puede ser anterior al año inicial. \nPor favor verifique.');
-                    $("#añoInicio").focus();
-                    validado = false;
-                  }
-                  else {
-                    ///Mismo año:
-                    if (añoInicio === añoFin){
-                      ///Mismo año y mes final anterior al inicial:
-                      if (mesFin < mesInicio) {
-                        alert('ERROR. El mes final NO puede ser anterior que el mes inicial.\nPor favor verifique.');
-                        $("#mesInicio").focus();
+  var tipo = $("#tipo").find('option:selected').val( ); 
+  var criterioFecha = $('input:radio[name=criterioFecha]:checked').val();
+
+  var mensajeFecha = '';
+  var inicio = '';
+  var fin = '';
+  var rangoFecha = '';
+  var hoy = new Date();
+  var tempMonth = parseInt(hoy.getMonth(), 10)+1;
+  var tempDia = hoy.getDate();
+  var tempAño = hoy.getUTCFullYear();
+  if (tempMonth < 10){
+    tempMonth = "0"+tempMonth;
+  }
+  if (tempDia < 10){
+    tempDia = "0"+tempDia;
+  }
+  var meses = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"];
+
+  var validado = true;
+
+  switch (criterioFecha) {
+    case "intervalo": var diaInicio = $("#diaInicio").val();
+                      var diaFin = $("#diaFin").val();
+                      if (diaInicio === ''){
+                        diaInicio = $("#diaInicio").attr("min");
+                      }
+                      else {
+                        diaInicio = $("#diaInicio").val();
+                      }
+                      if (diaFin === ''){
+                        diaFin = tempAño+"-"+tempMonth+"-"+tempDia;
+                      }
+                      else {
+                        diaFin = $("#diaFin").val();
+                      }
+                      var inicioDate = new Date(diaInicio+" 00:00:00");
+                      var finDate = new Date(diaFin+" 23:59:59");
+                      if (finDate < inicioDate) {
+                        alert('ERROR. La fecha final NO puede ser anterior a la fecha inicial.\nPor favor verifique.');
+                        $("#diaInicio").focus();
                         validado = false;
                       }
                       else {
-                        ///Mismo año y mismo mes, poner solo del mes y año tal:
-                        if (mesFin === mesInicio) {
-                          mensajeFecha = "de "+meses[mesInicio]+" de "+añoInicio;
+                        var mesTemp = inicioDate.getUTCMonth()+1;
+                        if (mesTemp < 10) {
+                          mesTemp = "0"+mesTemp;
                         }
-                        ///Mismo año, pero meses distintos, entonces poner entre tal mes y tal mes del año tal:
+                        var diaTemp = inicioDate.getDate();
+                        if (diaTemp < 10) {
+                          diaTemp = "0"+diaTemp;
+                        }
+                        var dia1 = diaTemp+"/"+mesTemp.toString()+"/"+inicioDate.getUTCFullYear();
+                        inicio = inicioDate.getUTCFullYear()+"-"+mesTemp.toString()+"-"+diaTemp;
+
+                        if (finDate > hoy){
+                          var mesTemp1 = hoy.getUTCMonth()+1;
+                          if (mesTemp1 < 10) {
+                            mesTemp1 = "0"+mesTemp1;
+                          }
+                          var diaTemp1 = hoy.getDate();
+                          if (diaTemp1 < 10) {
+                            diaTemp1 = "0"+diaTemp1;
+                          }
+                          fin = hoy.getUTCFullYear()+"-"+mesTemp1.toString()+"-"+diaTemp1;
+                          dia2 = diaTemp1+"/"+mesTemp1.toString()+"/"+hoy.getUTCFullYear();
+                        }
                         else {
-                          mensajeFecha = "entre "+meses[mesInicio]+" y "+meses[mesFin]+" de "+añoInicio;
+                          var mesTemp2 = finDate.getUTCMonth()+1;
+                          if (mesTemp2 < 10) {
+                            mesTemp2 = "0"+mesTemp2;
+                          }
+                          var diaTemp2 = finDate.getDate();
+                          if (diaTemp2 < 10) {
+                            diaTemp2 = "0"+diaTemp2;
+                          }
+                          dia2 = diaTemp2+"/"+mesTemp2.toString()+"/"+finDate.getUTCFullYear();
+                          fin = finDate.getUTCFullYear()+"-"+mesTemp2.toString()+"-"+diaTemp2;
                         }
+
+                        if (inicio == fin) {
+                          mensajeFecha = "del día "+dia1;
+                        }
+                        else {
+                          mensajeFecha = "entre el "+dia1+" y el "+dia2;
+                        }                      
+                      }
+                      rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin+"')";
+                      break;
+    case "mes": ///Recupero valores pasados:
+                var mesInicio = $("#mesInicio").val();
+                var añoInicio = parseInt($("#añoInicio").val(), 10);
+                var mesFin = $("#mesFin").val();
+                var añoFin = parseInt($("#añoFin").val(), 10);   
+                if (mesInicio === 'todos'){
+                  mesInicio = 1;
+                }
+                else {
+                  mesInicio = parseInt(mesInicio, 10);
+                }
+                if (mesFin === 'todos'){
+                  mesFin = 12;
+                }
+                else {
+                  mesFin = parseInt(mesFin, 10);
+                }
+                ///Instancio dos objetos tipo Date con las fechas inicial y final:
+                var finDate1 = new Date(añoFin,mesFin,0, 23,59,59);
+                var inicioDate1 = new Date(añoInicio+"-"+mesInicio+"-01 00:00:00");
+
+                var mes1 = '';
+                var mes2 = '';
+                var dia1 = '';
+                var dia2 = '';
+
+                var inicialMonth1 = parseInt(inicioDate1.getUTCMonth(), 10)+1;  
+                if (inicialMonth1 < 10){
+                  mes1 = '0'+inicialMonth1.toString();
+                }
+                else {
+                  mes1 = inicialMonth1.toString();
+                }
+                if (inicioDate1.getDate() < 10){
+                  dia1 = '0'+inicioDate1.getDate();
+                }
+                else {
+                  dia1 = inicioDate1.getDate();
+                }
+                inicio = inicioDate1.getUTCFullYear()+"-"+mes1+"-"+dia1;
+
+                ///Chequeo que la fecha final pasada no sea posterior a hoy:
+                if (finDate1 > hoy){
+                  fin = tempAño+"-"+tempMonth.toString()+"-"+tempDia;
+                  añoFin = hoy.getUTCFullYear();
+                  mesFin = hoy.getMonth()+1;
+                  //dia2 = hoy.getDate()+"/"+hoy.getMonth()+1+"/"+hoy.getUTCFullYear();
+                }
+                else {
+                  var finalMonth1 = parseInt(finDate1.getMonth(), 10)+1;
+                  if (finalMonth1 < 10){
+                    mes2 = '0'+finalMonth1.toString();
+                  }
+                  else {
+                    mes2 = finalMonth1.toString();
+                  }
+                  if (finDate1.getDate() < 10){
+                    dia2 = '0'+finDate1.getDate();
+                  }
+                  else {
+                    dia2 = finDate1.getDate();
+                  }
+                  fin = finDate1.getFullYear()+"-"+mes2+"-"+dia2;
+                }
+
+                ///Comienzo validación del rango elegido:
+                if (añoFin < añoInicio) {
+                  alert('ERROR. El año final NO puede ser anterior al año inicial. \nPor favor verifique.');
+                  $("#añoInicio").focus();
+                  validado = false;
+                }
+                else {
+                  ///Mismo año:
+                  if (añoInicio === añoFin){
+                    ///Mismo año y mes final anterior al inicial:
+                    if (mesFin < mesInicio) {
+                      alert('ERROR. El mes final NO puede ser anterior que el mes inicial.\nPor favor verifique.');
+                      $("#mesInicio").focus();
+                      validado = false;
+                    }
+                    else {
+                      ///Mismo año y mismo mes, poner solo del mes y año tal:
+                      if (mesFin === mesInicio) {
+                        mensajeFecha = "de "+meses[mesInicio]+" de "+añoInicio;
+                      }
+                      ///Mismo año, pero meses distintos, entonces poner entre tal mes y tal mes del año tal:
+                      else {
+                        mensajeFecha = "entre "+meses[mesInicio]+" y "+meses[mesFin]+" de "+añoInicio;
                       }
                     }
-                    ///Año final es necesariamente mayor al inicial por lo cual NO IMPORTAN los meses. Pongo rango completo:
-                    else {
-                      mensajeFecha = "entre "+meses[mesInicio]+"/"+añoInicio+" y "+meses[mesFin]+"/"+añoFin;
-                    }
-                    ///Sólo agrego un IF para el caso en que sea de enero a diciembre cosa que aparezca solo del año tal:
-                    if ((añoInicio === añoFin)&&(mesInicio === 1)&&(mesFin === 12)){
-                      mensajeFecha = "de "+añoInicio;
-                    }
-                    
-                    rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin+"')";
-                  }    
-                  break;
-      case "todos": var fin1 = tempAño+"-"+tempMonth+"-"+tempDia;
-                    inicio = '2017-09-01';
-                    rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin1+"')";
-                    mensajeFecha = "entre "+meses[09]+"/"+"2017"+" y "+meses[hoy.getUTCMonth()+1]+"/"+hoy.getFullYear();
-                    break;
-      default: break;
-    }
-    ////*************************************************************************************************************************************************////////
-    var tipoConsulta = '';
+                  }
+                  ///Año final es necesariamente mayor al inicial por lo cual NO IMPORTAN los meses. Pongo rango completo:
+                  else {
+                    mensajeFecha = "entre "+meses[mesInicio]+"/"+añoInicio+" y "+meses[mesFin]+"/"+añoFin;
+                  }
+                  ///Sólo agrego un IF para el caso en que sea de enero a diciembre cosa que aparezca solo del año tal:
+                  if ((añoInicio === añoFin)&&(mesInicio === 1)&&(mesFin === 12)){
+                    mensajeFecha = "de "+añoInicio;
+                  }
 
-    var query = "select productos.nombre_plastico, movimientos.cantidad, movimientos.tipo, fecha from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
-    //alert("rango: "+rangoFecha+"\nquery:"+query);
-    switch (radio) {
-      case 'entidadMovimiento': if (entidadGrafica !== 'todos') {
-                                  query += "and entidad='"+entidadGrafica+"' ";
-                                  tipoConsulta = 'de '+entidadGrafica;
-                                } 
-                                else {
-                                  tipoConsulta = 'de todas las entidades';
+                  rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin+"')";
+                }    
+                break;
+    case "todos": var fin1 = tempAño+"-"+tempMonth+"-"+tempDia;
+                  inicio = '2017-09-01';
+                  rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin1+"')";
+                  mensajeFecha = "entre "+meses[09]+"/"+"2017"+" y "+meses[hoy.getUTCMonth()+1]+"/"+hoy.getFullYear();
+                  break;
+    default: break;
+  }
+  ////*************************************************************************************************************************************************////////
+  var tipoConsulta = '';
+
+  var query = "select productos.nombre_plastico, movimientos.cantidad, movimientos.tipo, fecha from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
+  //alert("rango: "+rangoFecha+"\nquery:"+query);
+  switch (radio) {
+    case 'entidadMovimiento': if (entidadGrafica !== 'todos') {
+                                query += "and entidad='"+entidadGrafica+"' ";
+                                tipoConsulta = 'de '+entidadGrafica;
+                              } 
+                              else {
+                                tipoConsulta = 'de todas las entidades';
+                              }
+                              break;                       
+    case 'productoMovimiento':  if ((idProd === 'NADA') || (nombreProducto === '')){
+                                  alert('Debe seleccionar un producto. Por favor verifique.');
+                                  document.getElementById("productoMovimiento").focus();
+                                  validado = false;
+                                  return false;
                                 }
-                                break;                       
-      case 'productoMovimiento':  if ((idProd === 'NADA') || (nombreProducto === '')){
-                                    alert('Debe seleccionar un producto. Por favor verifique.');
-                                    document.getElementById("productoMovimiento").focus();
-                                    validado = false;
-                                    return false;
-                                  }
-                                  else {
-                                    query += "and idProd="+idProd+' ';
-                                  }
-                                  tipoConsulta = 'del producto '+nombreSolo;
-                                  break;
-      default: break;
+                                else {
+                                  query += "and idProd="+idProd+' ';
+                                }
+                                tipoConsulta = 'del producto '+nombreSolo;
+                                break;
+    default: break;
+  }
+
+  if (validado) {
+    if (criterioFecha !== 'todos'){
+      query += "and "+rangoFecha;
     }
-    
-    if (validado) {
-      if (criterioFecha !== 'todos'){
-        query += "and "+rangoFecha;
+    var mensajeTipo = null;
+    if (tipo !== 'Todos') 
+      {
+      query += " and tipo='"+tipo+"'";
+      var tipo1 = '';
+      switch (tipo) {
+        case "Retiro": tipo1 = "Retiros";
+                                break;
+        case "Ingreso": tipo1 = "Ingresos";
+                                break;
+        case "Renovación": tipo1 = "Renovaciones";
+                                break;
+        case "Destrucción": tipo1 = "Destrucciones";
+                                break;
+        default: break;
       }
-      var mensajeTipo = null;
-      if (tipo !== 'Todos') 
-        {
-        query += " and tipo='"+tipo+"'";
-        var tipo1 = '';
-        switch (tipo) {
-          case "Retiro": tipo1 = "Retiros";
-                                  break;
-          case "Ingreso": tipo1 = "Ingresos";
-                                  break;
-          case "Renovación": tipo1 = "Renovaciones";
-                                  break;
-          case "Destrucción": tipo1 = "Destrucciones";
-                                  break;
+      mensajeTipo = tipo1+" ";
+    }
+    else {
+      mensajeTipo = "Movimientos ";
+    };
+
+    query += " order by fecha asc, hora desc, entidad asc, nombre_plastico asc,  idprod";
+    var mensajeConsulta = "";
+    if (mensajeTipo !== null) {
+      mensajeConsulta += mensajeTipo;
+    }
+    mensajeConsulta += tipoConsulta+" "+mensajeFecha;
+
+    var url = "data/selectQuery.php";
+    //alert(query);
+    $.getJSON(url, {query: ""+query+""}).done(function(request){
+      var totalDatos = request.rows;     
+      if (totalDatos >= 1) {
+        $("#consulta").val(query);
+        $("#mensaje").val(mensajeConsulta);
+        $("#fechaInicio").val(inicio);
+        $("#fechaFin").val(fin);
+        $("#hacerGrafica").val("yes");
+        var parametros = '';
+        switch (criterioFecha){
+          case 'intervalo': parametros = '&d1='+diaInicio+'&d2='+diaFin+'';
+                            break;
+          case 'mes': parametros = '&m1='+mesInicio+'&a1='+añoInicio+'&m2='+mesFin+'&a2='+añoFin+''; 
+                      break;
+          case 'todos': break;
+          default: break;  
+        }
+        var elegido = '';
+        switch (radio){
+          case 'entidadMovimiento': elegido = '&e='+entidadGrafica;
+                                    break;
+          case 'productoMovimiento': elegido = '&e='+idProd;
+                                     break;
           default: break;
         }
-        mensajeTipo = tipo1+" ";
+        $('#graficar').attr('action', 'estadisticas.php?g=1&c='+criterioFecha+parametros+elegido+'&t='+tipo+'&h='+productoGrafica+'');
+        $("#graficar").submit();
       }
       else {
-        mensajeTipo = "Movimientos ";
-      };
-      
-      query += " order by fecha asc, hora desc, entidad asc, nombre_plastico asc,  idprod";
-      var mensajeConsulta = "";
-      if (mensajeTipo !== null) {
-        mensajeConsulta += mensajeTipo;
+        alert("No existen registros que coincidan con esos parámetros.");
       }
-      mensajeConsulta += tipoConsulta+" "+mensajeFecha;
-      
-      var url = "data/selectQuery.php";
-      //alert(query);
-      $.getJSON(url, {query: ""+query+""}).done(function(request){
-        var totalDatos = request.rows;     
-        if (totalDatos >= 1) {
-          $("#consulta").val(query);
-          $("#mensaje").val(mensajeConsulta);
-          $("#fechaInicio").val(inicio);
-          $("#fechaFin").val(fin);
-          $("#hacerGrafica").val("yes");
-          $('#graficar').attr('action', 'estadisticas.php?g=1');//alert("inicial: "+$("#fechaInicio").val()+"\nfin: "+$("#fechaFin").val());
-          $("#graficar").submit();
-        }
-        else {
-          alert("No existen registros que coincidan con esos parámetros.");
-        }
-      }); 
-    }  
-  //}
+    }); 
+  }  
 }
 /********** fin realizarGrafica() **********/
 
@@ -4958,13 +5127,19 @@ function todo () {
                           }
     case "estadisticas.php":  if (parametros) {
                                               var temp = parametros.split('?');
-                                              var temp1 = temp[1].split('=');
-                                              var hacerGrafica = temp1[1];
-                                              if (hacerGrafica ===  '1') {
+                                              var temp1 = temp[1].split('&');
+                                              var tama = temp1.length;
+                                              var hacerGrafica = '0';
+                                              if (tama !== 1){
+                                                var temp2 = temp1[0].split('=');
+                                                hacerGrafica = temp2[1];
+                                              }
+ 
+                                             if (hacerGrafica ===  '1') {
                                                 setTimeout(function(){cargarGrafica("#main-content")}, 100);
                                               }
                                               else {
-                                                alert('ver por que llega hasta acá...');
+                                                setTimeout(function(){cargarFormEstadisticas("#main-content")}, 100);
                                               }
                                             }
                               else {
@@ -6655,6 +6830,46 @@ $(document).on("click", "#realizarGrafica", function (){
   realizarGrafica();
 });
 /********** fin on("click", "#realizarGrafica", function () **********/
+
+///Disparar función al cambiar el mes elegido como parámetro para la gráfica.
+///Si se eligió alguna fecha de inicio quiere decir que la grñafica es por rango (inicio/fin) 
+///Lo que hace es seleccionar automáticamente el radio button correspondiente.
+$(document).on("change", "#diaInicio", function (){
+  $(this).parent().prev().prev().children().prop("checked", true);
+});
+/********** fin on("change", "#diaInicio", function () **********/
+
+///Disparar función al cambiar el mes elegido como parámetro para la gráfica.
+///Si se eligió alguna fecha de fin quiere decir que la gráfica es por rango (inicio/fin) 
+///Lo que hace es seleccionar automáticamente el radio button correspondiente.
+$(document).on("change", "#diaFin", function (){
+  $(this).parent().prev().prev().prev().prev().children().prop("checked", true);
+});
+/********** fin on("change", "#diaFin", function () **********/
+
+///Disparar función al cambiar el mes elegido como parámetro para la estadística.
+///Si se eligió algún mes quiere decir que la gráfica es por mes/año 
+///Lo que hace es seleccionar automáticamente el radio button correspondiente.
+$(document).on("change", "#mesInicio", function (){
+  $(this).parent().prev().prev().children().prop("checked", true);
+});
+/********** fin on("change", "#mesInicio", function () **********/
+
+///Disparar función al cambiar el año elegido como parámetro para la estadística.
+///Si se eligió algún año quiere decir que la gráfica es por mes/año 
+///Lo que hace es seleccionar automáticamente el radio button correspondiente.
+$(document).on("change", "#añoInicio", function (){
+  $(this).parent().prev().prev().prev().prev().children().prop("checked", true);
+});
+/********** fin on("change", "#añoInicio", function () **********/
+
+///Disparar función al cambiar el mes elegido como parámetro para la estadística.
+///Si se eligió algún mes quiere decir que la gráfica es por mes/año 
+///Lo que hace es seleccionar automáticamente el radio button correspondiente.
+$(document).on("change", "#mesFin, #añoFin", function (){
+  $(this).parent().parent().prev().children().children().prop("checked", true);
+});
+/********** fin on("change", "#mesFin, #añoFin", function () **********/
 
 /*****************************************************************************************************************************
 /// *************************************************** FIN GRAFICAS *********************************************************

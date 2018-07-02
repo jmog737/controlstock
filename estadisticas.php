@@ -41,15 +41,7 @@ if (isset($_POST["hacerGrafica"])){
       </div>
     </main>
     <?php 
-    }
-    else {
-    ?>
-<!--      <script> 
-        alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-        window.location.href = "index.php";
-      </script>  -->
-    <?php
-    }        
+    }       
     ?>  
       
     <?php require('footer.php');?>
