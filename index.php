@@ -29,7 +29,7 @@ if (!isset($_SESSION['user_id']))
       $data = consultarBD($query, $dbc);
       $registros = $data->num_rows;
       $filas = obtenerResultados($data);
-
+      
       if ($registros == 1) 
         {
         foreach($filas as $fila)

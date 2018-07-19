@@ -60,6 +60,7 @@ function consultarBD($consulta, $mysqli)
 function obtenerResultados($resultado)
   {
   $i = 1;
+  $salida = array();
   while ($obj = $resultado->fetch_object())
       {
       $salida[$i] = $obj;

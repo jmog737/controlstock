@@ -88,6 +88,8 @@ function showHint(str, id, seleccionado) {
     $("#hint").remove();
     $("#snapshot").remove();
     $("#stock").remove();
+    $("#promedio1").remove();
+    $("#promedio2").remove();
     $("#ultimoMov").remove();
     $("#historial").remove();
     document.getElementById("producto").innerHTML = "";
@@ -325,6 +327,8 @@ function showHintProd(str, id, seleccionado) {
     $("#hintProd").remove();
     $("#snapshot").remove();
     $("#stock").remove();
+    $("#promedio1").remove();
+    $("#promedio2").remove();
     $("#ultimoMov").remove();
     $("#historial").remove();
     document.getElementById("producto").innerHTML = "";
@@ -4421,7 +4425,7 @@ function cargarFormEstadisticas(selector){
             <td class="fondoNaranja">\n\
               <input type="radio" name="criterioFecha" title="Elegir el período a buscar\nSeleccionar si se quiere consultar por meses" value="mes">\n\
             </td>\n\
-            <th>Mes Inicial:</th>\n\
+            <th nowrap>Mes Inicial:</th>\n\
             <td>\n\
               <select id="mesInicio" name="mesInicio" title="Elegir el mes de inicio\n(Sólo si se busca por meses)" tabindex="8" style="width:100%">\n\
                 <option value="todos">--Seleccionar--</option>\n\
@@ -5209,75 +5213,205 @@ $(document).on("change focusin", "#hint", function (){
   var prod = $(this).find('option:selected').val();
   $(this).css('background-color', '#ffffff');
   //$(this).find('option:selected').css('background-color', '#ffffff');
+  //
+  /// Selecciono radio button correspondiente:
+  $(this).parent().prev().prev().children().prop("checked", true);
   
-  $("#snapshot").remove();
-  $("#stock").remove();
-  $("#ultimoMov").remove();
-  $("#comentHint").remove();
-  $(".popover").remove();
-  var stock = $("#hint").find('option:selected').attr("stock");
-  var comentarios = $("#hint").find('option:selected').attr("comentarios");
-  var alarma1 = $("#hint").find('option:selected').attr("alarma1");
-  alarma1 = parseInt(alarma1, 10);
-  var alarma2 = $("#hint").find('option:selected').attr("alarma2");
-  alarma2 = parseInt(alarma2, 10);
-  var ultimoMovimiento = $("#hint").find('option:selected').attr("ultimomov");
-  if ((ultimoMovimiento === undefined) || (ultimoMovimiento === null)||(ultimoMovimiento === "null")){
-    ultimoMovimiento = 'NO HAY';
+  ///*********** PRUEBAS PROMEDIO CONSUMOS **************************************
+  ///Variables para el cálculo del promedio:
+  /// periodoDias: cantidad de días pasados sobre los cuales calcular el promedio.
+  /// msegUnDia: es una constante en realidad que representa la cantidad de mseg que hay en un día.
+  var periodoDias1 = 45;
+  var mesesPeriodo1 = Math.ceil(periodoDias1/30);
+  
+  var periodoDias2 = 90;
+  var mesesPeriodo2 = Math.ceil(periodoDias2/30);
+  
+  var msegUnDia = 1000*60*60*24;
+   
+  ///Recupero día actual y posteriormente, genero fecha de hoy a las 00:00hs:
+  var hoyCompleto = new Date();
+  var hoy = new Date(hoyCompleto.getFullYear(), hoyCompleto.getMonth(), hoyCompleto.getDate(), 0, 0, 0, 0);
+  ///Paso el dia actual a las 00:00 a hora Unix:
+  var ahoraMseg = hoy.getTime();
+  
+  /// Calculo cual es el día de origen para calcular el promedio segúna la hora Unix:
+  var inicioMseg1 = ahoraMseg - periodoDias1*msegUnDia;
+  var inicioMseg2 = ahoraMseg - periodoDias2*msegUnDia;
+  
+  /// Genero el día según los mseg:
+  var diaInicio1 = new Date(inicioMseg1);
+  var diaInicio2 = new Date(inicioMseg2);
+  /// Como forma de asegurarme que quede desde las 00:00, extraigo los valores del día/mes/año y genero un nuevo día explicitando que sea a las 00:00hs:
+  var dia1 = diaInicio1.getDate();
+  var dia2 = diaInicio2.getDate();
+  var mes1 = parseInt(diaInicio1.getMonth(), 10) + 1;
+  var mes2 = parseInt(diaInicio2.getMonth(), 10) + 1;
+  var año1 = diaInicio1.getFullYear();
+  var año2 = diaInicio2.getFullYear();
+  if (dia1 < 10) 
+    {
+    dia1 = '0'+dia1;
+  }                     
+  if (mes1 < 10) 
+    {
+    mes1 = '0'+mes1;
   }
-  if ((stock === 'undefined') || ($(this).find('option:selected').val() === 'NADA')) {
-    stock = '';
+  var nuevoDia1 = año1+'-'+mes1+'-'+dia1;
+  if (dia2 < 10) 
+    {
+    dia2 = '0'+dia2;
+  }                     
+  if (mes2 < 10) 
+    {
+    mes2 = '0'+mes2;
   }
-  else {
-    stock = parseInt(stock, 10);
-  }
-  var resaltado = '';
-  if ((stock < alarma1) && (stock > alarma2)){
-    resaltado = 'alarma1';
-  }
-  else {
-    if (stock < alarma2) {
-      resaltado = 'alarma2';
+  var nuevoDia2 = año2+'-'+mes2+'-'+dia2;
+  
+  var query1 = "select sum(cantidad) as total1 from movimientos where producto="+prod+" and fecha>='"+nuevoDia1+"' and  (tipo='Retiro' or tipo='Destrucción' or tipo='Renovación')";
+  var query2 = "select sum(cantidad) as total2 from movimientos where producto="+prod+" and fecha>='"+nuevoDia2+"' and  (tipo='Retiro' or tipo='Destrucción' or tipo='Renovación')";
+  
+  var url = "data/selectQuery.php";
+  $.getJSON(url, {query: ""+query1+""}).done(function(request1) {
+    var totalConsumos1 = request1.resultado[0]['total1'];
+    if (totalConsumos1 === null){
+      totalConsumos1 = 0;
     }
     else {
-      resaltado = 'resaltado';
-    }  
-  }
-  var mostrar = '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
-  mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><b>Stock actual: <b><font class="'+resaltado+'" style="font-size:1.6em">'+stock.toLocaleString()+'</font></p>';
-  mostrar += '<p id="ultimoMov" name="ulitmoMov">Último Movimiento: <font class="'+resaltado+'" style="font-size:1.2em">'+ultimoMovimiento+'</font></p>';
-  var comentHint = '';
-  if ((comentarios !== '')&&(comentarios !== "null")&&(comentarios !== ' ')&&(comentarios !== undefined)){
-    /// Resaltado en AMARILLO del comentario que tiene el patrón: DIF
-    if (comentarios.indexOf("dif") > -1){
-      comentHint = "comentHintResaltar";
+        totalConsumos1 = parseInt(totalConsumos1, 10);
+      }
+    var promedioMensual1 = Math.ceil(totalConsumos1/mesesPeriodo1);
+    var unidades1 = '';
+    var unidadesPromedio1 = '';
+    if (promedioMensual1 === 1){
+      unidadesPromedio1 = 'tarjeta/mes';
     }
     else {
-      /// Resaltado en VERDE del comentario que tiene el patrón: STOCK
-      if (comentarios.indexOf("stock") > -1){
-        comentHint = "comentHintStock";
+      unidadesPromedio1 = 'tarjetas/mes';
+    }
+    if (totalConsumos1 === 1){
+      unidades1 = 'tarjeta';
+    }
+    else {
+      unidades1 = 'tarjetas';
+    }
+    
+    $.getJSON(url, {query: ""+query2+""}).done(function(request2) {
+      if ($("#stock").length > 0){
+        $("#stock").remove();
+      }
+      if ($("#promedio1").length > 0){
+        $("#promedio1").remove();
+      }
+      if ($("#promedio2").length > 0){
+        $("#promedio2").remove();
+      }
+      if ($("#snapshot").length > 0){
+        $("#snapshot").remove();
+      }
+      if ($("#ultimoMov").length > 0){
+        $("#ultimoMov").remove();
+      }
+      if ($("#comentHint").length > 0){
+        $("#comentHint").remove();
+      }
+      if ($(".popover").length > 0){
+        $(".popover").remove();
+      }
+      var totalConsumos2 = request2.resultado[0]['total2'];
+      if (totalConsumos2 === null){
+        totalConsumos2 = 0;
       }
       else {
-        /// Resaltado en ROJO SUAVE del comentario que tiene el patrón: PLASTICO con o sin tilde
-        if ((comentarios.indexOf("plastico") > -1)||((comentarios.indexOf("plástico") > -1))){
-          comentHint = "comentHintPlastico";
+        totalConsumos2 = parseInt(totalConsumos2, 10);
+      }
+      var promedioMensual2 = Math.ceil(totalConsumos2/mesesPeriodo2);
+      var unidades2 = '';
+      var unidadesPromedio2 = '';
+      if (promedioMensual2 === 1){
+        unidadesPromedio2 = 'tarjeta/mes';
+      }
+      else {
+        unidadesPromedio2 = 'tarjetas/mes';
+      }
+      if (totalConsumos2 === 1){
+        unidades2 = 'tarjeta';
+      }
+      else {
+        unidades2 = 'tarjetas';
+      }
+    
+      var stock = $("#hint").find('option:selected').attr("stock");
+      var comentarios = $("#hint").find('option:selected').attr("comentarios");
+      var alarma1 = $("#hint").find('option:selected').attr("alarma1");
+      alarma1 = parseInt(alarma1, 10);
+      var alarma2 = $("#hint").find('option:selected').attr("alarma2");
+      alarma2 = parseInt(alarma2, 10);
+      var ultimoMovimiento = $("#hint").find('option:selected').attr("ultimomov");
+      if ((ultimoMovimiento === 'undefined') || (ultimoMovimiento === null)||(ultimoMovimiento === "null")||(ultimoMovimiento === "")){
+        ultimoMovimiento = 'NO HAY';
+      }
+      if ((stock === 'undefined') || ($(this).find('option:selected').val() === 'NADA')) {
+        stock = '';
+      }
+      else {
+        stock = parseInt(stock, 10);
+      }
+      var resaltado = '';
+      if ((stock < alarma1) && (stock > alarma2)){
+        resaltado = 'alarma1';
+      }
+      else {
+        if (stock < alarma2) {
+          resaltado = 'alarma2';
         }
         else {
-          /// Resaltado general en caso de tener un comentario que no cumpla con ninguno de los patrones anteriores
-          comentHint = "comentHint";
-        }
+          resaltado = 'resaltado';
+        }  
       }
-    } 
-  mostrar += '<p id="comentHint" name="comentHint" class="'+comentHint+'"><a href="producto.php?id='+prod+'" target="_blank">'+comentarios+'</a></p>';  
-  }  
+      var mostrar = '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
+      mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><strong>Stock actual: </strong><font class="'+resaltado+'" style="font-size:3.0em; font-style:italic;">'+stock.toLocaleString()+'</font></p>';
+      mostrar += '<p id="promedio1" name="hint" style="padding-top: 1px;margin-bottom: 0px"><strong>Total Consumos (&uacute;lt. '+periodoDias1+' d&iacute;as):</strong> <font style="font-size:1.2em; font-style:italic;">'+totalConsumos1.toLocaleString()+' '+unidades1+' ('+promedioMensual1.toLocaleString()+' '+unidadesPromedio1+')</font></p>';
+      mostrar += '<p id="promedio2" name="hint" style="padding-top: 1px"><strong>Total Consumos (&uacute;lt. '+periodoDias2+' d&iacute;as):</strong> <font style="font-size:1.2em; font-style:italic;">'+totalConsumos2.toLocaleString()+' '+unidades2+' ('+promedioMensual2.toLocaleString()+' '+unidadesPromedio2+')</font></p>';
+      mostrar += '<p id="ultimoMov" name="ulitmoMov"><strong>Último Movimiento:</strong> <font style="font-size:1.2em; font-style:italic;">'+ultimoMovimiento+'</font></p>';
+      var comentHint = '';
+      if ((comentarios !== '')&&(comentarios !== "null")&&(comentarios !== ' ')&&(comentarios !== undefined)){
+        /// Resaltado en AMARILLO del comentario que tiene el patrón: DIF
+        if (comentarios.indexOf("dif") > -1){
+          comentHint = "comentHintResaltar";
+        }
+        else {
+          /// Resaltado en VERDE del comentario que tiene el patrón: STOCK
+          if (comentarios.indexOf("stock") > -1){
+            comentHint = "comentHintStock";
+          }
+          else {
+            /// Resaltado en ROJO SUAVE del comentario que tiene el patrón: PLASTICO con o sin tilde
+            if ((comentarios.indexOf("plastico") > -1)||((comentarios.indexOf("plástico") > -1))){
+              comentHint = "comentHintPlastico";
+            }
+            else {
+              /// Resaltado general en caso de tener un comentario que no cumpla con ninguno de los patrones anteriores
+              comentHint = "comentHint";
+            }
+          }
+        } 
+      mostrar += '<p id="comentHint" name="comentHint" class="'+comentHint+'"><a href="producto.php?id='+prod+'" target="_blank">'+comentarios+'</a></p>';  
+      }  
+
+      //$(this).css('background-color', '#efe473');
+      $(this).css('background-color', '#9db7ef');
+      //$(this).find('option:selected').css('background-color', '#79ea52');
+      $("#hint").after(mostrar);
+      $(this).parent().prev().prev().children().prop("checked", true);
+      setTimeout(function(){mostrarHistorial(prod)}, 10);
+      //mostrarHistorial(prod);   
+    });  
+  });    
   
-  //$(this).css('background-color', '#efe473');
-  $(this).css('background-color', '#9db7ef');
-  //$(this).find('option:selected').css('background-color', '#79ea52');
-  $("#hint").after(mostrar);
-  $(this).parent().prev().prev().children().prop("checked", true);
-  //setTimeout(function(){mostrarHistorial(prod)}, 100);
-  mostrarHistorial(prod);
+  //  alert(consulta);
+  ///*********** FIN PRUEBAS PROMEDIO CONSUMOS **********************************
+  
 });
 /********** fin on("change focusin", "#hint", function () **********/ 
   
@@ -5511,8 +5645,11 @@ $(document).on("change focusin", "#hintProd", function (){
   var nombreFoto = $(this).find('option:selected').attr("name");
   $(this).css('background-color', '#ffffff');
   
+  
   $("#snapshot").remove();
   $("#stock").remove();
+  $("#promedio1").remove();
+  $("#promedio2").remove();
   $("#ultimoMov").remove();
   $("#historial").remove();
   $("#stock").removeClass('alarma1');
@@ -5826,6 +5963,8 @@ $(document).on("click", "#agregarProducto", function (){
     $("#hintProd").remove();
     $("#snapshot").remove();
     $("#stock").remove();
+    $("#promedio1").remove();
+    $("#promedio2").remove();
     habilitarProducto();
     $("#stockProducto").attr("disabled", false);
     $("#editarProducto").attr("disabled", true);
