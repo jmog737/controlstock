@@ -4862,7 +4862,7 @@ function realizarGrafica(){
                   dia1 = inicioDate1.getDate();
                 }
                 inicio = inicioDate1.getUTCFullYear()+"-"+mes1+"-"+dia1;
-
+                
                 ///Chequeo que la fecha final pasada no sea posterior a hoy:
                 if (finDate1 > hoy){
                   fin = tempAño+"-"+tempMonth.toString()+"-"+tempDia;
@@ -4886,7 +4886,7 @@ function realizarGrafica(){
                   }
                   fin = finDate1.getFullYear()+"-"+mes2+"-"+dia2;
                 }
-
+                //alert('inicio: '+inicio+'\nfin: '+fin);
                 ///Comienzo validación del rango elegido:
                 if (añoFin < añoInicio) {
                   alert('ERROR. El año final NO puede ser anterior al año inicial. \nPor favor verifique.');
@@ -5373,7 +5373,7 @@ $(document).on("change focusin", "#hint", function (){
       mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><strong>Stock actual: </strong><font class="'+resaltado+'" style="font-size:3.0em; font-style:italic;">'+stock.toLocaleString()+'</font></p>';
       mostrar += '<p id="promedio1" name="hint" style="padding-top: 1px;margin-bottom: 0px"><strong>Total Consumos (&uacute;lt. '+periodoDias1+' d&iacute;as):</strong> <font style="font-size:1.2em; font-style:italic;">'+totalConsumos1.toLocaleString()+' '+unidades1+' ('+promedioMensual1.toLocaleString()+' '+unidadesPromedio1+')</font></p>';
       mostrar += '<p id="promedio2" name="hint" style="padding-top: 1px"><strong>Total Consumos (&uacute;lt. '+periodoDias2+' d&iacute;as):</strong> <font style="font-size:1.2em; font-style:italic;">'+totalConsumos2.toLocaleString()+' '+unidades2+' ('+promedioMensual2.toLocaleString()+' '+unidadesPromedio2+')</font></p>';
-      mostrar += '<p id="ultimoMov" name="ulitmoMov"><strong>Último Movimiento:</strong> <font style="font-size:1.2em; font-style:italic;">'+ultimoMovimiento+'</font></p>';
+      mostrar += '<p id="ultimoMov" name="ulitmoMov"><strong>Último Movimiento: <font style="font-style:italic;font-size:1.8em">'+ultimoMovimiento+'</font></strong></p>';
       var comentHint = '';
       if ((comentarios !== '')&&(comentarios !== "null")&&(comentarios !== ' ')&&(comentarios !== undefined)){
         /// Resaltado en AMARILLO del comentario que tiene el patrón: DIF
@@ -5686,8 +5686,8 @@ $(document).on("change focusin", "#hintProd", function (){
   }
   
   var mostrar = '<img id="snapshot" name="hintProd" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
-  mostrar += '<p id="stock" name="hintProd" style="padding-top: 10px"><b>Stock actual: <b><font class="'+resaltado+'" style="font-size:1.6em">'+stock.toLocaleString()+'</font></p>';
-  mostrar += '<p id="ultimoMov" name="ulitmoMov">Último Movimiento: <font class="'+resaltado+'" style="font-size:1.2em">'+ultimoMovimiento+'</font></p>';
+  mostrar += '<p id="stock" name="hintProd" style="padding-top: 10px"><strong>Stock actual: </strong><font class="'+resaltado+'" style="font-size:2.6em;font-style:italic;">'+stock.toLocaleString()+'</font></p>';
+  mostrar += '<p id="ultimoMov" name="ulitmoMov"><strong>Último Movimiento: <font style="font-size:1.1em;font-style:italic;">'+ultimoMovimiento+'</font></strong></p>';
   $(this).css('background-color', '#9db7ef');
   $("#hintProd").after(mostrar);
   if (idProd !== 'NADA') {

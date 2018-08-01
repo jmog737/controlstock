@@ -671,14 +671,38 @@ switch ($criterioFecha) {
                     }  
                     break;
   default:  ///Calculo la diferencia entre las fechas y la paso a cantidad de meses:
-            $diferencia = $fechainicial1->diff($fechafinal1);
-            $total = ($diferencia->y*12) + $diferencia->m + 1;
-            if ($total == 1) {
-              $tipo = "mes";
-            }  
+//            $diferencia = $fechainicial1->diff($fechafinal1);
+//            $total = ($diferencia->y*12) + $diferencia->m;
+//            if ($total == 1) {
+//              $tipo = "mes ".$dias1."d - ".$mesesitos."m - ".$añitos."a";
+//            }  
+//            else {
+//              $tipo = "meses ".$dias1."d - ".$mesesitos."m - ".$añitos."a";
+//            } 
+            $temp0 = explode('-', $fechaInicio);
+            $mesInicio = $temp0[1];
+            $añoInicio = $temp0[0];
+            $temp1 = explode('-', $fechaFin);
+            $mesFin = $temp1[1];
+            $añoFin = $temp1[0];
+            if ($añoInicio === $añoFin){
+              if ($mesInicio === $mesFin){
+                $tipo = "mes";
+                $total = 1;
+              }
+              else {
+                $tipo = "meses";
+                $total = $mesFin - $mesInicio + 1;
+              }
+            }
             else {
               $tipo = "meses";
-            } 
+              $total = 12 - $mesInicio + $mesFin + 1;
+              if (($añoFin - $añoInicio)>1){
+                $total += ($añoFin - $añoInicio)*12;
+              }
+            }
+            //$tipo = "total: ".$total." ".$tipo;
             break;
 }
 
