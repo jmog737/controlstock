@@ -53,15 +53,15 @@
     </div><!-- .container -->
   </nav><!-- #header-nav -->
   <script lang="javasript/text">
-    verificarSesion();
-    var dir = window.location.pathname;
-    var temp = dir.split("/");
-    var tam = temp.length;
-    if (temp[tam-1] !== 'index.php'){
+    //verificarSesion();
+    //var dir = window.location.pathname;
+    //var temp = dir.split("/");
+    //var tam = temp.length;
+    //if (temp[tam-1] !== 'index.php'){
       var duracion0 = <?php echo DURACION ?>;
       var duracion = parseInt(duracion0*1000+2000, 10);
       setInterval(function(){verificarSesion()}, duracion);
-    }
+    //}
   </script>
 <!-- Modal para cambiar la contraseña -->
 <div class="modal fade" id="modalPwd" tabindex="-1" role="dialog" aria-labelledby="Modal" aria-hidden="true">

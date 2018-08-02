@@ -20,8 +20,10 @@ if (isset($_SESSION['ultima_actividad']) && ($hora - $_SESSION['ultima_actividad
   session_destroy();
 }
 else {
-  ///Definimos el valor de la sesión "ultima_actividad" como el timestamp del servidor
-  $_SESSION['ultima_actividad'] = $hora;
+  if (isset($_SESSION['user_id'])){
+    ///Definimos el valor de la sesión "ultima_actividad" como el timestamp del servidor
+    $_SESSION['ultima_actividad'] = $hora;
+  }
 }
 
 ?>

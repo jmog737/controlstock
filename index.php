@@ -4,14 +4,14 @@ if(!isset($_SESSION))
   //Reanudamos la sesión:
   session_start(); 
 } 
-//require_once("data/sesiones.php");
+
 //Borro los mensajes de error:
 $error_msg = "";
 require_once('data/baseMysql.php');
 
 //Si el usuario no está logueado aún, intento loguearlo:
 if (!isset($_SESSION['user_id'])) 
-  {
+  {//echo "user no seteado aun";
   if (isset($_POST['submit'])) 
     {
     //Conexión con la base de datos:
@@ -29,7 +29,6 @@ if (!isset($_SESSION['user_id']))
       $data = consultarBD($query, $dbc);
       $registros = $data->num_rows;
       $filas = obtenerResultados($data);
-      
       if ($registros == 1) 
         {
         foreach($filas as $fila)
@@ -54,7 +53,6 @@ if (!isset($_SESSION['user_id']))
         }
         //Obtenemos el timestamp del servidor de cuanto se hizo la petición
         $hora = $_SERVER["REQUEST_TIME"];
-
         //Definimos el valor de la sesión "ultima_actividad" como el timestamp del servidor
         $_SESSION['ultima_actividad'] = $hora;
         ?>
@@ -88,7 +86,7 @@ require_once ('head.php');
 require_once ('header.php');
 
 // If the session var is empty, show any error message and the log-in form; otherwise confirm the log-in
-if (empty($_SESSION['user_id'])) 
+if (!isset($_SESSION['user_id'])) 
   {
 ?>
   <main>
@@ -126,19 +124,27 @@ if (empty($_SESSION['user_id']))
       </div>
     </main>
 <?php
-  }
-  else 
-    {
-    
+}
+else 
+  {
+  //var_dump($_SESSION);
+  //if (isset($_SESSION['user_id'])){
+//    echo "está seteado el user_id";
+//  }
+//  else {
+//    echo "no está seteado el user id";
+//  }
+  //sleep(3);
 ?>
-    <body>
-    <div id='main-content' class='container-fluid'>
-      <script type="text/javascript">
-        window.location.href = "../controlstock/movimiento.php";
-      </script> 
-    </div> <!-- fin del div contenido -->
-<?php       
-  }
-  require_once ('footer.php');
+  <!--<body>-->
+  <div id='main-content' class='container-fluid'>
+    <script type="text/javascript">
+      window.location.href = "../controlstock/movimiento.php";
+    </script> 
+  </div> <!-- fin del div contenido -->
+<?php 
+  //}
+} 
+require_once ('footer.php');
 ?>
 </body>

@@ -24,8 +24,19 @@ var limiteSelects = parseInt($("#limiteSelects").val(), 10);
  */
 function verificarSesion() {
   var xmlhttp = new XMLHttpRequest();
+  /*
+  onreadystatechange: Defines a function to be called when the readyState property changes.
+  readyState property:
+    Holds the status of the XMLHttpRequest.
+      0: request not initialized 
+      1: server connection established
+      2: request received 
+      3: processing request 
+      4: request finished and response is ready
+  */
   xmlhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
+    if (this.readyState === 4 && this.status === 200) {
+        //alert(this.statusText+'\n'+this.responseText);
         var myObj = JSON.parse(this.responseText);
         var user = myObj.user;
         var user_id = myObj.user_id;
@@ -551,7 +562,7 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
   
   $.getJSON(url, {query: ""+query+""}).done(function(request) {
     //var usuarios = request.resultado;
-    var total = request.rows;
+    var total = parseInt(request.rows, 10);
     if (total >= 1) {
       
       var titulo = '<h2 id="titulo" class="encabezado">INGRESO DE MOVIMIENTOS</h2>';

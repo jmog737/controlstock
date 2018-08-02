@@ -22,7 +22,7 @@ require_once("data/sesiones.php");
   <body>
     <?php require_once('header.php');
     if (isset($_SESSION['user_id'])) 
-      {
+      {//echo "seteado user id<br>";
     ?>
     <main>
       <div id='main-content' class='container-fluid'>
@@ -31,10 +31,10 @@ require_once("data/sesiones.php");
     </main>
     <?php 
     }
-    else {
+    else {//echo "no seteado user id<br>";
     ?>
 <!--      <script> 
-        alert('Su sesión expiró. Por favor vuelva loguearse.'); 
+        alert('Su sesión expiró (@movimiento). Por favor vuelva loguearse.'); 
         window.location.href = "../controlstock/index.php";
       </script>  -->
     <?php
