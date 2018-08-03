@@ -120,21 +120,20 @@ if (!isset($_SESSION['user_id']))
           </tr>
         </table>
       </form>
-
-      </div>
-    </main>
+    </div>
+  </main>
 <?php
 }
 else 
   {
-  //var_dump($_SESSION);
-  //if (isset($_SESSION['user_id'])){
+//var_dump($_SESSION);
+//if (isset($_SESSION['user_id'])){
 //    echo "está seteado el user_id";
 //  }
 //  else {
 //    echo "no está seteado el user id";
 //  }
-  //sleep(3);
+//sleep(3);
 ?>
   <!--<body>-->
   <div id='main-content' class='container-fluid'>

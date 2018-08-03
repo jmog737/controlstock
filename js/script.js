@@ -5,6 +5,7 @@ var tamPagina = parseInt($("#tamPagina").val(), 10);
 var limiteHistorialProducto = parseInt($("#limiteHistorialProducto").val(), 10);
 var limiteHistorialGeneral = parseInt($("#limiteHistorialGeneral").val(), 10);
 var limiteSelects = parseInt($("#limiteSelects").val(), 10);
+var duracionSesion = parseInt($("#duracionSesion").val(), 10);
 
 /**
 ///  \file script.js
@@ -43,9 +44,48 @@ function verificarSesion() {
         var sesion = myObj.sesion;
         var timestamp = myObj.timestamp;
         var usuarioViejo = myObj.oldUser;
-        //alert('sesion: '+sesion+'\nuser: '+user+'\nuser_id: '+user_id+'\ntimestamp: '+timestamp+'\nold: '+usuarioViejo);
+        
+        var mostrarSesion = '';
+        ///Se comenta siguiente línea usada para las pruebas:
+        //var tempSesion = prompt('Ingrese el tiempo deseado para la sesión: \n');   
+        var horas = Math.floor( duracionSesion / 3600 );  
+        var minutos = Math.floor( (duracionSesion % 3600) / 60 );
+        var segs = duracionSesion % 60;
+
+        //Anteponiendo un 0 a los minutos si son menos de 10 
+        //minutos = minutos < 10 ? '0' + minutos : minutos;
+        //Anteponiendo un 0 a los segundos si son menos de 10 
+        //segs = segs < 10 ? '0' + segs : segs;
+ 
+        if (horas === 0){
+          if (minutos === 0){
+            mostrarSesion = segs+'segs';
+          }
+          else {
+            if (segs === 0){
+              mostrarSesion = minutos+'min';
+            }
+            else {
+              mostrarSesion = minutos+'min '+segs+'segs';
+            }
+          }
+        }
+        else {
+          if ((minutos === 0)&&(segs === 0)){
+            mostrarSesion = horas+'h';
+          }
+          else {
+            if (segs === 0){
+              mostrarSesion = horas+'h '+minutos+'min';
+            }
+            else {
+              mostrarSesion = horas+'h '+minutos+'min '+segs+'segs';
+            }
+          }  
+        }
+        
         if (sesion === 'expirada'){
-          alert("Se venció el tiempo de la sesión "+usuarioViejo+".\nPor favor vuelve a loguearte.");
+          alert("Terminó el tiempo de sesión de "+mostrarSesion+".\nPor favor vuelve a loguearte "+usuarioViejo+"!.");
           window.location.assign("salir.php");
         }
         else {

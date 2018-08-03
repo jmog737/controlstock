@@ -32,8 +32,8 @@
             </a>
             <div id="drop" class="dropdown-menu dropdown-menu-right  " aria-labelledby="navbarDropdown">
               <a class="dropdown-item" title="Ingresar Movimientos" href="movimiento.php">Movimientos</a>
-              <a class="dropdown-item" title="Editar Productos" href="producto.php">Productos</a>
               <a class="dropdown-item" title="Realizar Consultas" href="busquedas.php">Consultas</a>
+              <a class="dropdown-item" title="Editar Productos" href="producto.php">Productos</a>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" title="Ver Estad&iacute;siticas" href="estadisticas.php">Estadisticas</a>
 <!--              <li role="separator" class="divider"></li>
@@ -41,8 +41,8 @@
             </div>
             
             <a class="d-block d-sm-none" title="Ingresar Movimientos" href="movimiento.php">Movimientos</a>
-            <a class='d-block d-sm-none' title="Editar Productos" href="producto.php">Productos</a>
             <a class='d-block d-sm-none' title="Realizar Consultas" href="busquedas.php">Consultas</a>
+            <a class='d-block d-sm-none' title="Editar Productos" href="producto.php">Productos</a>
             <a class='d-block d-sm-none' title="Ver Estad&iacute;siticas" href="estadisticas.php">Estadisticas</a> 
           </li>
           <?php

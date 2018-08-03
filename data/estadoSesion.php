@@ -25,7 +25,7 @@ else {
   ///Definimos el valor de la sesión "ultima_actividad" como el timestamp del servidor
   $_SESSION['ultima_actividad'] = $hora;
   //if (isset($_SESSION['user_id'])){
-    $myObj->user = $_SESSION['username'];echo "username: ".$_SESSION['username']."<br>";
+    $myObj->user = $_SESSION['username'];
     $myObj->oldUser = $_SESSION['username'];
     $myObj->user_id = $_SESSION['user_id'];
     $myObj->timestamp = $hora;

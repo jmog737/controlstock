@@ -4,6 +4,7 @@ header('content-type:text/css');
  
 /******** STYLES *********/
 $colorFondo = '#61122f';
+$colorFondo = '#263c25';
 /****** FIN STYLES *******/
 
 /******* STYLES1: ********/ 
