@@ -157,6 +157,7 @@ function showHint(str, id, seleccionado) {
       $("#ultimoMov").remove();
       $("#historial").remove();
       
+      var produsTemp = seleccionado.split(',');
       var mostrar = '';
       var unico = '';
       if (totalSugerencias >= 1) {
@@ -179,16 +180,20 @@ function showHint(str, id, seleccionado) {
           }
           var snapshot = sugerencias[i]["snapshot"];
           if ((snapshot === null)||(snapshot === '')) {
-            snapshot = 'NADA';
+            snapshot = 'noDisponible1.png';
           }
           var codigo_emsa = sugerencias[i]["codigo_emsa"];
           if ((codigo_emsa === null) || (codigo_emsa === "")) {
             codigo_emsa = 'SIN CODIGO AÚN';
           }
           var sel = "";
-          if (parseInt(sugerencias[i]["idprod"], 10) === parseInt(seleccionado, 10)) {
-            sel = 'selected="yes"';
+          for (var k in produsTemp){
+            var selEntero = parseInt(produsTemp[k], 10);
+            if (parseInt(sugerencias[i]["idprod"], 10) === selEntero) {
+              sel = 'selected="yes"';
+            }
           }
+          
           var comentario = '';
           comentario = sugerencias[i]["comentarios"];
           var resaltarOption = '';
@@ -1851,16 +1856,16 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                             tabla += '<tr><th colspan="9" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos1, 10).toLocaleString()+'</td><th></th></tr>';
                           }  
 
-                          var subtotalesJson = JSON.stringify(subtotales);
+                          //var subtotalesJson = JSON.stringify(subtotales);
                           tabla += '<tr>\n\
                                       <td class="pieTabla" colspan="10">\n\
-                                        <input type="button" id="1" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                        <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                       </td>\n\
                                     </tr>';
-                          tabla += "<tr>\n\
-                                      <td style='display:none'><input type='text' id='subtotales_"+j+"' value="+subtotalesJson+"></td>\n\
-                                    </tr>\n\
-                                  </table>";
+//                          tabla += "<tr>\n\
+//                                      <td style='display:none'><input type='text' id='subtotales_"+j+"' value="+subtotalesJson+"></td>\n\
+//                                    </tr>";
+                          tabla += "</table>";
                           break;
     case 'productoStock': var bin = datos[0]['bin'];
                           //var produ = datos[0]["idProd"];
@@ -1956,7 +1961,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                           tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
                           tabla += '<tr>\n\
                                       <td class="pieTabla" colspan="2">\n\
-                                        <input type="button" id="2" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                        <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                       </td>\n\
                                     </tr>\n\
                                   </table>';
@@ -2054,7 +2059,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
                                   tabla += '<tr>\n\
                                               <td class="pieTabla" colspan="2">\n\
-                                                <input type="button" id="2" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                                <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                               </td>\n\
                                             </tr>\n\
                                           </table>';
@@ -2094,12 +2099,12 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                             tabla += '<tr><th colspan="2" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos, 10).toLocaleString()+'</td></tr>';
                           }
                           var subtotalesJson = JSON.stringify(subtotales);
-                          tabla += "<tr>\n\
-                                      <td style='display:none'><input type='text' id='subtotales_"+j+"' value="+subtotalesJson+"></td>\n\
-                                    </tr>";
+//                          tabla += "<tr>\n\
+//                                      <td style='display:none'><input type='text' id='subtotales_"+j+"' value="+subtotalesJson+"></td>\n\
+//                                    </tr>";
                           tabla += '<tr>\n\
                                       <td class="pieTabla" colspan="3">\n\
-                                        <input type="button" id="3" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                        <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                       </td>\n\
                                     </tr>\n\
                                   </table>';              
@@ -2232,13 +2237,13 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                 var subtotalesJson = JSON.stringify(subtotales);
                                 tabla += '<tr>\n\
                                             <td class="pieTabla" colspan="10">\n\
-                                              <input type="button" id="1" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                              <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                             </td>\n\
                                           </tr>';
-                                tabla += "<tr>\n\
-                                            <td style='display:none'><input type='text' id='subtotales_"+j+"' value="+subtotalesJson+"></td>\n\
-                                          </tr>\n\
-                                        </table>";
+//                                tabla += "<tr>\n\
+//                                            <td style='display:none'><input type='text' id='subtotales_"+j+"' value="+subtotalesJson+"></td>\n\
+//                                          </tr>";
+                                tabla += "</table>";
                                 break;                   
       case 'entidadMovimiento': tabla += '<tr><th class="tituloTabla" colspan="12">MOVIMIENTOS</th></tr>';
                                 tabla += '<tr>\n\
@@ -2563,7 +2568,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                           </tr>";
                                 tabla += '<tr>\n\
                                             <td class="pieTabla" colspan="12">\n\
-                                              <input type="button" id="4" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                              <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                             </td>\n\
                                           </tr>\n\
                                         </table>';  
@@ -2796,7 +2801,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                             </tr>";
                                   tabla += '<tr>\n\
                                               <td class="pieTabla" colspan="6">\n\
-                                                <input type="button" id="5" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                                <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                               </td>\n\
                                             </tr>\n\
                                           </table>'; 
@@ -2857,21 +2862,24 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
   var mostrarCamposQuery = '';
   var x = 55;
   var tipMov = '';
-    
+  var selected = '';
+  
   for (var n in queries){
     if (n == 0) {
       activo = 'active';
+      selected = 'true';
     }
     else {
       activo = '';
+      selected = 'false';
     }
-    mostrarGlobal += '<li class="nav-item  rounded-right rounded-left">\n\
-                        <a class="nav-link '+activo+'" id="pills-'+idProds[n]+'-tab" activepage="1" data-toggle="pill" href="#'+idProds[n]+'" role="tab" aria-controls="'+nombres[n]+'" aria-selected="true">'+nombres[n]+'</a>\n\
+    mostrarGlobal += '<li class="nav-item rounded-right rounded-left">\n\
+                        <a class="nav-link '+activo+'" id="pills-'+idProds[n]+'-tab" activepage="1" data-toggle="pill" href="#panel-'+idProds[n]+'" role="tab" aria-controls="'+idProds[n]+'" aria-selected="'+selected+'">'+nombres[n]+'</a>\n\
                       </li>'; 
     //alert(queries[n]);
   }
   mostrarGlobal += '</ul>';
-  mostrarGlobal += '<div class="tab-content rounded-right" id="pills-tabContent">';
+  mostrarGlobal += '<div class="tab-content rounded-right rounded-left" id="pills-tabContent">';
 
   var jsonQuery = JSON.stringify(queries);
   
@@ -2897,13 +2905,14 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
       //alert('total: '+totalDatos+'\nplasticos: '+totalPlasticos+'\nretiros:'+totalRetiros[53]+'\nrenos: '+totalRenovaciones[53]+'\ndestrucciones: '+totalDestrucciones[53]+'\ningresos: '+totalIngresos[53]+'\nstock Viejo: '+stockViejo[53]);
       
       if (j == 0) {
-        activo = 'fade show active';
+        activo = 'show active';
       }
       else {
-        activo = 'fade';
+        activo = '';
       }
       
-      var divi = '<div class="tab-pane '+activo+' rounded-right" id="'+idProds[j]+'" indice="'+j+'" role="tabpanel" aria-labelledby="pills-home-tab">'; 
+      //var divi = '<div class="tab-pane '+activo+' rounded-right" id="'+idProds[j]+'" indice="'+j+'" role="tabpanel" aria-labelledby="pills-home-tab">'; 
+      var divi = '<div class="tab-pane fade '+activo+'" id="panel-'+idProds[j]+'" indice="'+j+'" role="tabpanel" aria-labelledby="pills-'+idProds[j]+'-tab">'; 
       var mostrar = '';
       mostrar += divi;
       var titulo = "<h2 id='titulo'>Resultado de la búsqueda</h2>";
@@ -2964,7 +2973,12 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
           parcial = false;
         }
         var totalPaginas = Math.ceil(totalDatos/tamPagina);
-        
+        //                                            <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+        //                                            <td style="display:none"><input type="text" id="d1" name="d1" value="'+d1+'"></td>\n\
+        //                                            <td style="display:none"><input type="text" id="d2" name="d2" value="'+d2+'"></td>\n\
+        //                                            <td style="display:none"><input type="text" id="p" name="p" value="'+p+'"></td>\n\
+        //                                            <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
+        //                                            <td style="display:none"><input type="text" id="user" name="user" value="'+user+'"></td>\n\
         var datosOcultos = '<table id="datosOcultos_'+j+'" name="datosOcultos" class="tabla2" style="display:none">';
         switch (radio){
           case 'entidadStockViejo':
@@ -2976,26 +2990,20 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                 datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="subtotales_'+j+'" name="subtotales_'+j+'" value='+jsonStockViejo+'></td>\n\
                                                     <td style="display:none"><input type="text" id="radio_'+j+'" name="radio_'+j+'" value="'+radio+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="1"></td>\n\
-                                                    <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                                    <td style="display:none"><input type="text" id="idTipo_'+j+'" name="idTipo_'+j+'" value="1"></td>\n\
+                                                    <td style="display:none"><input type="text" id="indice_'+j+'" name="indice" value=""></td>\n\
                                                     <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                                    <td style="display:none"><input type="text" id="campos_'+j+'" name="campos_'+j+'" value="'+campos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="largos_'+j+'" name="largos_'+j+'" value="'+largos+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="entidad_'+j+'" name="entidad_'+j+'" value="'+entidadesStock[j]+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mostrar_'+j+'" name="mostrar_'+j+'" value="'+mostrarCamposQuery+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="p" name="p" value="'+p+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="d1" name="d1" value="'+d1+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="d2" name="d2" value="'+d2+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="user" name="user" value="'+user+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="zip" name="zip" value="'+zip+'"></td>\n\
-                                                    <td style="display:none"><input type="password" id="zipManual" name="zipManual" value="'+zipManual+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="planilla" name="planilla" value="'+planilla+'"></td>\n\
-                                                    <td style="display:none"><input type="password" id="planillaManual" name="planillaManual" value="'+planillaManual+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="marcaAgua" name="marcaAgua" value="'+marcaAgua+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="x_'+j+'" name="x_'+j+'" value="'+x+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="zip_'+j+'" name="zip_'+j+'" value="'+zip+'"></td>\n\
+                                                    <td style="display:none"><input type="password" id="zipManual_'+j+'" name="zipManual_'+j+'" value="'+zipManual+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="planilla_'+j+'" name="planilla_'+j+'" value="'+planilla+'"></td>\n\
+                                                    <td style="display:none"><input type="password" id="planillaManual_'+j+'" name="planillaManual_'+j+'" value="'+planillaManual+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="marcaAgua_'+j+'" name="marcaAgua_'+j+'" value="'+marcaAgua+'"></td>\n\
                                                   </tr>';
                                 break;
           case 'productoStockViejo':                      
@@ -3007,27 +3015,21 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                 datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="subtotales_'+j+'" name="subtotales_'+j+'" value='+jsonStockViejo+'></td>\n\
                                                     <td style="display:none"><input type="text" id="radio_'+j+'" name="radio_'+j+'" value="'+radio+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="2"></td>\n\
-                                                    <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                                    <td style="display:none"><input type="text" id="idTipo_'+j+'" name="idTipo_'+j+'" value="2"></td>\n\
+                                                    <td style="display:none"><input type="text" id="indice_'+j+'" name="indice" value=""></td>\n\
                                                     <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombresProductos[j]+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                    <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProds[j]+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="campos_'+j+'" name="campos_'+j+'" value="'+campos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="largos_'+j+'" name="largos_'+j+'" value="'+largos+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="nombreProducto_'+j+'" name="nombreProducto_'+j+'" value="'+nombresProductos[j]+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="idProd_'+j+'" name="idProd_'+j+'" value="'+idProds[j]+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="mostrar_'+j+'" name="mostrar_'+j+'" value="'+mostrarCamposQuery+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="p" name="p" value="'+p+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="d1" name="d1" value="'+d1+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="d2" name="d2" value="'+d2+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="user" name="user" value="'+user+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="zip" name="zip" value="'+zip+'"></td>\n\
-                                                    <td style="display:none"><input type="password" id="zipManual" name="zipManual" value="'+zipManual+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="planilla" name="planilla" value="'+planilla+'"></td>\n\
-                                                    <td style="display:none"><input type="password" id="planillaManual" name="planillaManual" value="'+planillaManual+'"></td>\n\
-                                                    <td style="display:none"><input type="text" id="marcaAgua" name="marcaAgua" value="'+marcaAgua+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="x_'+j+'" name="x_'+j+'" value="'+x+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="zip_'+j+'" name="zip_'+j+'" value="'+zip+'"></td>\n\
+                                                    <td style="display:none"><input type="password" id="zipManual_'+j+'" name="zipManual_'+j+'" value="'+zipManual+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="planilla_'+j+'" name="planilla_'+j+'" value="'+planilla+'"></td>\n\
+                                                    <td style="display:none"><input type="password" id="planillaManual_'+j+'" name="planillaManual_'+j+'" value="'+planillaManual+'"></td>\n\
+                                                    <td style="display:none"><input type="text" id="marcaAgua_'+j+'" name="marcaAgua_'+j+'" value="'+marcaAgua+'"></td>\n\
                                                   </tr>';
                                 break;
           case 'totalStock':  campos = 'Id-Entidad-Stock';
@@ -3036,26 +3038,20 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                               x = 60;
                               tipMov = 'totalStock';
                               datosOcultos += '<tr><td style="display:none"><input type="text" id="query_0" name="query_0" value="'+queries[j]+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="3"></td>\n\
-                                                <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                                <td style="display:none"><input type="text" id="idTipo_'+j+'" name="idTipo_'+j+'" value="3"></td>\n\
+                                                <td style="display:none"><input type="text" id="indice_'+j+'" name="indice" value=""></td>\n\
                                                 <td style="display:none"><input type="text" id="radio_'+j+'" name="radio_'+j+'" value="'+radio+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="consultaCSV_0" name="consultaCSV_0" value="'+consultasCSV[j]+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+                                                <td style="display:none"><input type="text" id="campos_'+j+'" name="campos_'+j+'" value="'+campos+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="mostrar_'+j+'" name="mostrar_'+j+'" value="'+mostrarCamposQuery+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="largos_'+j+'" name="largos_'+j+'" value="'+largos+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="tipoConsulta_0" name="tipoConsulta_0" value="'+mensajeConsulta+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="p" name="p" value="'+p+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="d1" name="d1" value="'+d1+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="d2" name="d2" value="'+d2+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="user" name="user" value="'+user+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="zip" name="zip" value="'+zip+'"></td>\n\
-                                                <td style="display:none"><input type="password" id="zipManual" name="zipManual" value="'+zipManual+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="planilla" name="planilla" value="'+planilla+'"></td>\n\
-                                                <td style="display:none"><input type="password" id="planillaManual" name="planillaManual" value="'+planillaManual+'"></td>\n\
-                                                <td style="display:none"><input type="text" id="marcaAgua" name="marcaAgua" value="'+marcaAgua+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="x_'+j+'" name="x_'+j+'" value="'+x+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="zip_'+j+'" name="zip_'+j+'" value="'+zip+'"></td>\n\
+                                                <td style="display:none"><input type="password" id="zipManual_'+j+'" name="zipManual_'+j+'" value="'+zipManual+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="planilla_'+j+'" name="planilla_'+j+'" value="'+planilla+'"></td>\n\
+                                                <td style="display:none"><input type="password" id="planillaManual_'+j+'" name="planillaManual_'+j+'" value="'+planillaManual+'"></td>\n\
+                                                <td style="display:none"><input type="text" id="marcaAgua_'+j+'" name="marcaAgua_'+j+'" value="'+marcaAgua+'"></td>\n\
                                               </tr>';
                              break;
           case 'entidadMovimiento': campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios-IdMov';
@@ -3066,26 +3062,20 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                     tipMov = 'entMov';
                                     datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
                                                         <td style="display:none"><input type="text" id="radio_'+j+'" name="radio_'+j+'" value="'+radio+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="4"></td>\n\
-                                                        <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                                        <td style="display:none"><input type="text" id="idTipo_'+j+'" name="idTipo_'+j+'" value="4"></td>\n\
+                                                        <td style="display:none"><input type="text" id="indice_'+j+'" name="indice" value=""></td>\n\
                                                         <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                        <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="campos_'+j+'" name="campos_'+j+'" value="'+campos+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="largos_'+j+'" name="largos_'+j+'" value="'+largos+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="mostrar_'+j+'" name="mostrar_'+j+'" value="'+mostrarCamposQuery+'"></td>\n\
                                                         <td style="display:none"><input type="text" id="entidad_'+j+'" name="entidad_'+j+'" value="'+entidadesMovimiento[j]+'"></td>\n\
                                                         <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="p" name="p" value="'+p+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="d1" name="d1" value="'+d1+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="d2" name="d2" value="'+d2+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="user" name="user" value="'+user+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="zip" name="zip" value="'+zip+'"></td>\n\
-                                                        <td style="display:none"><input type="password" id="zipManual" name="zipManual" value="'+zipManual+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="planilla" name="planilla" value="'+planilla+'"></td>\n\
-                                                        <td style="display:none"><input type="password" id="planillaManual" name="planillaManual" value="'+planillaManual+'"></td>\n\
-                                                        <td style="display:none"><input type="text" id="marcaAgua" name="marcaAgua" value="'+marcaAgua+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="x_'+j+'" name="x_'+j+'" value="'+x+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="zip_'+j+'" name="zip_'+j+'" value="'+zip+'"></td>\n\
+                                                        <td style="display:none"><input type="password" id="zipManual_'+j+'" name="zipManual_'+j+'" value="'+zipManual+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="planilla_'+j+'" name="planilla_'+j+'" value="'+planilla+'"></td>\n\
+                                                        <td style="display:none"><input type="password" id="planillaManual_'+j+'" name="planillaManual_'+j+'" value="'+planillaManual+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="marcaAgua_'+j+'" name="marcaAgua_'+j+'" value="'+marcaAgua+'"></td>\n\
                                                       </tr>';
                                     break;
           case 'productoMovimiento':  campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios-IdMov';
@@ -3096,34 +3086,28 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                       tipMov = 'prodMov';
                                       datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
                                                           <td style="display:none"><input type="text" id="radio_'+j+'" name="radio_'+j+'" value="'+radio+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="idTipo" name="idTipo" value="5"></td>\n\
-                                                          <td style="display:none"><input type="text" id="indice" name="indice" value=""></td>\n\
+                                                          <td style="display:none"><input type="text" id="idTipo_'+j+'" name="idTipo_'+j+'" value="5"></td>\n\
+                                                          <td style="display:none"><input type="text" id="indice_'+j+'" name="indice" value=""></td>\n\
                                                           <td style="display:none"><input type="text" id="consultaCSV_'+j+'" name="consultaCSV_'+j+'" value="'+consultasCSV[j]+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="campos" name="campos" value="'+campos+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="largos" name="largos" value="'+largos+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-                                                          <td style="display:none"><input type="text" id="nombreProducto" name="nombreProducto" value="'+nombresProductos[j]+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="mostrar" name="mostrar" value="'+mostrarCamposQuery+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="idProd" name="idProd" value="'+idProds[j]+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="campos_'+j+'" name="campos_'+j+'" value="'+campos+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="largos_'+j+'" name="largos_'+j+'" value="'+largos+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="nombreProducto_'+j+'" name="nombreProducto_'+j+'" value="'+nombresProductos[j]+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="mostrar_'+j+'" name="mostrar_'+j+'" value="'+mostrarCamposQuery+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="idProd_'+j+'" name="idProd_'+j+'" value="'+idProds[j]+'"></td>\n\
                                                           <td style="display:none"><input type="text" id="tipoConsulta_'+j+'" name="tipoConsulta_'+j+'" value="'+mensajeConsulta+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="x" name="x" value="'+x+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="p" name="p" value="'+p+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="d1" name="d1" value="'+d1+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="d2" name="d2" value="'+d2+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="user" name="user" value="'+user+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="zip" name="zip" value="'+zip+'"></td>\n\
-                                                          <td style="display:none"><input type="password" id="zipManual" name="zipManual" value="'+zipManual+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="planilla" name="planilla" value="'+planilla+'"></td>\n\
-                                                          <td style="display:none"><input type="password" id="planillaManual" name="planillaManual" value="'+planillaManual+'"></td>\n\
-                                                          <td style="display:none"><input type="text" id="marcaAgua" name="marcaAgua" value="'+marcaAgua+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="x_'+j+'" name="x_'+j+'" value="'+x+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="zip_'+j+'" name="zip_'+j+'" value="'+zip+'"></td>\n\
+                                                          <td style="display:none"><input type="password" id="zipManual_'+j+'" name="zipManual_'+j+'" value="'+zipManual+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="planilla_'+j+'" name="planilla_'+j+'" value="'+planilla+'"></td>\n\
+                                                          <td style="display:none"><input type="password" id="planillaManual_'+j+'" name="planillaManual_'+j+'" value="'+planillaManual+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="marcaAgua_'+j+'" name="marcaAgua_'+j+'" value="'+marcaAgua+'"></td>\n\
                                                         </tr>';
                                       break;
           default: break;
         }
         datosOcultos += '</table>';
         formu += datosOcultos;
-        
+
         var tabla = mostrarTabla(radio, datos, j, todos, 1, parcial, subtotales, max, totalPlasticos, mensajeConsulta, totalPaginas);
         formu += tabla;
         
@@ -3179,7 +3163,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
           idProds[j] = '';
         }
                 
-        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds[j]+'&ent='+ent+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipoUrl+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds+'&ent='+ent+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipoUrl+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         mostrar += '</div>';
         $("#pills-tabContent").append(mostrar);
@@ -3188,7 +3172,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
       }/// FIN del if de totalDatos>1  
       else {
         mostrar += "<br><hr><h3>No existen registros para la consulta realizada.</h3><hr>";
-        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds[j]+'&ent='+ent+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipoUrl+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds+'&ent='+ent+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipoUrl+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         mostrar += '</div>';
         $("#pills-tabContent").append(mostrar);
@@ -3737,7 +3721,7 @@ function realizarBusqueda(){
  * @param {String} selector String con el nombre del DIV donde cargar el form.
  * @param {String} hint String con la sugerencia pasada.
  * @param {String} tipo String que indica si la consulta es de stock o de movimientos.
- * @param {String} idProd String con el identificador del producto previamente seleccionado (si corresponde).
+ * @param {String} idProdus String con el identificador del producto previamente seleccionado (si corresponde).
  * @param {String} entidadSeleccionada String con de la entidad previamente seleccionada (si corresponde).
  * @param {String} zip String con la seguridad para el ZIP previamente seleccionada (si corresponde).
  * @param {String} planilla String con la seguridad para la planilla de EXCEL previamente seleccionada (si corresponde).
@@ -3748,7 +3732,7 @@ function realizarBusqueda(){
  * @param {String} tipoFiltro String con el tipo de movimiento a filtrar que previamente se seleccionó (si corresponde).
  * @param {Integer} user Integer con el ID del usuario que previamente se usó para filtrar (si corresponde).
  */
-function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, zip, planilla, marcaAgua, p, d1, d2, tipoFiltro, user){
+function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada, zip, planilla, marcaAgua, p, d1, d2, tipoFiltro, user){
   var url = "data/selectQuery.php";
   var consultarProductos = "select idprod, nombre_plastico as nombre from productos order by nombre_plastico asc";
   
@@ -3989,20 +3973,32 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, z
         mostrar += '<br><br>';
         $(selector).html(mostrar);
         if (hint !== '') {
-          if (tipo === 'prodStock') {
-            $("#productoStock").val(hint);
-            showHint(hint, "#productoStock", idProd);
-            $("#productoStock").parent().prev().prev().children().prop("checked", true);
-            $("#productoMovimiento").val('');
-            $("#productoStock").focus();
+          var sel = '';
+          if (idProdus !== ''){  
+            var produsTemp = idProdus.split(',');
+            if (tipo === 'prodStock') {
+              sel = '#productoStock';
+              $("#productoStock").val(hint);
+              $("#productoMovimiento").val(''); 
+              showHint(hint, "#productoStock",idProdus);
+            }
+            else {
+              sel = '#productoMovimiento';
+              $("#productoMovimiento").val(hint);
+              $("#productoStock").val('');
+              showHint(hint, "#productoMovimiento",idProdus);
+            } 
+            for (var i = 0; i < produsTemp.length; i++) {
+              if (tipo === 'prodStock') {
+                $('#productoStock option[value="'+produsTemp[i]+'"]').attr("selected", true);  
+              }
+              else {
+                $('#productoMovimiento option[value="'+produsTemp[i]+'"]').attr("selected", true);
+              } 
+            }
+            $(sel).parent().prev().prev().children().prop("checked", true);
+            $(sel).focus();
           }
-          else {
-            $("#productoMovimiento").val(hint);
-            showHint(hint, "#productoMovimiento", idProd);
-            $("#productoMovimiento").parent().prev().prev().children().prop("checked", true);
-            $("#productoStock").val('');
-            $("#productoMovimiento").focus();
-          }    
         }
         else {
           $("#productoMovimiento").val('');
@@ -4018,10 +4014,10 @@ function cargarFormBusqueda(selector, hint, tipo, idProd, entidadSeleccionada, z
               else {
                 $('#entidadMovimiento option[value="'+entTemp[i]+'"]').attr("selected", true);
                 sel = '#entidadMovimiento';
-              }
-              $(sel).parent().prev().prev().children().prop("checked", true);
-              $(sel).focus();
+              }    
             }
+            $(sel).parent().prev().prev().children().prop("checked", true);
+            $(sel).focus();
           }
           else {
             $('#entidadStock option[value="todos"]').attr("selected", true);
@@ -6488,7 +6484,7 @@ $(document).on("click", ".linkHistorialProducto", function(){
 $(document).on("keypress", "#productoStock, #productoMovimiento, #productoGrafica", function(e) { 
   if(e.which === 13) {
     //alert('enter');
-    $("#hint").focus();
+    $("#hint").focus();//alert('afdkjldf');
   }
 });      
 /********** fin on("keypress", "#productoStock, #productoMovimiento, #productoGrafica", function(e) **********/
@@ -6646,24 +6642,24 @@ $(document).on("click", ".exportar", function (){
   var id = $(this).attr("id");
   var indice = $(this).attr("indice");
   $("input[name='indice']" ).val(indice);
-  var x = $("#x").val();
+  var x = $("#x_"+indice+"").val();
   var query = $("#query_"+indice+"").val();
   var consultaCSV = $("#consultaCSV_"+indice+"").val();
-  var largos = $("#largos").val();
-  var campos = $("#campos").val();
-  var mostrar = $("#mostrar").val();
+  var largos = $("#largos_"+indice+"").val();
+  var campos = $("#campos_"+indice+"").val();
+  var mostrar = $("#mostrar_"+indice+"").val();
   var tipoConsulta = $("#tipoConsulta_"+indice+"").val();
   
-  var zip = $("#zip").val();
-  var planilla = $("#planilla").val();
+  var zip = $("#zip_"+indice+"").val();
+  var planilla = $("#planilla_"+indice+"").val();
   var zipRandom = false;
   var planillaRandom = false;
   
   switch (id) {
     case "1": var entidad = $("#entidad_"+indice+"").val();
               break;
-    case "2": var idProd = $("#idProd").val();
-              var nombreProducto = $("#nombreProducto").val();
+    case "2": var idProd = $("#idProd_"+indice+"").val();
+              var nombreProducto = $("#nombreProducto_"+indice+"").val();
               break;
     case "3": break;
     case "4": var criterioFecha = $("#criterioFecha").val();
@@ -6672,8 +6668,8 @@ $(document).on("click", ".exportar", function (){
               var usuario = $("#usuario").val();
               break;
     case "5": var criterioFecha = $("#criterioFecha").val();
-              var idProd = $("#idProd").val();
-              var nombreProducto = $("#nombreProducto").val();
+              var idProd = $("#idProd_"+indice+"").val();
+              var nombreProducto = $("#nombreProducto_"+indice+"").val();
               var tipo = $("#tipo").val();
               var usuario = $("#usuario").val();
               
@@ -6758,14 +6754,14 @@ $(document).on("click", ".exportar", function (){
     for (i=0; i<10; i++) pwdZip += caracteres.charAt(Math.floor(Math.random()*caracteres.length));
       
     zipRandom = true;
-    $("#zipManual").val(pwdZip); 
+    $("#zipManual_"+indice+"").val(pwdZip); 
   }
   if (planilla === 'random'){
     var pwdPlanilla = "";
     for (i=0; i<10; i++) pwdPlanilla += caracteres.charAt(Math.floor(Math.random()*caracteres.length));
     
     planillaRandom = true; 
-    $("#planillaManual").val(pwdPlanilla);
+    $("#planillaManual_"+indice+"").val(pwdPlanilla);
   }
   if ((zipRandom === true)||(planillaRandom === true)){
     var msgAlerta = '';
@@ -6967,39 +6963,41 @@ $(document).on("click", ".paginate", function (){
 });
 /********** fin on("click", ".paginate", function () **********/
 
-$(document).on("shown.bs.tab", "a[data-toggle='pill']",  function () {
-  /*var page = $(".nav-link.active").attr("activepage");
-  var indice = $(".tab-pane.active").attr("indice");
-  var totalPaginas = parseInt($("#totalPaginas_"+indice).val(), 10);
-  alert("indice: "+indice+"\nPagina: "+page+"\nTotalPaginas: "+totalPaginas);
-  if (page !== 1) {
-    var anterior = '<li><a class="paginate anterior" i='+indice+' data="'+(page-1)+'">Anterior</a></li>';
-    $(".pagination[indice='"+indice+"'] li .anterior").remove();
-    $(".pagination[indice='"+indice+"'] ul").prepend(anterior); 
-  }
-  else {
-    $(".pagination[indice='"+indice+"'] li .anterior").remove();
-    //$(".pagination li a[data='1']").addClass('pageActive');
-  }
-
-  $(".pagination[indice='"+indice+"'] li a").each(function (){
-    var indLi = parseInt($(this).attr('data'), 10);
-    if (page === indLi){
-      $(this).addClass('pageActive');   
-    }
-    else {
-      $(this).removeClass('pageActive');
-    }
-    if (page !== totalPaginas){
-      var siguiente = '<li><a class="paginate siguiente" i='+indice+' data="'+(page+1)+'">Siguiente</a></li>';
-      $(".pagination[indice='"+indice+"'] li .siguiente").remove();
-      $(".pagination[indice='"+indice+"'] ul").append(siguiente);
-    }
-    else {
-      $(".pagination[indice='"+indice+"'] li .siguiente").remove();
-    }
-  }); */
-});
+//$(document).on("shown.bs.tab", "a[data-toggle='pill']",  function () {
+//  
+//  var page = $(".nav-link.active").attr("activepage");
+//  var indice = $(".tab-pane.active").attr("indice");
+//  var totalPaginas = parseInt($("#totalPaginas_"+indice).val(), 10);
+//  //alert("indice: "+indice+"\nPagina: "+page+"\nTotalPaginas: "+totalPaginas);
+//  if (page !== 1) {
+//    var anterior = '<li><a class="paginate anterior" i='+indice+' data="'+(page-1)+'">Anterior</a></li>';
+//    $(".pagination[indice='"+indice+"'] li .anterior").remove();
+//    $(".pagination[indice='"+indice+"'] ul").prepend(anterior); 
+//  }
+//  else {
+//    $(".pagination[indice='"+indice+"'] li .anterior").remove();
+//    //$(".pagination li a[data='1']").addClass('pageActive');
+//  }
+//
+//  $(".pagination[indice='"+indice+"'] li a").each(function (){
+//    var indLi = parseInt($(this).attr('data'), 10);
+//    if (page === indLi){
+//      $(this).addClass('pageActive');   
+//    }
+//    else {
+//      $(this).removeClass('pageActive');
+//    }
+//    if (page !== totalPaginas){
+//      var siguiente = '<li><a class="paginate siguiente" i='+indice+' data="'+(page+1)+'">Siguiente</a></li>';
+//      $(".pagination[indice='"+indice+"'] li .siguiente").remove();
+//      $(".pagination[indice='"+indice+"'] ul").append(siguiente);
+//    }
+//    else {
+//      $(".pagination[indice='"+indice+"'] li .siguiente").remove();
+//    }
+//  }); 
+//
+//});
 /********** fin on("shown.bs.tab", "a[data-toggle='pill']",  function () **********/
 
 /*****************************************************************************************************************************

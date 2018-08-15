@@ -32,7 +32,6 @@ require_once('data/config.php');
 $c1 = 18;
 $h = 6;
 $hHeader = 30;
-$hFooter = 10;
 $orientacion = 'P';
 //******************************************************** FIN tamaños de celdas ***************************************************************
 
@@ -41,8 +40,8 @@ $fecha = date('d/m/Y');
 $hora = date('H:i');
 //********************************************************** FIN Hora y título *****************************************************************
 
-$id = $_POST["idTipo"];
 $indice = $_POST["indice"];
+$id = $_POST["idTipo_$indice"];
 
 $query = $_POST["query_$indice"];
 $consultaCSV = $_POST["consultaCSV_$indice"];
@@ -75,26 +74,26 @@ else {
   $tipo = $tempTipo1[0];
 }
 //echo "consulta: ".$tipoConsulta."<br>tipo: ".$tipo;
-$mostrar1 = utf8_decode($_POST["mostrar"]);
+$mostrar1 = utf8_decode($_POST["mostrar_$indice"]);
 $mostrar = preg_split("/-/", $mostrar1);
 
-$campos1 = utf8_decode($_POST["campos"]);
+$campos1 = utf8_decode($_POST["campos_$indice"]);
 $campos = preg_split("/-/", $campos1);
 
-$largos = $_POST["largos"];
+$largos = $_POST["largos_$indice"];
 $temp = explode('-', $largos);
 
-$x = $_POST["x"];
+$x = $_POST["x_$indice"];
 
-$zipSeguridad = $_POST["zip"];
-$planilla = $_POST["planilla"];
-$marcaAgua = $_POST["marcaAgua"];
-$pwdZipManual = $_POST["zipManual"];
-$pwdPlanillaManual = $_POST["planillaManual"];
+$zipSeguridad = $_POST["zip_$indice"];
+$planilla = $_POST["planilla_$indice"];
+$marcaAgua = $_POST["marcaAgua_$indice"];
+$pwdZipManual = $_POST["zipManual_$indice"];
+$pwdPlanillaManual = $_POST["planillaManual_$indice"];
 //echo "zip: ".$zipSeguridad."<br>zipManual: ".$pwdZipManual."<br>planilla: ".$planilla."<br>planillaManual: ".$pwdPlanillaManual."<br>marca agua: ".$marcaAgua;
 
-if (isset($_POST["idProd"])){
-  $idProd = $_POST["idProd"];
+if (isset($_POST["idProd_$indice"])){
+  $idProd = $_POST["idProd_$indice"];
 }
 
 ///Caracteres a ser reemplazados en caso de estar presentes en el nombre del producto o la entidad
@@ -106,8 +105,8 @@ $aguja = array(0=>" ", 1=>".", 2=>"[", 3=>"]", 4=>"*", 5=>"/", 6=>"\\", 7=>"?", 
 $tamMaximoNombreEntidad = 20;
 $tamMaximoNombreProducto = 20;
 
-if (isset($_POST["nombreProducto"])){
-  $nombreProducto1 = $_POST["nombreProducto"];
+if (isset($_POST["nombreProducto_$indice"])){
+  $nombreProducto1 = $_POST["nombreProducto_$indice"];
   $sep = explode("[", $nombreProducto1);
   $entidad0 = trim($sep[1]);
   $nom2 = explode(":", $entidad0);
@@ -171,23 +170,23 @@ switch ($id) {
             $asunto = "Reporte con los movimientos de la Entidad";
             $indiceStock = 12;
             $orientacion = 'L';
-            if (isset($inicio)) {
-              $inicioTemp = explode("-", $inicio);
-              $inicioMostrar = $inicioTemp[2]."/".$inicioTemp[1]."/".$inicioTemp[0];
-              $finTemp = explode("-", $fin);
-              $finMostrar = $finTemp[2]."/".$finTemp[1]."/".$finTemp[0];
-            }
+//            if (isset($inicio)) {
+//              $inicioTemp = explode("-", $inicio);
+//              $inicioMostrar = $inicioTemp[2]."/".$inicioTemp[1]."/".$inicioTemp[0];
+//              $finTemp = explode("-", $fin);
+//              $finMostrar = $finTemp[2]."/".$finTemp[1]."/".$finTemp[0];
+//            }
             break;
   case "5": $tituloTabla = "MOVIMIENTOS DEL PRODUCTO";
             $titulo = "MOVIMIENTOS POR PRODUCTO";
             $asunto = "Reporte con los movimientos del Producto";
             $indiceStock = 12;
-            if (isset($inicio)) {
-              $inicioTemp = explode("-", $inicio);
-              $inicioMostrar = $inicioTemp[2]."/".$inicioTemp[1]."/".$inicioTemp[0];
-              $finTemp = explode("-", $fin);
-              $finMostrar = $finTemp[2]."/".$finTemp[1]."/".$finTemp[0];
-            }
+//            if (isset($inicio)) {
+//              $inicioTemp = explode("-", $inicio);
+//              $inicioMostrar = $inicioTemp[2]."/".$inicioTemp[1]."/".$inicioTemp[0];
+//              $finTemp = explode("-", $fin);
+//              $finMostrar = $finTemp[2]."/".$finTemp[1]."/".$finTemp[0];
+//            }
             break;       
   default: break;
 }
@@ -245,6 +244,11 @@ else {
 //Instancio objeto de la clase:
 $pdfResumen = new PDF($orientacion,'mm','A4');
 $pdfResumen->AddPage();
+
+///Se AGREGA el autoPageBreak "a mano" para que en la PRIMER página se tome el margen inferior correcto acorde al tamaño del texto legal introducido.
+///A partir de la segunda parte, la función Footer calcula el tamaño correcto y hace el salto de página de forma correcta, pero en la primer 
+///página aún no se llamó al Footer y hay que setearlo según el texto.
+$pdfResumen->SetAutoPageBreak(true, 8*$h);
 
 $totalCampos = sizeof($campos);
 $pdfResumen->SetWidths($largoCampos);

@@ -5859,13 +5859,13 @@ button.close {
   transform: translateX(0);
 }
 
-/*@supports ((-webkit-transform-style:preserve-3d) or (transform-style: preserve-3d)) {
+@supports ((-webkit-transform-style: preserve-3d) or (transform-style: preserve-3d)) {
   .carousel-item-next.carousel-item-left,
   .carousel-item-prev.carousel-item-right {
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
   }
-}*/
+}
 
 .carousel-item-next,
 .active.carousel-item-right {
@@ -5873,13 +5873,13 @@ button.close {
   transform: translateX(100%);
 }
 
-/*@supports ((-webkit-transform-style: preserve-3d) or (transform-style: preserve-3d)) {
+@supports ((-webkit-transform-style: preserve-3d) or (transform-style: preserve-3d)) {
   .carousel-item-next,
   .active.carousel-item-right {
     -webkit-transform: translate3d(100%, 0, 0);
     transform: translate3d(100%, 0, 0);
   }
-}*/
+}
 
 .carousel-item-prev,
 .active.carousel-item-left {
@@ -5887,13 +5887,13 @@ button.close {
   transform: translateX(-100%);
 }
 
-/*@supports ((-webkit-transform-style: preserve-3d) or (transform-style: preserve-3d)) {
+@supports ((-webkit-transform-style: preserve-3d) or (transform-style: preserve-3d)) {
   .carousel-item-prev,
   .active.carousel-item-left {
     -webkit-transform: translate3d(-100%, 0, 0);
     transform: translate3d(-100%, 0, 0);
   }
-}*/
+}
 
 .carousel-fade .carousel-item {
   opacity: 0;
@@ -5921,7 +5921,7 @@ button.close {
   transform: translateX(0);
 }
 
-/*@supports ((-webkit-transform-style: preserve-3d) or (transform-style: preserve-3d)) {
+@supports ((-webkit-transform-style: preserve-3d) or (transform-style: preserve-3d)) {
   .carousel-fade .carousel-item-next,
   .carousel-fade .carousel-item-prev,
   .carousel-fade .carousel-item.active,
@@ -5930,7 +5930,7 @@ button.close {
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
   }
-}*/
+}
 
 .carousel-control-prev,
 .carousel-control-next {
@@ -7338,14 +7338,14 @@ button.bg-dark:focus {
   z-index: 1030;
 }
 
-/*@supports ((position: -webkit-sticky) or (position: sticky)) {
+@supports ((position: -webkit-sticky) or (position: sticky)) {
   .sticky-top {
     position: -webkit-sticky;
     position: sticky;
     top: 0;
     z-index: 1020;
   }
-}*/
+}
 
 .sr-only {
   position: absolute;

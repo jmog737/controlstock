@@ -57,7 +57,7 @@ class PDF extends PDF_MC_Table
   
   ///Variable usada por las funciones de generación de las marcas de agua:
   var $angle=0;
-  
+   
   //Cabecera de página
   function Header()
     {
@@ -124,17 +124,40 @@ class PDF extends PDF_MC_Table
   //Pie de página
   function Footer()
     {
-    global $hFooter;
+    global $h, $hFooter;
+        
+    $this->SetFont('Arial', 'I', 7);
+    $this->SetTextColor(0);
+    $this->SetFillColor(120, 200, 120);
+    $this->SetFillColor(234, 229, 227);
+    $anchoPagina = $this->GetPageWidth();
+    $anchoTipoFooter = 0.9*$anchoPagina;
+    $xFooter = ($anchoPagina - $anchoTipoFooter)/2; 
+    
+    $textoLegal = utf8_decode("EMSA S.A. informa y hace de conocimiento de nuestros clientes, la exclusión de responsabilidades frente a casos de daño, robo, incendio o catástrofe que pudiesen estropear el stock de tarjetas de vuestra propiedad que se encuentran resguardadas en nuestra bóveda. Esto no afectará en absoluto la calidad y prestancia de nuestra operativa diaria y de los protocolos administrativos y de seguridad que se cumplen actualmente. El alcance ofrecido en nuestro servicio es pura y exclusivamente para la reserva y utilización del espacio físico y el control diario en la producción de embosados a través de los informes respectivos, coordinados previamente con el cliente. Esta comunicación es a modo informativo y las cláusulas respectivas serán anexadas a los contratos existentes o futuros. Agradecemos en forma insistente la comprensión y preferencia que ante todo siguen teniendo para con nuestros servicios.");
+    
+    $nbTextoLegal = $this->NbLines($anchoTipoFooter,$textoLegal);
+    $hTextoLegal=$h*$nbTextoLegal;
+
+    $hFooter = $hTextoLegal + $h;
     $this->SetY(-$hFooter);
+    $this->setX($xFooter);
+    if ($nbTextoLegal > 1){
+      $this->MultiCell($anchoTipoFooter, $h, $textoLegal, 'BT', 'L', false);
+    }
+    else {
+      $this->Cell($anchoTipoFooter, $hTextoLegal, $textoLegal, 0, 'BT', 'L', false);
+    }
+    $this->setX($xFooter);
     $this->SetFont('Arial', 'I', 8);
     $this->SetTextColor(0);
-    $this->Cell(0, $hFooter, 'Pag. ' . $this->PageNo(), 0, 0, 'C');
+    $this->Cell($anchoTipoFooter, $h, 'Pag. ' . $this->PageNo(), 0, 0, 'C', false);
     }
 
   //Tabla tipo listado para el stock de una o todas las entidades, o también para el total de plásticos en bóveda:
   function tablaStockEntidad($total, $tipo)
     {
-    global $x,$h, $totalCampos, $totalRegistros;
+    global $x,$h, $hFooter, $totalCampos, $totalRegistros;
     global $registros, $subtotales, $campos, $largoCampos, $tituloTabla, $tipoConsulta, $entidad, $mostrar;
     
     $tamTabla = $largoCampos[$totalCampos];
@@ -338,6 +361,7 @@ class PDF extends PDF_MC_Table
       ///*-******************************************** ENCABEZADO DE PÁGINA ****************************************************************
       if($this->GetY()+$h0>$this->PageBreakTrigger){
         $this->AddPage($this->CurOrientation);
+        $this->SetAutoPageBreak(true, $hFooter);
         ///***************************************************************** TITULO ************************************************************
         //Defino tipo de letra y tamaño para el Título:
         $this->SetFont('Courier', 'B', 12);
@@ -707,7 +731,7 @@ class PDF extends PDF_MC_Table
   ///Función para generar los PDFs correspondientes a consultas de MOVIMIENTOS, ya sean de entidad o de productos:
   function tablaMovimientos($tablaProducto) 
     {
-    global $h, $x, $totalCampos, $c1, $totalRegistros;
+    global $h, $hFooter, $x, $totalCampos, $c1, $totalRegistros;
     global $registros, $campos, $largoCampos, $rutaFotos, $tituloTabla, $tipoConsulta, $codigoEMSA, $mostrar;
        
     $anchoPagina = $this->GetPageWidth();
@@ -1516,6 +1540,7 @@ class PDF extends PDF_MC_Table
           ///los campos. Si NO entra, genero una nueva página y agrego el encabezado de la tabla:
           if($this->GetY()+$h+$h0>$this->PageBreakTrigger){
             $this->AddPage($this->CurOrientation);
+            $this->SetAutoPageBreak(true, $hFooter);
             ///************************************************************* TITULO ***********************************************************
             $this->SetFont('Courier', 'B', 12);
             $this->SetTextColor(0);
@@ -1716,6 +1741,7 @@ class PDF extends PDF_MC_Table
       ///********************************************************* AGREGADO DEL ENCABEZADO **************************************************
       if($this->GetY()+$h0>$this->PageBreakTrigger){
         $this->AddPage($this->CurOrientation);
+        $this->SetAutoPageBreak(true, $hFooter);
         ///************************************************************* TITULO *************************************************************
         $this->SetFont('Courier', 'B', 12);
         $this->SetTextColor(0);
@@ -2552,6 +2578,7 @@ class PDF extends PDF_MC_Table
     ///********************************************************* AGREGADO DEL ENCABEZADO ****************************************************
     if($this->GetY()+$h>$this->PageBreakTrigger){
       $this->AddPage($this->CurOrientation);
+      $this->SetAutoPageBreak(true, $hFooter);
       ///************************************************************* TITULO ***************************************************************
       $this->SetFont('Courier', 'B', 12);
       $this->SetTextColor(0);
