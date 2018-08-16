@@ -29,10 +29,11 @@ require_once("data/config.php");
 //$dirExcel = "//".$ip."/Reportes/";
 
 ///*********************************************************************** FIN SETEO DE CARPETAS **************************************************************
+$textoLegalExcel = "EMSA S.A. informa y hace de conocimiento de nuestros clientes, la exclusión de responsabilidades frente a casos de daño, robo, incendio o catástrofe que pudiesen estropear el stock de tarjetas de vuestra propiedad que se encuentran resguardadas en nuestra bóveda. \nEsto no afectará en absoluto la calidad y prestancia de nuestra operativa diaria y de los protocolos administrativos y de seguridad que se cumplen actualmente. \nEl alcance ofrecido en nuestro servicio es pura y exclusivamente para la reserva y utilización del espacio físico y el control diario en la producción de embosados a través de los informes respectivos, coordinados previamente con el cliente. \nEsta comunicación es a modo informativo y las cláusulas respectivas serán anexadas a los contratos existentes o futuros. \nAgradecemos en forma insistente la comprensión y preferencia que ante todo siguen teniendo para con nuestros servicios.";
 
 function generarExcelStock($reg) {
-  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta;
-  
+  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta, $textoLegalExcel;
+  //$textoLegal = "EMSA S.A. informa y hace de conocimiento de nuestros clientes, la exclusión de responsabilidades frente a casos de daño, robo, incendio o catástrofe que pudiesen estropear el stock de tarjetas de vuestra propiedad que se encuentran resguardadas en nuestra bóveda. Esto no afectará en absoluto la calidad y prestancia de nuestra operativa diaria y de los protocolos administrativos y de seguridad que se cumplen actualmente. El alcance ofrecido en nuestro servicio es pura y exclusivamente para la reserva y utilización del espacio físico y el control diario en la producción de embosados a través de los informes respectivos, coordinados previamente con el cliente. Esta comunicación es a modo informativo y las cláusulas respectivas serán anexadas a los contratos existentes o futuros. Agradecemos en forma insistente la comprensión y preferencia que ante todo siguen teniendo para con nuestros servicios.";
   $spreadsheet = new Spreadsheet();
 
   $locale = 'es_UY'; 
@@ -192,7 +193,43 @@ function generarExcelStock($reg) {
   //$hoja->setCellValue($celdaTotalTarjetas, $total);
   $hoja->setCellValue($celdaTotalTarjetas, '=sum('.$colStock.$filaUnoDatos.':'.$colStock.$i.')');
 
+  ///*********************************************** TEST TEXTO LEGAL **************************************** 
+  /// Agrego línea con el texto legal:
+  $k = $i+4;
+  $l = $k+3;
+  $hoja->mergeCells($colId.$k.':'.$colStock.$l.'');
+  $hoja->setCellValue($colId.$k.'', $textoLegalExcel);
+  $celdaTextoLegal = ''.$colId.$k.':'.$colStock.$l.'';
+  ///******************************************** FIN TEST TEXTO LEGAL ***************************************
+  
+  ///********************************************* FORMATO TEXTO LEGAL ****************************************
+  /// Defino el formato para el texto legal:
+  $styleTextoLegal = array(
+      'fill' => array(
+          'color' => array('rgb' => 'DFDFDF'),
+          'fillType' => 'solid',
+      ),
+      'font' => array(
+          
+          'italic' => true,
+          'size' => 10,
 
+      ),
+      'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'left',
+         'vertical' => 'top',
+      ),
+    'borders' => array(
+          'allBorders' => array(
+            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+            
+          ),
+      ),
+  );
+  $hoja->getStyle($celdaTextoLegal)->applyFromArray($styleTextoLegal);
+  ///********************************************* FIN FORMATO TEXTO LEGAL ***********************************
+  
   /// Defino el formato para la celda con el total de tarjetas:
   $styleTotalPlasticos = array(
       'fill' => array(
@@ -412,7 +449,7 @@ function generarExcelStock($reg) {
 }
 
 function generarExcelBoveda($registros) {
-  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta;
+  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta, $textoLegalExcel;
   
   $spreadsheet = new Spreadsheet();
 
@@ -515,6 +552,44 @@ function generarExcelBoveda($registros) {
   //$hoja->setCellValue($celdaTotalTarjetas, $total);
   $hoja->setCellValue($celdaTotalTarjetas, '=sum(C'.$filaUnoDatos.':C'.$i.')');
 
+  ///*********************************************** TEST TEXTO LEGAL **************************************** 
+  /// Agrego línea con el texto legal:
+  $k = $i+4;
+  $l = $k+3;
+  $hoja->mergeCells('A'.$k.':'.'M'.$l.'');
+  $hoja->setCellValue('A'.$k.'', $textoLegalExcel);
+  $celdaTextoLegal = 'A'.$k.':'.'M'.$l.'';
+  ///******************************************** FIN TEST TEXTO LEGAL ***************************************
+  
+  ///********************************************* FORMATO TEXTO LEGAL ****************************************
+  /// Defino el formato para el texto legal:
+  $styleTextoLegal = array(
+      'fill' => array(
+          'color' => array('rgb' => 'DFDFDF'),
+          'fillType' => 'solid',
+      ),
+      'font' => array(
+          
+          'italic' => true,
+          'size' => 10,
+
+      ),
+      'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'left',
+         'vertical' => 'top',
+      ),
+    'borders' => array(
+          'allBorders' => array(
+            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+            
+          ),
+      ),
+  );
+  $hoja->getStyle($celdaTextoLegal)->applyFromArray($styleTextoLegal);
+  ///********************************************* FIN FORMATO TEXTO LEGAL ***********************************
+  
+  
   /// Defino el formato para la celda con el total de tarjetas:
   $styleTotalPlasticos = array(
       'fill' => array(
@@ -636,7 +711,7 @@ function generarExcelBoveda($registros) {
 }
 
 function generarExcelMovimientos($registros) {
-  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta;
+  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta, $textoLegalExcel;
   
   $spreadsheet = new Spreadsheet();
 
@@ -792,6 +867,44 @@ function generarExcelMovimientos($registros) {
   }
   $j = $i+1;
   ///*************************************** FIN ESCRIBO DATOS *****************************************
+  
+  ///*********************************************** TEST TEXTO LEGAL **************************************** 
+  /// Agrego línea con el texto legal:
+  $k = $i+3;
+  $l = $k+3;
+  $hoja->mergeCells($colId.$k.':'.$colCantidad.$l.'');
+  $hoja->setCellValue($colId.$k.'', $textoLegalExcel);
+  $celdaTextoLegal = ''.$colId.$k.':'.$colCantidad.$l.'';
+  ///******************************************** FIN TEST TEXTO LEGAL ***************************************
+  
+  ///********************************************* FORMATO TEXTO LEGAL ****************************************
+  /// Defino el formato para el texto legal:
+  $styleTextoLegal = array(
+      'fill' => array(
+          'color' => array('rgb' => 'DFDFDF'),
+          'fillType' => 'solid',
+      ),
+      'font' => array(
+          
+          'italic' => true,
+          'size' => 10,
+
+      ),
+      'alignment' => array(
+         'wrap' => true,
+         'horizontal' => 'left',
+         'vertical' => 'top',
+      ),
+    'borders' => array(
+          'allBorders' => array(
+            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+            
+          ),
+      ),
+  );
+  $hoja->getStyle($celdaTextoLegal)->applyFromArray($styleTextoLegal);
+  ///********************************************* FIN FORMATO TEXTO LEGAL ***********************************
+  
   
   ///************************************ MUESTRO TOTALES **********************************************
   $hoja->mergeCells($colNombreTotales.'1:'.$colIngresos.'1');
@@ -1102,7 +1215,7 @@ function generarExcelMovimientos($registros) {
   $hoja->getStyle($rangoIngresosTotal)->applyFromArray($resaltarIngresosTotal);
   ///************************************* FIN Formato Ingresos Total **********************************
   
-  ///****************************************** Muestro TOTALES ****************************************
+  ///************************************** Formato Muestro TOTALES ************************************
   $rangoTotalGeneral = $colRetiros.$n.':'.$colDestrucciones.$n;
   $resaltarTotalGeneral = array(
     'fill' => array(
@@ -1125,7 +1238,7 @@ function generarExcelMovimientos($registros) {
       ),
   );
   $hoja->getStyle($rangoTotalGeneral)->applyFromArray($resaltarTotalGeneral);
-  ///************************************ FIN MUESTRO TOTALES ******************************************
+  ///************************************ FIN Formato MUESTRO TOTALES *************************************
   
   /*
   /// Agrego línea con el total del stock:

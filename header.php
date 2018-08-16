@@ -53,7 +53,7 @@
     </div><!-- .container -->
   </nav><!-- #header-nav -->
   <script lang="javasript/text">
-    //verificarSesion();
+    verificarSesion();
     //var dir = window.location.pathname;
     //var temp = dir.split("/");
     //var tam = temp.length;

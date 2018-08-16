@@ -124,7 +124,7 @@ class PDF extends PDF_MC_Table
   //Pie de página
   function Footer()
     {
-    global $h, $hFooter;
+    global $h, $hFooter, $textoLegal;
         
     $this->SetFont('Arial', 'I', 7);
     $this->SetTextColor(0);
@@ -133,8 +133,6 @@ class PDF extends PDF_MC_Table
     $anchoPagina = $this->GetPageWidth();
     $anchoTipoFooter = 0.9*$anchoPagina;
     $xFooter = ($anchoPagina - $anchoTipoFooter)/2; 
-    
-    $textoLegal = utf8_decode("EMSA S.A. informa y hace de conocimiento de nuestros clientes, la exclusión de responsabilidades frente a casos de daño, robo, incendio o catástrofe que pudiesen estropear el stock de tarjetas de vuestra propiedad que se encuentran resguardadas en nuestra bóveda. Esto no afectará en absoluto la calidad y prestancia de nuestra operativa diaria y de los protocolos administrativos y de seguridad que se cumplen actualmente. El alcance ofrecido en nuestro servicio es pura y exclusivamente para la reserva y utilización del espacio físico y el control diario en la producción de embosados a través de los informes respectivos, coordinados previamente con el cliente. Esta comunicación es a modo informativo y las cláusulas respectivas serán anexadas a los contratos existentes o futuros. Agradecemos en forma insistente la comprensión y preferencia que ante todo siguen teniendo para con nuestros servicios.");
     
     $nbTextoLegal = $this->NbLines($anchoTipoFooter,$textoLegal);
     $hTextoLegal=$h*$nbTextoLegal;
@@ -865,6 +863,7 @@ class PDF extends PDF_MC_Table
     $mensajeTotal = "Total de movimientos:";
     $tam2 = $this->GetStringWidth($mensajeTotal);
     $tam3 = $this->GetStringWidth($totalRegistros);
+    $totalRegistros = number_format($totalRegistros, 0, ",", ".");
     $xMensajeTotal =($anchoPagina - $tam2 - $tam3)/2;
     $this->SetX($xMensajeTotal);
     $this->Cell($tam2,$h, $mensajeTotal,0, 0, 'R', 0);
@@ -1400,7 +1399,33 @@ class PDF extends PDF_MC_Table
         $productoViejo = $idProd;
         
         ///Solo si la consulta es de TODOS los TIPOS muestro el detalle:
-        if ($mostrarResumenProducto){  
+        if ($mostrarResumenProducto){
+          
+          
+          $totalRenglonesResumen = 0;
+          if ($subtotalRetiro > 0) {
+            $totalRenglonesResumen++;
+          }  
+          if ($subtotalReno > 0) {
+            $totalRenglonesResumen++;
+          }  
+          if ($subtotalDestruccion > 0) {
+            $totalRenglonesResumen++;
+          }  
+          if ($totalConsumos > 0) {
+            $totalRenglonesResumen++;
+          }  
+          if ($subtotalIngreso > 0) {
+            $totalRenglonesResumen++;
+          }  
+          
+          if ($totalRenglonesResumen > 0){
+            if($this->GetY()+($totalRenglonesResumen+1)*$h > $this->PageBreakTrigger){
+              $this->AddPage($this->CurOrientation);
+              $this->SetAutoPageBreak(true, $hFooter);
+            }
+          }
+          
           /// A definir más adelante el color para el fondo del separador. Por ahora es blanco (es decir, fill está como false):
           $this->setFillColor(220, 223, 232);
           //Issue a page break first if needed
@@ -1408,7 +1433,7 @@ class PDF extends PDF_MC_Table
           ///***************************************************** INICIO ESCRITURA RESUMEN ***************************************************
           $tamSubTotal = $largoCampos[$indCantidad];// + $largoCampos[$indComentarios];
           $tamTextoSubtotal = $tamTabla-$tamSubTotal;
-
+          
           if ($subtotalRetiro > 0) {
             $this->SetFont('Courier', 'B', 9);
             $this->setFillColor(220, 223, 232);
@@ -1498,7 +1523,7 @@ class PDF extends PDF_MC_Table
             $subtotalIngresoMostrar = 0;
           }
           ///*************************************************** FIN ESCRITURA RESUMEN ********************************************************
-
+          
           ///******************************************************* BORDE REDONDEADO DE CIERRE ***********************************************
           $this->SetFillColor(103, 167, 253);
           $y = $this->GetY();

@@ -37,62 +37,61 @@ function verificarSesion() {
   */
   xmlhttp.onreadystatechange = function() {
     if (this.readyState === 4 && this.status === 200) {
-        //alert(this.statusText+'\n'+this.responseText);
-        var myObj = JSON.parse(this.responseText);
-        var user = myObj.user;
-        var user_id = myObj.user_id;
-        var sesion = myObj.sesion;
-        var timestamp = myObj.timestamp;
-        var usuarioViejo = myObj.oldUser;
-        
-        var mostrarSesion = '';
-        ///Se comenta siguiente línea usada para las pruebas:
-        //var tempSesion = prompt('Ingrese el tiempo deseado para la sesión: \n');   
-        var horas = Math.floor( duracionSesion / 3600 );  
-        var minutos = Math.floor( (duracionSesion % 3600) / 60 );
-        var segs = duracionSesion % 60;
+      var myObj = JSON.parse(this.responseText);
+      var user = myObj.user;
+      var user_id = myObj.user_id;
+      var sesion = myObj.sesion;
+      var timestamp = myObj.timestamp;
+      var usuarioViejo = myObj.oldUser;
 
-        //Anteponiendo un 0 a los minutos si son menos de 10 
-        //minutos = minutos < 10 ? '0' + minutos : minutos;
-        //Anteponiendo un 0 a los segundos si son menos de 10 
-        //segs = segs < 10 ? '0' + segs : segs;
- 
-        if (horas === 0){
-          if (minutos === 0){
-            mostrarSesion = segs+'segs';
-          }
-          else {
-            if (segs === 0){
-              mostrarSesion = minutos+'min';
-            }
-            else {
-              mostrarSesion = minutos+'min '+segs+'segs';
-            }
-          }
+      var mostrarSesion = '';
+      ///Se comenta siguiente línea usada para las pruebas:
+      //var tempSesion = prompt('Ingrese el tiempo deseado para la sesión: \n');   
+      var horas = Math.floor( duracionSesion / 3600 );  
+      var minutos = Math.floor( (duracionSesion % 3600) / 60 );
+      var segs = duracionSesion % 60;
+
+      //Anteponiendo un 0 a los minutos si son menos de 10 
+      //minutos = minutos < 10 ? '0' + minutos : minutos;
+      //Anteponiendo un 0 a los segundos si son menos de 10 
+      //segs = segs < 10 ? '0' + segs : segs;
+
+      if (horas === 0){
+        if (minutos === 0){
+          mostrarSesion = segs+'segs';
         }
         else {
-          if ((minutos === 0)&&(segs === 0)){
-            mostrarSesion = horas+'h';
+          if (segs === 0){
+            mostrarSesion = minutos+'min';
           }
           else {
-            if (segs === 0){
-              mostrarSesion = horas+'h '+minutos+'min';
-            }
-            else {
-              mostrarSesion = horas+'h '+minutos+'min '+segs+'segs';
-            }
-          }  
+            mostrarSesion = minutos+'min '+segs+'segs';
+          }
         }
-        
-        if (sesion === 'expirada'){
-          alert("Terminó el tiempo de sesión de "+mostrarSesion+".\nPor favor vuelve a loguearte "+usuarioViejo+"!.");
-          window.location.assign("salir.php");
+      }
+      else {
+        if ((minutos === 0)&&(segs === 0)){
+          mostrarSesion = horas+'h';
         }
         else {
-          $("#usuarioSesion").val(user);
-          $("#userID").val(user_id);
-          $("#timestampSesion").val(timestamp);
-        }
+          if (segs === 0){
+            mostrarSesion = horas+'h '+minutos+'min';
+          }
+          else {
+            mostrarSesion = horas+'h '+minutos+'min '+segs+'segs';
+          }
+        }  
+      }
+
+      if (sesion === 'expirada'){
+        alert("Terminó el tiempo de sesión de "+mostrarSesion+".\nPor favor vuelve a loguearte "+usuarioViejo+"!.");
+        window.location.assign("salir.php");
+      }
+      else {
+        $("#usuarioSesion").val(user);
+        $("#userID").val(user_id);
+        $("#timestampSesion").val(timestamp);
+      }
     }
   };
   xmlhttp.open("GET", "data/estadoSesion.php", true);
@@ -149,7 +148,9 @@ function showHint(str, id, seleccionado) {
   else {
     var url = "data/selectQuery.php";
     var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2, comentarios, ultimoMovimiento from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%' or productos.idprod like '%"+str+"%') and estado='activo' order by productos.entidad asc, productos.nombre_plastico asc";
-    //alert(query);
+    if (seleccionado !== ''){
+      var produsTemp = seleccionado.split(',');
+    }
     $.getJSON(url, {query: ""+query+""}).done(function(request) {
       var sugerencias = request.resultado;
       var totalSugerencias = request.rows;
@@ -157,7 +158,7 @@ function showHint(str, id, seleccionado) {
       $("#ultimoMov").remove();
       $("#historial").remove();
       
-      var produsTemp = seleccionado.split(',');
+      
       var mostrar = '';
       var unico = '';
       if (totalSugerencias >= 1) {
@@ -186,11 +187,14 @@ function showHint(str, id, seleccionado) {
           if ((codigo_emsa === null) || (codigo_emsa === "")) {
             codigo_emsa = 'SIN CODIGO AÚN';
           }
-          var sel = "";
-          for (var k in produsTemp){
-            var selEntero = parseInt(produsTemp[k], 10);
-            if (parseInt(sugerencias[i]["idprod"], 10) === selEntero) {
-              sel = 'selected="yes"';
+          
+          if (seleccionado !== ''){
+            var sel = "";
+            for (var k in produsTemp){
+              var selEntero = parseInt(produsTemp[k], 10);
+              if (parseInt(sugerencias[i]["idprod"], 10) === selEntero) {
+                sel = 'selected="yes"';
+              }
             }
           }
           
@@ -246,8 +250,7 @@ function showHint(str, id, seleccionado) {
       //open dropdown
       $("#hint").attr('size',length);
       
-      if (seleccionado !== '')
-        {
+      if (seleccionado !== ''){
         $("#hint").focus();
       }
       else {    
@@ -704,7 +707,7 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
       }
       
       if (prod !== "-1") {
-        showHint(hint, "#producto", prod);
+        showHint(hint, "#producto", String(prod));
       }
       else {
         ///showHint(hint, "#producto", "");
@@ -2846,6 +2849,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
 function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, p, d1, d2, tipo, user){
   var url = '';
   var tipoUrl = encodeURI(tipo);
+  var entUrl = encodeURIComponent(ent);
   if ((radio === 'entidadStockViejo')||(radio === 'productoStockViejo')){
     url = "data/stockViejoJSON.php";
   }
@@ -3163,7 +3167,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
           idProds[j] = '';
         }
                 
-        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds+'&ent='+ent+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipoUrl+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds+'&ent='+entUrl+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipoUrl+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         mostrar += '</div>';
         $("#pills-tabContent").append(mostrar);
@@ -3172,14 +3176,13 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
       }/// FIN del if de totalDatos>1  
       else {
         mostrar += "<br><hr><h3>No existen registros para la consulta realizada.</h3><hr>";
-        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds+'&ent='+ent+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipoUrl+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds+'&ent='+entUrl+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipoUrl+'&user='+user+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         mostrar += '</div>';
         $("#pills-tabContent").append(mostrar);
       }         
     }
   });
-
   mostrarGlobal += '</div>';
   $("#main-content").append(mostrarGlobal);
 }
@@ -3204,18 +3207,21 @@ function realizarBusqueda(){
     var nombresProductos = new Array();
     var nombres = new Array();
     var tipoConsultas = new Array();
-    $("#hint option:selected").each(function() {
-      idProds.push($(this).val());
-      var nombreProducto = $(this).text( );
-      nombresProductos.push(nombreProducto);
-      if ((nombreProducto !== "undefined") && (nombreProducto !== '') && (nombreProducto !== '--Seleccionar--')) {
-        ///Separo en partes el nombreProducto que contiene [entidad: codigo] --- nombreProducto
-        var tempo = nombreProducto.split("- ");
-        nombres.push(tempo[1].trim());
-        //var tempo2 = tempo1.split("{");
-        //var nombreSolo = tempo2[0].trim();
-      }
-    });
+    if ((radio === 'productoStock')||(radio === 'productoMovimiento')){
+      $("#hint option:selected").each(function() {
+        idProds.push($(this).val());
+        var nombreProducto = $(this).text( );
+        nombresProductos.push(nombreProducto);
+        if ((nombreProducto !== "undefined") && (nombreProducto !== '') && (nombreProducto !== '--Seleccionar--')) {
+          ///Separo en partes el nombreProducto que contiene [entidad: codigo] --- nombreProducto
+          var tempo = nombreProducto.split("- ");
+          nombres.push(tempo[1].trim());
+          //var tempo2 = tempo1.split("{");
+          //var nombreSolo = tempo2[0].trim();
+        }
+      });
+    }
+    
     var queries = new Array();
     var consultasCSV = new Array();
     
@@ -3300,7 +3306,7 @@ function realizarBusqueda(){
       secTemp = '0'+secTemp;
     } 
     var horaMostrar = hourTemp+':'+minTemp;
-    
+    var remplaza = /[\s.&]/g;
     switch (radio) {
       case 'entidadStock':  delete nombres;
                             var nombres = new Array();
@@ -3327,7 +3333,9 @@ function realizarBusqueda(){
                               queries.push(query);
                               consultasCSV.push(consultaCSV);
                               tipoConsultas.push(tipoConsulta);
-                              idProds.push(entidadesStock[i]);
+                              var entidadTemp = entidadesStock[i];
+                              entidadTemp = entidadTemp.replace(remplaza, "");
+                              idProds.push(entidadTemp);
                               nombres.push(entidadesStock[i]);
                               validarFecha = false;
                               validarTipo = false;
@@ -3405,7 +3413,9 @@ function realizarBusqueda(){
                                   queries.push(query);
                                   consultasCSV.push(consultaCSV);
                                   tipoConsultas.push(tipoConsulta);
-                                  idProds.push(entidadesStock[i]);
+                                  var entidadTemp = entidadesStock[i];
+                                  entidadTemp = entidadTemp.replace(remplaza, "");
+                                  idProds.push(entidadTemp);
                                   nombres.push(entidadesStock[i]);
                                 }
                                 if (todos && (entidadesStock.length > 1)){
@@ -3443,7 +3453,9 @@ function realizarBusqueda(){
                                   queries.push(query);
                                   consultasCSV.push(consultaCSV);
                                   tipoConsultas.push(tipoConsulta);
-                                  idProds.push(entidadesMovimiento[i]);
+                                  var entidadTemp = entidadesMovimiento[i];
+                                  entidadTemp = entidadTemp.replace(remplaza, "");
+                                  idProds.push(entidadTemp);
                                   nombres.push(entidadesMovimiento[i]);
                                 }
                                 if (todos && (entidadesMovimiento.length > 1)){
@@ -3707,6 +3719,7 @@ function realizarBusqueda(){
           consultasCSV[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";
         }
       }
+      
       mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, radioFecha, d1, d2, tipo, idUser);
     }/// Fin del IF de validado
     else {
@@ -3972,7 +3985,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
         //mostrar += volver;
         mostrar += '<br><br>';
         $(selector).html(mostrar);
-        if (hint !== '') {
+        if ((tipo === 'prodStock')||(tipo === 'prodMov')){
           var sel = '';
           if (idProdus !== ''){  
             var produsTemp = idProdus.split(',');
@@ -4001,33 +4014,39 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
           }
         }
         else {
-          $("#productoMovimiento").val('');
-          $("#productoStock").val('');
-          var sel = '';
-          if (entidadSeleccionada !== ''){
-            var entTemp = entidadSeleccionada.split(',');
-            for (var i = 0; i < entTemp.length; i++) { 
-              if (tipo === 'entStock') {
-                $('#entidadStock option[value="'+entTemp[i]+'"]').attr("selected", true);
-                sel = '#entidadStock';
-              }
-              else {
-                $('#entidadMovimiento option[value="'+entTemp[i]+'"]').attr("selected", true);
-                sel = '#entidadMovimiento';
-              }    
-            }
-            $(sel).parent().prev().prev().children().prop("checked", true);
-            $(sel).focus();
+          if (tipo === 'totalStock') {
+            $("[name=criterio]").val(["totalStock"]);
+            $("#realizarBusqueda").focus();
           }
           else {
-            $('#entidadStock option[value="todos"]').attr("selected", true);
-            $('#entidadMovimiento option[value="todos"]').attr("selected", true);
-          }
+            $("#productoMovimiento").val('');
+            $("#productoStock").val('');
+            var sel = '';
+            if (entidadSeleccionada !== ''){
+              var entTemp = entidadSeleccionada.split(',');//alert(entTemp);
+              for (var i = 0; i < entTemp.length; i++) { 
+                if (tipo === 'entStock') {
+                  $('#entidadStock option[value="'+entTemp[i]+'"]').attr("selected", true);
+                  sel = '#entidadStock';
+                }
+                else {
+                  $('#entidadMovimiento option[value="'+entTemp[i]+'"]').attr("selected", true);
+                  sel = '#entidadMovimiento';
+                }    
+              }
+              $(sel).parent().prev().prev().children().prop("checked", true);
+              $(sel).focus();
+            }
+            else {
+              $('#entidadStock option[value="todos"]').attr("selected", true);
+              $('#entidadMovimiento option[value="todos"]').attr("selected", true);
+            }
+          }        
         }
-        if (tipo === 'totalStock') {
-          $("[name=criterio]").val(["totalStock"]);
-          $("#realizarBusqueda").focus();
-        }
+          
+        
+        
+        
         if (zip !== ''){
           $("#zip").val(zip);
           if (zip === 'manual'){
@@ -4077,6 +4096,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
           $("#mes").val('todos');
           $("#año").val('2018');
         }
+        
         if (tipoFiltro !== ''){
           $("#tipo").val(tipoFiltro);
         }
@@ -5095,7 +5115,7 @@ function todo () {
   ///Levanto la url actual: 
   var urlActual = jQuery(location).attr('pathname');
   var parametros = jQuery(location).attr('search');
-  var remplaza = /\+|%20/g; 
+  var remplaza = /\+|%20/g;
   if (parametros) {
     //parametros = unescape(parametros);
     parametros = parametros.replace(remplaza, " ");
@@ -5163,12 +5183,13 @@ function todo () {
                             var planilla = temp5[1];
                             var marcaAgua = temp6[1];
                             var id = temp7[1];
-                            var ent = temp8[1];
+                            var ent = decodeURIComponent(temp8[1]);
                             var p = temp9[1];
                             var d1 = temp10[1];
                             var d2 = temp11[1];
                             var tipo = decodeURI(temp12[1]);
                             var user = temp13[1];
+                            //alert('hint: '+hint+'\ntipoMov: '+tipMov+'\nids: '+id+'\nent: '+ent+'\nzip: '+zip+'\nplanilla: '+planilla+'\nmarcaAgua: '+marcaAgua+'\np: '+p+'\nd1: '+d1+'\nd2: '+d2+'\ntipo: '+tipo+'\nuser: '+user);
                             setTimeout(function(){cargarFormBusqueda("#fila", hint, tipMov, id, ent, zip, planilla, marcaAgua, p, d1, d2, tipo, user)}, 30); 
                           }
                           else {

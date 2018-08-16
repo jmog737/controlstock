@@ -33,6 +33,7 @@ $c1 = 18;
 $h = 6;
 $hHeader = 30;
 $orientacion = 'P';
+$textoLegal = utf8_decode("EMSA S.A. informa y hace de conocimiento de nuestros clientes, la exclusión de responsabilidades frente a casos de daño, robo, incendio o catástrofe que pudiesen estropear el stock de tarjetas de vuestra propiedad que se encuentran resguardadas en nuestra bóveda. Esto no afectará en absoluto la calidad y prestancia de nuestra operativa diaria y de los protocolos administrativos y de seguridad que se cumplen actualmente. El alcance ofrecido en nuestro servicio es pura y exclusivamente para la reserva y utilización del espacio físico y el control diario en la producción de embosados a través de los informes respectivos, coordinados previamente con el cliente. Esta comunicación es a modo informativo y las cláusulas respectivas serán anexadas a los contratos existentes o futuros. Agradecemos en forma insistente la comprensión y preferencia que ante todo siguen teniendo para con nuestros servicios.");
 //******************************************************** FIN tamaños de celdas ***************************************************************
 
 //******************************************************** INICIO Hora y título ****************************************************************
@@ -248,7 +249,12 @@ $pdfResumen->AddPage();
 ///Se AGREGA el autoPageBreak "a mano" para que en la PRIMER página se tome el margen inferior correcto acorde al tamaño del texto legal introducido.
 ///A partir de la segunda parte, la función Footer calcula el tamaño correcto y hace el salto de página de forma correcta, pero en la primer 
 ///página aún no se llamó al Footer y hay que setearlo según el texto.
-$pdfResumen->SetAutoPageBreak(true, 8*$h);
+if ($orientacion === 'P'){
+  $pdfResumen->SetAutoPageBreak(true, 7.7*$h);
+}
+else {
+  $pdfResumen->SetAutoPageBreak(true, 6*$h);
+}
 
 $totalCampos = sizeof($campos);
 $pdfResumen->SetWidths($largoCampos);
