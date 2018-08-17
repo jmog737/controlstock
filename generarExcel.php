@@ -114,8 +114,8 @@ function generarExcelStock($reg) {
               ), 
     'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
       'fill' => array(
           'color' => array('rgb' => '4acba7'),
@@ -147,7 +147,7 @@ function generarExcelStock($reg) {
         'bold' => true,
       ),
     'alignment' => array(
-        'horizontal' => HORIZONTAL_CENTER,
+        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
       ),
   );
   $hoja->getStyle($header)->applyFromArray($styleHeader);
@@ -210,15 +210,13 @@ function generarExcelStock($reg) {
           'fillType' => 'solid',
       ),
       'font' => array(
-          
           'italic' => true,
           'size' => 10,
-
       ),
       'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'left',
-         'vertical' => 'top',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
       ),
     'borders' => array(
           'allBorders' => array(
@@ -244,8 +242,8 @@ function generarExcelStock($reg) {
       ),
       'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
-         'vertical' => 'bottom',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_BOTTOM,
       ),
       'numberFormat' => array(
           'formatCode' => '#,###0',
@@ -265,8 +263,8 @@ function generarExcelStock($reg) {
       ),
       'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
   );
   $hoja->getRowDimension($j)->setRowHeight(18);
@@ -285,8 +283,8 @@ function generarExcelStock($reg) {
       ),
       'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
       'numberFormat' => array(
           'formatCode' => '[Blue]#,##0',
@@ -407,7 +405,7 @@ function generarExcelStock($reg) {
       ),
       'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
       )
   );
   $hoja->getStyle($rango)->applyFromArray($styleGeneral);
@@ -502,8 +500,8 @@ function generarExcelBoveda($registros) {
               ), 
     'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
       'fill' => array(
           'color' => array('rgb' => '4acba7'),
@@ -530,7 +528,7 @@ function generarExcelBoveda($registros) {
         'bold' => true,
       ),
     'alignment' => array(
-        'horizontal' => HORIZONTAL_CENTER,
+        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
       ),
   );
   $hoja->getStyle($header)->applyFromArray($styleHeader);
@@ -569,20 +567,17 @@ function generarExcelBoveda($registros) {
           'fillType' => 'solid',
       ),
       'font' => array(
-          
           'italic' => true,
           'size' => 10,
-
       ),
       'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'left',
-         'vertical' => 'top',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
       ),
     'borders' => array(
           'allBorders' => array(
-            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-            
+            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,  
           ),
       ),
   );
@@ -604,8 +599,8 @@ function generarExcelBoveda($registros) {
       ),
       'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
-         'vertical' => 'bottom',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_BOTTOM,
       ),
       'numberFormat' => array(
           'formatCode' => '#,###0',
@@ -625,8 +620,8 @@ function generarExcelBoveda($registros) {
       ),
       'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
   );
   $hoja->getRowDimension($j)->setRowHeight(18);
@@ -646,8 +641,8 @@ function generarExcelBoveda($registros) {
       ),
       'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
       'numberFormat' => array(
           'formatCode' => '[Black]#,##0',
@@ -672,7 +667,7 @@ function generarExcelBoveda($registros) {
       ),
       'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
       )
   );
   $hoja->getStyle($rango)->applyFromArray($styleGeneral);
@@ -785,8 +780,8 @@ function generarExcelMovimientos($registros) {
               ), 
     'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
       'fill' => array(
           'color' => array('rgb' => '4acba7'),
@@ -819,7 +814,7 @@ function generarExcelMovimientos($registros) {
           'bold' => true,
         ),
       'alignment' => array(
-          'horizontal' => HORIZONTAL_CENTER,
+          'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
         ),
       'fill' => array(
           'color' => array('rgb' => 'AEE2FA'),
@@ -885,20 +880,17 @@ function generarExcelMovimientos($registros) {
           'fillType' => 'solid',
       ),
       'font' => array(
-          
           'italic' => true,
           'size' => 10,
-
       ),
       'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'left',
-         'vertical' => 'top',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
       ),
     'borders' => array(
           'allBorders' => array(
-            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-            
+            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,      
           ),
       ),
   );
@@ -925,13 +917,21 @@ function generarExcelMovimientos($registros) {
     $tipo = $datito[9];
     $cantidad = $datito[10];
     switch ($tipo){
-      case 'Retiro':  $resumen["$idprod"]['retiros'] = $resumen["$idprod"]['retiros'] + $cantidad;
+      case 'Retiro':  if (isset($resumen["$idprod"]['retiros'])){
+                        $resumen["$idprod"]['retiros'] = $resumen["$idprod"]['retiros'] + $cantidad;
+                      }
                       break;
-      case 'Renovación':  $resumen["$idprod"]['renos'] = $resumen["$idprod"]['renos'] + $cantidad;
+      case 'Renovación':  if (isset($resumen["$idprod"]['renos'])){
+                            $resumen["$idprod"]['renos'] = $resumen["$idprod"]['renos'] + $cantidad;
+                          }   
                           break;
-      case 'Destrucción': $resumen["$idprod"]['destrucciones'] = $resumen["$idprod"]['destrucciones'] + $cantidad;
+      case 'Destrucción': if (isset($resumen["$idprod"]['destrucciones'])){
+                            $resumen["$idprod"]['destrucciones'] = $resumen["$idprod"]['destrucciones'] + $cantidad;
+                          }   
                           break;
-      case 'Ingreso': $resumen["$idprod"]['ingresos'] = $resumen["$idprod"]['ingresos'] + $cantidad;
+      case 'Ingreso': if (isset($resumen["$idprod"]['ingresos'])){
+                        $resumen["$idprod"]['ingresos'] = $resumen["$idprod"]['ingresos'] + $cantidad;
+                      } 
                       break;
       default: break;
     }
@@ -989,8 +989,8 @@ function generarExcelMovimientos($registros) {
               ), 
     'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
       'fill' => array(
           'color' => array('rgb' => 'AEE2FA'),
@@ -1018,8 +1018,8 @@ function generarExcelMovimientos($registros) {
               ), 
     'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
   );
   $hoja->getStyle($nombreCampos)->applyFromArray($styleCamposTotales);
@@ -1040,8 +1040,8 @@ function generarExcelMovimientos($registros) {
               ), 
     'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'left',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
   );
   $hoja->getStyle($nombreProductos)->applyFromArray($styleNombreProductos);
@@ -1052,8 +1052,8 @@ function generarExcelMovimientos($registros) {
   $styleTotales = array(
     'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'right',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
     'borders' => array(
               'allBorders' => array(
@@ -1090,8 +1090,8 @@ function generarExcelMovimientos($registros) {
               ), 
     'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'right',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
   );
   $hoja->getStyle($rangoConsumos)->applyFromArray($colorConsumos);
@@ -1119,8 +1119,8 @@ function generarExcelMovimientos($registros) {
               ), 
     'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'right',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
   );
   $hoja->getStyle($rangoIngresos)->applyFromArray($resaltarIngresos);
@@ -1142,8 +1142,8 @@ function generarExcelMovimientos($registros) {
       ),
     'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
     'borders' => array(
               'allBorders' => array(
@@ -1178,8 +1178,8 @@ function generarExcelMovimientos($registros) {
               ), 
     'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'right',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
   );
   $hoja->getStyle($rangoConsumosTotal)->applyFromArray($colorConsumosTotal);
@@ -1208,8 +1208,8 @@ function generarExcelMovimientos($registros) {
               ), 
     'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'right',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
   );
   $hoja->getStyle($rangoIngresosTotal)->applyFromArray($resaltarIngresosTotal);
@@ -1233,8 +1233,8 @@ function generarExcelMovimientos($registros) {
       ),
     'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'right',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
   );
   $hoja->getStyle($rangoTotalGeneral)->applyFromArray($resaltarTotalGeneral);
@@ -1304,8 +1304,8 @@ function generarExcelMovimientos($registros) {
       ),
       'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
       'numberFormat' => array(
           'formatCode' => '[Blue]#,##0',
@@ -1323,8 +1323,8 @@ function generarExcelMovimientos($registros) {
       ),
       'alignment' => array(
          'wrap' => true,
-         'horizontal' => 'center',
-         'vertical' => 'middle',
+         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
       'numberFormat' => array(
           'formatCode' => 'DD/MM/YYYY',
@@ -1347,8 +1347,8 @@ function generarExcelMovimientos($registros) {
       ),
       'alignment' => array(
         'wrap' => false,
-        'horizontal' => 'center',
-        'vertical' => 'middle',
+        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+        'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       )
   );
   $hoja->getStyle($rango)->applyFromArray($styleGeneral);

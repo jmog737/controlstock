@@ -32,7 +32,7 @@ for ($i = 0; $i < count($query); $i++){
   ///Comento escritura en el log para evitar sobrecargar el archivo.
   //escribirLog($query);
   ///Para las consultas de stock, armo consulta para conocer el total de plásticos de la entidad (a mostrar en la última página):
-  $datos["$i"]['suma'] = 0;
+  $datos["$i"]["suma"] = 0;
   $datos["$i"]['retiros'] = null;
   $datos["$i"]['renovaciones'] = null;
   $datos["$i"]['destrucciones'] = null;
@@ -127,7 +127,7 @@ for ($i = 0; $i < count($query); $i++){
     }
     
     $result = consultarBD($query[$i], $dbc);
-
+    $stockActual = Array();
     while (($fila = $result->fetch_array(MYSQLI_ASSOC)) != NULL) { 
       $idprod1 = $fila["idprod"];
       $stockActual[$idprod1] = $fila["stock"];
@@ -135,17 +135,14 @@ for ($i = 0; $i < count($query); $i++){
     }
     
     foreach($stockActual as $produ => $valor){
-//      if (!(array_key_exists($produ, $datos["$i"]["retiros"]))){
-//        $datos["$i"]["retiros"][$produ] = 0;
+      if (!(isset($totalConsumos[$produ]))){
+        $totalConsumos[$produ] = 0;
+      }
+//      if (!(isset($datos["$i"]["suma"]))){
+//        $datos["$i"]["suma"] = 0;
 //      }
-//      if (!(array_key_exists($produ, $datos["$i"]["renovaciones"]))){
-//        $datos["$i"]["renovaciones"][$produ] = 0;
-//      }
-//      if (!(array_key_exists($produ, $datos["$i"]["destrucciones"]))){
-//        $datos["$i"]["destrucciones"][$produ] = 0;
-//      }
-//      if (!(array_key_exists($produ, $datos["$i"]["ingresos"]))){
-//        $datos["$i"]["ingresos"][$produ] = 0;
+//      if (!(isset($datos["$i"]["stockViejo"][$produ]))){
+//        $datos["$i"]["stockViejo"][$produ] = 0;
 //      }
       if (!(isset($datos["$i"]["retiros"][$produ]))){
         $datos["$i"]["retiros"][$produ] = 0;
@@ -160,10 +157,12 @@ for ($i = 0; $i < count($query); $i++){
         $datos["$i"]["ingresos"][$produ] = 0;
       }
       $totalConsumos[$produ] = $datos["$i"]["retiros"][$produ] + $datos["$i"]["renovaciones"][$produ] + $datos["$i"]["destrucciones"][$produ];
-      $datos["$i"]["stockViejo"][$produ] = (string)($valor + $totalConsumos[$produ] - $datos["$i"]["ingresos"][$produ]);
-      $datos["$i"]["suma"] = (string)($datos["$i"]["suma"] + $datos["$i"]["stockViejo"][$produ]);
-      $datos["$i"]["query"] = $query[$i];
+      $datos["$i"]["stockViejo"][$produ] = $valor + $totalConsumos[$produ] - $datos["$i"]["ingresos"][$produ];
+      $datos["$i"]["suma"] += $datos["$i"]["stockViejo"][$produ]; 
     }
+    $datos["$i"]["query"] = $query[$i];
+    //$datos["$i"]["stockViejo"][$produ] = (string)($datos["$i"]["stockViejo"][$produ]);
+   // $datos["$i"]["suma"] = (string)($datos["$i"]["suma"]);
   }
   
   if ($tipo === 'productoStockViejo'){

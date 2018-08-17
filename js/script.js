@@ -2126,6 +2126,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                             <th>Stock</th>\n\
                                          </tr>';
                                 //var total = 0;
+                                //alert('en el radio: '+totalPlasticos);
                                 for (var i=0; i<max; i++) {
                                   ///************************* INICIO RECUPERACIÓN DATOS ******************************************************************
                                   var produ = parseInt(datos[i]["idprod"], 10);
@@ -2226,15 +2227,15 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                 tabla += '<caption>'+tipoConsulta+'</caption>';
                                 ///************************ FIN CAPTION segun si es TODOS o alguna ENTIDAD ***************************************
                                 var subtitulo = '';
-                                var totalPlasticos1 = '';
+                                var totalPlasticos2 = 0;
                                 if (fin){
                                   //subtitulo = 'SUB-TOTAL';
                                   //totalPlasticos1 = total;
                                 } 
                                 else {
                                   subtitulo = 'TOTAL';
-                                  totalPlasticos1 = parseInt(totalPlasticos, 10);
-                                  tabla += '<tr><th colspan="9" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos1, 10).toLocaleString()+'</td><th></th></tr>';
+                                  totalPlasticos2 = parseInt(totalPlasticos, 10);
+                                  tabla += '<tr><th colspan="9" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+totalPlasticos2.toLocaleString()+'</td><th></th></tr>';
                                 } 
                           
                                 var subtotalesJson = JSON.stringify(subtotales);
@@ -2890,7 +2891,8 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
   $.getJSON(url, {query: ""+jsonQuery+"", tipo: ""+radio+""}).done(function(request){
     for (var j in request){
       var datos = request[j].resultado;
-      var totalPlasticos = request[j].suma;
+      var totalPlasticos = 0;
+      totalPlasticos = request[j].suma;
       var totalRetiros = request[j]["retiros"];
       var totalRenovaciones = request[j]["renovaciones"];
       var totalDestrucciones = request[j]["destrucciones"];
@@ -3438,7 +3440,7 @@ function realizarBusqueda(){
                                 for (var i in entidadesMovimiento){
                                   query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
                                   query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
-                                  consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
+                                  consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, movimientos.tipo, movimientos.cantidad, movimientos.comentarios from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
                                   if (entidadesMovimiento[i] !== 'todos') {
                                     ent.push(entidadesMovimiento[i]);
                                     query += "and productos.entidad='"+entidadesMovimiento[i]+"'";
