@@ -61,7 +61,7 @@ class PDF extends PDF_MC_Table
   //Cabecera de página
   function Header()
     {
-    global $fecha, $hora, $titulo, $x, $marcaAgua;// $hHeader;
+    global $fecha, $hora, $titulo, $x, $marcaAgua, $textoMarcaAgua, $orientacion;// $hHeader;
     
     $anchoPage = $this->GetPageWidth();
     $anchoDia = 20;
@@ -109,10 +109,16 @@ class PDF extends PDF_MC_Table
 
     ///*************************** AGREGADO DE UNA MARCA DE AGUA: *********************************************
     if ($marcaAgua !== "false") {
-      //Put the watermark
-      $this->SetFont('Arial','B',110);
       $this->SetTextColor(255,180,203);
-      $this->RotatedText(35,270,'CONFIDENCIAL',55);
+      //Put the watermark
+      if ($orientacion === 'P'){
+        $this->SetFont('Arial','B',120); 
+        $this->RotatedText(25,290,$textoMarcaAgua,56);
+      }
+      else {
+        $this->SetFont('Arial','B',120);
+        $this->RotatedText(20,200,$textoMarcaAgua,33);
+      }   
     }
     ///************************ FIN AGREGADO DE UNA MARCA DE AGUA *********************************************
     
@@ -2642,6 +2648,29 @@ class PDF extends PDF_MC_Table
     ///******************************************************* FIN AGREGADO DEL RESUMEN FINAL ***********************************************
     if ($mostrarResumenProducto){
       ///***************************************************** INICIO RESUMEN DEL ÚLTIMO PRODUCTO *******************************************
+      $totalRenglonesUltProducto = 0;
+      if ($subtotalRetiro > 0) {
+        $totalRenglonesUltProducto++;
+      }  
+      if ($subtotalReno > 0) {
+        $totalRenglonesUltProducto++;
+      }  
+      if ($subtotalDestruccion > 0) {
+        $totalRenglonesUltProducto++;
+      }  
+      if ($totalConsumos > 0) {
+        $totalRenglonesUltProducto++;
+      }  
+      if ($subtotalIngreso > 0) {
+        $totalRenglonesUltProducto++;
+      }  
+
+      if ($totalRenglonesUltProducto > 0){
+        if($this->GetY()+($totalRenglonesUltProducto+1)*$h > $this->PageBreakTrigger){
+          $this->AddPage($this->CurOrientation);
+          $this->SetAutoPageBreak(true, $hFooter);
+        }
+      }
       ///Agrego el resumen para el último producto dado que no habrá nuevo cambio de producto:
       if ($subtotalRetiro > 0) {
         $this->SetFont('Courier', 'B', 9);

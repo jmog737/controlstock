@@ -3062,7 +3062,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                              break;
           case 'entidadMovimiento': campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios-IdMov';
                                     //Orden de la consulta: idprod - entidad - nombre - bin - cod emsa - cod origen - contacto - snapshot - ult.Mov - stock - alarma1 - alarma2 - prodcom - fecha - hora - cantidad - tipo - comentarios - idmov
-                                    largos = '0.6-0.5-1.6-1.9-1-2.0-1.5-1-1-1-1-1-1.1-1.5-1.5-0.8-1.2-1.3-2-0.5';
+                                    largos = '0.75-0.5-1.6-1.9-1-2.0-1.5-1-1-1-1-1-1.1-1.5-1.25-0.8-1.2-1.3-2-0.5';
                                     mostrarCamposQuery = '1-0-1-1-0-1-1-0-0-0-0-0-0-0-1-1-1-1-1-0';
                                     x = 40;
                                     tipMov = 'entMov';
@@ -3086,7 +3086,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                     break;
           case 'productoMovimiento':  campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios-IdMov';
                                       //Orden de la consulta: idprod - entidad - nombre - bin - cod emsa - cod origen - contacto - snapshot - ult.Mov - stock - alarma1 - alarma2 - prodcom - fecha - hora - cantidad - tipo - comentarios - idmov
-                                      largos = '0.4-0.5-1.5-1.8-1-1-1-1-1-1-1-1-1.1-1.5-1.5-0.8-1.2-1.4-2-0.8';
+                                      largos = '0.65-0.5-1.5-1.8-1-1-1-1-1-1-1-1-1.1-1.5-1.25-0.8-1.2-1.4-2-0.8';
                                       mostrarCamposQuery = '1-0-0-0-0-0-0-0-0-0-0-0-0-0-1-1-1-1-1-0';
                                       x = 40;
                                       tipMov = 'prodMov';
@@ -3566,7 +3566,7 @@ function realizarBusqueda(){
                                 var finTemp = fin.split('-');
                                 var finMostrar = finTemp[2]+"/"+finTemp[1]+"/"+finTemp[0];
                                 rangoFecha = " and (fecha >'"+inicio+"') and (fecha <='"+fin+"')";
-                                mensajeFecha = "al día: "+inicioMostrar;
+                                mensajeFecha = "al día: "+inicioMostrar;alert(rangoFecha);
                               }
                             }
                           }

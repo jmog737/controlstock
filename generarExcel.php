@@ -825,7 +825,7 @@ function generarExcelMovimientos($registros) {
   ///******************************************** FIN formato encabezado *******************************
   
   ///*************************************** ESCRIBO DATOS *********************************************
-  
+  var_dump($registros);
   /// Datos de los campos:
   foreach ($registros as $i => $dato) {
     ///Elimino el primer elemento del array dado que se agregó idprod como primer elemento para no tener
@@ -916,22 +916,27 @@ function generarExcelMovimientos($registros) {
     $nombre = $datito[5];
     $tipo = $datito[9];
     $cantidad = $datito[10];
+    //echo "idprod: $idprod - nombre: $nombre - tipo: $tipo - cantidad: $cantidad<br>";
+    if (!(isset($resumen["$idprod"]['retiros']))){
+      $resumen["$idprod"]['retiros'] = 0;
+    }
+    if (!(isset($resumen["$idprod"]['renos']))){
+      $resumen["$idprod"]['renos'] = 0;
+    }
+    if (!(isset($resumen["$idprod"]['destrucciones']))){
+      $resumen["$idprod"]['destrucciones'] = 0;
+    }
+    if (!(isset($resumen["$idprod"]['ingresos']))){
+      $resumen["$idprod"]['ingresos'] = 0;  
+    }
     switch ($tipo){
-      case 'Retiro':  if (isset($resumen["$idprod"]['retiros'])){
-                        $resumen["$idprod"]['retiros'] = $resumen["$idprod"]['retiros'] + $cantidad;
-                      }
+      case 'Retiro':  $resumen["$idprod"]['retiros'] = $resumen["$idprod"]['retiros'] + $cantidad;//echo "en retiros: $idprod - $cantidad<br>";
                       break;
-      case 'Renovación':  if (isset($resumen["$idprod"]['renos'])){
-                            $resumen["$idprod"]['renos'] = $resumen["$idprod"]['renos'] + $cantidad;
-                          }   
+      case 'Renovación':  $resumen["$idprod"]['renos'] = $resumen["$idprod"]['renos'] + $cantidad;//echo "en renos: $idprod - $cantidad<br>";
                           break;
-      case 'Destrucción': if (isset($resumen["$idprod"]['destrucciones'])){
-                            $resumen["$idprod"]['destrucciones'] = $resumen["$idprod"]['destrucciones'] + $cantidad;
-                          }   
+      case 'Destrucción': $resumen["$idprod"]['destrucciones'] = $resumen["$idprod"]['destrucciones'] + $cantidad;//echo "en destru: $idprod - $cantidad<br>"; 
                           break;
-      case 'Ingreso': if (isset($resumen["$idprod"]['ingresos'])){
-                        $resumen["$idprod"]['ingresos'] = $resumen["$idprod"]['ingresos'] + $cantidad;
-                      } 
+      case 'Ingreso': $resumen["$idprod"]['ingresos'] = $resumen["$idprod"]['ingresos'] + $cantidad;//echo "en ingresos: $idprod - $cantidad<br>"; 
                       break;
       default: break;
     }
