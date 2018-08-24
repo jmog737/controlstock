@@ -61,7 +61,7 @@ class PDF extends PDF_MC_Table
   //Cabecera de página
   function Header()
     {
-    global $fecha, $hora, $titulo, $x, $marcaAgua, $textoMarcaAgua, $orientacion;// $hHeader;
+    global $fecha, $hora, $titulo, $x, $hFooter, $marcaAgua, $textoMarcaAgua, $orientacion;// $hHeader;
     
     $anchoPage = $this->GetPageWidth();
     $anchoDia = 20;
@@ -121,6 +121,10 @@ class PDF extends PDF_MC_Table
       }   
     }
     ///************************ FIN AGREGADO DE UNA MARCA DE AGUA *********************************************
+    
+    ///********************************************************************************************************
+    $this->Rect($xLogo+3, $yLogo+ self::LOGO_HEIGHT_MM-2, 0.95*$anchoPage, $this->GetPageHeight()-self::LOGO_HEIGHT_MM-6, 'D');
+    ///********************************************************************************************************
     
     //Dejo el cursor donde debe empezar a escribir:
     $this->Ln(18);

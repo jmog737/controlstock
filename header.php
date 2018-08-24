@@ -153,6 +153,50 @@
   </div>
 </div><!-- FIN Modal para cambiar los parámetros -->
 
+<!-- Modal de movimiento REPETIDO -->
+<div class="modal fade" id="modalMovRepetido" tabindex="-1" role="dialog" aria-labelledby="Modal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document"> 
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header tituloModal">
+        <h4 class="modal-title">¡ATENCI&Oacute;N: MOVIMIENTO REPETIDO!</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" tabindex="32"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <table id="tblModal" class="tblModal">
+          <tr>
+            <td colspan="2">YA hay un movimiento con los mismos parámetros:</td>
+          </tr>
+          <tr>
+            <td><strong>Producto:</strong></td>
+            <td><input type="text" id="mdlProducto" disabled=""></input></td>
+          </tr>
+          <tr>
+            <td><strong>Fecha:</strong></td>
+            <td><input type="text" id="mdlFecha" disabled=""></input></td>
+          </tr>
+          <tr>
+            <td><strong>Tipo:</strong></td>
+            <td><input type="text" id="mdlTipo" disabled=""></input></td>
+          </tr>
+          <tr>
+            <td><strong>Cantidad:</strong></td>
+            <td><input type="text" id="mdlCantidad" disabled=""></input></td>
+          </tr>
+          <tr></tr>
+          <tr>
+            <td colspan="2">¿Desea igualmente agregarlo?</td>
+          </tr>
+        </table>  
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-warning" title="AGREGAR el movimiento" id="btnModalRepetido" tabindex="31">AGREGAR</button>
+        <button type="button" class="btn btn-primary" title="Cerrar ventana SIN realizar el movimiento" id="btnModalRepCerrar" data-dismiss="modal" tabindex="30">CANCELAR</button>
+      </div>
+    </div>   
+  </div>
+</div><!-- FIN Modal de movimiento REPETIDO -->
+
 </header>
 
 

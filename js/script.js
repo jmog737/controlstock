@@ -722,9 +722,18 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
  * \brief Función que hace el agregado del movimiento en la base de datos. 
  *        Se separó del evento agregarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento cantidad.
  */
-function agregarMovimiento(){
-    verificarSesion();
+function agregarMovimiento(agregarRepetido){
+  verificarSesion();
   
+  var url = "data/selectQuery.php";
+  var ultimoRegistro = "select fecha, producto, tipo, cantidad from movimientos order by fecha desc, hora desc limit 1";
+  $.getJSON(url, {query: ""+ultimoRegistro+""}).done(function(request) {
+    var resultado = request["resultado"];
+    var fechaAnterior = resultado[0]['fecha'];
+    var tipoAnterior = resultado[0]['tipo'];
+    var cantidadAnterior = resultado[0]['cantidad'];
+    var idAnterior = resultado[0]['producto'];
+    
     var fecha = $("#fecha").val();
     var idProd = $("#hint").val();
     var busqueda = $("#producto").val();
@@ -768,6 +777,16 @@ function agregarMovimiento(){
     /// Si el nuevoStock es menor a 0, siginifica que no hay stock suficiente. Se alerta y se descuenta sólo la cantidad disponible.
     /// CAMBIO: La política actual es DEJAR en suspenso el movimiento hasta que haya stock suficiente. NO HAY QUE HACER EL MOVIMIENTO!!
     var seguir = true;
+    var repetido = false;
+
+    if ((fecha == fechaAnterior)&&(idProd == idAnterior)&&(cantidad == cantidadAnterior)&&(tipo == tipoAnterior)){
+      if (!agregarRepetido){
+        $("#modalMovRepetido").modal("show");
+        seguir = false;
+        return;
+      } 
+    }
+    
     if (nuevoStock <0) {
       //cantidad = stockActual;
       avisarInsuficiente = true;
@@ -784,6 +803,7 @@ function agregarMovimiento(){
     }
 
     if (seguir) {
+      inhabilitarAgregado();
       var userSesion = $("#userID").val();
       var userControl;
       if (userSesion === 2){
@@ -831,7 +851,7 @@ function agregarMovimiento(){
                 }
               }
               var tipo1 = encodeURI(tipo);
-              window.location.href = "../controlstock/movimiento.php?h="+busqueda+"&id="+idProd+"&t="+tipo1+"&f="+fecha;
+              window.location.href = "../controlstock/movimiento.php?h="+busqueda+"&id="+idProd+"&t="+tipo1+"&f="+fecha+"&c="+cantidad;
             }
             else {
               alert('Hubo un error en la actualizacion del producto. Por favor verifique.');
@@ -841,12 +861,19 @@ function agregarMovimiento(){
         else {
           alert('Hubo un error en el agregado del movimiento. Por favor verifique.');
         }
+        habilitarAgregado();
       });  
     }
     else {
-      alert('No hay stock suficiente del producto como para realizar el retiro.\n\n NO SE REALIZA!.');
+      if (!repetido){
+        alert('Movimiento REPETIDO.\nNO se hace!');
+      }
+      else {
+        alert('No hay stock suficiente del producto como para realizar el retiro.\n\n NO SE REALIZA!.');
+      }  
     }
-  //}
+  });       
+//}
 }
 /********** fin agregarMovimiento() **********/
 
@@ -1053,6 +1080,22 @@ function actualizarMovimiento(){
   //}
 }
 /********** fin actualizarMovimiento() **********/
+
+/**
+  \brief Función que deshabilita algunos controles para evitar dobles ingresos.
+*/
+function inhabilitarAgregado(){
+  document.getElementById("agregarMovimiento").disabled = true;
+}
+/********** fin inhabilitarAgregado() **********/
+
+/**
+  \brief Función que habilita los input del form agregarMovimiento.
+*/
+function habilitarAgregado(){
+  document.getElementById("agregarMovimiento").disabled = false;
+}
+/********** fin habilitarAgregado() **********/
 
 /**
   \brief Función que deshabilita los input del form editarMovimiento.
@@ -5609,7 +5652,7 @@ $(document).on("click", "#agregarMovimiento", function (){
   var seguir = true;
   seguir = validarMovimiento();
   if (seguir) {
-    agregarMovimiento();
+    agregarMovimiento(false);
   }
 });
 /********** fin on("click", "#agregarMovimiento", function () **********/
@@ -5621,7 +5664,7 @@ $(document).on("keypress", "#cantidad", function(e) {
     var seguir = true;
     seguir = validarMovimiento();
     if (seguir) {
-      agregarMovimiento();
+      agregarMovimiento(false);
     }
   }  
 });
@@ -6351,6 +6394,54 @@ $(document).on("keypress", "#nombreUsuario", function(e) {
 /// **************************************************** FIN USUARIOS ********************************************************
 ******************************************************************************************************************************
 */
+
+
+
+/*****************************************************************************************************************************
+/// *********************************************** INICIO MODAL REPETIDO ****************************************************
+******************************************************************************************************************************
+*/
+
+///Disparar función al abrirse el modal con la alerta de movimiento repetido.
+$(document).on("shown.bs.modal", "#modalMovRepetido", function() {
+  var tipoModal = $("#tipo").val();
+  var cantidadModal = $("#cantidad").val();
+  var fechaModal = $("#fecha").val();
+  var productoModal = $("#hint option:selected").text();
+  var separoProductoModal = productoModal.split('--- ');
+  productoModal = separoProductoModal[1];
+  var separoFechaModal = fechaModal.split('-');
+  fechaModal = separoFechaModal[2]+'/'+separoFechaModal[1]+'/'+separoFechaModal[0];
+  
+  $("#mdlTipo").val(tipoModal);
+  $("#mdlFecha").val(fechaModal);
+  $("#mdlCantidad").val(cantidadModal);
+  $("#mdlProducto").val(productoModal);
+  $("#btnModalRepCerrar").attr("autofocus", true);
+  setTimeout(function (){$("#btnModalRepCerrar").focus();}, 70);
+});
+/********** fin on("shown.bs.modal", "#modalMovRepetido", function() **********/
+
+///Disparar función al hacer click en el botón de AGREGAR que está en el MODAL.
+$(document).on("click", "#btnModalRepetido", function(){
+  agregarMovimiento(true);
+});
+/************** fin on("click", "#btnModalRepetido", function() ***************/
+
+///Disparar función al cerrarse el modal con la alerta de movimiento repetido. Ya sea desde el botón cerrar como con "la cruz" para 
+///cerrar de arriba a la derecha.
+$(document).on("hide.bs.modal", "#modalMovRepetido", function() {
+  $("#cantidad").val('');
+  setTimeout(function (){$("#cantidad").focus();}, 50);
+});
+/********** fin on("shown.bs.modal", "#modalMovRepetido", function() **********/
+
+/*****************************************************************************************************************************
+/// ************************************************ FIN MODAL REPETIDO ******************************************************
+******************************************************************************************************************************
+*/
+
+
 
 /*****************************************************************************************************************************
 /// **************************************************** INICIO MODAL USARIO *************************************************

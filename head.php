@@ -11,7 +11,7 @@
   if (!isset($_SESSION["username"])||(!file_exists("css/".$estilos))){
     $estilos = 'styles.php';
   }
-  //$estilos = "styles.css";
+  $estilos = "styles.css";
 //  switch ($user) {
 //    case 'jm':  $estilos = 'styles'.$user.'.php';
 //                //$colores = 'css/colores.php';
@@ -45,6 +45,8 @@ require_once('data/baseMysql.php');
   <meta http-equiv='X-UA-Compatible' content='IE=edge'>
   <link rel='stylesheet' href='css/bootstrap.min.css'>
   <link rel='stylesheet' href='css/<?php echo $estilos ?>'>
+  <link href='favicon.png' rel='shortcut icon' type='image/png'/>
+  <link href='favicon.png' rel='icon' type='image/png'/>
   <script src="js/jquery.min.js"></script>
   <script src='js/popper.min.js'></script>
   <script src='js/bootstrap.min.js'></script>  
