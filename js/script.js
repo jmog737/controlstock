@@ -814,55 +814,51 @@ function agregarMovimiento(agregarRepetido){
       }
       /// Agrego el movimiento según los datos pasados:
       var url = "data/updateQuery.php";
-      var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+userSesion+", "+userControl+", '"+comentarios+"');";
+      var queries = new Array();
+      var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+userSesion+", "+userControl+", '"+comentarios+"')";
       //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
-
+      queries.push(query);
+      var fechaTemp = fecha.split("-");
+      var fechaMostrar = fechaTemp[2]+"/"+fechaTemp[1]+"/"+fechaTemp[0];
+      var ultimoMovimiento = fechaMostrar+" "+hora+" - "+tipo+": "+cantidad;
+      var query1 = "update productos set stock="+nuevoStock+", ultimoMovimiento='"+ultimoMovimiento+"' where idprod="+idProd;
+      queries.push(query1);
+      var jsonQuery = JSON.stringify(queries);
       var log = "SI";
-      $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
+      
+      $.getJSON(url, {query: ""+jsonQuery+"", log: log}).done(function(request) {
         var resultado = request["resultado"];
         /// Si el agregado es exitoso, actualizo el stock y la fecha de la última modificación en la tabla Productos:
         if (resultado === "OK") {
-          /***** AGREGADO PARA CONOCER ULTIMO ID INGRESADO: ********************************/
-          var query = "SELECT MAX(idmov) AS id FROM movimientos where idprod="+idProd+' limit 1';
-          /* FIN AGREGADO */
-          var url = "data/updateQuery.php";
-          var fechaTemp = fecha.split("-");
-          var fechaMostrar = fechaTemp[2]+"/"+fechaTemp[1]+"/"+fechaTemp[0];
-          var ultimoMovimiento = fechaMostrar+" "+hora+" - "+tipo+": "+cantidad;
-          var query = "update productos set stock="+nuevoStock+", ultimoMovimiento='"+ultimoMovimiento+"' where idprod="+idProd;
-          log = "SI";
-          $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
-            var resultado = request["resultado"];
-            if (resultado === "OK") {
-              if (avisarAlarma1) {
-                //alert('El stock quedó por debajo de la alarma1 definida!. \n\nStock actual: ' + nuevoStock);
-              }
-              else {
-                if (avisarAlarma2) {
-                  //alert('El stock quedó por debajo de la alarma2 definida!. \n\nStock actual: ' + nuevoStock);
-                }
-                else {
-                  if (avisarInsuficiente) {
-                    //alert('Stock insuficiente!. \nSe descuenta sólo la cantidad existente. \n\nStock 0!!.');
-                  }
-                  else {
-                    //alert('Registro agregado correctamente!. \n\nStock actual: '+nuevoStock);
-                  }
-                }
-              }
-              var tipo1 = encodeURI(tipo);
-              window.location.href = "../controlstock/movimiento.php?h="+busqueda+"&id="+idProd+"&t="+tipo1+"&f="+fecha+"&c="+cantidad;
+          if (avisarAlarma1) {
+            //alert('El stock quedó por debajo de la alarma1 definida!. \n\nStock actual: ' + nuevoStock);
+          }
+          else {
+            if (avisarAlarma2) {
+              //alert('El stock quedó por debajo de la alarma2 definida!. \n\nStock actual: ' + nuevoStock);
             }
             else {
-              alert('Hubo un error en la actualizacion del producto. Por favor verifique.');
+              if (avisarInsuficiente) {
+                //alert('Stock insuficiente!. \nSe descuenta sólo la cantidad existente. \n\nStock 0!!.');
+              }
+              else {
+                //alert('Registro agregado correctamente!. \n\nStock actual: '+nuevoStock);
+              }
             }
-          });
+          }
+          var tipo1 = encodeURI(tipo);
+          window.location.href = "../controlstock/movimiento.php?h="+busqueda+"&id="+idProd+"&t="+tipo1+"&f="+fecha+"&c="+cantidad;
         }
         else {
-          alert('Hubo un error en el agregado del movimiento. Por favor verifique.');
+          if (resultado === 'ERROR INSERT'){
+            alert('Hubo un error en el ingreso del movimiento. Por favor verifique.');
+          }
+          else {
+            alert('Hubo un error en la actualizacion del producto. Por favor verifique.');
+          }  
         }
-        habilitarAgregado();
-      });  
+        habilitarAgregado(); 
+      });            
     }
     else {
       if (!repetido){
@@ -3609,7 +3605,7 @@ function realizarBusqueda(){
                                 var finTemp = fin.split('-');
                                 var finMostrar = finTemp[2]+"/"+finTemp[1]+"/"+finTemp[0];
                                 rangoFecha = " and (fecha >'"+inicio+"') and (fecha <='"+fin+"')";
-                                mensajeFecha = "al día: "+inicioMostrar;alert(rangoFecha);
+                                mensajeFecha = "al día: "+inicioMostrar;
                               }
                             }
                           }

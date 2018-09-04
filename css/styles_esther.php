@@ -4,6 +4,7 @@ header('content-type:text/css');
  
 /******** STYLES *********/
 //$colorFondo = '#61122f';
+//$colorFondo = '#263c25';
 /****** FIN STYLES *******/
 
 /******* STYLES1: ********/ 
@@ -41,7 +42,8 @@ body {
   color: #fff;
   background-color: $colorFondo;
   font-family: sans-serif;
-  margin-bottom: 140px;
+  margin-bottom: 150px;
+  height: 100%;
 }
 
 /****************************** HEADER **************************************/
@@ -111,7 +113,7 @@ body {
 
 /****************************** FOOTER **************************************/
 .panel-footer {
-  margin-top: 10px;
+  /*margin-top: 10px;*/
   padding-top: 10px;
   padding-bottom: 10px;
   background-color: #023184;
@@ -208,7 +210,7 @@ a.detailObject:focus, a.detailObject:hover {
   padding: 0px;
 }
 
-/* TABS */
+/************************************ TABS ************************************/
 #pills-tab {
   margin-bottom: 0px !important;
   margin-top: -20px !important;
@@ -235,9 +237,9 @@ hr {
 .tab-pane {
   height: 100%;
 }
-/* FIN TABS*/
+/********************************* FIN TABS ***********************************/
 
-/* POPOVERS */
+/*********************************** POPOVERS *********************************/
 .popover{
   max-width: 100%;
 }
@@ -271,9 +273,9 @@ hr {
   background-color: #f8ffcd;
   font-style: italic;
 }
-/* FIN POPOVERS */
+/************************************** FIN POPOVERS **************************/
 
-/* TABLAS */
+/************************************* TABLAS *********************************/
 .tituloTabla {
   border-radius: 25px 25px 0 0;
   text-align: center;
@@ -402,7 +404,7 @@ hr {
   color: #071c40;
   font-size: 10pt;
 }
-/* FIN TABLAS */
+/******************************* FIN TABLAS ***********************************/
 
 #snapshot {
   padding: 10px;
@@ -583,7 +585,7 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
   text-align: right;
 }
 
-/* MODAL */
+/******************************** MODAL **************************************/
 .tituloModal {
   background-color: #023184;
 }
@@ -609,7 +611,42 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
   font-size: 14px;
   text-align: center;
 }
-/* FIN MODAL */
+
+#modalMovRepetido .modal-header {
+  background-color: #e44040;
+  background-color: #e00800;
+  font-weight: bolder;
+  color: #fff;
+  font-size: 18px;
+  text-align: center;
+}
+#modalMovRepetido .modal-body {
+  background-color: #d2d2d2;
+  background-color: #5c8260;
+  color: #000;
+  font-size: 16px;
+  
+}
+#modalMovRepetido .modal-footer {
+  background-color: #d2d2d2;
+  color: #000;
+  font-size: 14px;
+  text-align: center;
+}
+
+#btnModalRepetido {
+  /*background-color:#ffff33;*/
+  font-weight: bold;
+}
+#btnModalRepetido:focus, #btnModalRepCerrar:focus{
+  border-width: 3px;
+  border-color: white;
+  background-color:#9e41d0;
+}
+#modalMovRepetido input[type="text"]:disabled {
+  background-color: #e8efb0;
+}
+/**************************** FIN MODAL **************************************/
 
 /************************* END HOME PAGE *************************************/
 

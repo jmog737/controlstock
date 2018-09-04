@@ -11,7 +11,7 @@
   if (!isset($_SESSION["username"])||(!file_exists("css/".$estilos))){
     $estilos = 'styles.php';
   }
-  $estilos = "styles.css";
+  //$estilos = "styles.css";
 //  switch ($user) {
 //    case 'jm':  $estilos = 'styles'.$user.'.php';
 //                //$colores = 'css/colores.php';
