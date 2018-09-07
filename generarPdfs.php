@@ -61,7 +61,7 @@ class PDF extends PDF_MC_Table
   //Cabecera de página
   function Header()
     {
-    global $fecha, $hora, $titulo, $x, $hFooter, $marcaAgua, $textoMarcaAgua, $orientacion;// $hHeader;
+    global $fecha, $hora, $titulo, $x, $hFooter, $marcaAgua, $textoMarcaAgua, $orientacion, $tipoConsulta;// $hHeader;
     
     $anchoPage = $this->GetPageWidth();
     $anchoDia = 20;
@@ -72,6 +72,13 @@ class PDF extends PDF_MC_Table
     $logo = 'images/logotipo.jpg';
 
     list($nuevoAncho, $nuevoAlto) = $this->resizeToFit($logo, self::LOGO_WIDTH_MM, self::LOGO_HEIGHT_MM);
+    
+    $q1 = stripos($tipoConsulta, " de todos los tipos (inc. AJUSTES)");
+    if ($q1 !== FALSE) {
+      if (stripos($titulo, "(TODOS)") === FALSE){
+        $titulo = $titulo." (TODOS)";
+      }
+    }
     
     $anchoTitle = $anchoPage - $anchoDia - $nuevoAncho - 2*$xLogo;
     
@@ -84,7 +91,7 @@ class PDF extends PDF_MC_Table
     $this->SetFillColor(120, 200, 120);
     //Defino características para el título y agrego el título:
     $this->SetFont('Arial', 'BU', 18);
-    $this->Cell($anchoTitle, $nuevoAlto-1, utf8_decode($titulo), 0, 0, 'C', false);
+    $this->Cell($anchoTitle, $nuevoAlto-1, strtoupper(utf8_decode($titulo)), 0, 0, 'C', false);
     
     //$this->SetFillColor(180, 200, 20);
     
@@ -774,35 +781,63 @@ class PDF extends PDF_MC_Table
       $temp0 = explode("Movimientos de ", $subTitulo);
     }
     
-    $q1 = stripos($temp0[1], " de todos los tipos");
+    $q1 = stripos($temp0[1], " de todos los tipos (inc. AJUSTES)");
     if ($q1 !== FALSE) {
-      $temp1 = explode(" de todos los tipos", $temp0[1]);
+      $temp1 = explode(" de todos los tipos (inc. AJUSTES)", $temp0[1]);
       $nombre1 = strtoupper($temp1[0]);
       $mostrarResumenProducto = true;
+      $tipoMov = 'Todos';
     }
-    else {
-      $t0 = stripos($temp0[1], "Retiro");
-      if ($t0 !== FALSE){
-        $tipoMov = "retiros";
+    else { 
+      $q2 = stripos($temp0[1], " de todos los tipos");
+      if ($q2 !== FALSE) {
+        $temp1 = explode(" de todos los tipos", $temp0[1]);
+        $nombre1 = strtoupper($temp1[0]);
+        $mostrarResumenProducto = true;
+        $tipoMov = 'Clientes';
       }
       else {
-        $t1 = stripos($temp0[1], "Ingreso");
-        if ($t1 !== FALSE){
-          $tipoMov = "ingresos";
+        $t0 = stripos($temp0[1], " del tipo Retiro");
+        if ($t0 !== FALSE){
+          $tipoMov = "Retiros";
         }
         else {
-          $t2 = stripos($temp0[1], utf8_decode("Renovación"));
-          if ($t2 !== FALSE){
-            $tipoMov = "renovaciones";
+          $t1 = stripos($temp0[1], "del tipo Ingreso");
+          if ($t1 !== FALSE){
+            $tipoMov = "Ingresos";
           }
           else {
-            $tipoMov = "destrucciones";
+            $t2 = stripos($temp0[1], utf8_decode("del tipo Renovación"));
+            if ($t2 !== FALSE){
+              $tipoMov = "Renovaciones";
+            }
+            else {
+              $t3 = stripos($temp0[1], utf8_decode("del tipo Destrucción"));
+              if ($t3 !== FALSE){
+                $tipoMov = "Destrucciones";
+              }
+              else {
+                $t4 = stripos($temp0[1], " del tipo AJUSTE Retiro");
+                if ($t4 !== FALSE){
+                  $tipoMov = "AJUSTE Retiros";
+                }
+                else {
+                  $t5 = stripos($temp0[1], " del tipo AJUSTE Ingreso");
+                  if ($t5 !== FALSE){
+                    $tipoMov = "AJUSTE Ingresos";
+                  }
+                  else {
+                    $tipoMov = "Ajustes";
+                  }
+                }
+              }
+            }  
           }
         }
-      }
-      $temp1 = explode(" del tipo", $temp0[1]);
-      $nombre1 = strtoupper($temp1[0]);
-      $mostrarResumenProducto = false;
+        $temp1 = explode(" del tipo", $temp0[1]);
+        $nombre1 = strtoupper($temp1[0]);
+        $mostrarResumenProducto = false;
+      } 
     }
     
     if ($tablaProducto){
@@ -811,14 +846,13 @@ class PDF extends PDF_MC_Table
     else {
       $subTitulo = "Movimientos de ".$nombre1;
     }
-    if ($q1 !== FALSE) {
+    if (($q1 !== FALSE)||($q2 !== FALSE)) {
       $subTitulo = $subTitulo." de todos los tipos".$temp1[1];
     }
     else {
       $subTitulo = $subTitulo." del tipo".$temp1[1];
     }
     ///************************* FIN Separo el subtítulo para poder resaltear el nombre de la entidad o el producto según corresponda *********  
-
 
     $tam1 = $this->GetStringWidth($subTitulo);
     if ($tam1 < $anchoTipo){
@@ -1371,12 +1405,18 @@ class PDF extends PDF_MC_Table
     $subtotalRenoMostrar = 0;
     $subtotalDestruccion = 0;
     $subtotalDestruccionMostrar = 0;
+    $subtotalAjusteRetiros = 0;
+    $subtotalAjusteRetirosMostrar = 0;
+    $subtotalAjusteIngresos = 0;
+    $subtotalAjusteIngresosMostrar = 0;
     $totalConsumos = 0;
     $totalConsumosMostrar = 0;
     $totalRetiro = 0;
     $totalIngreso = 0;
     $totalReno = 0;
     $totalDestruccion = 0;
+    $totalAjusteRetiros = 0;
+    $totalAjusteIngresos = 0;
     ///********************************************************** FIN INICIALIZACIÓN DE CONTADORES ******************************************  
       
     ///*********************************************************** INICIO RECORRIDA REGISTROS ***********************************************
@@ -1433,6 +1473,12 @@ class PDF extends PDF_MC_Table
           if ($subtotalIngreso > 0) {
             $totalRenglonesResumen++;
           }  
+          if ($subtotalAjusteRetiros > 0) {
+            $totalRenglonesResumen++;
+          } 
+          if ($subtotalAjusteIngresos > 0) {
+            $totalRenglonesResumen++;
+          } 
           
           if ($totalRenglonesResumen > 0){
             if($this->GetY()+($totalRenglonesResumen+1)*$h > $this->PageBreakTrigger){
@@ -1537,6 +1583,38 @@ class PDF extends PDF_MC_Table
             $subtotalIngreso = 0;
             $subtotalIngresoMostrar = 0;
           }
+          
+          if ($subtotalAjusteRetiros > 0) {
+            $this->SetFont('Courier', 'B', 9);
+            $this->setFillColor(220, 223, 232);
+            $this->SetTextColor(0);  
+            $this->SetX($x);
+            $this->Cell($tamTextoSubtotal,$h, "Total AJUSTE Retiros:",1,0,'C', false);
+
+            $this->SetFont('Courier', 'BI', 14);
+            $this->setFillColor(162, 92, 243);
+            $this->SetTextColor(0);  
+            $this->Cell($tamSubTotal,$h, $subtotalAjusteRetirosMostrar,1,1,'R', true);
+
+            $subtotalAjusteRetiros = 0;
+            $subtotalAjusteRetirosMostrar = 0;
+          }
+          
+          if ($subtotalAjusteIngresos > 0) {
+            $this->SetFont('Courier', 'B', 9);
+            $this->setFillColor(220, 223, 232);
+            $this->SetTextColor(0);  
+            $this->SetX($x);
+            $this->Cell($tamTextoSubtotal,$h, "Total AJUSTE Ingresos:",1,0,'C', false);
+
+            $this->SetFont('Courier', 'BI', 14);
+            $this->setFillColor(255, 193, 104);
+            $this->SetTextColor(0);  
+            $this->Cell($tamSubTotal,$h, $subtotalAjusteIngresosMostrar,1,1,'R', true);
+
+            $subtotalAjusteIngresos = 0;
+            $subtotalAjusteIngresosMostrar = 0;
+          }
           ///*************************************************** FIN ESCRITURA RESUMEN ********************************************************
           
           ///******************************************************* BORDE REDONDEADO DE CIERRE ***********************************************
@@ -1568,6 +1646,14 @@ class PDF extends PDF_MC_Table
                               $totalDestruccion = $totalDestruccion + $cantidad1;
                               $subtotalDestruccionMostrar = number_format($subtotalDestruccion, 0, ",", ".");
                               break;
+          case "AJUSTE Retiro": $subtotalAjusteRetiros = $cantidad1;
+                                $totalAjusteRetiros = $totalAjusteRetiros + $cantidad1;
+                                $subtotalAjusteRetirosMostrar = number_format($subtotalAjusteRetiros, 0, ",", ".");
+                                break;
+          case "AJUSTE Ingreso": $subtotalAjusteIngresos = $cantidad1;
+                                 $totalAjusteIngresos = $totalAjusteIngresos + $cantidad1;
+                                 $subtotalAjusteIngresosMostrar = number_format($subtotalAjusteIngresos, 0, ",", ".");
+                                 break;
           default: break;
         }
         $totalConsumos = $subtotalRetiro + $subtotalReno + $subtotalDestruccion;
@@ -1764,9 +1850,17 @@ class PDF extends PDF_MC_Table
                               $totalDestruccion = $totalDestruccion + $cantidad1;
                               $subtotalDestruccionMostrar = number_format($subtotalDestruccion, 0, ",", ".");
                               break;
+          case "AJUSTE Retiro": $subtotalAjusteRetiros = $subtotalAjusteRetiros + $cantidad1;
+                                $totalAjusteRetiros = $totalAjusteRetiros + $cantidad1;
+                                $subtotalAjusteRetirosMostrar = number_format($subtotalAjusteRetiros, 0, ",", ".");
+                                break;
+          case "AJUSTE Ingreso": $subtotalAjusteIngresos = $subtotalAjusteIngresos + $cantidad1;
+                                 $totalAjusteIngresos = $totalAjusteIngresos + $cantidad1;
+                                 $subtotalAjusteIngresosMostrar = number_format($subtotalAjusteIngresos, 0, ",", ".");
+                                 break;                  
           default: break;
         }
-        if ($tipo !== 'Ingreso') {
+        if (($tipo !== 'Ingreso')&&($tipo !== 'AJUSTE Retiro')&&($tipo !== 'AJUSTE Ingreso')) {
           $totalConsumos = $totalConsumos + $cantidad1;
           $totalConsumosMostrar = number_format($totalConsumos, 0, ",", ".");
         }       
@@ -2673,7 +2767,13 @@ class PDF extends PDF_MC_Table
       if ($subtotalIngreso > 0) {
         $totalRenglonesUltProducto++;
       }  
-
+      if ($subtotalAjusteRetiros > 0) {
+        $totalRenglonesUltProducto++;
+      }  
+      if ($subtotalAjusteIngresos > 0) {
+        $totalRenglonesUltProducto++;
+      }  
+      
       if ($totalRenglonesUltProducto > 0){
         if($this->GetY()+($totalRenglonesUltProducto+1)*$h > $this->PageBreakTrigger){
           $this->AddPage($this->CurOrientation);
@@ -2770,6 +2870,38 @@ class PDF extends PDF_MC_Table
         $subtotalIngreso = 0;
         $subtotalIngresoMostrar = 0;
       }
+      
+      if ($subtotalAjusteRetiros > 0) {
+            $this->SetFont('Courier', 'B', 9);
+            $this->setFillColor(220, 223, 232);
+            $this->SetTextColor(0);  
+            $this->SetX($x);
+            $this->Cell($tamTextoSubtotal,$h, "Total AJUSTE Retiros:",1,0,'C', false);
+
+            $this->SetFont('Courier', 'BI', 14);
+            $this->setFillColor(162, 92, 243);
+            $this->SetTextColor(0);  
+            $this->Cell($tamSubTotal,$h, $subtotalAjusteRetirosMostrar,1,1,'R', true);
+
+            $subtotalAjusteRetiros = 0;
+            $subtotalAjusteRetirosMostrar = 0;
+          }
+          
+      if ($subtotalAjusteIngresos > 0) {
+            $this->SetFont('Courier', 'B', 9);
+            $this->setFillColor(220, 223, 232);
+            $this->SetTextColor(0);  
+            $this->SetX($x);
+            $this->Cell($tamTextoSubtotal,$h, "Total AJUSTE Ingresos:",1,0,'C', false);
+
+            $this->SetFont('Courier', 'BI', 14);
+            $this->setFillColor(255, 193, 104);
+            $this->SetTextColor(0);  
+            $this->Cell($tamSubTotal,$h, $subtotalAjusteIngresosMostrar,1,1,'R', true);
+
+            $subtotalAjusteIngresos = 0;
+            $subtotalAjusteIngresosMostrar = 0;
+          }
       ///***************************************************** FIN RESUMEN DEL ÚLTIMO PRODUCTO **********************************************
     }
     else {
@@ -2778,24 +2910,48 @@ class PDF extends PDF_MC_Table
       $this->SetTextColor(0);  
       $this->SetX($x);
       switch ($tipoMov){
-        case "retiros":  $total = $totalRetiro;
+        case "Retiros": $total = $totalRetiro;
                         break;
-        case "ingresos": $total = $totalIngreso;              
-                        break;
-        case "renovaciones": $total = $totalReno;
-                           break;
-        case "destrucciones": $total = $totalDestruccion;
-                            break;
+        case "Ingresos": $total = $totalIngreso;              
+                         break;
+        case "Renovaciones": $total = $totalReno;
+                             break;
+        case "Destrucciones": $total = $totalDestruccion;
+                              break;
+        case "AJUSTE Ingresos": $total = $totalAjusteIngresos;              
+                                break;
+        case "AJUSTE Retiros": $total = $totalAjusteRetiros;              
+                               break;             
         default: break;                  
       }
-      $totalMostrar = number_format($total, 0, ",", ".");
-      $this->Cell($tamTextoSubtotal,$h, "Total $tipoMov:",1,0,'C', false);
-      $this->SetFont('Courier', 'BI', 14);
-      //$this->setFillColor(165, 156, 149);
-      //$this->setFillColor(200, 202, 212);
-      $this->setFillColor(137, 216, 255);
-      $this->SetTextColor(0);  
-      $this->Cell($largoCampos[$indCantidad],$h, $totalMostrar,1,1,'R', true);
+      if ($tipoMov === 'Ajustes'){
+        $totalMostrar1 = number_format($totalAjusteRetiros, 0, ",", ".");
+        $this->Cell($tamTextoSubtotal,$h, "Total AJUSTE Retiros:",1,0,'C', false);
+        $this->SetFont('Courier', 'BI', 14);
+        $this->setFillColor(162, 92, 243);
+        $this->SetTextColor(0);  
+        $this->Cell($largoCampos[$indCantidad],$h, $totalMostrar1,1,1,'R', true);
+        
+        $this->SetFont('Courier', 'B', 9);
+        $this->SetTextColor(0);  
+        $this->SetX($x);
+        $totalMostrar2 = number_format($totalAjusteIngresos, 0, ",", ".");
+        $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total AJUSTE Ingresos:"),1,0,'C', false);
+        $this->SetFont('Courier', 'BI', 14);
+        $this->setFillColor(255, 193, 104);
+        $this->SetTextColor(0);  
+        $this->Cell($largoCampos[$indCantidad],$h, $totalMostrar2,1,1,'R', true);
+      }
+      else {
+        $totalMostrar = number_format($total, 0, ",", ".");
+        $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total $tipoMov:"),1,0,'C', false);
+        $this->SetFont('Courier', 'BI', 14);
+        //$this->setFillColor(165, 156, 149);
+        //$this->setFillColor(200, 202, 212);
+        $this->setFillColor(137, 216, 255);
+        $this->SetTextColor(0);  
+        $this->Cell($largoCampos[$indCantidad],$h, $totalMostrar,1,1,'R', true);
+      }   
     }
     ///*********************************************************** BORDE FINAL **************************************************************
     $y = $this->GetY();

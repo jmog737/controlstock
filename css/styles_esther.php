@@ -573,13 +573,25 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
   text-align: right;
 }
 .totalConsumos {
-  background-color:#efa569;
+  background-color:#4b5af3;
   font-weight: bolder;
   font-size: 1.4em;
   text-align: right;
 }
 .totalIngresos {
-  background-color:#4b5af3;
+  background-color:#27de5d;
+  font-weight: bolder;
+  font-size: 1.4em;
+  text-align: right;
+}
+.totalAjusteRetiros {
+  background-color:#a25cf3;
+  font-weight: bolder;
+  font-size: 1.4em;
+  text-align: right;
+}
+.totalAjusteIngresos {
+  background-color:#ffc168;
   font-weight: bolder;
   font-size: 1.4em;
   text-align: right;

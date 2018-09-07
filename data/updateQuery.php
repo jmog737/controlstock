@@ -19,30 +19,37 @@ else {
 //$dbc = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 $dbc = crearConexion(DB_HOST, $userDB, $pwDB, DB_NAME);
 
-//$query = $_GET["query"];
 $queries = (array)json_decode($_GET["query"],true);
+$tam = count($queries);
 
 $log = $_GET["log"];
 
 $queryInsert = $queries[0];
-$queryUpdate = $queries[1];
+
+if ($tam > 1){
+  $queryUpdate = $queries[1];
+}
+
 
 $result = consultarBD($queryInsert, $dbc);
 $dato = array();
 if ($result === TRUE) {
+  $dato["resultado"] = "OK";
   if ($log === "SI") {
     escribirLog($queryInsert);
   }
-  $result1 = consultarBD($queryUpdate, $dbc);
-  if ($result1 === TRUE) {
-    $dato["resultado"] = "OK";
-    if ($log === "SI") {
-      escribirLog($queryUpdate);
-    }
-  }  
-  else {
-    $dato["resultado"] = "ERROR UPDATE";
-  } 
+  if ($tam > 1){
+    $result1 = consultarBD($queryUpdate, $dbc);
+    if ($result1 === TRUE) {
+      //$dato["resultado"] = "OK";
+      if ($log === "SI") {
+        escribirLog($queryUpdate);
+      }
+    }  
+    else {
+      $dato["resultado"] = "ERROR UPDATE";
+    } 
+  }
 }
 else {
   $dato["resultado"] = "ERROR INSERT";

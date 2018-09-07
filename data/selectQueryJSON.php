@@ -37,6 +37,8 @@ for ($i = 0; $i < count($query); $i++){
   $datos["$i"]['renovaciones'] = null;
   $datos["$i"]['destrucciones'] = null;
   $datos["$i"]['ingresos'] = null;
+  $datos["$i"]['ajusteRetiros'] = null;
+  $datos["$i"]['ajusteIngresos'] = null;
   
   if ($tipo === 'entidadStock'){
     $temp = explode("where", $query[$i]);
@@ -66,7 +68,8 @@ for ($i = 0; $i < count($query); $i++){
     }
   }
   
-  if (($tipo === 'entidadMovimiento')||($tipo === 'entidadStockViejo')){
+  //if (($tipo === 'entidadMovimiento')||($tipo === 'entidadStockViejo')){
+  if ($tipo === 'entidadMovimiento'){
     $test = stripos($query[$i], "productos.entidad='");
     $entidad = '';
     if ($test !== false){
@@ -74,15 +77,28 @@ for ($i = 0; $i < count($query); $i++){
       $temp1 = explode("'", $temp[1]);
       $entidad = $temp1[0];
     }
-    $test1 = stripos($query[$i], "and tipo='");
+    
+    $test1 = stripos($query[$i], "tipo='");
     if ($test1 !== false){
-      $temp2 = explode("and tipo='", $query[$i]);
-      $temp3 = explode("'", $temp2[1]);
-      $tipo1 = $temp3[0];
+      $temp2 = explode("tipo='", $query[$i]);
+      if (isset($temp2[2])){
+        $tipo1 = 'ajustes';
+      }
+      else {
+        $temp3 = explode("'", $temp2[1]);
+        $tipo1 = $temp3[0];
+      } 
     }
     else {
-      $tipo1 = 'todos';
+      $test2 = stripos($query[$i], "tipo!='");
+      if ($test2 !== false){
+        $tipo1 = 'clientes';
+      }
+      else {
+        $tipo1 = 'todos';
+      }
     }
+    
     $fecha = '';
     $test2 = stripos($query[$i], "and (fecha >");
     if ($test2 !== false){
@@ -102,20 +118,26 @@ for ($i = 0; $i < count($query); $i++){
     $consultaRenovaciones = "select productos.idprod as idprod, sum(cantidad) as renovaciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='renovación'".$fecha;
     $consultaDestrucciones = "select productos.idprod as idprod, sum(cantidad) as destrucciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='destrucción'".$fecha;
     $consultaIngresos = "select productos.idprod as idprod, sum(cantidad) as ingresos from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='ingreso'".$fecha;
+    $consultaAjusteRetiro = "select productos.idprod as idprod, sum(cantidad) as ajusteRetiros from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='AJUSTE Retiro'".$fecha;
+    $consultaAjusteIngreso = "select productos.idprod as idprod, sum(cantidad) as ajusteIngresos from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='AJUSTE Ingreso'".$fecha;
     
     if ($entidad !== ''){
       $consultaRetiros = $consultaRetiros." and productos.entidad='".$entidad."'";
       $consultaRenovaciones = $consultaRenovaciones." and productos.entidad='".$entidad."'";
       $consultaDestrucciones = $consultaDestrucciones." and productos.entidad='".$entidad."'";
       $consultaIngresos = $consultaIngresos." and productos.entidad='".$entidad."'";
+      $consultaAjusteRetiro = $consultaAjusteRetiro." and productos.entidad='".$entidad."'";
+      $consultaAjusteIngreso = $consultaAjusteIngreso." and productos.entidad='".$entidad."'";
     }
     
     $consultaRetiros = $consultaRetiros." group by productos.idprod";
     $consultaRenovaciones = $consultaRenovaciones." group by productos.idprod";
     $consultaDestrucciones = $consultaDestrucciones." group by productos.idprod";
     $consultaIngresos = $consultaIngresos." group by productos.idprod";
+    $consultaAjusteRetiro = $consultaAjusteRetiro." group by productos.idprod";
+    $consultaAjusteIngreso = $consultaAjusteIngreso." group by productos.idprod";
     
-    if (($tipo1 === 'Retiro')||($tipo1 === 'todos')){
+    if (($tipo1 === 'Retiro')||($tipo1 === 'todos')||($tipo1 === 'clientes')){
       $resultRetiros = consultarBD($consultaRetiros, $dbc);
       while (($filaRetiros = $resultRetiros->fetch_array(MYSQLI_ASSOC)) != NULL) {
         $idprod = $filaRetiros["idprod"];
@@ -123,30 +145,45 @@ for ($i = 0; $i < count($query); $i++){
         //$datos["$i"]["retiros"][$idprod] = $consultaRetiros;
       }
     }
-    if (($tipo1 === 'Renovación')||($tipo1 === 'todos')){
+    if (($tipo1 === 'Renovación')||($tipo1 === 'todos')||($tipo1 === 'clientes')){
       $resultRenovaciones = consultarBD($consultaRenovaciones, $dbc);
       while (($filaRenovaciones = $resultRenovaciones->fetch_array(MYSQLI_ASSOC)) != NULL) {
         $idprod = $filaRenovaciones["idprod"];
         $datos["$i"]["renovaciones"][$idprod] = $filaRenovaciones["renovaciones"];
       }
     }
-    if (($tipo1 === 'Destrucción')||($tipo1 === 'todos')){
+    if (($tipo1 === 'Destrucción')||($tipo1 === 'todos')||($tipo1 === 'clientes')){
       $resultDestrucciones = consultarBD($consultaDestrucciones, $dbc);
       while (($filaDestrucciones = $resultDestrucciones->fetch_array(MYSQLI_ASSOC)) != NULL) { 
         $idprod = $filaDestrucciones["idprod"];
         $datos["$i"]["destrucciones"][$idprod] = $filaDestrucciones["destrucciones"];
       }
     }
-    if (($tipo1 === 'Ingreso')||($tipo1 === 'todos')){
+    if (($tipo1 === 'Ingreso')||($tipo1 === 'todos')||($tipo1 === 'clientes')){
       $resultIngresos = consultarBD($consultaIngresos, $dbc);
       while (($filaIngresos = $resultIngresos->fetch_array(MYSQLI_ASSOC)) != NULL) { 
         $idprod = $filaIngresos["idprod"];
         $datos["$i"]["ingresos"][$idprod] = $filaIngresos["ingresos"];
       } 
     }
+    if (($tipo1 === 'AJUSTE Retiro')||($tipo1 === 'todos')||($tipo1 === 'ajustes')){
+      $resultAjusteRetiros = consultarBD($consultaAjusteRetiro, $dbc);
+      while (($filaAjusteRetiros = $resultAjusteRetiros->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+        $idprod = $filaAjusteRetiros["idprod"];
+        $datos["$i"]["ajusteRetiros"][$idprod] = $filaAjusteRetiros["ajusteRetiros"];
+      } 
+    }
+    if (($tipo1 === 'AJUSTE Ingreso')||($tipo1 === 'todos')||($tipo1 === 'ajustes')){
+      $resultAjusteIngresos = consultarBD($consultaAjusteIngreso, $dbc);
+      while (($filaAjusteIngresos = $resultAjusteIngresos->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+        $idprod = $filaAjusteIngresos["idprod"];
+        $datos["$i"]["ajusteIngresos"][$idprod] = $filaAjusteIngresos["ajusteIngresos"];
+      } 
+    }
   }
   
-  if (($tipo === 'productoMovimiento')||($tipo === 'productoStockViejo')){
+  //if (($tipo === 'productoMovimiento')||($tipo === 'productoStockViejo')){
+  if ($tipo === 'productoMovimiento'){
     $test = stripos($query[$i], "where idprod=");
     $idprod = '';
     if ($test !== false){
@@ -154,19 +191,34 @@ for ($i = 0; $i < count($query); $i++){
       $temp1 = explode(" ", $temp[1]);
       $idprod = $temp1[0];
     }
-    $test1 = stripos($query[$i], "and tipo='");
+    
+    $test1 = stripos($query[$i], "tipo='");
     if ($test1 !== false){
-      $temp2 = explode("and tipo='", $query[$i]);
-      $temp3 = explode("'", $temp2[1]);
-      $tipo2 = $temp3[0];
+      $temp2 = explode("tipo='", $query[$i]);
+      if (isset($temp2[2])){
+        $tipo2 = 'ajustes';
+      }
+      else {
+        $temp3 = explode("'", $temp2[1]);
+        $tipo2 = $temp3[0];
+      } 
     }
     else {
-      $tipo2 = 'todos';
+      $test2 = stripos($query[$i], "tipo!='");
+      if ($test2 !== false){
+        $tipo2 = 'clientes';
+      }
+      else {
+        $tipo2 = 'todos';
+      } 
     }
     
+    //$datos["$i"]["queryTest"][$idprod] = $query[$i];
+    //$datos["$i"]["tipo"][$idprod] = $tipo2;
+    
     $fecha = '';
-    $test2 = stripos($query[$i], "and (fecha >");
-    if ($test2 !== false){
+    $test3 = stripos($query[$i], "and (fecha >");
+    if ($test3 !== false){
       $temp4 = explode("and (fecha >", $query[$i]);
       $temp5 = explode(" order", $temp4[1]);
       $fecha = " and (fecha >".$temp5[0];
@@ -180,7 +232,7 @@ for ($i = 0; $i < count($query); $i++){
       }
     }
     
-    if (($tipo2 === 'Retiro')||($tipo2 === 'todos')){
+    if (($tipo2 === 'Retiro')||($tipo2 === 'todos')||($tipo2 === 'clientes')){
       $consultaRetiros = "select productos.idprod as idprod, sum(cantidad) as retiros from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='retiro' and productos.idprod='".$idprod."'".$fecha."group by productos.idprod";
       $resultRetiros = consultarBD($consultaRetiros, $dbc);
       while (($filaRetiros = $resultRetiros->fetch_array(MYSQLI_ASSOC)) != NULL) {
@@ -188,16 +240,15 @@ for ($i = 0; $i < count($query); $i++){
         $datos["$i"]["retiros"][$idprod] = $filaRetiros["retiros"];
       }
     }  
-    if (($tipo2 === 'Renovación')||($tipo2 === 'todos')){  
+    if (($tipo2 === 'Renovación')||($tipo2 === 'todos')||($tipo2 === 'clientes')){  
       $consultaRenovaciones = "select productos.idprod as idprod, sum(cantidad) as renovaciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='renovación' and productos.idprod='".$idprod."'".$fecha."group by productos.idprod";
       $resultRenovaciones = consultarBD($consultaRenovaciones, $dbc);
       while (($filaRenovaciones = $resultRenovaciones->fetch_array(MYSQLI_ASSOC)) != NULL) {
         $idprod = $filaRenovaciones["idprod"];
         $datos["$i"]["renovaciones"][$idprod] = $filaRenovaciones["renovaciones"];
       }
-    }
-    
-    if (($tipo2 === 'Destrucción')||($tipo2 === 'todos')){
+    }   
+    if (($tipo2 === 'Destrucción')||($tipo2 === 'todos')||($tipo2 === 'clientes')){
       $consultaDestrucciones = "select productos.idprod as idprod, sum(cantidad) as destrucciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='destrucción' and productos.idprod='".$idprod."'".$fecha."group by productos.idprod";
       $resultDestrucciones = consultarBD($consultaDestrucciones, $dbc);
       while (($filaDestrucciones = $resultDestrucciones->fetch_array(MYSQLI_ASSOC)) != NULL) { 
@@ -205,21 +256,37 @@ for ($i = 0; $i < count($query); $i++){
         $datos["$i"]["destrucciones"][$idprod] = $filaDestrucciones["destrucciones"];
       }
     }
-    if (($tipo2 === 'Ingreso')||($tipo2 === 'todos')){  
+    if (($tipo2 === 'Ingreso')||($tipo2 === 'todos')||($tipo2 === 'clientes')){  
       $consultaIngresos = "select productos.idprod as idprod, sum(cantidad) as ingresos from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='ingreso' and productos.idprod='".$idprod."'".$fecha."group by productos.idprod";
       $resultIngresos = consultarBD($consultaIngresos, $dbc);
       while (($filaIngresos = $resultIngresos->fetch_array(MYSQLI_ASSOC)) != NULL) { 
         $idprod = $filaIngresos["idprod"];
         $datos["$i"]["ingresos"][$idprod] = $filaIngresos["ingresos"];
       } 
-    }  
+    }
+    if (($tipo2 === 'AJUSTE Retiro')||($tipo2 === 'todos')||($tipo2 === 'ajustes')){  
+      $consultaAjusteRetiro = "select productos.idprod as idprod, sum(cantidad) as ajusteRetiros from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='AJUSTE Retiro' and productos.idprod='".$idprod."'".$fecha."group by productos.idprod";
+      $resultAjusteRetiros = consultarBD($consultaAjusteRetiro, $dbc);
+      while (($filaAjusteRetiros = $resultAjusteRetiros->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+        $idprod = $filaAjusteRetiros["idprod"];
+        $datos["$i"]["ajusteRetiros"][$idprod] = $filaAjusteRetiros["ajusteRetiros"];
+      } 
+    }
+    if (($tipo2 === 'AJUSTE Ingreso')||($tipo2 === 'todos')||($tipo2 === 'ajustes')){  
+      $consultaAjusteIngresos = "select productos.idprod as idprod, sum(cantidad) as ajusteIngresos from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='AJUSTE Ingreso' and productos.idprod='".$idprod."'".$fecha."group by productos.idprod";
+      $resultAjusteIngresos = consultarBD($consultaAjusteIngresos, $dbc);
+      while (($filaAjusteIngresos = $resultAjusteIngresos->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+        $idprod = $filaAjusteIngresos["idprod"];
+        $datos["$i"]["ajusteIngresos"][$idprod] = $filaAjusteIngresos["ajusteIngresos"];
+      } 
+    }
   }
 
   ///Ejecuto consulta "total" para concer el total de datos a devolver
   ///Sin embargo, sólo consulto el total de registros para que sea más rápido:
   $totalConsulta[$i] = '';
-  $test1 = stripos($query[$i], "from");
-  if ($test1 !== false){
+  $test4 = stripos($query[$i], "from");
+  if ($test4 !== false){
     $temp = explode("from", $query[$i]);
     $totalConsulta[$i] = "select count(*) as total from ".$temp[1];
   }

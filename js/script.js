@@ -158,7 +158,6 @@ function showHint(str, id, seleccionado) {
       $("#ultimoMov").remove();
       $("#historial").remove();
       
-      
       var mostrar = '';
       var unico = '';
       if (totalSugerencias >= 1) {
@@ -392,7 +391,8 @@ function showHintProd(str, id, seleccionado) {
     $("#historial").remove();
     document.getElementById("producto").innerHTML = "";
     return;
-  } else {
+  } 
+  else {
     var url = "data/selectQuery.php";
     var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2, ultimoMovimiento from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%' or productos.idprod like '%"+str+"%') and estado='activo' order by productos.nombre_plastico asc";
     //alert(query);
@@ -400,7 +400,7 @@ function showHintProd(str, id, seleccionado) {
       var sugerencias = request.resultado;
       var totalSugerencias = request.rows;
       $("[name='hintProd']").remove();
-      
+            
       var mostrar = '';
       
       if (totalSugerencias >= 1) {
@@ -422,7 +422,8 @@ function showHintProd(str, id, seleccionado) {
             codigo_emsa = 'SIN CODIGO AÚN';
           }
           var sel = "";
-          if (parseInt(sugerencias[i]["idprod"], 10) === parseInt(seleccionado, 10)) {
+          var elegido = parseInt(seleccionado, 10);
+          if (parseInt(sugerencias[i]["idprod"], 10) === elegido) {
             sel = 'selected="yes"';
           }
           //mostrar += '<option value="'+sugerencias[i]["idprod"]+'" name="'+snapshot+'" stock='+sugerencias[i]["stock"]+' alarma='+sugerencias[i]["alarma"]+'>[' + sugerencias[i]["entidad"]+'] '+sugerencias[i]["nombre_plastico"] + ' {' +bin+'} --'+ codigo_emsa +'--</option>';
@@ -434,11 +435,14 @@ function showHintProd(str, id, seleccionado) {
         mostrar = '<p name="hintProd" value="">No se encontraron sugerencias!</p>';
       }
       $(id).after(mostrar);
+      
       //inhabilitarProducto();
       //$("#hintProd").focusin();
+      
       /// Agregado a pedido de Diego para que se abra el select automáticamente:
-      var length = $('#hintProd> option').length;
-      if (length > 10) {
+      var length = $("#hintProd > option").length;
+
+      if ((length > 10)||(length === 0)) {
         length = 10;
       }
       else {
@@ -447,9 +451,18 @@ function showHintProd(str, id, seleccionado) {
       if (length > totalSugerencias){
         length = totalSugerencias + 1;
       }
-      //alert('sugerencias: '+totalSugerencias+'\nlength: '+length);
+
       //open dropdown
       $("#hintProd").attr('size',length);
+      inhabilitarProducto();
+      ///Si elegido es -1 el llamado viene de eliminarProducto. Entonces borro los datos del producto (foto, stock y último movimiento), y pongo el foco en Seleccionar.
+      if (elegido === -1 ){
+        $("#hintProd").focus();
+        $("#hintProd option[value='NADA']").attr('selected', true);
+        $("#snapshot").remove();
+        $("#stock").remove();
+        $("#ultimoMov").remove();
+      }
     });
   }
 }
@@ -639,6 +652,8 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
                   <option value="Ingreso">Ingreso</option>\n\
                   <option value="Renovaci&oacute;n">Renovaci&oacute;n</option>\n\
                   <option value="Destrucci&oacute;n">Destrucci&oacute;n</option>\n\
+                  <option value="AJUSTE Ingreso">AJUSTE Ingreso</option>\n\
+                  <option value="AJUSTE Retiro">AJUSTE Retiro</option>\n\
                 </select>\n\
               </td>\n\
             </tr>';
@@ -699,7 +714,12 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
       setTimeout(function(){mostrarHistorialGeneral("#gralHistory")}, 160);
       
       if ((tipo !== '') && (tipo !== undefined)){
-        $("#tipo option[value="+ tipo +"]").attr("selected",true);
+        if ((tipo === 'Ingreso')||(tipo === 'Retiro')){
+          $("#tipo option[value="+ tipo +"]").attr("selected",true);
+        }
+        else {
+          $("#tipo option:contains('"+tipo+"')").attr("selected", true);
+        }
       }
       
       if ((fecha !== '') && (fecha !== undefined)){
@@ -719,8 +739,9 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
 /********** fin cargarMovimiento(selector, hint, prod, tipo, fecha) **********/
 
 /**
+ * @param {Boolean} agregarRepetido Booleano que indica si a pesar de haber un movimiento con idénticas características se agrega a la base de datos.
  * \brief Función que hace el agregado del movimiento en la base de datos. 
- *        Se separó del evento agregarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento cantidad.
+ *        Se separó del evento agregarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento cantidad.         
  */
 function agregarMovimiento(agregarRepetido){
   verificarSesion();
@@ -763,10 +784,10 @@ function agregarMovimiento(agregarRepetido){
 
     /// Si el movimiento NO es una devolución, calculo el nuevo stock. 
     // De serlo, NO se quita de stock pues las tarjetas se reponen (igualmente, por ahora no existe el tipo "Devolución"):
-    if (tipo !== 'Ingreso') {
+    if ((tipo !== 'Ingreso') && (tipo !== 'AJUSTE Ingreso')){
       nuevoStock = stockActual - cantidad;
     }
-    if (tipo === 'Ingreso') {
+    if ((tipo === 'Ingreso') || (tipo === 'AJUSTE Ingreso')) {
       nuevoStock = stockActual + cantidad;
     }
 
@@ -883,6 +904,7 @@ function actualizarMovimiento(){
   var idprod = $("#idprod").val();
   var comentarios = $("#comentarios").val();
   var fecha = $("#fecha").val();
+  $("#tipo").attr('disabled', false);
   var tipo = $("#tipo").val();
   if (tipo === null){
     tipo = 'Ingreso';
@@ -908,7 +930,7 @@ function actualizarMovimiento(){
   if (comentariosViejos !== comentarios){
     cambiarComentarios = true;
   }
-  
+  //alert('tipo Viejo: '+tipoViejo+'\ntipo: '+tipo);
   if (tipoViejo !== tipo){
     var tipoCambio = tipoViejo+'-'+tipo;
     cambiarTipo = true;
@@ -937,7 +959,8 @@ function actualizarMovimiento(){
       case 'Ingreso-Destrucción': nuevoStock = stockViejo - 2*cantidad;
                                   cambiarStock = true;
                                   break;
-      default: break;
+      default: cambiarTipo = false;
+               break;
     }
   }
   
@@ -1019,7 +1042,8 @@ function actualizarMovimiento(){
            
         var log = "SI";
         //alert(query);
-        $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
+        var jsonQuery = JSON.stringify(query);
+        $.getJSON(url, {query: ""+jsonQuery+"", log: log}).done(function(request) {
           var resultado = request["resultado"];
           //var mensaje = request['mensaje'];//alert(mensaje);
           if (resultado === "OK") {
@@ -1041,9 +1065,9 @@ function actualizarMovimiento(){
                 query += 'stock='+nuevoStock+'';
               }
               query += ' where idprod='+idprod+'';
-
+              var jsonQuery = JSON.stringify(query);
               //alert(query);
-              $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
+              $.getJSON(url, {query: ""+jsonQuery+"", log: log}).done(function(request) {
                 var resultado1 = request["resultado"];
                 if (resultado1 === "OK") {
                   alert('¡Los datos del movimiento se actualizaron correctamente!.');
@@ -1173,6 +1197,8 @@ function cargarEditarMovimiento(idMov, selector){
     var selReno = '';
     var selIngreso = '';
     var selDestruccion = '';
+    var selAjusteRetiro = '';
+    var selAjusteIngreso = '';
     switch (tipo){
       case 'Retiro': selRetiro = 'selected';
                      break;
@@ -1181,7 +1207,11 @@ function cargarEditarMovimiento(idMov, selector){
       case 'Ingreso': selIngreso = 'selected';
                       break;
       case 'Destrucción': selDestruccion = 'selected';
-                          break
+                          break;
+      case 'AJUSTE Retiro': selAjusteRetiro = 'selected';
+                          break;
+      case 'AJUSTE Ingreso': selAjusteIngreso = 'selected';
+                          break;                  
       default: break;
     }
 
@@ -1213,6 +1243,8 @@ function cargarEditarMovimiento(idMov, selector){
                   <option value="Ingreso" '+selIngreso+' disabled>Ingreso</option>\n\
                   <option value="Renovaci&oacute;n" '+selReno+'>Renovaci&oacute;n</option>\n\
                   <option value="Destrucci&oacute;n" '+selDestruccion+'>Destrucci&oacute;n</option>\n\
+                  <option value="AJUSTE Retiro" '+selAjusteRetiro+' disabled>AJUSTE Retiro</option>\n\
+                  <option value="AJUSTE Ingreso" '+selAjusteIngreso+' disabled>AJUSTE Ingreso</option>\n\
                 </select>\n\
               </td>\n\
             </tr>';
@@ -1243,7 +1275,7 @@ function cargarEditarMovimiento(idMov, selector){
     formu += '</form>';
     mostrar += titulo;
     mostrar += formu;
-    var volver = '<br><a href="../controlstock/busquedas.php" name="volver" id="volverEdicionMovimiento" title="Volver a BÚSQUEDAS">Volver</a><br><br>';
+    var volver = '<br><a href="../controlstock/movimiento.php" name="volver" id="volverEdicionMovimiento" title="Volver a BÚSQUEDAS">Volver</a><br><br>';
     mostrar += volver;
     $(selector).html(mostrar);
   
@@ -1251,11 +1283,19 @@ function cargarEditarMovimiento(idMov, selector){
       $("#fecha").val(fecha);
       $("#hora").val(hora);
       $("#entidad").val(entidad);
-      if (selIngreso === 'selected'){
-        $("#tipo").val('Ingreso');
-      }
-      else {
-        $("#tipo").val(tipo);
+//      if (selIngreso === 'selected'){
+//        $("#tipo").val('Ingreso');
+//      }
+//      else {
+//        if (selAjusteIngreso === 'seleceted'){
+//          $("#tipo").val('AJUSTE Ingreso');
+//        }
+//        else {
+//          $("#tipo").val(tipo);
+//        }
+//      }
+      if ((tipo === 'Ingreso')||(tipo === 'AJUSTE Ingreso')||(tipo === 'AJUSTE Retiro')){
+        $("#tipo").attr('disabled', true);
       }
       $("#nombre").val(producto);
       $("#codigo").val(codigo);
@@ -1570,8 +1610,9 @@ function actualizarUser() {
           */
           query += 'where id_usuario='+iduser;
           var log = "NO";
+          var jsonQuery = JSON.stringify(query);
           //alert(query);
-          $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
+          $.getJSON(url, {query: ""+jsonQuery+"", log: log}).done(function(request) {
             var resultado = request["resultado"];
             if (resultado === "OK") {
               alert('Los datos se modificaron correctamente!.');
@@ -2304,6 +2345,56 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                             <th>Cantidad</th>\n\
                                     </tr>';
 
+                                ///Defino variable tipoMov para detectar el tipo de movimiento filtrado, a saber:
+                                ///Todos -> "de todos los tipos (inc. AJUSTES)": usado para consultar TODOS los movimientos 
+                                ///Clientes -> "de todos los tipos": usado para consultar todos los movimientos, menos los de AJUSTES
+                                ///Ajustes -> "del tipo AJUSTE": usado para consultar los movimientos por ajustes (tanto ingresos como egresos)
+                                ///AJUSTE Retiro -> "del tipo AJUSTE Retiro": usado para consultar los movimientos por ajustes de retiros
+                                ///AJUSTE Ingreso -> "del tipo AJUSTE Ingreso": usado para consultar los movimientos por ajustes de ingresos
+                                var tipoMov = '';
+                                ///Veo si contiene la palabra AJUSTE; de tenerla hay 4 opciones
+                                if (tipoConsulta.indexOf("AJUSTE") > -1){
+                                  if (tipoConsulta.indexOf("Retiro") > -1){
+                                    tipoMov = 'AJUSTE Retiros';
+                                  }
+                                  else {
+                                    if (tipoConsulta.indexOf("Ingreso") > -1){
+                                      tipoMov = 'AJUSTE Ingresos';
+                                    }
+                                    else {
+                                      if (tipoConsulta.indexOf("todos") > -1){
+                                        tipoMov = "Todos";
+                                      }
+                                      else {
+                                        tipoMov = "Ajustes";
+                                      }
+                                    }
+                                  }
+                                }
+                                else {
+                                  if (tipoConsulta.indexOf("todos") > -1){
+                                    tipoMov = "Clientes";
+                                  }
+                                  else {
+                                    if (tipoConsulta.indexOf("Retiro") > -1){
+                                      tipoMov = 'retiros';
+                                    }
+                                    else {
+                                      if (tipoConsulta.indexOf("Ingreso") > -1){
+                                        tipoMov = 'ingresos';
+                                      }
+                                      else {
+                                        if (tipoConsulta.indexOf("Renovación") > -1){
+                                          tipoMov = 'renovaciones';
+                                        }
+                                        else {
+                                          tipoMov = 'destrucciones';
+                                        }
+                                      }
+                                    }
+                                  }  
+                                }
+                                
                                 var productoViejo = parseInt(datos[0]['idprod'], 10);
 
                                 for (var i=0; i<max; i++) {
@@ -2368,12 +2459,15 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   /// En caso de ser de UN solo tipo, NO agrego el resumen del producto a pedido de Diego:
                                   if (mostrarResumenProducto){
                                     ///Si hay un cambio de producto, ANTES de poner el primer movimiento del nuevo producto, muestro el resumen del producto viejo:
-                                    if (productoViejo !== produ) {//alert('cambio');
+                                    if (productoViejo !== produ) {
                                       var totalConsumos = 0;
                                       var retiros1 = 0;
+                                      var ajusteRetiros1 = 0;
                                       var renos1 = 0;
                                       var destrucciones1 = 0;
-                                      var ingresos1 = 0;//alert(subtotales["retiros"]);
+                                      var ingresos1 = 0;
+                                      var ajusteIngresos1 = 0;
+                                      
                                       if (subtotales["retiros"] !== null){
                                         if (subtotales["retiros"][productoViejo] !== undefined) {
                                           retiros1 = parseInt(subtotales["retiros"][productoViejo], 10);
@@ -2419,6 +2513,30 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                                     </tr>';
                                         }         
                                       }
+                                      
+                                      if ((tipoMov === 'Todos')||(tipoMov === 'Ajustes')||(tipoMov === 'AJUSTE Retiros')||(tipoMov === 'AJUSTE Ingresos'))
+                                        {
+                                        if (subtotales["AJUSTE Retiros"] !== null){
+                                          if (subtotales["AJUSTE Retiros"][productoViejo] !== undefined) {
+                                            ajusteRetiros1 = parseInt(subtotales["AJUSTE Retiros"][productoViejo], 10);
+                                            tabla += '<tr>\n\
+                                                        <td colspan="11" class="negrita">Total AJUSTE Retiros:</td>\n\
+                                                        <td class="totalAjusteRetiros" colspan="1">'+ajusteRetiros1.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                            //totalConsumos += retiros1;
+                                          }
+                                        }
+                                        if (subtotales["AJUSTE Ingresos"] !== null) {
+                                          if (subtotales["AJUSTE Ingresos"][productoViejo] !== undefined) {
+                                            ajusteIngresos1 = parseInt(subtotales["AJUSTE Ingresos"][productoViejo], 10);
+                                            tabla += '<tr>\n\
+                                                        <td colspan="11" class="negrita">Total AJUSTE Ingresos:</td>\n\
+                                                        <td class="totalAjusteIngresos" colspan="1">'+ajusteIngresos1.toLocaleString()+'</td>\n\
+                                                      </tr>';
+                                          }         
+                                        }
+                                      }
+                                      
                                       productoViejo = produ;
                                       tabla += '<th colspan="12">&nbsp;\n\
                                                 </th>';
@@ -2445,7 +2563,8 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     var renos2 = 0;
                                     var destrucciones2 = 0;
                                     var ingresos2 = 0;
-                                    
+                                    var ajusteRetiros2 = 0;
+                                    var ajusteIngresos2 = 0;
                                     if (subtotales["retiros"] !== null){
                                       if (subtotales["retiros"][productoViejo] !== undefined) {
                                         retiros2 = parseInt(subtotales["retiros"][productoViejo], 10);
@@ -2491,33 +2610,36 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                                   </tr>';
                                       }         
                                     }
+                                    if (subtotales["AJUSTE Retiros"] !== null){
+                                      if (subtotales["AJUSTE Retiros"][productoViejo] !== undefined) {
+                                        ajusteRetiros2 = parseInt(subtotales["AJUSTE Retiros"][productoViejo], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="11" class="negrita">Total AJUSTE Retiros:</td>\n\
+                                                    <td class="totalAjusteRetiros" colspan="1">'+ajusteRetiros2.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        //totalConsumos += retiros2;
+                                      }
+                                    }
+                                    if (subtotales["AJUSTE Ingresos"] !== null) {
+                                      if (subtotales["AJUSTE Ingresos"][productoViejo] !== undefined) {
+                                        ajusteIngresos2 = parseInt(subtotales["AJUSTE Ingresos"][productoViejo], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="11" class="negrita">Total AJUSTE Ingresos:</td>\n\
+                                                    <td class="totalAjusteIngresos" colspan="1">'+ajusteIngresos2.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                      }         
+                                    }
                                     
                                     productoViejo = produ;
                                     tabla += '<th colspan="12">&nbsp;\n\
                                           </th>';
                                   }
-                                  
                                   offset++;  
                                 }/// FIN DEL FOR ****************************************************************************************************
                                 
-                                var tipoMov = '';
-                                if (tipoConsulta.indexOf("Retiro") > -1){
-                                  tipoMov = 'retiros';
-                                }
-                                else {
-                                  if (tipoConsulta.indexOf("Ingreso") > -1){
-                                    tipoMov = 'ingresos';
-                                  }
-                                  else {
-                                    if (tipoConsulta.indexOf("Renovación") > -1){
-                                      tipoMov = 'renovaciones';
-                                    }
-                                    else {
-                                      tipoMov = 'destrucciones';
-                                    }
-                                  }
-                                }
                                 
+                                            
+                                //alert(tipoConsulta+'\n'+tipoMov);
                                 ///****************** RESUMEN último producto ó RESUMEN GENERAL *****************************************************
                                 if (subtotales[""+tipoMov+""] !== null){
                                   var subtotal = 0;
@@ -2583,15 +2705,62 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                                   </tr>';
                                       }         
                                     }
+                                    
+                                    if ((tipoMov === 'Todos')||(tipoMov === 'Ajustes')||(tipoMov === 'AJUSTE Retiros')||(tipoMov === 'AJUSTE Ingresos'))
+                                      {
+                                      if (subtotales["AJUSTE Retiros"] !== null){
+                                        if (subtotales["AJUSTE Retiros"][productoViejo] !== undefined) {
+                                          ajusteRetiros1 = parseInt(subtotales["AJUSTE Retiros"][productoViejo], 10);
+                                          tabla += '<tr>\n\
+                                                      <td colspan="11" class="negrita">Total AJUSTE Retiros:</td>\n\
+                                                      <td class="totalAjusteRetiros" colspan="1">'+ajusteRetiros1.toLocaleString()+'</td>\n\
+                                                    </tr>';
+                                          //totalConsumos += retiros1;
+                                        }
+                                      }
+                                      if (subtotales["AJUSTE Ingresos"] !== null) {
+                                        if (subtotales["AJUSTE Ingresos"][productoViejo] !== undefined) {
+                                          ajusteIngresos1 = parseInt(subtotales["AJUSTE Ingresos"][productoViejo], 10);
+                                          tabla += '<tr>\n\
+                                                      <td colspan="11" class="negrita">Total AJUSTE Ingresos:</td>\n\
+                                                      <td class="totalAjusteIngresos" colspan="1">'+ajusteIngresos1.toLocaleString()+'</td>\n\
+                                                    </tr>';
+                                        }         
+                                      }
+                                    }
+
                                     productoViejo = produ;
                                     tabla += '<th colspan="12">&nbsp;\n\
                                             </th>';
                                   }
                                   else {
-                                    tabla += '<tr>\n\
+                                    if ((tipoMov === 'Ajustes')){
+                                      if (subtotales["AJUSTE Retiros"] !== null){
+                                        if (subtotales["AJUSTE Retiros"][productoViejo] !== undefined) {
+                                          ajusteRetiros1 = parseInt(subtotales["AJUSTE Retiros"][productoViejo], 10);
+                                          tabla += '<tr>\n\
+                                                      <td colspan="11" class="negrita">Total AJUSTE Retiros:</td>\n\
+                                                      <td class="totalAjusteRetiros" colspan="1">'+ajusteRetiros1.toLocaleString()+'</td>\n\
+                                                    </tr>';
+                                          //totalConsumos += retiros1;
+                                        }
+                                      }
+                                      if (subtotales["AJUSTE Ingresos"] !== null) {
+                                        if (subtotales["AJUSTE Ingresos"][productoViejo] !== undefined) {
+                                          ajusteIngresos1 = parseInt(subtotales["AJUSTE Ingresos"][productoViejo], 10);
+                                          tabla += '<tr>\n\
+                                                      <td colspan="11" class="negrita">Total AJUSTE Ingresos:</td>\n\
+                                                      <td class="totalAjusteIngresos" colspan="1">'+ajusteIngresos1.toLocaleString()+'</td>\n\
+                                                    </tr>';
+                                        }         
+                                      }
+                                    }
+                                    else {
+                                      tabla += '<tr>\n\
                                                 <td colspan="11" class="negrita">Total '+tipoMov+':</td>\n\
                                                 <td class="subtotal" colspan="1">'+subtotal.toLocaleString()+'</td>\n\
                                               </tr>';
+                                    }               
                                   }
                                 }  
                                 ///****************** FIN RESUMEN último producto ó RESUMEN GENERAL *************************************************
@@ -2614,7 +2783,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                               <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                             </td>\n\
                                           </tr>\n\
-                                        </table>';  
+                                        </table>';
                                 break;
       case 'productoMovimiento':  ///************************* INICIO RECUPERACIÓN DATOS ******************************************************************
                                   var bin = datos[0]['bin'];
@@ -2728,6 +2897,56 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                               <th>Cantidad</th>\n\
                                               <th>Comentarios</th>\n\
                                            </tr>';
+                                  ///Defino variable tipoMov para detectar el tipo de movimiento filtrado, a saber:
+                                  ///Todos -> "de todos los tipos (inc. AJUSTES)": usado para consultar TODOS los movimientos 
+                                  ///Clientes -> "de todos los tipos": usado para consultar todos los movimientos, menos los de AJUSTES
+                                  ///Ajustes -> "del tipo AJUSTE": usado para consultar los movimientos por ajustes (tanto ingresos como egresos)
+                                  ///AJUSTE Retiro -> "del tipo AJUSTE Retiro": usado para consultar los movimientos por ajustes de retiros
+                                  ///AJUSTE Ingreso -> "del tipo AJUSTE Ingreso": usado para consultar los movimientos por ajustes de ingresos
+                                  var tipoMov = '';
+                                  ///Veo si contiene la palabra AJUSTE; de tenerla hay 4 opciones
+                                  if (tipoConsulta.indexOf("AJUSTE") > -1){
+                                    if (tipoConsulta.indexOf("Retiro") > -1){
+                                      tipoMov = 'AJUSTE Retiros';
+                                    }
+                                    else {
+                                      if (tipoConsulta.indexOf("Ingreso") > -1){
+                                        tipoMov = 'AJUSTE Ingresos';
+                                      }
+                                      else {
+                                        if (tipoConsulta.indexOf("todos") > -1){
+                                          tipoMov = "Todos";
+                                        }
+                                        else {
+                                          tipoMov = "Ajustes";
+                                        }
+                                      }
+                                    }
+                                  }
+                                  else {
+                                    if (tipoConsulta.indexOf("todos") > -1){
+                                      tipoMov = "Clientes";
+                                    }
+                                    else {
+                                      if (tipoConsulta.indexOf("Retiro") > -1){
+                                        tipoMov = 'Retiros';
+                                      }
+                                      else {
+                                        if (tipoConsulta.indexOf("Ingreso") > -1){
+                                          tipoMov = 'Ingresos';
+                                        }
+                                        else {
+                                          if (tipoConsulta.indexOf("Renovación") > -1){
+                                            tipoMov = 'Renovaciones';
+                                          }
+                                          else {
+                                            tipoMov = 'Destrucciones';
+                                          }
+                                        }
+                                      }
+                                    }  
+                                  }
+                                  
                                   ///****************************** COMIENZO A RECORRER ARRAY CON LOS DATOS ***********************************************
                                   for (var i=0; i<max; i++) {
                                     ///*********************************** RECUPERO DATOS DEL MOVIMIENTO **************************************************
@@ -2785,15 +3004,17 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   if (pagActual === totalPaginas){
                                     var totalConsumos = 0;
                                     var retiros1 = 0;
+                                    var ajusteRetiros1 = 0;
                                     var renos1 = 0;
                                     var destrucciones1 = 0;
                                     var ingresos1 = 0;
+                                    var ajusteIngresos1 = 0;
                                     if (subtotales["retiros"] !== null){
                                       if (subtotales["retiros"][produ] !== undefined) {
                                         retiros1 = parseInt(subtotales["retiros"][produ], 10);
                                         tabla += '<tr>\n\
                                                     <td colspan="4" class="negrita">Total Retiros:</td>\n\
-                                                    <td class="subtotal" colspan="2">'+retiros1.toLocaleString()+'</td>\n\
+                                                    <td class="subtotal" colspan="1">'+retiros1.toLocaleString()+'</td>\n\
                                                   </tr>';
                                         totalConsumos += retiros1;
                                       }
@@ -2803,7 +3024,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                         renos1 = parseInt(subtotales["renovaciones"][produ], 10);
                                         tabla += '<tr>\n\
                                                     <td colspan="4" class="negrita">Total Renovaciones:</td>\n\
-                                                    <td class="subtotal" colspan="2">'+renos1.toLocaleString()+'</td>\n\
+                                                    <td class="subtotal" colspan="1">'+renos1.toLocaleString()+'</td>\n\
                                                   </tr>';
                                         totalConsumos += renos1;
                                       } 
@@ -2813,25 +3034,51 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                         destrucciones1 = parseInt(subtotales["destrucciones"][produ], 10);
                                         tabla += '<tr>\n\
                                                     <td colspan="4" class="negrita">Total Destrucciones:</td>\n\
-                                                    <td class="subtotal" colspan="2">'+destrucciones1.toLocaleString()+'</td>\n\
+                                                    <td class="subtotal" colspan="1">'+destrucciones1.toLocaleString()+'</td>\n\
                                                   </tr>';
                                         totalConsumos += destrucciones1;
                                       }
                                     }
-                                    if (totalConsumos > 0) {
-                                      tabla += '<tr>\n\
-                                                  <td colspan="4" class="negrita">Total de Consumos:</td>\n\
-                                                  <td class="totalConsumos" colspan="2">'+totalConsumos.toLocaleString()+'</td>\n\
-                                                </tr>';
+                                    if ((tipoMov === 'Clientes')||(tipoMov === 'Todos')){
+                                      if (totalConsumos > 0) {
+                                        tabla += '<tr>\n\
+                                                    <td colspan="4" class="negrita">Total de Consumos:</td>\n\
+                                                    <td class="totalConsumos" colspan="1">'+totalConsumos.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                      }
                                     }
+                                    
                                     if (subtotales["ingresos"] !== null) {
                                       if (subtotales["ingresos"][produ] !== undefined) {
                                         ingresos1 = parseInt(subtotales["ingresos"][produ], 10);
                                         tabla += '<tr>\n\
                                                     <td colspan="4" class="negrita">Total de Ingresos:</td>\n\
-                                                    <td class="totalIngresos" colspan="2">'+ingresos1.toLocaleString()+'</td>\n\
+                                                    <td class="totalIngresos" colspan="1">'+ingresos1.toLocaleString()+'</td>\n\
                                                   </tr>';
                                       }         
+                                    }
+                                    
+                                    if ((tipoMov === 'Todos')||(tipoMov === 'Ajustes')||(tipoMov === 'AJUSTE Retiros')||(tipoMov === 'AJUSTE Ingresos'))
+                                      {
+                                      if (subtotales["AJUSTE Retiros"] !== null){
+                                        if (subtotales["AJUSTE Retiros"][produ] !== undefined) {
+                                          ajusteRetiros1 = parseInt(subtotales["AJUSTE Retiros"][produ], 10);
+                                          tabla += '<tr>\n\
+                                                      <td colspan="4" class="negrita">Total AJUSTE Retiros:</td>\n\
+                                                      <td class="totalAjusteRetiros" colspan="1">'+ajusteRetiros1.toLocaleString()+'</td>\n\
+                                                    </tr>';
+                                          //totalConsumos += retiros1;
+                                        }
+                                      }
+                                      if (subtotales["AJUSTE Ingresos"] !== null) {
+                                        if (subtotales["AJUSTE Ingresos"][produ] !== undefined) {
+                                          ajusteIngresos1 = parseInt(subtotales["AJUSTE Ingresos"][produ], 10);
+                                          tabla += '<tr>\n\
+                                                      <td colspan="4" class="negrita">Total AJUSTE Ingresos:</td>\n\
+                                                      <td class="totalAjusteIngresos" colspan="1">'+ajusteIngresos1.toLocaleString()+'</td>\n\
+                                                    </tr>';
+                                        }         
+                                      }
                                     }
                                     ///**************************************** FIN RESUMEN DEL PRODUCTO ****************************************************
 
@@ -2932,10 +3179,15 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
       var datos = request[j].resultado;
       var totalPlasticos = 0;
       totalPlasticos = request[j].suma;
+//      var TESTTipo = request[j]["tipo"];
+//       var TESTQuery = request[j]["queryTest"];
+//       alert(TESTQuery[24]+'\n'+TESTTipo[24]);
       var totalRetiros = request[j]["retiros"];
       var totalRenovaciones = request[j]["renovaciones"];
       var totalDestrucciones = request[j]["destrucciones"];
       var totalIngresos = request[j]["ingresos"];
+      var totalAjusteRetiros = request[j]["ajusteRetiros"];
+      var totalAjusteIngresos = request[j]["ajusteIngresos"];
       var stockViejo = '';
       if ((radio === 'entidadStockViejo')||(radio === 'productoStockViejo')){
         stockViejo = request[j]["stockViejo"];
@@ -3001,9 +3253,9 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                       break;
           default: break;
         }
-        
-        var subtotales = {"retiros":totalRetiros, "renovaciones":totalRenovaciones, "destrucciones":totalDestrucciones, "ingresos":totalIngresos, "stockViejo": stockViejo};
-        
+
+        var subtotales = {"retiros":totalRetiros, "renovaciones":totalRenovaciones, "destrucciones":totalDestrucciones, "ingresos":totalIngresos, "stockViejo": stockViejo, "AJUSTE Retiros": totalAjusteRetiros, "AJUSTE Ingresos": totalAjusteIngresos};
+
         ///Vuelvo a definir una variable local tamPagina para actualizar el valor que ya tiene.
         ///Esto es para que tome el último valor en caso de que se haya modificado desde el modal (que no cambia hasta recargar la página).
         var tamPagina = parseInt($("#tamPagina").val(), 10);
@@ -3473,7 +3725,38 @@ function realizarBusqueda(){
                                 validarTipo = false;
                                 validarUser = false;
                                 ordenFecha = true;
-                                break;                  
+                                break;
+      case 'productoStockViejo':  if (idProds.length > 0){
+                                    for (var k in idProds){
+                                    query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                                    query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where idprod="+idProds[k];
+                                    consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
+                                    consultaCSV += " from productos where idProd="+idProds[k];
+                                    if ((idProds[k] === 'NADA') || (nombresProductos[k] === '')){
+                                      alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
+                                      document.getElementById("productoStock").focus();
+                                      validado = false;
+                                      return false;
+                                    }
+                                    else {
+                                      queries.push(query);
+                                      consultasCSV.push(consultaCSV);
+                                      validarFecha = true;
+                                      validarTipo = false;
+                                      validarUser = false;
+                                      ordenFecha = true;
+                                    }
+                                    tipoConsulta = 'Stock del producto <b><i>'+nombres[k]+"</i></b>";
+                                    tipoConsultas.push(tipoConsulta);
+                                    prodHint = $("#productoStock").val();
+                                  }
+                                  }
+                                  else {
+                                    alert('Para realizar una consulta de stock por producto hay que elegir al menos un producto.\n¡Por favor verifique!.');
+                                    $("#productoStock").focus();
+                                    validado = false;
+                                  }
+                                  break;                        
       case 'entidadMovimiento': delete nombres;
                                 var nombres = new Array();
                                 for (var i in entidadesMovimiento){
@@ -3513,38 +3796,7 @@ function realizarBusqueda(){
                                 validarTipo = true;
                                 validarUser = true;
                                 ordenFecha = true;
-                                break;   
-      case 'productoStockViejo':  if (idProds.length > 0){
-                                    for (var k in idProds){
-                                    query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
-                                    query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where idprod="+idProds[k];
-                                    consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
-                                    consultaCSV += " from productos where idProd="+idProds[k];
-                                    if ((idProds[k] === 'NADA') || (nombresProductos[k] === '')){
-                                      alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
-                                      document.getElementById("productoStock").focus();
-                                      validado = false;
-                                      return false;
-                                    }
-                                    else {
-                                      queries.push(query);
-                                      consultasCSV.push(consultaCSV);
-                                      validarFecha = true;
-                                      validarTipo = false;
-                                      validarUser = false;
-                                      ordenFecha = true;
-                                    }
-                                    tipoConsulta = 'Stock del producto <b><i>'+nombres[k]+"</i></b>";
-                                    tipoConsultas.push(tipoConsulta);
-                                    prodHint = $("#productoStock").val();
-                                  }
-                                  }
-                                  else {
-                                    alert('Para realizar una consulta de stock por producto hay que elegir al menos un producto.\n¡Por favor verifique!.');
-                                    $("#productoStock").focus();
-                                    validado = false;
-                                  }
-                                  break;
+                                break;
       case 'productoMovimiento':  if (idProds.length > 0){
                                   for (var k in idProds){
                                     query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
@@ -3726,14 +3978,28 @@ function realizarBusqueda(){
           } 
         }
         var mensajeTipo = null;  
-        if (validarTipo) {   
+        if (validarTipo) { 
           if (tipo !== 'Todos') {
-            queries[n] += " and tipo='"+tipo+"'";
-            consultasCSV[n] += " and tipo='"+tipo+"'";
-            mensajeTipo = "del tipo "+tipo;
+            if (tipo === 'Clientes'){
+              queries[n] += " and tipo!='AJUSTE Retiro' and tipo!='AJUSTE Ingreso'";
+              consultasCSV[n] += " and tipo!='AJUSTE Retiro' and tipo!='AJUSTE Ingreso'";
+              mensajeTipo = "de todos los tipos";
+            }
+            else {
+              if (tipo === 'Ajustes'){
+                queries[n] += " and (tipo='AJUSTE Retiro' or tipo='AJUSTE Ingreso')";
+                consultasCSV[n] += " and (tipo='AJUSTE Retiro' or tipo='AJUSTE Ingreso')";
+                mensajeTipo = "del tipo AJUSTE";
+              }
+              else {
+                queries[n] += " and tipo='"+tipo+"'";
+                consultasCSV[n] += " and tipo='"+tipo+"'";
+                mensajeTipo = "del tipo "+tipo;
+              }
+            }    
           }
           else {
-              mensajeTipo = "de todos los tipos";
+              mensajeTipo = "de todos los tipos (inc. AJUSTES)";
           };
         }
 
@@ -3759,6 +4025,8 @@ function realizarBusqueda(){
           queries[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";
           consultasCSV[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";
         }
+        
+        //alert(queries[n]);
       }
       
       mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, radioFecha, d1, d2, tipo, idUser);
@@ -3952,10 +4220,14 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
                 <td colspan="2">\n\
                   <select id="tipo" name="tipo" title="Elegir el tipo de consulta a buscar" tabindex="10" style="width:100%">\n\
                     <option value="Todos" selected="yes">---TODOS---</option>\n\
+                    <option value="Clientes">TODOS para CLIENTES</option>\n\
                     <option value="Retiro">Retiro</option>\n\
                     <option value="Ingreso">Ingreso</option>\n\
                     <option value="Renovaci&oacute;n">Reno</option>\n\
                     <option value="Destrucci&oacute;n">Destrucci&oacute;n</option>\n\
+                    <option value="Ajustes">SOLO AJUSTES</option>\n\
+                    <option value="AJUSTE Retiro">AJUSTE Retiro</option>\n\
+                    <option value="AJUSTE Ingreso">AJUSTE Ingreso</option>\n\
                   </select>\n\
                 </td>\n\
               </tr>';
@@ -4315,7 +4587,7 @@ function cargarBusquedaProductos(selector) {
 function validarProducto(nuevo) {
   var entidad = $("#entidad").val();
   var nombre = $("#nombre").val();
-  var stockProducto1 = $("#stcokProducto").val();
+  var stockProducto1 = $("#stockProducto").val();
   var alarma1 = parseInt($("#alarma1").val(), 10);
   var alarma2 = parseInt($("#alarma2").val(), 10);
   var seguir = true;
@@ -5520,7 +5792,6 @@ $(document).on("change focusin", "#hint", function (){
   
   //  alert(consulta);
   ///*********** FIN PRUEBAS PROMEDIO CONSUMOS **********************************
-  
 });
 /********** fin on("change focusin", "#hint", function () **********/ 
   
@@ -5796,7 +6067,7 @@ $(document).on("change focusin", "#hintProd", function (){
   
   var mostrar = '<img id="snapshot" name="hintProd" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
   mostrar += '<p id="stock" name="hintProd" style="padding-top: 10px"><strong>Stock actual: </strong><font class="'+resaltado+'" style="font-size:2.6em;font-style:italic;">'+stock.toLocaleString()+'</font></p>';
-  mostrar += '<p id="ultimoMov" name="ulitmoMov"><strong>Último Movimiento: <font style="font-size:1.1em;font-style:italic;">'+ultimoMovimiento+'</font></strong></p>';
+  mostrar += '<p id="ultimoMov" name="hintProd"><strong>Último Movimiento: <font style="font-size:1.1em;font-style:italic;">'+ultimoMovimiento+'</font></strong></p>';
   $(this).css('background-color', '#9db7ef');
   $("#hintProd").after(mostrar);
   if (idProd !== 'NADA') {
@@ -5918,8 +6189,9 @@ $(document).on("click", "#actualizarProducto", function (){
           var url = "data/updateQuery.php";
           var query = "update productos set nombre_plastico= '"+nombre+"', entidad = '"+entidad+"', codigo_emsa = '"+codigo_emsa+"', codigo_origen = '"+codigo_origen+"', contacto = '"+contacto+"', snapshot = '"+nombreFoto+"', bin = '"+bin+"', alarma1 = "+alarma1+", alarma2 = "+alarma2+", comentarios = '"+comentarios+"' where idprod = "+idProducto;
           var log = "SI";
+          var jsonQuery = JSON.stringify(query);
           //alert(query);
-          $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
+          $.getJSON(url, {query: ""+jsonQuery+"", log: log}).done(function(request) {
             var resultado = request["resultado"];
             if (resultado === "OK") {
               //alert('Los datos del producto se actualizaron correctamente!.');
@@ -5988,13 +6260,14 @@ $(document).on("click", "#eliminarProducto", function (){
     $("#producto").focus();
   }
   else {
-    var confirmar = confirm('¿Seguro que desea dar de baja el producto: \n\n'+nombre+"\n?");
+    var confirmar = confirm('¿Seguro que desea dar de baja el producto: \n\n'+nombre+" ?");
     if (confirmar) {
       var url = "data/updateQuery.php";
       var query = "update productos set estado = 'inactivo' where idprod = "+idProducto;
       var log = "SI";
+      var jsonQuery = JSON.stringify(query);
       
-      $.getJSON(url, {query: ""+query+"", log: log}).done(function(request) {
+      $.getJSON(url, {query: ""+jsonQuery+"", log: log}).done(function(request) {
         var resultado = request["resultado"];
         if (resultado === "OK") {
           alert('El producto '+nombre+' se dió de baja correctamente!.');
@@ -6008,10 +6281,9 @@ $(document).on("click", "#eliminarProducto", function (){
           $("#alarma2").val('');
           $("#ultimoMovimiento").val('');
           $("#bin").val('');
-          showHintProd(" ", "producto", "");
-          $("#producto").val('');
-          $("#producto").focus();
-          inhabilitarProducto();
+          
+          var productoBusqueda = $("#productoBusqueda").val();
+          showHintProd(productoBusqueda, "#productoBusqueda", -1);     
         }
         else {
           alert('Hubo un problema en la eliminación. Por favor verifique.');
@@ -6060,6 +6332,7 @@ $(document).on("click", "#agregarProducto", function (){
     $("#codigo_emsa").val('');
     $("#codigo_origen").val('');
     $("#contacto").val('');
+    $("#nombreFoto").val('');
     $("#stockProducto").val('');
     $("#comentarios").val('');
     $("#alarma1").val('');
@@ -6074,6 +6347,7 @@ $(document).on("click", "#agregarProducto", function (){
     $("#stock").remove();
     $("#promedio1").remove();
     $("#promedio2").remove();
+    $("#ultimoMov").remove();
     habilitarProducto();
     $("#stockProducto").attr("disabled", false);
     $("#editarProducto").attr("disabled", true);
@@ -6100,10 +6374,11 @@ $(document).on("click", "#agregarProducto", function (){
       var url = "data/updateQuery.php";
       var query = "insert into productos (entidad, nombre_plastico, codigo_emsa, codigo_origen, contacto, snapshot, stock, bin, comentarios, alarma1, alarma2, estado) values ('"+entidad+"', '"+nombre+"', '"+codigo_emsa+"', '"+codigo_origen+"', '"+contacto+"', '"+nombreFoto+"', "+stock+", '"+bin+"', '"+comentarios+"', "+alarma1+", "+alarma2+", 'activo')";
       var log = "SI";
+      var jsonQuery = JSON.stringify(query);
       
       var confirmar = confirm("¿Confirma que desea agregar el producto con los siguientes datos: \n\nEntidad: "+entidad+"\nNombre: "+nombre+"\nCódigo Emsa: "+codigo_emsa+"\nCódigo Origen: "+codigo_origen+"\nContacto: "+contacto+"\nSnapshot: "+nombreFoto+"\nBin: "+bin+"\nStock Inicial: "+stock+"\nAlarma1: "+alarma1+"\nAlarma2: "+alarma2+"\nComentarios: "+comentarios+"\n?");
       if (confirmar) {
-        $.getJSON(url, {query: ""+query+"", log: log}).done(function(request){
+        $.getJSON(url, {query: ""+jsonQuery+"", log: log}).done(function(request){
           var resultado = request["resultado"];
           if (resultado === "OK") {
             alert('El producto se ingresó correctamente!.');
@@ -6127,7 +6402,8 @@ $(document).on("click", "#agregarProducto", function (){
         $("#codigo_origen").val('');
         $("#contacto").val('');
         $("#stockProducto").val('');
-        $("#alarma").val('');
+        $("#alarma1").val('');
+        $("#alarma2").val('');
         $("#comentarios").val('');
       }
     }  
@@ -6187,8 +6463,8 @@ $(document).on("click", "#eliminarUsuario", function () {
       }
       var url = "data/updateQuery.php";
       var query = "update usuarios set estado='inactivo' where idusuarios='" + user + "'";
-      
-      $.getJSON(url, {query: ""+query+""}).done(function(request) {
+      var jsonQuery = JSON.stringify(query);
+      $.getJSON(url, {query: ""+jsonQuery+""}).done(function(request) {
         var resultado = request["resultado"];
         if (resultado === "OK") {
           if (total > 1) {
@@ -6238,8 +6514,9 @@ $(document).on("click", "#actualizarUsuario", function (){
           var query = "update usuarios set nombre='" + nombre + "', apellido='" + apellido + "', empresa='"+empresa+"' , mail='"+mail+"', telefono='" + tel +"', observaciones='"+obs+"' where idusuarios='" + iduser + "'";
           var url = "data/updateQuery.php";
           //alert(query);
+          var jsonQuery = JSON.stringify(query);
           ///Ejecuto la consulta y muestro mensaje según resultado:
-          $.getJSON(url, {query: ""+query+""}).done(function(request) {
+          $.getJSON(url, {query: ""+jsonQuery+""}).done(function(request) {
             var resultado = request["resultado"];
             if (resultado === "OK") {
               alert('Registro modificado correctamente!');  
@@ -6341,8 +6618,8 @@ $(document).on("click", "#agregarUsuario", function(){
         var query = 'insert into usuarios (nombre, apellido, empresa, telefono, mail, observaciones) values ("'+nombre+'", "'+apellido+'", "'+empresa+'", "'+tel+'", "'+mail+'", "'+obs+'")';
         var url = "data/updateQuery.php";
         //alert(query);
-   
-        $.getJSON(url, {query: ""+query+""}).done(function(request) {
+        var jsonQuery = JSON.stringify(query);
+        $.getJSON(url, {query: ""+jsonQuery+""}).done(function(request) {
           var resultado = request["resultado"];
           if (resultado === "OK") {  
             var query = 'select max(idusuarios) as ultimoUser from usuarios limit 1';

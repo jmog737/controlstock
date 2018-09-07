@@ -45,7 +45,7 @@ $hora = date('H:i');
 $indice = $_POST["indice"];
 $id = $_POST["idTipo_$indice"];
 
-$query = $_POST["query_$indice"];
+$query = $_POST["query_$indice"];//echo "$query<br>";
 $consultaCSV = $_POST["consultaCSV_$indice"];
 
 if (isset($_POST["subtotales_$indice"])){
@@ -64,18 +64,35 @@ if ($parteTipo !== false){
 
 $radio = strip_tags($_POST["radio_$indice"]);
 
-$buscarTipo = stripos($tipoConsulta, "de todos los tipos");
-$tipo = '';
-if ($buscarTipo !== false){
-  $tipo = 'todos';
+if (stripos($tipoConsulta, "MOVIMIENTOS") !== FALSE){
+  $buscarTipo = stripos($tipoConsulta, "(inc. AJUSTES)");
+  $tipo = '';
+  if ($buscarTipo !== false){
+    $tipo = 'todos';
+  }
+  else {
+    $buscarTipo1 = stripos($tipoConsulta, "todos los tipos");
+    if ($buscarTipo1 !== false){
+      $tipo = 'Clientes';
+    }
+    else {
+      $tempTipo = explode("del tipo ", "$tipoConsulta");
+      $temp11 = $tempTipo[1];
+      $tempTipo1 = explode(" ", $temp11);
+      $tipo = $tempTipo1[0];
+      if ($tipo === 'AJUSTE'){
+        if (($tempTipo1[1] === 'Retiro')||($tempTipo1[1] === 'Ingreso')){
+          $tipo = $tipo." ".$tempTipo1[1];
+        }
+        else {
+          $tipo = "Ajustes";
+        }
+      }
+    }
+  }
 }
-else {
-  $tempTipo = explode("del tipo ", "$tipoConsulta");
-  $temp11 = @$tempTipo[1];
-  $tempTipo1 = explode(" ", $temp11);
-  $tipo = $tempTipo1[0];
-}
-//echo "consulta: ".$tipoConsulta."<br>tipo: ".$tipo;
+
+//echo "consulta: ".$tipoConsulta."<br>tipo: ".$tipo."<br>";
 $mostrar1 = utf8_decode($_POST["mostrar_$indice"]);
 $mostrar = preg_split("/-/", $mostrar1);
 
@@ -204,7 +221,7 @@ if (($id === "4")||($id === "5")){
   }
   switch ($tipo){
     case "todos": $tit = "MOVIMIENTOS";
-                  $nomRep = "mov_";
+                  $nomRep = "tod_";
                   break;
     case "Retiro": $tit = "RETIROS"; 
                    $nomRep = "ret_";
@@ -218,6 +235,18 @@ if (($id === "4")||($id === "5")){
     case "Destrucción": $tit = "DESTRUCCIONES";
                         $nomRep = "des_";
                         break;
+    case "AJUSTE Retiro": $tit = "AJUSTE Retiros";
+                        $nomRep = "ajuRet_";
+                        break;
+    case "AJUSTE Ingreso": $tit = "AJUSTE Ingresos";
+                        $nomRep = "ajuIng_";
+                        break;       
+    case "Ajustes": $tit = "AJUSTES";
+                    $nomRep = "aju_";
+                    break;   
+    case "Clientes": $tit = "MOVIMIENTOS";
+                     $nomRep = "mov_";
+                     break;              
     default: break;
   }
   $titulo = $tit.$subTipo;
