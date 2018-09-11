@@ -20,6 +20,7 @@ ini_set('display_errors',0);
 *******************************************************/
 require_once("data/baseMysql.php");
 require_once('../../fpdf/mc_table.php');
+require_once("data/colores.php");
 
 /** Include JPgraph files */
 require_once('../../jpgraph/jpgraph.php');
@@ -57,7 +58,7 @@ class PDF extends PDF_MC_Table
 
     //Dejo el cursor donde debe empezar a escribir:
     $this->Ln(20);
-    }
+  }
 
   //Pie de página
   function Footer()
@@ -67,19 +68,22 @@ class PDF extends PDF_MC_Table
     $this->SetFont('Arial', 'I', 8);
     $this->SetTextColor(0);
     $this->Cell(0, $hFooter, 'Pag. ' . $this->PageNo(), 0, 0, 'C');
-    }
+  }
   
   function graficarBarras($subtitulo, $meses, $totales, $data1, $data2, $data3, $data4, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg5, $destino, $nombreGrafica){
-    global $dirGraficas, $h;
-    
-    
+    global $dirGraficas, $h, $colorRetirosGrafica, $colorRenosGrafica, $colorDestruccionesGrafica, $colorIngresosGrafica, $colorLeyendaRetiros, $colorLeyendaRenos;
+    global $colorLeyendaDestrucciones, $colorLeyendaIngresos, $colorLeyendaConsumos, $colorGradiente1, $colorGradiente2, $colorTituloLeyenda, $colorFondoTituloLeyenda1, $colorFondoTituloLeyenda2;
+    global $colorNombreEjeX, $colorNombreEjeY, $colorEjeX, $colorEjeY, $colorFrame, $colorBordeRetiros, $colorBordeIngresos, $colorBordeRenos, $colorBordeDestrucciones;
+    global $colorFondoLeyendaRetiros1, $colorFondoLeyendaRetiros2, $colorFondoLeyendaRenos1, $colorFondoLeyendaRenos2, $colorFondoLeyendaDestrucciones1, $colorFondoLeyendaDestrucciones2, $colorFondoLeyendaIngresos1, $colorFondoLeyendaIngresos2;
+    global $colorFondoLeyendaConsumos1, $colorFondoLeyendaConsumos2, $colorShadowLeyenda, $colorFondoLeyenda, $colorTextoLeyenda, $colorBordeLeyenda;
+       
     // Create the graph. These two calls are always required
     $graph = new Graph(830,350);
     $graph->SetScale("textint");
     $graph->title->Set("MOVIMIENTOS DE STOCK");
     $graph->subtitle->Set($subtitulo." (".$totalRango." ".$tipoRango.").");
     $graph->img->SetMargin(80,250,65,20);
-    $graph->SetBackgroundGradient('#e2bd6e','#023184:0.98',GRAD_HOR,BGRAD_MARGIN);
+    $graph->SetBackgroundGradient($colorGradiente1, $colorGradiente2, GRAD_HOR,BGRAD_MARGIN);
     //$graph->SetShadow();
 
     //$theme_class=new UniversalTheme;
@@ -87,17 +91,17 @@ class PDF extends PDF_MC_Table
     //$theme_class = new GreenTheme;
     //$graph->SetTheme($theme_class);
 
-    $graph->SetFrame(true,'red',0);
+    $graph->SetFrame(true, $colorFrame, 0);
     // Setup titles and X-axis labels
     $graph->xaxis->title->Set('Mes');
-    $graph->xaxis->title->SetColor('white');
-    $graph->xaxis->SetColor('white'); 
+    $graph->xaxis->title->SetColor($colorNombreEjeX);
+    $graph->xaxis->SetColor($colorEjeX); 
     $graph->xaxis->SetTitlemargin(5);
     $graph->xaxis->SetLabelMargin(8);
     // Setup Y-axis title
     $graph->yaxis->title->Set('Cantidad');
-    $graph->yaxis->title->SetColor('white');
-    $graph->yaxis->SetColor('white');
+    $graph->yaxis->title->SetColor($colorNombreEjeY);
+    $graph->yaxis->SetColor($colorEjeY);
     $graph->yaxis->SetTitlemargin(60);
     $graph->yaxis->SetLabelMargin(15);
 
@@ -116,14 +120,12 @@ class PDF extends PDF_MC_Table
     $consumosTemp = $totales[0] + $totales[2] + $totales[3];
     $consumos = number_format($consumosTemp, 0, ',', '.');
 
-    // Create the grouped bar plot
     $gbplot = new GroupBarPlot(array($b1,$b2,$b3,$b4));
-    // ...and add it to the graPH
     $graph->Add($gbplot);
       
     $b1->value->Show();
-    $b1->SetColor("white");
-    $b1->SetFillColor("#1111cc");
+    $b1->SetColor($colorBordeRetiros);
+    $b1->SetFillColor($colorRetirosGrafica);
     $b1->SetLegend("Retiros");
     $b1->SetWidth(0.8);
     $b1->value->SetAlign('left','center');
@@ -135,8 +137,8 @@ class PDF extends PDF_MC_Table
     //$b1->value->HideZero();
 
     $b2->value->Show();
-    $b2->SetColor("white");
-    $b2->SetFillColor("#258246");
+    $b2->SetColor($colorBordeIngresos);
+    $b2->SetFillColor($colorIngresosGrafica);
     $b2->SetLegend("Ingresos");
     $b2->SetWidth(0.8);
     $b2->value->SetMargin(30);
@@ -147,8 +149,8 @@ class PDF extends PDF_MC_Table
     //$b2->value->HideZero();
 
     $b3->value->Show();
-    $b3->SetColor("white");
-    $b3->SetFillColor("#F08A1D");
+    $b3->SetColor($colorBordeRenos);
+    $b3->SetFillColor($colorRenosGrafica);
     $b3->SetLegend("Renos");
     $b3->SetWidth(0.8);
     $b3->value->SetMargin(30);
@@ -159,8 +161,8 @@ class PDF extends PDF_MC_Table
     //$b3->value->HideZero();
 
     $b4->value->Show();
-    $b4->SetColor("white");
-    $b4->SetFillColor("#FF0719");
+    $b4->SetColor($colorBordeDestrucciones);
+    $b4->SetFillColor($colorDestruccionesGrafica);
     $b4->SetLegend("Destrucciones");
     $b4->SetWidth(0.8);
     $b4->value->SetMargin(30);
@@ -211,62 +213,63 @@ class PDF extends PDF_MC_Table
     $txt = new Text("DATOS:"); 
     $txt->SetFont(FF_FONT1,FS_BOLD); 
     $txt->Align('right');
-    $txt->SetColor('red');
+    $txt->SetColor($colorTituloLeyenda);
     $txt->SetPos(0.96,0.92*$posPrimero,'right','center');
-    $txt->SetBox('#7c90d4','#7c90d4'); 
+    $txt->SetBox($colorFondoTituloLeyenda1, $colorFondoTituloLeyenda2); 
     $graph->AddText($txt); 
 
     $avg1 = number_format($avg1, 0, ',', '.');
     $retiros = number_format($totales[0], 0, ',', '.');
     $txt1 = new Text("Retiros: ".$retiros." (Avg: ".$avg1.")"); 
     $txt1->SetFont(FF_FONT1,FS_BOLD); 
-    $txt1->SetColor('#023184:0.98');
+    $txt1->SetColor($colorLeyendaRetiros);
     $txt1->SetPos(0.98,$posPrimero+0.8*$separacion,'right','center');
-    $txt1->SetBox('navajowhite1','white'); 
+    $txt1->SetBox($colorFondoLeyendaRetiros1, $colorFondoLeyendaRetiros2); 
     $graph->AddText($txt1); 
 
     $avg2 = number_format($avg2, 0, ',', '.');
     $ingresos = number_format($totales[1], 0, ',', '.');
     $txt2 = new Text("Ingresos: ".$ingresos." (Avg: ".$avg2.")"); 
     $txt2->SetFont(FF_FONT1,FS_BOLD); 
-    /*$txt2->SetColor('#023184:0.98');*/
-    $txt2->SetColor('#258246:0.98');
+    $txt2->SetColor($colorLeyendaIngresos);
     $txt2->SetPos(0.98,$posPrimero+1.8*$separacion,'right','center');
-    $txt2->SetBox('navajowhite1','white'); 
+    $txt2->SetBox($colorFondoLeyendaIngresos1, $colorFondoLeyendaIngresos2); 
     $graph->AddText($txt2); 
 
     $avg3 = number_format($avg3, 0, ',', '.');
     $renos = number_format($totales[2], 0, ',', '.');
     $txt3 = new Text("Renos: ".$renos." (Avg: ".$avg3.")"); 
     $txt3->SetFont(FF_FONT1,FS_BOLD); 
-    $txt3->SetColor('#023184:0.98');
+    $txt3->SetColor($colorLeyendaRenos);
     $txt3->SetPos(0.98,$posPrimero+2.8*$separacion,'right','center');
-    $txt3->SetBox('navajowhite1','white'); 
+    $txt3->SetBox($colorFondoLeyendaRenos1, $colorFondoLeyendaRenos2); 
     $graph->AddText($txt3); 
 
     $avg4 = number_format($avg4, 0, ',', '.');
     $destrucciones = number_format($totales[3], 0, ',', '.');
     $txt4 = new Text("Destrucciones: ".$destrucciones." (Avg: ".$avg4.")"); 
     $txt4->SetFont(FF_FONT1,FS_BOLD); 
-    $txt4->SetColor('#023184:0.98');
+    $txt4->SetColor($colorLeyendaDestrucciones);
     $txt4->SetPos(0.98,$posPrimero+3.8*$separacion,'right','center');
-    $txt4->SetBox('navajowhite1','white'); 
+    $txt4->SetBox($colorFondoLeyendaDestrucciones1, $colorFondoLeyendaDestrucciones2); 
     $graph->AddText($txt4); 
 
     $avg5 = number_format($avg5, 0, ',', '.');
     $txt5 = new Text("Consumos: ".$consumos." (Avg: ".$avg5.")"); 
     $txt5->SetFont(FF_FONT1,FS_BOLD); 
-    $txt5->SetColor('red:0.98');
+    $txt5->SetColor($colorLeyendaConsumos);
     $txt5->SetPos(0.98,$posPrimero+5.05*$separacion,'right','center');
-    $txt5->SetBox('navajowhite1','white'); 
+    $txt5->SetBox($colorFondoLeyendaConsumos1, $colorFondoLeyendaConsumos2); 
     $graph->AddText($txt5);
     ///************************************************************ FIN Textos con los promedios: *******************************************
 
-    $graph->legend->SetShadow('#e2bd6e@1',1);
+    $graph->legend->SetShadow($colorShadowLeyenda,1);
     $graph->legend->SetPos(0.5,0.95,'center','bottom');
     $graph->legend->SetPos(0.015,0.18,'right','top');
     //$graph->legend->SetLayout(LEGEND_VER);
     $graph->legend->SetColumns(1);
+    $graph->legend->SetColor($colorTextoLeyenda, $colorBordeLeyenda);
+    $graph->legend->SetFillColor($colorFondoLeyenda);
 
     if ($destino === 'pdf'){
       $timestamp = date('dmY_His');
@@ -300,12 +303,15 @@ class PDF extends PDF_MC_Table
       //Mandarlo al navegador
       $graph->img->Headers();
       $graph->img->Stream();
-    }
-    
+    }  
   }
 
   function graficarTorta($subtitulo, $data, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg5, $destino, $nombreGrafica){
-    global $dirGraficas, $h;
+    global $dirGraficas, $h, $coloresTorta, $colorLeyendaRetiros, $colorLeyendaRenos, $colorShadowLeyendaPie, $colorTituloLeyendaPie;
+    global $colorFondoTituloLeyendaPie1, $colorFondoTituloLeyendaPie2, $colorFondoLeyenda, $colorTextoLeyenda, $colorBordeLeyenda;
+    global $colorLeyendaDestrucciones, $colorLeyendaIngresos, $colorLeyendaConsumos, $colorBackgroundTorta;
+    global $colorFondoLeyendaRetiros1, $colorFondoLeyendaRetiros2, $colorFondoLeyendaRenos1, $colorFondoLeyendaRenos2, $colorFondoLeyendaDestrucciones1, $colorFondoLeyendaDestrucciones2, $colorFondoLeyendaIngresos1, $colorFondoLeyendaIngresos2;
+    global $colorFondoLeyendaConsumos1, $colorFondoLeyendaConsumos2, $colorPorcentajes;
 
     // A new pie graph
     $graph = new PieGraph(750,350, 'auto');
@@ -315,15 +321,13 @@ class PDF extends PDF_MC_Table
     $graph->subtitle->Set($subtitulo." (".$totalRango." ".$tipoRango.").");
     $graph->img->SetMargin(80,190,65,20);
     $graph->SetMargin(1,1,40,1);
-    $graph->SetMarginColor('ivory3');
+    $graph->SetMarginColor($colorBackgroundTorta);
 
     // Setup the pie plot
     $p1 = new PiePlot3D($data);
-    $p1->SetShadow('silver', 30);
+    
     $p1->ShowBorder(true, true);
-
-
-    $p1->SetSliceColors(array('dodgerblue2','forestgreen','lightgoldenrod1', 'firebrick1'));
+    
     // Adjust size and position of plot
     $p1->SetSize(0.4);
     $p1->SetCenter(0.5,0.5);
@@ -338,25 +342,27 @@ class PDF extends PDF_MC_Table
     $consumos = number_format($consumosTemp, 0, ',', '.');
     $p1->SetLegends(array("Retiros: $retiros","Ingresos: $ingresos","Renos: $renos","Destrucciones: $destrucciones"));
 
-    $graph->legend->SetShadow('#e2bd6e@1',1);
+    $graph->legend->SetShadow($colorShadowLeyendaPie,1);
     $graph->legend->SetPos(0.5,0.95,'center','bottom');
     $graph->legend->SetPos(0.015,0.18,'right','top');
     $graph->legend->SetLayout(LEGEND_VER);
     $graph->legend->SetColumns(1);
+    $graph->legend->SetColor($colorTextoLeyenda, $colorBordeLeyenda);
+    $graph->legend->SetFillColor($colorFondoLeyenda);
 
     // Setup the labels
     $p1->SetLabelType(PIE_VALUE_ADJPERCENTAGE);    
     $p1->SetLabelPos(1.0);
 
-    $p1->value->SetColor("blue");
+    $p1->value->SetColor($colorPorcentajes);
     $p1->value->SetFont(FF_FONT1,FS_BOLD);    
     $p1->value->SetFormat('%d%%');  
-    //$p1->value->HideZero(true);
-    //$p1->SetEdge("black", 5);
-    // Explode all slices
     $p1->ExplodeAll(14);
     $graph->Add($p1);
-
+    
+    ///Se setean los colores para las "porciones". HAY QUE HACERLO LUEGO DEL ADD PORQUE DE LO CONTRARIO NO LOS TOMA!!!
+    $p1->SetSliceColors($coloresTorta);
+    
     ///******************************************************** INICIO Textos con los promedios: ***************************************************************
     $separacion = 0.07;
     $posPrimero = 0.45;
@@ -364,49 +370,49 @@ class PDF extends PDF_MC_Table
     $txt = new Text("PROMEDIOS:"); 
     $txt->SetFont(FF_FONT1,FS_BOLD); 
     $txt->Align('right');
-    $txt->SetColor('red');
+    $txt->SetColor($colorTituloLeyendaPie);
     $txt->SetPos(0.965,$posPrimero,'right','center');
-    $txt->SetBox('#b19dda','#7c90d4'); 
+    $txt->SetBox($colorFondoTituloLeyendaPie1, $colorFondoTituloLeyendaPie2); 
     $graph->AddText($txt); 
 
     $avg1 = number_format($avg1, 0, ',', '.');
     $txt1 = new Text("Retiros: ".$avg1); 
     $txt1->SetFont(FF_FONT1,FS_BOLD); 
-    $txt1->SetColor('#023184:0.98');
+    $txt1->SetColor($colorLeyendaRetiros);
     $txt1->SetPos(0.98,$posPrimero+$separacion,'right','center');
-    $txt1->SetBox('navajowhite1','white'); 
+    $txt1->SetBox($colorFondoLeyendaRetiros1, $colorFondoLeyendaRetiros2); 
     $graph->AddText($txt1); 
 
     $avg2 = number_format($avg2, 0, ',', '.');
     $txt2 = new Text("Ingresos: ".$avg2); 
     $txt2->SetFont(FF_FONT1,FS_BOLD); 
-    $txt2->SetColor('#023184:0.98');
+    $txt2->SetColor($colorLeyendaIngresos);
     $txt2->SetPos(0.98,$posPrimero+2*$separacion,'right','center');
-    $txt2->SetBox('navajowhite1','white'); 
+    $txt2->SetBox($colorFondoLeyendaIngresos1, $colorFondoLeyendaIngresos2); 
     $graph->AddText($txt2); 
 
     $avg3 = number_format($avg3, 0, ',', '.');
     $txt3 = new Text("Renos: ".$avg3); 
     $txt3->SetFont(FF_FONT1,FS_BOLD); 
-    $txt3->SetColor('#023184:0.98');
+    $txt3->SetColor($colorLeyendaRenos);
     $txt3->SetPos(0.98,$posPrimero+3*$separacion,'right','center');
-    $txt3->SetBox('navajowhite1','white'); 
+    $txt3->SetBox($colorFondoLeyendaRenos1, $colorFondoLeyendaRenos2); 
     $graph->AddText($txt3); 
 
     $avg4 = number_format($avg4, 0, ',', '.');
     $txt4 = new Text("Destrucciones: ".$avg4); 
     $txt4->SetFont(FF_FONT1,FS_BOLD); 
-    $txt4->SetColor('#023184:0.98');
+    $txt4->SetColor($colorLeyendaDestrucciones);
     $txt4->SetPos(0.98,$posPrimero+4*$separacion,'right','center');
-    $txt4->SetBox('navajowhite1','white'); 
+    $txt4->SetBox($colorFondoLeyendaDestrucciones1, $colorFondoLeyendaDestrucciones2); 
     $graph->AddText($txt4); 
 
     $avg5 = number_format($avg5, 0, ',', '.');
     $txt5 = new Text("Consumos: ".$avg5." (Total ".$consumos.")"); 
     $txt5->SetFont(FF_FONT1,FS_BOLD); 
-    $txt5->SetColor('#023184:0.98');
+    $txt5->SetColor($colorLeyendaConsumos);
     $txt5->SetPos(0.98,$posPrimero+5*$separacion,'right','center');
-    $txt5->SetBox('navajowhite1','white'); 
+    $txt5->SetBox($colorFondoLeyendaConsumos1, $colorFondoLeyendaConsumos2); 
     $graph->AddText($txt5); 
     ///************************************************************ FIN Textos con los promedios: **************************************************************
 

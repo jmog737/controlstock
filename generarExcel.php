@@ -15,11 +15,13 @@ if(!isset($_SESSION))
 *******************************************************/
 
 require 'vendor/autoload.php';
+require_once("data/config.php");
+require_once("data/colores.php");
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-require_once("data/config.php");
+
 
 //phpinfo();
 ///********************************************************************** INICIO SETEO DE CARPETAS ************************************************************
@@ -32,7 +34,9 @@ require_once("data/config.php");
 $textoLegalExcel = "EMSA S.A. informa y hace de conocimiento de nuestros clientes, la exclusión de responsabilidades frente a casos de daño, robo, incendio o catástrofe que pudiesen estropear el stock de tarjetas de vuestra propiedad que se encuentran resguardadas en nuestra bóveda. \nEsto no afectará en absoluto la calidad y prestancia de nuestra operativa diaria y de los protocolos administrativos y de seguridad que se cumplen actualmente. \nEl alcance ofrecido en nuestro servicio es pura y exclusivamente para la reserva y utilización del espacio físico y el control diario en la producción de embosados a través de los informes respectivos, coordinados previamente con el cliente. \nEsta comunicación es a modo informativo y las cláusulas respectivas serán anexadas a los contratos existentes o futuros. \nAgradecemos en forma insistente la comprensión y preferencia que ante todo siguen teniendo para con nuestros servicios.";
 
 function generarExcelStock($reg) {
-  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta, $textoLegalExcel;
+  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta, $textoLegalExcel, $colorTabStock, $colorBordeTitulo, $colorFondoTitulo;
+  global $colorFondoCampos, $colorFondoTextoLegal, $colorTotal, $colorFondoTotal, $colorStock, $colorFondoStockRegular, $colorFondoStockAlarma1, $colorFondoStockAlarma2;
+  global $colorBordeRegular, $colorComRegular, $colorComStock, $colorComDiff, $colorComPlastico;
   //$textoLegal = "EMSA S.A. informa y hace de conocimiento de nuestros clientes, la exclusión de responsabilidades frente a casos de daño, robo, incendio o catástrofe que pudiesen estropear el stock de tarjetas de vuestra propiedad que se encuentran resguardadas en nuestra bóveda. Esto no afectará en absoluto la calidad y prestancia de nuestra operativa diaria y de los protocolos administrativos y de seguridad que se cumplen actualmente. El alcance ofrecido en nuestro servicio es pura y exclusivamente para la reserva y utilización del espacio físico y el control diario en la producción de embosados a través de los informes respectivos, coordinados previamente con el cliente. Esta comunicación es a modo informativo y las cláusulas respectivas serán anexadas a los contratos existentes o futuros. Agradecemos en forma insistente la comprensión y preferencia que ante todo siguen teniendo para con nuestros servicios.";
   $spreadsheet = new Spreadsheet();
 
@@ -75,10 +79,8 @@ function generarExcelStock($reg) {
     $nombreReporte1 = $nombreReporte."_".$timestampCorto;
   }
   $hoja->setTitle($nombreReporte1);
-  $hoja->getTabColor()->setRGB('023184');
+  $hoja->getTabColor()->setRGB($colorTabStock);
   
-  /*
-  ************ TEST PARAMETRIZACIÓN DE LAS CELDAS: ****************************/
   $colId = 'A';
   $colEntidad = chr(ord($colId)+1);
   $colNombre = chr(ord($colId)+2);
@@ -89,8 +91,6 @@ function generarExcelStock($reg) {
   $colStock = chr(ord($colId)+6);
   $colAl1 = chr(ord($colId)+7);
   $colAl2 = chr(ord($colId)+8); 
-
-  /**************** FIN PARAMETRIZACIÓN ***************************************/
 
   $filaEncabezado = '3';
   $filaUnoDatos = $filaEncabezado + 1;
@@ -109,7 +109,7 @@ function generarExcelStock($reg) {
       'borders' => array(
               'allBorders' => array(
                 'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
-                'color' => array('rgb' => '023184'),
+                'color' => array('rgb' => $colorBordeTitulo),
                 ),
               ), 
     'alignment' => array(
@@ -118,7 +118,7 @@ function generarExcelStock($reg) {
          'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
       'fill' => array(
-          'color' => array('rgb' => '4acba7'),
+          'color' => array('rgb' => $colorFondoTitulo),
           'fillType' => 'solid',
         ),
       );
@@ -140,7 +140,7 @@ function generarExcelStock($reg) {
   $header = $colId.$filaEncabezado.':'.$colStock.$filaEncabezado;
   $styleHeader = array(
     'fill' => array(
-        'color' => array('rgb' => 'AEE2FA'),
+        'color' => array('rgb' => $colorFondoCampos),
         'fillType' => 'solid',
       ),
     'font' => array(
@@ -206,7 +206,7 @@ function generarExcelStock($reg) {
   /// Defino el formato para el texto legal:
   $styleTextoLegal = array(
       'fill' => array(
-          'color' => array('rgb' => 'DFDFDF'),
+          'color' => array('rgb' => $colorFondoTextoLegal),
           'fillType' => 'solid',
       ),
       'font' => array(
@@ -231,14 +231,14 @@ function generarExcelStock($reg) {
   /// Defino el formato para la celda con el total de tarjetas:
   $styleTotalPlasticos = array(
       'fill' => array(
-          'color' => array('rgb' => 'F3FF00'),
+          'color' => array('rgb' => $colorFondoTotal),
           'fillType' => 'solid',
       ),
       'font' => array(
           'bold' => true,
           'italic' => true,
           'size' => 14,
-          'color' => array('rgb' => 'ff0000'),
+          'color' => array('rgb' => $colorTotal),
       ),
       'alignment' => array(
          'wrap' => true,
@@ -254,7 +254,7 @@ function generarExcelStock($reg) {
   /// Defino el formato para la celda con el texto "Total":
   $styleTextoTotal = array(
       'fill' => array(
-          'color' => array('rgb' => 'AEE2FA'),
+          'color' => array('rgb' => $colorFondoCampos),
           'fillType' => 'solid',
       ),
       'font' => array(
@@ -274,7 +274,7 @@ function generarExcelStock($reg) {
   /// Defino el formato para la columna con el STOCK:
   $styleColumnaStock = array(
       'fill' => array(
-          'color' => array('rgb' => 'A9FF96'),
+          'color' => array('rgb' => $colorFondoStockRegular),
           'fillType' => 'solid',
       ),
       'font' => array(
@@ -287,7 +287,7 @@ function generarExcelStock($reg) {
          'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
       'numberFormat' => array(
-          'formatCode' => '[Blue]#,##0',
+          'formatCode' => '['.$colorStock.']#,##0',
       ),
   );
   $rangoStock = ''.$colStock.$filaUnoDatos.':'.$colStock.$i.'';
@@ -296,14 +296,14 @@ function generarExcelStock($reg) {
   /// Defino estilos para las alarmas 1 y 2:
   $styleAl1 = array(
       'fill' => array(
-          'color' => array ('rgb' => 'FAFF98'),
+          'color' => array ('rgb' => $colorFondoStockAlarma1),
           'fillType' => 'solid',
       ),
   );
 
   $styleAl2 = array(
       'fill' => array(
-          'color' => array ('rgb' => 'FC4A3F'),
+          'color' => array ('rgb' => $colorFondoStockAlarma2),
           'fillType' => 'solid',
       ),
   );
@@ -331,28 +331,28 @@ function generarExcelStock($reg) {
   /// Defino estilos para resaltar los comentarios:
   $styleDif = array(
       'fill' => array(
-          'color' => array ('rgb' => 'ffff00'),
+          'color' => array ('rgb' => $colorComDiff),
           'fillType' => 'solid',
       ),
   );
 
   $styleStock = array(
       'fill' => array(
-          'color' => array ('rgb' => '38ff1d'),
+          'color' => array ('rgb' => $colorComStock),
           'fillType' => 'solid',
       ),
   );
 
   $stylePlastico = array(
       'fill' => array(
-          'color' => array ('rgb' => 'FF9999'),
+          'color' => array ('rgb' => $colorComPlastico),
           'fillType' => 'solid',
       ),
   );
 
   $styleComentario = array(
       'fill' => array(
-          'color' => array ('rgb' => 'd3d3d3'),
+          'color' => array ('rgb' => $colorComRegular),
           'fillType' => 'solid',
       ),
   );
@@ -400,7 +400,7 @@ function generarExcelStock($reg) {
       'borders' => array(
           'allBorders' => array(
               'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
-              'color' => array('rgb' => '023184'),
+              'color' => array('rgb' => $colorBordeRegular),
           ),
       ),
       'alignment' => array(
@@ -448,6 +448,7 @@ function generarExcelStock($reg) {
 
 function generarExcelBoveda($registros) {
   global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta, $textoLegalExcel;
+  global $colorBordeTitulo, $colorFondoTitulo, $colorTabBoveda, $colorFondoCampos, $colorFondoTextoLegal, $colorTotal, $colorFondoTotal, $colorBordeRegular, $colorStockBoveda, $colorFondoStockBoveda;
   
   $spreadsheet = new Spreadsheet();
 
@@ -476,7 +477,7 @@ function generarExcelBoveda($registros) {
   $fecha = $dia.'/'.$mes.'/'.$año;
   
   $hoja->setTitle($nombreReporte."_".$timestampCorto);
-  $hoja->getTabColor()->setRGB('46A743');
+  $hoja->getTabColor()->setRGB($colorTabBoveda);
 
   $filaEncabezado = '3';
   $filaUnoDatos = $filaEncabezado + 1;
@@ -495,7 +496,7 @@ function generarExcelBoveda($registros) {
       'borders' => array(
               'allBorders' => array(
                 'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
-                'color' => array('rgb' => '023184'),
+                'color' => array('rgb' => $colorBordeTitulo),
                 ),
               ), 
     'alignment' => array(
@@ -504,7 +505,7 @@ function generarExcelBoveda($registros) {
          'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
       'fill' => array(
-          'color' => array('rgb' => '4acba7'),
+          'color' => array('rgb' => $colorFondoTitulo),
           'fillType' => 'solid',
         ),
       );
@@ -521,7 +522,7 @@ function generarExcelBoveda($registros) {
   $header = 'A'.$filaEncabezado.':C'.$filaEncabezado;
   $styleHeader = array(
     'fill' => array(
-        'color' => array('rgb' => 'AEE2FA'),
+        'color' => array('rgb' => $colorFondoCampos),
         'fillType' => 'solid',
       ),
     'font' => array(
@@ -563,7 +564,7 @@ function generarExcelBoveda($registros) {
   /// Defino el formato para el texto legal:
   $styleTextoLegal = array(
       'fill' => array(
-          'color' => array('rgb' => 'DFDFDF'),
+          'color' => array('rgb' => $colorFondoTextoLegal),
           'fillType' => 'solid',
       ),
       'font' => array(
@@ -588,14 +589,14 @@ function generarExcelBoveda($registros) {
   /// Defino el formato para la celda con el total de tarjetas:
   $styleTotalPlasticos = array(
       'fill' => array(
-          'color' => array('rgb' => 'F3FF00'),
+          'color' => array('rgb' => $colorFondoTotal),
           'fillType' => 'solid',
       ),
       'font' => array(
           'bold' => true,
           'italic' => true,
           'size' => 14,
-          'color' => array('rgb' => 'ff0000'),
+          'color' => array('rgb' => $colorTotal),
       ),
       'alignment' => array(
          'wrap' => true,
@@ -611,7 +612,7 @@ function generarExcelBoveda($registros) {
   /// Defino el formato para la celda con el texto "Total":
   $styleTextoTotal = array(
       'fill' => array(
-          'color' => array('rgb' => 'AEE2FA'),
+          'color' => array('rgb' => $colorFondoCampos),
           'fillType' => 'solid',
       ),
       'font' => array(
@@ -631,7 +632,7 @@ function generarExcelBoveda($registros) {
   /// Defino el formato para la columna con el STOCK:
   $styleColumnaStock = array(
       'fill' => array(
-          'color' => array('rgb' => 'DADADA'),
+          'color' => array('rgb' => $colorFondoStockBoveda),
           'fillType' => 'solid',
       ),
       'font' => array(
@@ -645,7 +646,7 @@ function generarExcelBoveda($registros) {
          'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       ),
       'numberFormat' => array(
-          'formatCode' => '[Black]#,##0',
+          'formatCode' => '['.$colorStockBoveda.']#,##0',
       ),
   );
   
@@ -662,7 +663,7 @@ function generarExcelBoveda($registros) {
       'borders' => array(
           'allBorders' => array(
               'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
-              'color' => array('rgb' => '023184'),
+              'color' => array('rgb' => $colorBordeRegular),
           ),
       ),
       'alignment' => array(

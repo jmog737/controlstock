@@ -14,28 +14,8 @@ if(!isset($_SESSION))
 *
 *******************************************************/
 require_once('..\..\fpdf\mc_table.php');
+require_once('data\colores.php');
 
-///*************************** COLORES USADOS PARA LAS TABLAS: *******************************************************************
-
-///Título de la tabla:
-///$this->SetFillColor(2, 49, 132);
-///$this->SetTextColor(255, 255, 255);
-
-/// Nombre de los campos y línea con el total: 
-///$this->SetFillColor(103, 167, 253);
-///$this->SetTextColor(255, 255, 255);
-
-///Resaltado TOTAL:
-///$this->SetFillColor(0, 255, 255);
-
-///Retiros, Renovaciones y Destrucciones:
-///$this->SetFillColor(137, 216, 255);
-///Consumos:
-///$this->SetFillColor(2, 185, 240);
-///Ingresos: 
-///$this->SetFillColor(95, 243, 137);
-
-///*************************** FIN COLORES USADOS PARA LAS TABLAS ****************************************************************
 
 class PDF extends PDF_MC_Table
   {
@@ -88,12 +68,10 @@ class PDF extends PDF_MC_Table
     $this->setX($nuevoAncho+$xLogo);
     
     $this->SetTextColor(0, 0, 0);
-    $this->SetFillColor(120, 200, 120);
+    $this->SetFillColor(colorTituloHeader[0], colorTituloHeader[1], colorTituloHeader[2]);
     //Defino características para el título y agrego el título:
     $this->SetFont('Arial', 'BU', 18);
     $this->Cell($anchoTitle, $nuevoAlto-1, strtoupper(utf8_decode($titulo)), 0, 0, 'C', false);
-    
-    //$this->SetFillColor(180, 200, 20);
     
     $this->setY($yLogo+1);
     $xFecha = $nuevoAncho+$anchoTitle+$xLogo;
@@ -103,8 +81,6 @@ class PDF extends PDF_MC_Table
     $this->SetFontSize(10);
     
     $this->Cell($anchoDia, $nuevoAlto-5, $fecha, 0, 0, 'C',false);
-
-    //$this->SetFillColor(0, 200, 20);
     
     $this->setY($yLogo+6);
     $this->setX($xFecha);
@@ -116,7 +92,7 @@ class PDF extends PDF_MC_Table
 
     ///*************************** AGREGADO DE UNA MARCA DE AGUA: *********************************************
     if ($marcaAgua !== "false") {
-      $this->SetTextColor(255,180,203);
+      $this->SetTextColor(colorMarcaAgua[0],colorMarcaAgua[1],colorMarcaAgua[2]);
       //Put the watermark
       if ($orientacion === 'P'){
         $this->SetFont('Arial','B',120); 
@@ -150,8 +126,7 @@ class PDF extends PDF_MC_Table
         
     $this->SetFont('Arial', 'I', 7);
     $this->SetTextColor(0);
-    $this->SetFillColor(120, 200, 120);
-    $this->SetFillColor(234, 229, 227);
+    $this->SetFillColor(colorTextoLegal[0], colorTextoLegal[1], colorTextoLegal[2]);
     $anchoPagina = $this->GetPageWidth();
     $anchoTipoFooter = 0.9*$anchoPagina;
     $xFooter = ($anchoPagina - $anchoTipoFooter)/2; 
@@ -189,8 +164,6 @@ class PDF extends PDF_MC_Table
     
     $tamEntidad = $this->GetStringWidth($entidad);    
     
-    //Defino color de fondo:
-    $this->SetFillColor(255, 156, 233);
     //Defino color para los bordes:
     $this->SetDrawColor(0, 0, 0);
     //Defino grosor de los bordes:
@@ -289,10 +262,8 @@ class PDF extends PDF_MC_Table
     
     //************************************** TÍTULO TABLA ***********************************************************************************
     $this->SetX($x);
-    //Defino color de fondo:
-    //$this->SetFillColor(153, 255, 102);
     //Defino color de fondo para el título de la tabla:
-    $this->SetFillColor(2, 49, 132);
+    $this->SetFillColor(colorTituloTabla[0], colorTituloTabla[1], colorTituloTabla[2]);
     //Defino el color del texto para el título de la tabla:
     $this->SetTextColor(255, 255, 255);
     ///Agrego el rectángulo con el borde redondeado:
@@ -304,8 +275,6 @@ class PDF extends PDF_MC_Table
     
     ///************************************************************** INICIO CAMPOS *********************************************************
     //Restauro color de fondo y tipo de letra para los nombres de los campos (que será el mismo que para la fila con el total):
-    //$this->SetFillColor(255, 204, 120);
-    //$this->SetTextColor(0);
     $indiceStock = '';
     $indiceEntidad = '';
     $indiceMensaje = '';
@@ -314,7 +283,7 @@ class PDF extends PDF_MC_Table
     $indiceUltMov = '' ;
     $indiceAlarma1 = '';
     $indiceAlarma2 = '';
-    $this->SetFillColor(103, 167, 253);
+    $this->SetFillColor(colorCampos[0], colorCampos[1], colorCampos[2]);
     $this->SetTextColor(255, 255, 255);
     $this->SetX($x);
     $this->SetFont('Courier', 'B', 10);
@@ -480,13 +449,9 @@ class PDF extends PDF_MC_Table
         ///************************************************************** FIN TITULO ************************************************************
         
         //Restauro color de fondo y tipo de letra para los nombres de los campos (que será el mismo que para la fila con el total):
-        //$this->SetFillColor(255, 204, 120);
-        //$this->SetTextColor(0);
-        //$this->SetFillColor(103, 167, 253);
         $this->SetTextColor(255, 255, 255);
         $this->SetFont('Courier');
-        $this->SetFillColor(103, 167, 253);
-        
+        $this->SetFillColor(colorCampos[0], colorCampos[1], colorCampos[2]);
         $this->SetX($x);
         $y = $this->GetY();
         
@@ -520,8 +485,7 @@ class PDF extends PDF_MC_Table
         //$this->SetFont('Courier', '', 9); 
       }
       ///********************************************** FIN ENCABEZADO DE PÁGINA ************************************************************
-      
-      $this->setFillColor(220, 223, 232);
+      $this->setFillColor(colorFondoRegistro[0], colorFondoRegistro[1], colorFondoRegistro[2]);
 
       ///Escribo las celdas con los datos para la fila:
       for($i=0;$i<count($dato);$i++)
@@ -576,7 +540,7 @@ class PDF extends PDF_MC_Table
           if ($i === $indiceStock) {//echo "indStock: ".$indiceStock."<br>indAl1: ".$indiceAlarma1."<br>indAl2: ".$indiceAlarma2."<br>";
             if ($tipo){
               /// seteo color de stock regular (verde):
-              $this->SetFillColor(113, 236, 113);
+              $this->SetFillColor(colorStockRegular[0], colorStockRegular[1], colorStockRegular[2]);
               $fill = 1;
               $datito = number_format($dato[$indiceStock], 0, ",", ".");
               $a = 'R';
@@ -604,21 +568,21 @@ class PDF extends PDF_MC_Table
               $this->SetFont('Courier', 'BI', 12);            
               if (($stock < $alarma1) && ($stock > $alarma2)){
                 /// seteo color alarma de Advertencia (amarilla):
-                $this->SetFillColor(255, 255, 51);
+                $this->SetFillColor(colorStockAlarma1[0], colorStockAlarma1[1], colorStockAlarma1[2]);
                 $this->SetTextColor(0);
                 $fill = 1;
               }
               else {
                 if ($stock < $alarma2){
                   /// seteo color de alarma Crítica (roja):
-                  $this->SetFillColor(231, 56, 67);
+                  $this->SetFillColor(colorStockAlarma2[0], colorStockAlarma2[1], colorStockAlarma2[2]);
                   $this->SetTextColor(255);
                   $fill = 1;
                 }
                 else {
-                  //$this->SetFillColor(103, 167, 253);
+                  //$this->SetFillColor(colorBordeRedondeado[0], colorBordeRedondeado[1], colorBordeRedondeado[2]);
                   /// seteo color de stock regular (verde):
-                  $this->SetFillColor(113, 236, 113);
+                  $this->SetFillColor(colorStockRegular[0], colorStockRegular[1], colorStockRegular[2]);
                   $this->SetTextColor(0);
                   $fill = 1;
                 }
@@ -639,7 +603,7 @@ class PDF extends PDF_MC_Table
               $patron = "dif";
               $buscar = stripos($datito, $patron);
               if ($buscar !== FALSE){
-                $this->SetFillColor(255, 255, 51);
+                $this->SetFillColor(colorComDiff[0], colorComDiff[1], colorComDiff[2]);
                 $fill = 1;
               }
               else 
@@ -648,7 +612,7 @@ class PDF extends PDF_MC_Table
                 $patron = "stock";
                 $buscar = stripos($datito, $patron);
                 if ($buscar !== FALSE){
-                  $this->SetFillColor(4, 255, 20);
+                  $this->SetFillColor(colorComStock[0], colorComStock[1], colorComStock[2]);
                   $fill = 1;
                 }
                 else 
@@ -659,12 +623,12 @@ class PDF extends PDF_MC_Table
                   $buscar = stripos($datito, $patron);
                   $buscar1 = stripos($datito, $patron1);
                   if (($buscar !== FALSE)||($buscar1 !== FALSE)){
-                    $this->SetFillColor(234, 140, 160);
+                    $this->SetFillColor(colorComPlastico[0], colorComPlastico[1], colorComPlastico[2]);
                     $fill = 1;
                   }
                   else 
                     {
-                    $this->setFillColor(220, 223, 232);
+                    $this->setFillColor(colorComRegular[0], colorComRegular[1], colorComRegular[2]);
                   }
                 }
               }
@@ -712,24 +676,20 @@ class PDF extends PDF_MC_Table
     if ($total !== -1) {
       //Agrego fila final de la tabla con el total de plásticos:
       $this->SetFont('Courier', 'B', 12);
-      //$this->SetFillColor(255, 204, 120);
-      //$this->SetTextColor(0);*****************************************************************************************************
-      $this->SetFillColor(103, 167, 253);
+      $this->SetFillColor(colorCampos[0], colorCampos[1], colorCampos[2]);
       $this->SetTextColor(255, 255, 255);
-      //$largoParaTotal = $largoCampos[$totalCampos-1];
+      
       $largoParaTotal = $largoCampos[$indiceStock];
       if ($tipo) {
         $largoTemp = $largoCampos[$totalCampos] - $largoParaTotal;
       }
       else {
-        //$largoParaTotal = $largoParaTotal + $largoCampos[$totalCampos-4];
         $largoTemp = $largoCampos[$totalCampos] - $largoParaTotal;
       }
       $this->Cell($largoTemp, $h, 'TOTAL:', 1, 0, 'C', true);
       $this->SetFont('Courier', 'BI', 14);
       $this->SetTextColor(255,0,0);
-      //$this->SetFillColor(153, 255, 102);
-      $this->SetFillColor(0, 255, 255);
+      $this->SetFillColor(colorTotal[0], colorTotal[1], colorTotal[2]);
       if ($tipo) {
         $this->Cell($largoParaTotal, $h, number_format($total, 0, ",", "."), 1, 0, 'C', true);
       }
@@ -742,7 +702,7 @@ class PDF extends PDF_MC_Table
     ///******************************************************* BORDE REDONDEADO DE CIERRE ***************************************************
     $this->Ln();
     $y = $this->GetY();
-    $this->SetFillColor(2, 49, 132);
+    $this->SetFillColor(colorTituloTabla[0], colorTituloTabla[1], colorTituloTabla[2]);
     ///Agrego el rectángulo con el borde redondeado:
     $this->RoundedRect($x, $y, $largoCampos[$totalCampos], $h, 3.5, '34', 'DF');
     ///***************************************************** FIN BORDE REDONDEADO DE CIERRE *************************************************
@@ -757,8 +717,6 @@ class PDF extends PDF_MC_Table
     $anchoPagina = $this->GetPageWidth();
     $anchoTipo = 0.8*$anchoPagina;
 
-    //Defino color de fondo:
-    $this->SetFillColor(255, 156, 233);
     //Defino color para los bordes:
     $this->SetDrawColor(0, 0, 0);
     //Defino grosor de los bordes:
@@ -875,7 +833,7 @@ class PDF extends PDF_MC_Table
 //    }
     $this->SetX($xTipo);
 
-    $this->SetFillColor(167, 166, 173);
+    $this->SetFillColor(colorSubtitulo[0], colorSubtitulo[1], colorSubtitulo[2]);
     if ($nbSubTitulo > 1) {
       $this->MultiCell($anchoSubTitulo,$h, $subTitulo,0,'C', 1);
       $this->Ln(2);
@@ -942,8 +900,6 @@ class PDF extends PDF_MC_Table
       $x = ($anchoPagina-$tamTabla)/2;
       $xTipo = ($anchoPagina - $anchoTipo)/2;
 
-      //Defino color de fondo:
-      $this->SetFillColor(255, 156, 233);
       //Defino color para los bordes:
       $this->SetDrawColor(0, 0, 0);
       //Defino grosor de los bordes:
@@ -969,9 +925,8 @@ class PDF extends PDF_MC_Table
       $y = $this->GetY();
       //Defino tipo de letra y tamaño para el Título:
       $this->SetFont('Courier', 'B', 12);
-      //$this->SetFillColor(153, 255, 102);
       ///Título de la tabla:
-      $this->SetFillColor(2, 49, 132);
+      $this->SetFillColor(colorTituloTabla[0], colorTituloTabla[1], colorTituloTabla[2]);
       $this->SetTextColor(255, 255, 255);
       ///Agrego el rectángulo con el borde redondeado:
       $this->RoundedRect($x, $y, $tamTabla, $h, 3.5, '12', 'DF');
@@ -982,7 +937,6 @@ class PDF extends PDF_MC_Table
 
       ///**************************************************************  INICIO CAMPOS ******************************************************
       //Restauro color de fondo y tipo de letra para el contenido:
-      $this->SetFillColor(255, 204, 120);
       $this->SetTextColor(0);
       $this->SetFont('Courier');
       $this->SetX($x);
@@ -990,7 +944,7 @@ class PDF extends PDF_MC_Table
       $nbNombre = $this->NbLines($cResto,$nombre);
       $h0=$h*$nbNombre;
 
-      $this->SetFillColor(103, 167, 253);
+      $this->SetFillColor(colorCampos[0], colorCampos[1], colorCampos[2]);
       
       $this->SetTextColor(255, 255, 255);
       $this->SetFont('Courier', 'B', 10);
@@ -1122,7 +1076,7 @@ class PDF extends PDF_MC_Table
       $patron = "dif";
       $buscar = stripos($comentarios, $patron);
       if ($buscar !== FALSE){
-        $this->SetFillColor(255, 255, 51);
+        $this->SetFillColor(colorComDiff[0], colorComDiff[1], colorComDiff[2]);
         $fill = 1;
       }
       else 
@@ -1131,7 +1085,7 @@ class PDF extends PDF_MC_Table
         $patron = "stock";
         $buscar = stripos($comentarios, $patron);
         if ($buscar !== FALSE){
-          $this->SetFillColor(4, 255, 20);
+          $this->SetFillColor(colorComStock[0], colorComStock[1], colorComStock[2]);
           $fill = 1;
         }
         else 
@@ -1142,14 +1096,14 @@ class PDF extends PDF_MC_Table
           $buscar = stripos($comentarios, $patron);
           $buscar1 = stripos($comentarios, $patron1);
           if (($buscar !== FALSE)||($buscar1 !== FALSE)){
-            $this->SetFillColor(234, 140, 160);
+            $this->SetFillColor(colorComPlastico[0], colorComPlastico[1], colorComPlastico[2]);
             $fill = 1;
           }
           else 
             {
             /// Resaltado en GRIS del comentario que no cumple con ninguno de los patrones, pero que NO es nulo
             if (($comentarios !== '')){
-              $this->setFillColor(220, 223, 232);
+              $this->setFillColor(colorComRegular[0], colorComRegular[1], colorComRegular[2]);
               $fill = 1;
             }
             else {
@@ -1168,7 +1122,7 @@ class PDF extends PDF_MC_Table
         } 
         
       /// Restauro color de fondo para los nombres de los campos:  
-      $this->SetFillColor(103, 167, 253);  
+      $this->SetFillColor(colorCampos[0], colorCampos[1], colorCampos[2]);  
       //Put the position to the right of the cell
       $this->SetXY($x,$y+$h0);
       ///*********************************************************** FIN CAMPO COMENTARIOS **************************************************
@@ -1215,16 +1169,16 @@ class PDF extends PDF_MC_Table
       $this->SetFont('Courier', 'BI', 16);
       $this->SetTextColor(0);
       if (($stock < $alarma1) && ($stock > $alarma2)){
-        $this->SetFillColor(255, 255, 51);
+        $this->SetFillColor(colorStockAlarma1[0], colorStockAlarma1[1], colorStockAlarma1[2]);
         $this->SetTextColor(0);
       }
       else {
         if ($stock < $alarma2){
-          $this->SetFillColor(231, 56, 67);
+          $this->SetFillColor(colorStoclAlarma2[0], colorStoclAlarma2[1], colorStoclAlarma2[2]);
           $this->SetTextColor(255);
         }
         else {
-          $this->SetFillColor(113, 236, 113);
+          $this->SetFillColor(colorStockRegular[0], colorStockRegular[1], colorStockRegular[2]);
         }
       }
 
@@ -1235,7 +1189,7 @@ class PDF extends PDF_MC_Table
       ///******************************************************* BORDE REDONDEADO DE CIERRE *************************************************
       $this->SetX($x);
       $y = $this->GetY();
-      $this->SetFillColor(2, 49, 132);
+      $this->SetFillColor(colorTituloTabla[0], colorTituloTabla[1], colorTituloTabla[2]);
       ///Agrego el rectángulo con el borde redondeado:
       $this->RoundedRect($x, $y, $tamTabla, $h, 3.5, '34', 'DF');
       $this->Ln(15);
@@ -1261,8 +1215,7 @@ class PDF extends PDF_MC_Table
     $this->SetX($x);
     $y = $this->GetY();
     //Defino color de fondo:
-    //$this->SetFillColor(153, 255, 102);
-    $this->SetFillColor(2, 49, 132);
+    $this->SetFillColor(colorTituloTabla[0], colorTituloTabla[1], colorTituloTabla[2]);
     ///Agrego el rectángulo con el borde redondeado:
     $this->RoundedRect($x, $y, $largoCampos[$totalCampos], $h, 3.5, '12', 'DF');
     //Escribo el título:
@@ -1272,8 +1225,7 @@ class PDF extends PDF_MC_Table
     
     ///************************************************************ INICIO CAMPOS ***********************************************************
     //Restauro color de fondo y tipo de letra para el contenido:
-    //$this->SetFillColor(255, 204, 120);
-    $this->SetFillColor(103, 167, 253);
+    $this->SetFillColor(colorCampos[0], colorCampos[1], colorCampos[2]);
     $this->SetX($x);
     $this->SetFont('Courier', 'B', 10);
     
@@ -1486,26 +1438,19 @@ class PDF extends PDF_MC_Table
               $this->SetAutoPageBreak(true, $hFooter);
             }
           }
-          
-          /// A definir más adelante el color para el fondo del separador. Por ahora es blanco (es decir, fill está como false):
-          $this->setFillColor(220, 223, 232);
-          //Issue a page break first if needed
-          //$this->CheckPageBreak($h);
+
           ///***************************************************** INICIO ESCRITURA RESUMEN ***************************************************
           $tamSubTotal = $largoCampos[$indCantidad];// + $largoCampos[$indComentarios];
           $tamTextoSubtotal = $tamTabla-$tamSubTotal;
           
           if ($subtotalRetiro > 0) {
             $this->SetFont('Courier', 'B', 9);
-            $this->setFillColor(220, 223, 232);
             $this->SetTextColor(0);  
             $this->SetX($x);
             $this->Cell($tamTextoSubtotal,$h, "Total Retiros:",1,0,'C', false);
 
             $this->SetFont('Courier', 'BI', 14);
-            //$this->setFillColor(165, 156, 149);
-            //$this->setFillColor(200, 202, 212);
-            $this->setFillColor(137, 216, 255);
+            $this->setFillColor(colorRetiros[0], colorRetiros[1], colorRetiros[2]);
             $this->SetTextColor(0);  
             $this->Cell($tamSubTotal,$h, $subtotalRetiroMostrar,1,1,'R', true);
 
@@ -1515,15 +1460,12 @@ class PDF extends PDF_MC_Table
 
           if ($subtotalReno > 0){
             $this->SetFont('Courier', 'B', 9);
-            $this->setFillColor(220, 223, 232);
             $this->SetTextColor(0); 
             $this->SetX($x);
             $this->Cell($tamTextoSubtotal,$h, "Total Renovaciones:",1,0,'C', false);
 
             $this->SetFont('Courier', 'BI', 14);
-            //$this->setFillColor(165, 156, 149);
-            //$this->setFillColor(200, 202, 212);
-            $this->setFillColor(137, 216, 255);
+            $this->setFillColor(colorRenos[0], colorRenos[1], colorRenos[2]);
             $this->SetTextColor(0);  
             $this->Cell($tamSubTotal,$h, $subtotalRenoMostrar,1,1,'R', true);
 
@@ -1533,15 +1475,12 @@ class PDF extends PDF_MC_Table
 
           if ($subtotalDestruccion > 0) {
             $this->SetFont('Courier', 'B', 9);
-            $this->setFillColor(220, 223, 232);
             $this->SetTextColor(0);  
             $this->SetX($x);
             $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total Destrucciones:"),1,0,'C', false);
 
             $this->SetFont('Courier', 'BI', 14);
-            //$this->setFillColor(165, 156, 149);
-            //$this->setFillColor(200, 202, 212);
-            $this->setFillColor(137, 216, 255);
+            $this->setFillColor(colorDestrucciones[0], colorDestrucciones[1], colorDestrucciones[2]);
             $this->SetTextColor(0);  
             $this->Cell($tamSubTotal,$h, $subtotalDestruccionMostrar,1,1,'R', true);
 
@@ -1551,14 +1490,12 @@ class PDF extends PDF_MC_Table
 
           if ($totalConsumos > 0) {
             $this->SetFont('Courier', 'B', 9);
-            $this->setFillColor(220, 223, 232);
             $this->SetTextColor(0);  
             $this->SetX($x);
             $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total de Consumos:"),1,0,'C', false);
 
             $this->SetFont('Courier', 'BI', 14);
-            //$this->setFillColor(220, 223, 232);
-            $this->setFillColor(2, 185, 240);
+            $this->setFillColor(colorConsumos[0], colorConsumos[1], colorConsumos[2]);
             $this->SetTextColor(0);  
             $this->Cell($tamSubTotal,$h, $totalConsumosMostrar,1,1,'R', true);
 
@@ -1568,15 +1505,12 @@ class PDF extends PDF_MC_Table
 
           if ($subtotalIngreso > 0) {
             $this->SetFont('Courier', 'B', 9);
-            $this->setFillColor(220, 223, 232);
             $this->SetTextColor(0);  
             $this->SetX($x);
             $this->Cell($tamTextoSubtotal,$h, "Total de Ingresos:",1,0,'C', false);
 
             $this->SetFont('Courier', 'BI', 14);
-            //$this->setFillColor(220, 223, 232);
-            //$this->setFillColor(127, 128, 129);
-            $this->setFillColor(95, 243, 137);
+            $this->setFillColor(colorIngresos[0], colorIngresos[1], colorIngresos[2]);
             $this->SetTextColor(0);  
             $this->Cell($tamSubTotal,$h, $subtotalIngresoMostrar,1,1,'R', true);
 
@@ -1586,13 +1520,12 @@ class PDF extends PDF_MC_Table
           
           if ($subtotalAjusteRetiros > 0) {
             $this->SetFont('Courier', 'B', 9);
-            $this->setFillColor(220, 223, 232);
             $this->SetTextColor(0);  
             $this->SetX($x);
             $this->Cell($tamTextoSubtotal,$h, "Total AJUSTE Retiros:",1,0,'C', false);
 
             $this->SetFont('Courier', 'BI', 14);
-            $this->setFillColor(162, 92, 243);
+            $this->setFillColor(colorAjusteRetiros[0], colorAjusteRetiros[1], colorAjusteRetiros[2]);
             $this->SetTextColor(0);  
             $this->Cell($tamSubTotal,$h, $subtotalAjusteRetirosMostrar,1,1,'R', true);
 
@@ -1602,13 +1535,12 @@ class PDF extends PDF_MC_Table
           
           if ($subtotalAjusteIngresos > 0) {
             $this->SetFont('Courier', 'B', 9);
-            $this->setFillColor(220, 223, 232);
             $this->SetTextColor(0);  
             $this->SetX($x);
             $this->Cell($tamTextoSubtotal,$h, "Total AJUSTE Ingresos:",1,0,'C', false);
 
             $this->SetFont('Courier', 'BI', 14);
-            $this->setFillColor(255, 193, 104);
+            $this->setFillColor(colorAjusteIngresos[0], colorAjusteIngresos[1], colorAjusteIngresos[2]);
             $this->SetTextColor(0);  
             $this->Cell($tamSubTotal,$h, $subtotalAjusteIngresosMostrar,1,1,'R', true);
 
@@ -1618,7 +1550,7 @@ class PDF extends PDF_MC_Table
           ///*************************************************** FIN ESCRITURA RESUMEN ********************************************************
           
           ///******************************************************* BORDE REDONDEADO DE CIERRE ***********************************************
-          $this->SetFillColor(103, 167, 253);
+          $this->SetFillColor(colorBordeRedondeado[0], colorBordeRedondeado[1], colorBordeRedondeado[2]);
           $y = $this->GetY();
           ///Agrego el rectángulo con el borde redondeado:
           $this->RoundedRect($x, $y, $largoCampos[$totalCampos], $h, 3.5, '34', 'DF');
@@ -1671,7 +1603,7 @@ class PDF extends PDF_MC_Table
             $this->SetFont('Courier', 'B', 12);
             $this->SetTextColor(0);
             $this->SetY(25);
-            $this->SetFillColor(167, 166, 173);
+            $this->SetFillColor(colorSubtitulo[0], colorSubtitulo[1], colorSubtitulo[2]);
 
             $sub2 = $subTitulo."(cont.)";
             $tamSub2 = $this->GetStringWidth($sub2);
@@ -1747,8 +1679,7 @@ class PDF extends PDF_MC_Table
             }
           }
 
-          //$this->SetFillColor(255, 204, 120);
-          $this->SetFillColor(103, 167, 253);
+          $this->SetFillColor(colorCampos[0], colorCampos[1], colorCampos[2]);
           $this->SetTextColor(255, 255, 255);
           $this->SetFont('Courier', 'B', 10);
           $y = $this->GetY();
@@ -1880,7 +1811,7 @@ class PDF extends PDF_MC_Table
         $this->SetFont('Courier', 'B', 12);
         $this->SetTextColor(0);
         $this->SetY(25);
-        $this->SetFillColor(167, 166, 173);
+        $this->SetFillColor(colorSubtitulo[0], colorSubtitulo[1], colorSubtitulo[2]);
         
         $sub3 = $subTitulo."(cont.)";
         $tamSub3 = $this->GetStringWidth($sub3);
@@ -1905,7 +1836,7 @@ class PDF extends PDF_MC_Table
         }
         $this->Ln();
         ///************************************************************ FIN TITULO **********************************************************
-        $this->SetFillColor(103, 167, 253);
+        $this->SetFillColor(colorCampos[0], colorCampos[1], colorCampos[2]);
         $this->SetTextColor(255, 255, 255);
         $this->SetFont('Courier', 'B', 10);
         $this->SetX($x);
@@ -2031,7 +1962,8 @@ class PDF extends PDF_MC_Table
       }
       ///******************************************************* FIN AGREGADO DEL ENCABEZADO ************************************************
       
-      $this->setFillColor(220, 223, 232);
+      ///Color para el resaltado de los registros:
+      $this->setFillColor(colorFondoRegistro[0], colorFondoRegistro[1], colorFondoRegistro[2]);
 
       ///*********************************************************** MUESTRO LOS DATOS ******************************************************
       
@@ -2562,7 +2494,6 @@ class PDF extends PDF_MC_Table
           } 
         
         $this->SetFont('Courier', '', 9);
-        $this->setFillColor(220, 223, 232);
         $this->SetTextColor(0);  
           
         //Put the position to the right of the cell
@@ -2717,7 +2648,7 @@ class PDF extends PDF_MC_Table
       $this->SetFont('Courier', 'B', 12);
       $this->SetTextColor(0);
       $this->SetY(25);
-      $this->SetFillColor(167, 166, 173);
+      $this->SetFillColor(colorSubtitulo[0], colorSubtitulo[1], colorSubtitulo[2]);
       
       $sub4 = $subTitulo."(cont.)";
       $tamSub4 = $this->GetStringWidth($sub4);
@@ -2783,15 +2714,12 @@ class PDF extends PDF_MC_Table
       ///Agrego el resumen para el último producto dado que no habrá nuevo cambio de producto:
       if ($subtotalRetiro > 0) {
         $this->SetFont('Courier', 'B', 9);
-        $this->setFillColor(220, 223, 232);
         $this->SetTextColor(0);  
         $this->SetX($x);
         $this->Cell($tamTextoSubtotal,$h, "Total Retiros:",1,0,'C', false);
 
         $this->SetFont('Courier', 'BI', 14);
-        //$this->setFillColor(165, 156, 149);
-        //$this->setFillColor(200, 202, 212);
-        $this->setFillColor(137, 216, 255);
+        $this->setFillColor(colorRetiros[0], colorRetiros[1], colorRetiros[2]);
         $this->SetTextColor(0);  
         $this->Cell($tamSubTotal,$h, $subtotalRetiroMostrar,1,1,'R', true);
 
@@ -2801,15 +2729,12 @@ class PDF extends PDF_MC_Table
 
       if ($subtotalReno > 0){
         $this->SetFont('Courier', 'B', 9);
-        $this->setFillColor(220, 223, 232);
         $this->SetTextColor(0); 
         $this->SetX($x);
         $this->Cell($tamTextoSubtotal,$h, "Total Renovaciones:",1,0,'C', false);
 
         $this->SetFont('Courier', 'BI', 14);
-        //$this->setFillColor(165, 156, 149);
-        //$this->setFillColor(200, 202, 212);
-        $this->setFillColor(137, 216, 255);
+        $this->setFillColor(colorRenos[0], colorRenos[1], colorRenos[2]);
         $this->SetTextColor(0);  
         $this->Cell($tamSubTotal,$h, $subtotalRenoMostrar,1,1,'R', true);
 
@@ -2819,15 +2744,12 @@ class PDF extends PDF_MC_Table
 
       if ($subtotalDestruccion > 0) {
         $this->SetFont('Courier', 'B', 9);
-        $this->setFillColor(220, 223, 232);
         $this->SetTextColor(0);  
         $this->SetX($x);
         $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total Destrucciones:"),1,0,'C', false);
 
         $this->SetFont('Courier', 'BI', 14);
-        //$this->setFillColor(165, 156, 149);
-        //$this->setFillColor(200, 202, 212);
-        $this->setFillColor(137, 216, 255);
+        $this->setFillColor(colorDestrucciones[0], colorDestrucciones[1], colorDestrucciones[2]);
         $this->SetTextColor(0);  
         $this->Cell($tamSubTotal,$h, $subtotalDestruccionMostrar,1,1,'R', true);
 
@@ -2837,15 +2759,12 @@ class PDF extends PDF_MC_Table
 
       if ($totalConsumos > 0) {
         $this->SetFont('Courier', 'B', 9);
-        $this->setFillColor(220, 223, 232);
         $this->SetTextColor(0);  
         $this->SetX($x);
         $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total de Consumos:"),1,0,'C', false);
 
         $this->SetFont('Courier', 'BI', 14);
-        //$this->setFillColor(220, 223, 232);
-        //$this->setFillColor(239, 165, 105);
-        $this->setFillColor(2, 185, 240);
+        $this->setFillColor(colorConsumos[0], colorConsumos[1], colorConsumos[2]);
         $this->SetTextColor(0);  
         $this->Cell($tamSubTotal,$h, $totalConsumosMostrar,1,1,'R', true);
 
@@ -2855,15 +2774,12 @@ class PDF extends PDF_MC_Table
 
       if ($subtotalIngreso > 0) {
         $this->SetFont('Courier', 'B', 9);
-        $this->setFillColor(220, 223, 232);
         $this->SetTextColor(0);  
         $this->SetX($x);
         $this->Cell($tamTextoSubtotal,$h, "Total de Ingresos:",1,0,'C', false);
 
         $this->SetFont('Courier', 'BI', 14);
-        //$this->setFillColor(220, 223, 232);
-        //$this->setFillColor(127, 128, 129);
-        $this->setFillColor(95, 243, 137);
+        $this->setFillColor(colorIngresos[0], colorIngresos[1], colorIngresos[2]);
         $this->SetTextColor(0);  
         $this->Cell($tamSubTotal,$h, $subtotalIngresoMostrar,1,1,'R', true);
 
@@ -2873,13 +2789,12 @@ class PDF extends PDF_MC_Table
       
       if ($subtotalAjusteRetiros > 0) {
             $this->SetFont('Courier', 'B', 9);
-            $this->setFillColor(220, 223, 232);
             $this->SetTextColor(0);  
             $this->SetX($x);
             $this->Cell($tamTextoSubtotal,$h, "Total AJUSTE Retiros:",1,0,'C', false);
 
             $this->SetFont('Courier', 'BI', 14);
-            $this->setFillColor(162, 92, 243);
+            $this->setFillColor(colorAjusteRetiros[0], colorAjusteRetiros[1], colorAjusteRetiros[2]);
             $this->SetTextColor(0);  
             $this->Cell($tamSubTotal,$h, $subtotalAjusteRetirosMostrar,1,1,'R', true);
 
@@ -2889,13 +2804,12 @@ class PDF extends PDF_MC_Table
           
       if ($subtotalAjusteIngresos > 0) {
             $this->SetFont('Courier', 'B', 9);
-            $this->setFillColor(220, 223, 232);
             $this->SetTextColor(0);  
             $this->SetX($x);
             $this->Cell($tamTextoSubtotal,$h, "Total AJUSTE Ingresos:",1,0,'C', false);
 
             $this->SetFont('Courier', 'BI', 14);
-            $this->setFillColor(255, 193, 104);
+            $this->setFillColor(colorAjusteIngresos[0], colorAjusteIngresos[1], colorAjusteIngresos[2]);
             $this->SetTextColor(0);  
             $this->Cell($tamSubTotal,$h, $subtotalAjusteIngresosMostrar,1,1,'R', true);
 
@@ -2906,21 +2820,26 @@ class PDF extends PDF_MC_Table
     }
     else {
       $this->SetFont('Courier', 'B', 9);
-      $this->setFillColor(220, 223, 232);
       $this->SetTextColor(0);  
       $this->SetX($x);
       switch ($tipoMov){
         case "Retiros": $total = $totalRetiro;
+                        $this->setFillColor(colorRetiros[0], colorRetiros[1], colorRetiros[2]);
                         break;
-        case "Ingresos": $total = $totalIngreso;              
+        case "Ingresos": $total = $totalIngreso;
+                         $this->setFillColor(colorIngresos[0], colorIngresos[1], colorIngresos[2]);
                          break;
         case "Renovaciones": $total = $totalReno;
+                             $this->setFillColor(colorRenos[0], colorRenos[1], colorRenos[2]);
                              break;
         case "Destrucciones": $total = $totalDestruccion;
+                              $this->setFillColor(colorDestrucciones[0], colorDestrucciones[1], colorDestrucciones[2]);
                               break;
-        case "AJUSTE Ingresos": $total = $totalAjusteIngresos;              
+        case "AJUSTE Ingresos": $total = $totalAjusteIngresos;
+                                $this->setFillColor(colorAjusteIngresos[0], colorAjusteIngresos[1], colorAjusteIngresos[2]);
                                 break;
-        case "AJUSTE Retiros": $total = $totalAjusteRetiros;              
+        case "AJUSTE Retiros": $total = $totalAjusteRetiros;
+                               $this->setFillColor(colorAjusteRetiros[0], colorAjusteRetiros[1], colorAjusteRetiros[2]);
                                break;             
         default: break;                  
       }
@@ -2928,7 +2847,7 @@ class PDF extends PDF_MC_Table
         $totalMostrar1 = number_format($totalAjusteRetiros, 0, ",", ".");
         $this->Cell($tamTextoSubtotal,$h, "Total AJUSTE Retiros:",1,0,'C', false);
         $this->SetFont('Courier', 'BI', 14);
-        $this->setFillColor(162, 92, 243);
+        $this->setFillColor(colorAjusteRetiros[0], colorAjusteRetiros[1], colorAjusteRetiros[2]);
         $this->SetTextColor(0);  
         $this->Cell($largoCampos[$indCantidad],$h, $totalMostrar1,1,1,'R', true);
         
@@ -2938,7 +2857,7 @@ class PDF extends PDF_MC_Table
         $totalMostrar2 = number_format($totalAjusteIngresos, 0, ",", ".");
         $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total AJUSTE Ingresos:"),1,0,'C', false);
         $this->SetFont('Courier', 'BI', 14);
-        $this->setFillColor(255, 193, 104);
+        $this->setFillColor(colorAjusteIngresos[0], colorAjusteIngresos[1], colorAjusteIngresos[2]);
         $this->SetTextColor(0);  
         $this->Cell($largoCampos[$indCantidad],$h, $totalMostrar2,1,1,'R', true);
       }
@@ -2946,20 +2865,18 @@ class PDF extends PDF_MC_Table
         $totalMostrar = number_format($total, 0, ",", ".");
         $this->Cell($tamTextoSubtotal,$h, utf8_decode("Total $tipoMov:"),1,0,'C', false);
         $this->SetFont('Courier', 'BI', 14);
-        //$this->setFillColor(165, 156, 149);
-        //$this->setFillColor(200, 202, 212);
-        $this->setFillColor(137, 216, 255);
         $this->SetTextColor(0);  
         $this->Cell($largoCampos[$indCantidad],$h, $totalMostrar,1,1,'R', true);
       }   
     }
     ///*********************************************************** BORDE FINAL **************************************************************
     $y = $this->GetY();
-    $this->SetFillColor(2, 49, 132);
+    $this->SetFillColor(colorTituloTabla[0], colorTituloTabla[1], colorTituloTabla[2]);
     ///Agrego el rectángulo con el borde redondeado:
     $this->RoundedRect($x, $y, $tamTabla, $h, 3.5, '34', 'DF');
     ///********************************************************* FIN BORDE FINAL ************************************************************
   }
+  ///*********************************************************** FIN movimientos ************************************************************
   
   //Tabla tipo listado con el detalle del producto:
   function tablaProducto()
@@ -3003,9 +2920,7 @@ class PDF extends PDF_MC_Table
     
     $x = ($anchoPagina-$tamTabla)/2;
     $xTipo = ($anchoPagina - $anchoTipo)/2;
-    //echo "pag: ".$ancho."<br>tabla: ".$tamTabla."<br>x:".$x;
-    //Defino color de fondo:
-    $this->SetFillColor(255, 156, 233);
+
     //Defino color para los bordes:
     $this->SetDrawColor(0, 0, 0);
     //Defino grosor de los bordes:
@@ -3087,10 +3002,8 @@ class PDF extends PDF_MC_Table
     ///************************************************************* TÍTULO TABLA ************************************************************
     $this->SetX($x);
     $y = $this->GetY();
-    //Defino color de fondo:
-    //$this->SetFillColor(153, 255, 102);
     ///Título de la tabla:
-    $this->SetFillColor(2, 49, 132);
+    $this->SetFillColor(colorTituloTabla[0], colorTituloTabla[1], colorTituloTabla[2]);
     $this->SetTextColor(255, 255, 255);
     ///Agrego el rectángulo con el borde redondeado:
     $this->RoundedRect($x, $y, $tamTabla, $h, 3.5, '12', 'DF');
@@ -3100,9 +3013,7 @@ class PDF extends PDF_MC_Table
     ///************************************************************** FIN TÍTULO TABLA ********************************************************
     
     //Restauro color de fondo y tipo de letra para el contenido:
-    //$this->SetFillColor(255, 204, 120);
-    //$this->SetTextColor(0);
-    $this->SetFillColor(103, 167, 253);
+    $this->SetFillColor(colorCampos[0], colorCampos[1], colorCampos[2]);
     $this->SetTextColor(255, 255, 255);
     $this->SetFont('Courier', '', 9);
     $this->SetX($x);
@@ -3237,7 +3148,7 @@ class PDF extends PDF_MC_Table
     $patron = "dif";
     $buscar = stripos($comentarios, $patron);
     if ($buscar !== FALSE){
-      $this->SetFillColor(255, 255, 51);
+      $this->SetFillColor(colorComDiff[0], colorComDiff[1], colorComDiff[2]);
       $fill = 1;
     }
     else 
@@ -3246,7 +3157,7 @@ class PDF extends PDF_MC_Table
       $patron = "stock";
       $buscar = stripos($comentarios, $patron);
       if ($buscar !== FALSE){
-        $this->SetFillColor(4, 255, 20);
+        $this->SetFillColor(colorComStock[0], colorComStock[1], colorComStock[2]);
         $fill = 1;
       }
       else 
@@ -3257,14 +3168,14 @@ class PDF extends PDF_MC_Table
         $buscar = stripos($comentarios, $patron);
         $buscar1 = stripos($comentarios, $patron1);
         if (($buscar !== FALSE)||($buscar1 !== FALSE)){
-          $this->SetFillColor(234, 140, 160);
+          $this->SetFillColor(colorComPlastico[0], colorComPlastico[1], colorComPlastico[2]);
           $fill = 1;
         }
         else 
           {
           /// Resaltado en GRIS del comentario que no cumple con ninguno de los patrones, pero que NO es nulo
           if (($comentarios !== '')){
-            $this->setFillColor(220, 223, 232);
+            $this->setFillColor(colorComRegular[0], colorComRegular[1], colorComRegular[2]);
             $fill = 1;
           }
           else {
@@ -3285,7 +3196,7 @@ class PDF extends PDF_MC_Table
     //Put the position to the right of the cell
     $this->SetXY($x,$y+$h0);
     ///Restauro color de fondo de los campos: 
-    $this->SetFillColor(103, 167, 253);
+    $this->SetFillColor(colorCampos[0], colorCampos[1], colorCampos[2]);
     ///**************************************************************** FIN CAMPO COMENTARIOS *************************************************
     
     ///**************************************************************** CAMPO ULT. MOV ********************************************************
@@ -3325,16 +3236,16 @@ class PDF extends PDF_MC_Table
     $this->SetTextColor(0);
     $this->SetFont('Courier', 'BI', 16);
     if (($stock < $alarma1) && ($stock > $alarma2)){
-      $this->SetFillColor(255, 255, 51);
+      $this->SetFillColor(colorStockAlarma1[0], colorStockAlarma1[1], colorStockAlarma1[2]);
       $this->SetTextColor(0);
     }
     else {
       if ($stock < $alarma2){
-        $this->SetFillColor(231, 56, 67);
+        $this->SetFillColor(colorStockAlarma2[0], colorStockAlarma2[1], colorStockAlarma2[2]);
         $this->SetTextColor(255);
       }
       else {
-        $this->SetFillColor(113, 236, 113);
+        $this->SetFillColor(colorStockRegular[0], colorStockRegular[1], colorStockRegular[2]);
       }
     }
     $this->Cell($cResto, $h, number_format($stock, 0, ",", "."), 'LRBT', 0, 'C', true);
@@ -3344,7 +3255,7 @@ class PDF extends PDF_MC_Table
     
     ///***************************************************** BORDE REDONDEADO DE CIERRE *******************************************************
     $y = $this->GetY();
-    $this->SetFillColor(2, 49, 132);
+    $this->SetFillColor(colorTituloTabla[0], colorTituloTabla[1], colorTituloTabla[2]);
     ///Agrego el rectángulo con el borde redondeado:
     $this->RoundedRect($x, $y, $tamTabla, $h, 3.5, '34', 'DF');
     ///***************************************************** FIN BORDE REDONDEADO DE CIERRE ***************************************************
