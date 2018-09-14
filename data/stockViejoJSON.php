@@ -63,11 +63,13 @@ for ($i = 0; $i < count($query); $i++){
         $fecha = " and (fecha =".$temp7[0];
       }
     }
-    ///**** Se agregan opciones para tener en cuenta los tipos 'AJUSTE Retiro' y 'AJUSTE Ingreso' dado que también influyen en el stock:
-    $consultaRetiros = "select productos.idprod as idprod, sum(cantidad) as retiros from productos inner join movimientos on movimientos.producto=productos.idprod where estado='activo' and (tipo='retiro' or tipo='AJUSTE Retiro')".$fecha;
-    $consultaRenovaciones = "select productos.idprod as idprod, sum(cantidad) as renovaciones from productos inner join movimientos on movimientos.producto=productos.idprod where estado='activo' and tipo='renovación'".$fecha;
-    $consultaDestrucciones = "select productos.idprod as idprod, sum(cantidad) as destrucciones from productos inner join movimientos on movimientos.producto=productos.idprod where estado='activo' and tipo='destrucción'".$fecha;
-    $consultaIngresos = "select productos.idprod as idprod, sum(cantidad) as ingresos from productos inner join movimientos on movimientos.producto=productos.idprod where estado='activo' and (tipo='ingreso' or tipo='AJUSTE Ingreso')".$fecha;
+    ///**** Se agregan opciones para tener en cuenta los tipos 'AJUSTE Retiro' y 'AJUSTE Ingreso' dado que también influyen en el stock
+    ///**** Sin embargo, NO se filtra por el estado del movimiento como sí se hace en selectQueryJSON dado que para calcular el stock viejo, ES REQUISITO tener en cuenta
+    ///**** también los movimientos "erróneos" dado que se compensan con el movimiento de ajuste añadido:
+    $consultaRetiros = "select productos.idprod as idprod, sum(cantidad) as retiros from productos inner join movimientos on movimientos.producto=productos.idprod where productos.estado='activo' and (tipo='retiro' or tipo='AJUSTE Retiro')".$fecha;
+    $consultaRenovaciones = "select productos.idprod as idprod, sum(cantidad) as renovaciones from productos inner join movimientos on movimientos.producto=productos.idprod where productos.estado='activo' and tipo='renovación'".$fecha;
+    $consultaDestrucciones = "select productos.idprod as idprod, sum(cantidad) as destrucciones from productos inner join movimientos on movimientos.producto=productos.idprod where productos.estado='activo' and tipo='destrucción'".$fecha;
+    $consultaIngresos = "select productos.idprod as idprod, sum(cantidad) as ingresos from productos inner join movimientos on movimientos.producto=productos.idprod where productos.estado='activo' and (tipo='ingreso' or tipo='AJUSTE Ingreso')".$fecha;
     
     if ($entidad !== ''){
       $consultaRetiros = $consultaRetiros." and productos.entidad='".$entidad."'";
@@ -190,7 +192,9 @@ for ($i = 0; $i < count($query); $i++){
       }
     }
     
-    ///**** Se agregan opciones para tener en cuenta los tipos 'AJUSTE Retiro' y 'AJUSTE Ingreso' dado que también influyen en el stock:
+    ///**** Se agregan opciones para tener en cuenta los tipos 'AJUSTE Retiro' y 'AJUSTE Ingreso' dado que también influyen en el stock
+    ///**** Sin embargo, NO se filtra por el estado del movimiento como sí se hace en selectQueryJSON dado que para calcular el stock viejo, ES REQUISITO tener en cuenta
+    ///**** también los movimientos "erróneos" dado que se compensan con el movimiento de ajuste añadido:
     $consultaRetiros = "select productos.idprod as idprod, sum(cantidad) as retiros from productos inner join movimientos on movimientos.producto=productos.idprod where (tipo='retiro' or tipo='AJUSTE Retiro') and productos.idprod=".$idprod.$fecha."group by productos.idprod";
     $resultRetiros = consultarBD($consultaRetiros, $dbc);
     while (($filaRetiros = $resultRetiros->fetch_array(MYSQLI_ASSOC)) != NULL) {

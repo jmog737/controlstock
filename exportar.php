@@ -95,6 +95,11 @@ if (stripos($tipoConsulta, "MOVIMIENTOS") !== FALSE){
 //echo "consulta: ".$tipoConsulta."<br>tipo: ".$tipo."<br>";
 $mostrar1 = utf8_decode($_POST["mostrar_$indice"]);
 $mostrar = preg_split("/-/", $mostrar1);
+///*********************************************** NUEVO - Recupero el bit que dice si hay que mostrar o no el campo estado para pasar al excel: ************
+$idmovsTemp = array_pop($mostrar);
+$mostrarEstado = array_pop($mostrar);
+$mostrar[] = $mostrarEstado;
+$mostrar[] = $idmovsTemp;
 
 $campos1 = utf8_decode($_POST["campos_$indice"]);
 $campos = preg_split("/-/", $campos1);
@@ -321,8 +326,11 @@ foreach($filas1 as $fila)
     $primerColumna = array_shift($fila);
     array_unshift($fila, $j);
     array_unshift($fila, $primerColumna);
-    ///Quito la última columna que es la de COMENTARIOS pues ya no se muestran en el EXCEL a pedido de Diego:
+    ///Quito la columna de COMENTARIOS pues ya no se muestran en el EXCEL a pedido de Diego:
+    ///(primero quito estado que es la última, luego la de comentarios, y finalmente, agrego la de estado nuevamente:
+    $estado = array_pop($fila);
     array_pop($fila);
+    array_push($fila, $estado);
   }
   else {
     if (($id == 1)||($id == 2)){
@@ -382,7 +390,7 @@ $salida = $dir.$nombreArchivo;
 ///Guardo el archivo en el disco, y además lo muestro en pantalla:
 $pdfResumen->Output($salida, 'F');
 $pdfResumen->Output($salida, 'I');
-echo "FIN";
+
 ///****************************************************** ESTABLECER CONTRASEÑA PARA EL ZIP  ************************************************
 ///*********************************** (requerida por el EXCEL, por esto se pone antes de la generación del mismo)  *************************
 switch ($zipSeguridad){
@@ -407,9 +415,9 @@ switch ($id) {
             break;
   case "3": $archivo = generarExcelBoveda($registros1);
             break;
-  case "4": $archivo = generarExcelMovimientos($registros1);
+  case "4": $archivo = generarExcelMovimientos($registros1, $mostrarEstado);
             break;
-  case "5": $archivo = generarExcelMovimientos($registros1);
+  case "5": $archivo = generarExcelMovimientos($registros1, $mostrarEstado);
             break;
   default: break;
 }  

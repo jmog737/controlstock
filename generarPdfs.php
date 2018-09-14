@@ -109,7 +109,9 @@ class PDF extends PDF_MC_Table
     ///******************************* TEST AGREGADO RECTÁNGULO: **********************************************
     
     ///********************************************************************************************************
-    $this->Rect($xLogo+3, $yLogo+ self::LOGO_HEIGHT_MM-2, 0.95*$anchoPage, $this->GetPageHeight()-self::LOGO_HEIGHT_MM-6, 'D');
+    $anchoRect = 0.97*$anchoPage;
+    $xRect = round((($anchoPage - $anchoRect)/2), 2);
+    $this->Rect($xRect, $yLogo+ self::LOGO_HEIGHT_MM-2, $anchoRect, $this->GetPageHeight()-self::LOGO_HEIGHT_MM-6, 'D');
     ///********************************************************************************************************
     
     ///******************************** FIN AGREGADO RECTÁNGULO: **********************************************
@@ -1201,7 +1203,7 @@ class PDF extends PDF_MC_Table
     $tamTabla = $largoCampos[$totalCampos];
     //$tamNombre = $this->GetStringWidth($nombreProducto); 
     $x = round((($anchoPagina-$tamTabla)/2), 2);
-  
+  //echo "tabla: $tamTabla<br>anchoPagina: $anchoPagina<br>x: $x<br>";
     //Defino color para los bordes:
     $this->SetDrawColor(0, 0, 0);
     //Defino grosor de los bordes:
@@ -1248,6 +1250,8 @@ class PDF extends PDF_MC_Table
                      break;
         case "Tipo": $indTipo = $i;
                      break;
+        case "Estado":  $indEstadoMov = $i;
+                        break;           
         case "Cantidad":  $indCantidad = $i;
                           break;
         case "Comentarios": $indComentarios = $i;
@@ -1314,6 +1318,9 @@ class PDF extends PDF_MC_Table
     }
     if ($mostrar[$indTipo]) {
       $this->Cell($largoCampos[$indTipo], $h, $campos[$indTipo], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indEstadoMov]) {
+      $this->Cell($largoCampos[$indEstadoMov], $h, $campos[$indEstadoMov], 'LRBT', 0, 'C', true);
     }
     if ($mostrar[$indComentarios]) {
       $this->Cell($largoCampos[$indComentarios], $h, $campos[$indComentarios], 'LRBT', 0, 'C', true);
@@ -1651,6 +1658,8 @@ class PDF extends PDF_MC_Table
                            break;
               case "Tipo": $indTipo = $i;
                            break;
+              case "Estado": $indEstadoMov = $i;
+                             break;
               case "Cantidad":  $indCantidad = $i;
                                 break;
               case "Comentarios": $indComentarios = $i;
@@ -1678,7 +1687,7 @@ class PDF extends PDF_MC_Table
               default: break;
             }
           }
-
+    
           $this->SetFillColor(colorCampos[0], colorCampos[1], colorCampos[2]);
           $this->SetTextColor(255, 255, 255);
           $this->SetFont('Courier', 'B', 10);
@@ -1728,6 +1737,9 @@ class PDF extends PDF_MC_Table
           }
           if ($mostrar[$indTipo]) {
             $this->Cell($largoCampos[$indTipo], $h, $campos[$indTipo], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indEstadoMov]) {
+            $this->Cell($largoCampos[$indEstadoMov], $h, $campos[$indEstadoMov], 'LRBT', 0, 'C', true);
           }
           if ($mostrar[$indComentarios]) {
             $this->Cell($largoCampos[$indComentarios], $h, $campos[$indComentarios], 'LRBT', 0, 'C', true);
@@ -1861,6 +1873,8 @@ class PDF extends PDF_MC_Table
                          break;
             case "Tipo": $indTipo = $i;
                          break;
+            case "Estado": $indEstadoMov = $i;
+                           break;
             case "Cantidad":  $indCantidad = $i;
                               break;
             case "Comentarios": $indComentarios = $i;
@@ -1888,7 +1902,6 @@ class PDF extends PDF_MC_Table
             default: break;
           }
         }
-        
         ///************************************************* INICIO ESCRITURA CAMPOS VISIBLES ***********************************************
         /// Imprimo los nombres de cada campo, siempre y cuando, se hayan marcado como visibles:
         /// Esto hay que hacerlo uno a uno para que queden en el orden requerido que es diferente al de la consulta
@@ -1927,6 +1940,9 @@ class PDF extends PDF_MC_Table
         }
         if ($mostrar[$indTipo]) {
           $this->Cell($largoCampos[$indTipo], $h, $campos[$indTipo], 'LRBT', 0, 'C', true);
+        }
+        if ($mostrar[$indEstadoMov]) {
+          $this->Cell($largoCampos[$indEstadoMov], $h, $campos[$indEstadoMov], 'LRBT', 0, 'C', true);
         }
         if ($mostrar[$indComentarios]) {
           $this->Cell($largoCampos[$indComentarios], $h, $campos[$indComentarios], 'LRBT', 0, 'C', true);
@@ -2427,6 +2443,38 @@ class PDF extends PDF_MC_Table
         $this->SetXY($x1+$w,$y);
       }
       ///********************************************************** FIN CAMPO TIPO **********************************************************
+      
+      ///*********************************************************** CAMPO ESTADO ***********************************************************
+      /// Chequeo si se tiene que mostrar el campo Estado, y de ser así lo muestro:
+      if ($mostrar[$indEstadoMov]) 
+        {
+        $w = $largoCampos[$indEstadoMov];
+        $nb1 = $this->NbLines($w,trim(utf8_decode($dato[$indEstadoMov])));
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h1, trim(utf8_decode($dato[$indEstadoMov])),'LRT','C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, trim(utf8_decode($dato[$indEstadoMov])),1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      ///********************************************************* FIN CAMPO ESTADO *********************************************************
       
       ///******************************************************** CAMPO COMENTARIOS *********************************************************
       /// Chequeo si se tiene que mostrar el campo Comentarios, y de ser así lo muestro:
@@ -2958,11 +3006,11 @@ class PDF extends PDF_MC_Table
     //Print the text
     if ($nbTitulo > 1) {
       //$this->MultiCell($anchoTipo,$h, trim(utf8_decode($tipoConsulta)),0,'C', 0);
-      $this->Cell($tam1,$h, "Stock del producto ",0, 0, 'R', 0);
+      $this->Cell($tam1,$h, "Stock del producto",0, 0, 'R', 0);
       $this->SetTextColor(255, 0, 0);
       $this->SetFont('Courier', 'BI', 12);
       $tamNombre1 = $this->GetStringWidth($nombre);
-      $this->Cell($tamNombre1,$h, $nombreProducto,0, 0,'L', 0);
+      $this->Cell($tamNombre1,$h, utf8_decode($nombreProducto),0, 0,'L', 0);
       $this->SetTextColor(0);
       if ($fraccionado){
         $this->Cell($tamUlitmaParte,$h, $ultimaParte,0, 0, 'L', 0);
@@ -2970,11 +3018,11 @@ class PDF extends PDF_MC_Table
     }
     else {
       //$this->MultiCell($anchoTipo,$h, trim(utf8_decode($tipoConsulta)),0,'C', 0);
-      $this->Cell($tam1,$hTitulo, "Stock del producto ",0, 0,'R', 0);
+      $this->Cell($tam1,$hTitulo, "Stock del producto",0, 0,'R', 0);
       $this->SetTextColor(255, 0, 0);
       $this->SetFont('Courier', 'BI', 12);
       $tamNombre1 = $this->GetStringWidth($nombre);
-      $this->Cell($tamNombre1,$h, $nombreProducto,0, 0,'L', 0);
+      $this->Cell($tamNombre1,$h, utf8_decode($nombreProducto),0, 0,'L', 0);
       $this->SetTextColor(0);
       if ($fraccionado){
         $this->Cell($tamUlitmaParte,$hTitulo, $ultimaParte,0, 0, 'L', 0);

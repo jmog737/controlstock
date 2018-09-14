@@ -11,6 +11,8 @@ if(!isset($_SESSION))
   @author Juan Martín Ortega
  */
 
+//$testColor = array(255, 180, 203);
+//$colorHexa = sprintf("#%02x%02x%02x", $testColor[0], $testColor[1], $testColor[2]);echo "testColor: $testColor<br>colorHexa: $colorHexa<br>";
 ///**************************************************** COLORES PDFs *************************************************************
 ///Color para la marca de agua:
 define("colorMarcaAgua", array(255,180,203));
@@ -120,6 +122,7 @@ $colorFondoTituloLeyendaPie2 = '#7c90d4';
 ///NOTA: SOLO ACEPTA EN FORMATO HEXA (Salvo en formato de números)
 $colorTabStock = '023184';
 $colorTabBoveda = '46A743';
+$colorTabMovimientos = 'E02309';
 $colorBordeTitulo = '023184';
 $colorFondoTitulo = '4acba7';
 $colorFondoCampos = 'AEE2FA';
@@ -137,6 +140,30 @@ $colorComDiff = 'ffff00';
 $colorComStock = '38ff1d';
 $colorComPlastico = 'FF9999';
 $colorBordeRegular = '023184';
+$colorFondoCamposResumen = 'b3a8ac';
+$colorBordeResumen = '023184';
+$colorCategorias = 'Blue';
+$colorConsumos = 'Red';
+$colorFondoConsumos = 'ffff99';
+$colorIngresos = 'Red';
+$colorFondoIngresos = 'cefdd5';
+$colorFondoTotalesCategoria = '888888';
+$colorTextoTotalResumen = 'Red';
+$colorTextoTotalesCategoria = '00ff11';
+$colorTotalesCategoria = 'Red';
+$colorConsumosTotal = 'Red';
+$colorFondoTotalConsumos = 'feff00';
+$colorIngresosTotal = 'Red';
+$colorFondoTotalIngresos = '00ff11';
+$colorFondoFecha = 'A9FF96';
+$colorAjustesRetiros = 'Red';
+$colorAjustesIngresos = 'Red';
+$colorFondoAjustesRetiros = 'd5baf5';
+$colorFondoAjustesIngresos = 'ffe5bf';
+$colorAjustesRetirosTotal = 'Red';
+$colorAjustesIngresosTotal = 'Red';
+$colorFondoAjustesRetirosTotal = 'a25cf3';
+$colorFondoAjustesIngresosTotal = 'ffc168';
 
 ///************************************************************ FIN COLORES EXCEL *************************************************
 
