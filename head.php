@@ -33,6 +33,8 @@ require_once('..\..\fpdf\fpdf.php');
 require_once('data/baseMysql.php');
 ?>
 <head>
+  <link href='images/play-button-1.png' rel='shortcut icon' type='image/png'/>
+  <link href='images/play-button-1.png' rel='icon' type='image/png'/>
   <input id="tamPagina" name="tamPagina" type="text" value="<?php echo $_SESSION["tamPagina"] ?>" style="color: black; display: none">
   <input id="limiteSeleccion" name="limiteSeleccion" type="text" value="<?php echo $limiteSeleccion ?>" style="color: black; display: none">
   <input id="limiteSelects" name="limiteSelects" type="text" value="<?php echo $_SESSION["limiteSelects"] ?>" style="color: black; display: none">
@@ -45,8 +47,6 @@ require_once('data/baseMysql.php');
   <meta http-equiv='X-UA-Compatible' content='IE=edge'>
   <link rel='stylesheet' href='css/bootstrap.min.css'>
   <link rel='stylesheet' href='css/<?php echo $estilos ?>'>
-  <link href='favicon.png' rel='shortcut icon' type='image/png'/>
-  <link href='favicon.png' rel='icon' type='image/png'/>
   <script src="js/jquery.min.js"></script>
   <script src='js/popper.min.js'></script>
   <script src='js/bootstrap.min.js'></script>  

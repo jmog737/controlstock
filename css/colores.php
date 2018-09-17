@@ -124,7 +124,10 @@ $colorTabStock = '023184';
 $colorTabBoveda = '46A743';
 $colorTabMovimientos = 'E02309';
 $colorBordeTitulo = '023184';
-$colorFondoTitulo = '4acba7';
+
+$colorFondoTitulo = sprintf("%02x%02x%02x", colorSubtitulo[0], colorSubtitulo[1], colorSubtitulo[2]);
+//$colorFondoTitulo = '4acba7';
+
 $colorFondoCampos = 'AEE2FA';
 $colorFondoTextoLegal = 'DFDFDF';
 $colorTotal = 'ff0000';

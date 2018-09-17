@@ -16,7 +16,7 @@ if(!isset($_SESSION))
 
 require 'vendor/autoload.php';
 require_once("data/config.php");
-require_once("data/colores.php");
+require_once("css/colores.php");
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -713,6 +713,7 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   global $colorFondoFecha, $colorFondoStockRegular, $colorStock, $colorTotalesCategoria, $colorTextoTotalesCategoria, $colorFondoTotalesCategoria;
   global $colorConsumos, $colorIngresos, $colorConsumosTotal, $colorIngresosTotal;
   global $colorAjustesRetiros, $colorAjustesIngresos, $colorFondoAjustesRetiros, $colorFondoAjustesIngresos, $colorAjustesRetirosTotal, $colorAjustesIngresosTotal, $colorFondoAjustesRetirosTotal, $colorFondoAjustesIngresosTotal;
+  
   $spreadsheet = new Spreadsheet();
 
   $locale = 'es_UY'; 
@@ -759,8 +760,6 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   }
   
   //$colComent = chr(ord($colId)+10);
-  
-    
   $colVacia1 = chr(ord($colCantidad)+1);
   
   $colNombreTotales = chr(ord($colCantidad)+2);
@@ -774,6 +773,66 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   
   $filaEncabezado = '3';
   $filaUnoDatos = $filaEncabezado + 1;
+  
+  ///**   ********************************* TEST EXTRACCIÓN TIPO CONSULTA ******************************
+  $tipoConsulta1 = utf8_decode($tipoConsulta);
+  $q1 = stripos($tipoConsulta1, " de todos los tipos (inc. AJUSTES)");
+    if ($q1 !== FALSE) {
+      $temp1 = explode(" de todos los tipos (inc. AJUSTES)", $tipoConsulta1);
+      $nombre1 = strtoupper($temp1[0]);
+      $mostrarResumenProducto = true;
+      $tipoMov = 'Todos';
+    }
+    else { 
+      $q2 = stripos($tipoConsulta, " de todos los tipos");
+      if ($q2 !== FALSE) {
+        $temp1 = explode(" de todos los tipos", $tipoConsulta1);
+        $nombre1 = strtoupper($temp1[0]);
+        $mostrarResumenProducto = true;
+        $tipoMov = 'Clientes';
+      }
+      else {
+        $t0 = stripos($tipoConsulta1, " del tipo Retiro");
+        if ($t0 !== FALSE){
+          $tipoMov = "Retiros";
+        }
+        else {
+          $t1 = stripos($tipoConsulta1, "del tipo Ingreso");
+          if ($t1 !== FALSE){
+            $tipoMov = "Ingresos";
+          }
+          else {
+            $t2 = stripos($tipoConsulta1, utf8_decode("del tipo Renovación"));
+            if ($t2 !== FALSE){
+              $tipoMov = "Renovaciones";
+            }
+            else {
+              $t3 = stripos($tipoConsulta1, utf8_decode("del tipo Destrucción"));
+              if ($t3 !== FALSE){
+                $tipoMov = "Destrucciones";
+              }
+              else {
+                $t4 = stripos($tipoConsulta1, " del tipo AJUSTE Retiro");
+                if ($t4 !== FALSE){
+                  $tipoMov = "AJUSTE Retiros";
+                }
+                else {
+                  $t5 = stripos($tipoConsulta1, " del tipo AJUSTE Ingreso");
+                  if ($t5 !== FALSE){
+                    $tipoMov = "AJUSTE Ingresos";
+                  }
+                  else {
+                    $tipoMov = "Ajustes";
+                  }
+                }
+              }
+            }  
+          }
+        }
+      } 
+    }  
+  ///************************************* FIN TEST EXTRACCIÓN TIPO CONSULTA ***************************
+  
   
   ///*************************************** INICIO formato tipo consulta ******************************
   $hoja->mergeCells($colId.'1:'.$colCantidad.'1');
@@ -922,7 +981,16 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   
   
   ///************************************ MUESTRO TOTALES **********************************************
-  $hoja->mergeCells($colNombreTotales.'1:'.$colAjuIngresos.'1');
+  if (($tipoMov === 'AJUSTE Retiros')||($tipoMov === 'AJUSTE Ingresos')||($tipoMov === 'Ajustes')||($tipoMov === 'Todos')){
+    $colFinal = $colAjuIngresos;
+    $hoja->setCellValue($colAjuRetiros.'2', 'Ajustes Retiros');
+    $hoja->setCellValue($colAjuIngresos.'2', 'Ajustes Ingresos');
+  }
+  else {
+    $colFinal = $colIngresos;
+  }
+  
+  $hoja->mergeCells($colNombreTotales.'1:'.$colFinal.'1');
   $hoja->setCellValue($colNombreTotales."1", "TOTALES");
   $hoja->setCellValue($colNombreTotales."2", "Nombre");
   $hoja->setCellValue($colRetiros."2", "Retiros");
@@ -930,9 +998,6 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   $hoja->setCellValue($colDestrucciones.'2', 'Destrucciones');
   $hoja->setCellValue($colConsumos.'2', 'Consumos');
   $hoja->setCellValue($colIngresos.'2', 'Ingresos');
-  
-  $hoja->setCellValue($colAjuRetiros.'2', 'Ajustes Retiros');
-  $hoja->setCellValue($colAjuIngresos.'2', 'Ajustes Ingresos');
   
   $resumen = Array();
   $ids = Array();
@@ -1009,8 +1074,10 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
     $hoja->setCellValue($colDestrucciones.$n, $resumen["$id1"]['destrucciones']);
     $hoja->setCellValue($colConsumos.$n,'='.$colRetiros.$n.'+'.$colRenos.$n.'+'.$colDestrucciones.$n);
     $hoja->setCellValue($colIngresos.$n, $resumen["$id1"]['ingresos']);
-    $hoja->setCellValue($colAjuRetiros.$n, $resumen["$id1"]['ajustesRetiros']);
-    $hoja->setCellValue($colAjuIngresos.$n, $resumen["$id1"]['ajustesIngresos']);
+    if ($colFinal === $colAjuIngresos){
+      $hoja->setCellValue($colAjuRetiros.$n, $resumen["$id1"]['ajustesRetiros']);
+      $hoja->setCellValue($colAjuIngresos.$n, $resumen["$id1"]['ajustesIngresos']);
+    } 
     $n++;
   }
   $finDatos = $n - 1;
@@ -1022,11 +1089,12 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   $hoja->setCellValue($colDestrucciones.$n, '=SUM('.$colDestrucciones.'3:'.$colDestrucciones.$finDatos.')');
   $hoja->setCellValue($colConsumos.$n, '=SUM('.$colConsumos.'3:'.$colConsumos.$finDatos.')');
   $hoja->setCellValue($colIngresos.$n, '=SUM('.$colIngresos.'3:'.$colIngresos.$finDatos.')');
-  $hoja->setCellValue($colAjuRetiros.$n, '=SUM('.$colAjuRetiros.'3:'.$colAjuRetiros.$finDatos.')');
-  $hoja->setCellValue($colAjuIngresos.$n, '=SUM('.$colAjuIngresos.'3:'.$colAjuIngresos.$finDatos.')');
-  
+  if ($colFinal === $colAjuIngresos){
+    $hoja->setCellValue($colAjuRetiros.$n, '=SUM('.$colAjuRetiros.'3:'.$colAjuRetiros.$finDatos.')');
+    $hoja->setCellValue($colAjuIngresos.$n, '=SUM('.$colAjuIngresos.'3:'.$colAjuIngresos.$finDatos.')');
+  }
   ///************************************* Formato Título Resumen **************************************
-  $header1 = $colNombreTotales.'1:'.$colAjuIngresos.'1';
+  $header1 = $colNombreTotales.'1:'.$colFinal.'1';
   $styleTituloTotales = array(
       'font' => array(
           'bold' => true,
@@ -1052,7 +1120,7 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   ///*********************************** FIN Formato Título Resumen ************************************
   
   ///************************************ Formato nombre CAMPOS ****************************************
-  $nombreCampos = $colNombreTotales.'2:'.$colAjuIngresos.'2';
+  $nombreCampos = $colNombreTotales.'2:'.$colFinal.'2';
   $styleCamposTotales = array(
     'fill' => array(
           'color' => array('rgb' => $colorFondoCamposResumen),
@@ -1177,63 +1245,65 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   $hoja->getStyle($rangoIngresos)->applyFromArray($resaltarIngresos);
   ///*************************************** FIN Formato Ingresos **************************************
   
-  ///************************************** Formato Ajuste Retiros *************************************
-  $rangoAjuRetiros = $colAjuRetiros.'3:'.$colAjuRetiros.$finDatos;
-  $resaltarAjuRetiros = array(
-    'fill' => array(
-          'color' => array('rgb' => $colorFondoAjustesRetiros),
-          'fillType' => 'solid',
+  if ($colFinal === $colAjuIngresos){
+    ///************************************** Formato Ajuste Retiros *************************************
+    $rangoAjuRetiros = $colAjuRetiros.'3:'.$colAjuRetiros.$finDatos;
+    $resaltarAjuRetiros = array(
+      'fill' => array(
+            'color' => array('rgb' => $colorFondoAjustesRetiros),
+            'fillType' => 'solid',
+          ),
+      'font' => array(
+          'bold' => true,
+          'size' => 13,
         ),
-    'font' => array(
-        'bold' => true,
-        'size' => 13,
-      ),
-    'numberFormat' => array(
-        'formatCode' => '['.$colorAjustesRetiros.']#,##0',
-      ),
-    'borders' => array(
-              'allBorders' => array(
-                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
-                'color' => array('rgb' => $colorBordeResumen),
-                ),
-              ), 
-    'alignment' => array(
-         'wrap' => true,
-         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
-         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-      ),
-  );
-  $hoja->getStyle($rangoAjuRetiros)->applyFromArray($resaltarAjuRetiros);
-  ///************************************ FIN Formato Ajuste Retiros ***********************************
-  
-  ///************************************** Formato Ajuste Ingresos ************************************
-  $rangoAjuIngresos = $colAjuIngresos.'3:'.$colAjuIngresos.$finDatos;
-  $resaltarAjuIngresos = array(
-    'fill' => array(
-          'color' => array('rgb' => $colorFondoAjustesIngresos),
-          'fillType' => 'solid',
+      'numberFormat' => array(
+          'formatCode' => '['.$colorAjustesRetiros.']#,##0',
         ),
-    'font' => array(
-        'bold' => true,
-        'size' => 13,
-      ),
-    'numberFormat' => array(
-        'formatCode' => '['.$colorAjustesIngresos.']#,##0',
-      ),
-    'borders' => array(
-              'allBorders' => array(
-                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
-                'color' => array('rgb' => $colorBordeResumen),
-                ),
-              ), 
-    'alignment' => array(
-         'wrap' => true,
-         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
-         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-      ),
-  );
-  $hoja->getStyle($rangoAjuIngresos)->applyFromArray($resaltarAjuIngresos);
-  ///************************************ FIN Formato Ajuste Ingresos **********************************
+      'borders' => array(
+                'allBorders' => array(
+                  'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                  'color' => array('rgb' => $colorBordeResumen),
+                  ),
+                ), 
+      'alignment' => array(
+           'wrap' => true,
+           'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+           'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ),
+    );
+    $hoja->getStyle($rangoAjuRetiros)->applyFromArray($resaltarAjuRetiros);
+    ///************************************ FIN Formato Ajuste Retiros ***********************************
+
+    ///************************************** Formato Ajuste Ingresos ************************************
+    $rangoAjuIngresos = $colAjuIngresos.'3:'.$colAjuIngresos.$finDatos;
+    $resaltarAjuIngresos = array(
+      'fill' => array(
+            'color' => array('rgb' => $colorFondoAjustesIngresos),
+            'fillType' => 'solid',
+          ),
+      'font' => array(
+          'bold' => true,
+          'size' => 13,
+        ),
+      'numberFormat' => array(
+          'formatCode' => '['.$colorAjustesIngresos.']#,##0',
+        ),
+      'borders' => array(
+                'allBorders' => array(
+                  'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                  'color' => array('rgb' => $colorBordeResumen),
+                  ),
+                ), 
+      'alignment' => array(
+           'wrap' => true,
+           'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+           'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ),
+    );
+    $hoja->getStyle($rangoAjuIngresos)->applyFromArray($resaltarAjuIngresos);
+    ///************************************ FIN Formato Ajuste Ingresos **********************************
+  }
   
   ///*************************************** Formato Palabra TOTAL *************************************
   $rangoTotal = $colNombreTotales.$n;
@@ -1321,65 +1391,67 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   $hoja->getStyle($rangoIngresosTotal)->applyFromArray($resaltarIngresosTotal);
   ///************************************* FIN Formato Ingresos Total **********************************
   
-  ///********************************** Formato Ajustes Retiros Total **********************************
-  $rangoAjuRetirosTotal = $colAjuRetiros.$n;
-  $formatoAjuRetirosTotal = array(
-    'fill' => array(
-          'color' => array('rgb' => $colorFondoAjustesRetirosTotal),
-          'fillType' => 'solid',
+  if ($colFinal === $colAjuIngresos){
+    ///********************************** Formato Ajustes Retiros Total **********************************
+    $rangoAjuRetirosTotal = $colAjuRetiros.$n;
+    $formatoAjuRetirosTotal = array(
+      'fill' => array(
+            'color' => array('rgb' => $colorFondoAjustesRetirosTotal),
+            'fillType' => 'solid',
+          ),
+      'font' => array(
+          'bold' => true,
+          'size' => 13,
+          'italic' => true,
         ),
-    'font' => array(
-        'bold' => true,
-        'size' => 13,
-        'italic' => true,
-      ),
-    'numberFormat' => array(
-        'formatCode' => '['.$colorAjustesRetirosTotal.']#,##0',
-      ),
-    'borders' => array(
-              'allBorders' => array(
-                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
-                'color' => array('rgb' => $colorBordeResumen),
-                ),
-              ), 
-    'alignment' => array(
-         'wrap' => true,
-         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
-         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-      ),
-  );
-  $hoja->getStyle($rangoAjuRetirosTotal)->applyFromArray($formatoAjuRetirosTotal);
-  ///******************************* FIN Formato Ajustes Retiros Total *********************************
-  
-  ///********************************** Formato Ajustes Ingresos Total *********************************
-  $rangoAjuIngresosTotal = $colAjuIngresos.$n;
-  $formatoAjuIngresosTotal = array(
-    'fill' => array(
-          'color' => array('rgb' => $colorFondoAjustesIngresosTotal),
-          'fillType' => 'solid',
+      'numberFormat' => array(
+          'formatCode' => '['.$colorAjustesRetirosTotal.']#,##0',
         ),
-    'font' => array(
-        'bold' => true,
-        'size' => 13,
-        'italic' => true,
-      ),
-    'numberFormat' => array(
-        'formatCode' => '['.$colorAjustesIngresosTotal.']#,##0',
-      ),
-    'borders' => array(
-              'allBorders' => array(
-                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
-                'color' => array('rgb' => $colorBordeResumen),
-                ),
-              ), 
-    'alignment' => array(
-         'wrap' => true,
-         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
-         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-      ),
-  );
-  $hoja->getStyle($rangoAjuIngresosTotal)->applyFromArray($formatoAjuIngresosTotal);
-  ///******************************* FIN Formato Ajustes Ingresos Total ********************************
+      'borders' => array(
+                'allBorders' => array(
+                  'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                  'color' => array('rgb' => $colorBordeResumen),
+                  ),
+                ), 
+      'alignment' => array(
+           'wrap' => true,
+           'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+           'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ),
+    );
+    $hoja->getStyle($rangoAjuRetirosTotal)->applyFromArray($formatoAjuRetirosTotal);
+    ///******************************* FIN Formato Ajustes Retiros Total *********************************
+
+    ///********************************** Formato Ajustes Ingresos Total *********************************
+    $rangoAjuIngresosTotal = $colAjuIngresos.$n;
+    $formatoAjuIngresosTotal = array(
+      'fill' => array(
+            'color' => array('rgb' => $colorFondoAjustesIngresosTotal),
+            'fillType' => 'solid',
+          ),
+      'font' => array(
+          'bold' => true,
+          'size' => 13,
+          'italic' => true,
+        ),
+      'numberFormat' => array(
+          'formatCode' => '['.$colorAjustesIngresosTotal.']#,##0',
+        ),
+      'borders' => array(
+                'allBorders' => array(
+                  'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                  'color' => array('rgb' => $colorBordeResumen),
+                  ),
+                ), 
+      'alignment' => array(
+           'wrap' => true,
+           'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+           'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+        ),
+    );
+    $hoja->getStyle($rangoAjuIngresosTotal)->applyFromArray($formatoAjuIngresosTotal);
+    ///******************************* FIN Formato Ajustes Ingresos Total ********************************
+  }
   
   ///************************************** Formato Muestro TOTALES ************************************
   $rangoTotalGeneral = $colRetiros.$n.':'.$colDestrucciones.$n;
@@ -1522,7 +1594,7 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   
   ///**************************************** INICIO AJUSTE ANCHO COLUMNAS *****************************
   /// Ajusto el auto size para que las celdas no se vean cortadas:
-  for ($col = ord($colId); $col <= ord($colAjuIngresos); $col++)
+  for ($col = ord($colId); $col <= ord($colFinal); $col++)
     {
     $hoja->getColumnDimension(chr($col))->setAutoSize(true);
   }

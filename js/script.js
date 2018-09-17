@@ -836,7 +836,7 @@ function agregarMovimiento(agregarRepetido){
       /// Agrego el movimiento según los datos pasados:
       var url = "data/updateQuery.php";
       var queries = new Array();
-      var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+userSesion+", "+userControl+", '"+comentarios+"')";
+      var query = "insert into movimientos (producto, fecha, hora, tipo, cantidad, control1, control2, comentarios, estado) values ("+idProd+", '"+fecha+"', '"+hora+"', '"+tipo+"', "+cantidad+", "+userSesion+", "+userControl+", '"+comentarios+"', 'OK')";
       //alert(document.getElementById("usuarioSesion").value); --- USUARIO QUE REGISTRA!!!
       queries.push(query);
       var fechaTemp = fecha.split("-");
@@ -3879,6 +3879,21 @@ function realizarBusqueda(){
                                     todos = true;
                                     ent.push('todos');
                                   }
+                                  ///*********************************** TEST ESTADO MOVIMIENTOS ***********************************************
+//                                  switch(tipo){
+//                                    case 'Todos': tipoConsulta = tipoConsulta.replace('Movimientos', 'Movimientos totales');
+//                                                  break;
+//                                    case 'Clientes': break;
+//                                    default:  switch(estadoMov){
+//                                                case 'OK': tipoConsulta = tipoConsulta.replace('Movimientos', 'Movimientos OK');
+//                                                           break;
+//                                                case 'ERROR': tipoConsulta = tipoConsulta.replace('Movimientos', 'Movimientos erróneos');
+//                                                              break;
+//                                                default: break;
+//                                              };
+//                                              break; 
+//                                  }
+                                  ///********************************** FIN TEST ESTADO MOVIMIENTOS *********************************************
                                   queries.push(query);
                                   consultasCSV.push(consultaCSV);
                                   tipoConsultas.push(tipoConsulta);
@@ -4082,6 +4097,15 @@ function realizarBusqueda(){
             consultasCSV[n] += rangoFecha;
           } 
         }
+        switch (estadoMov){
+          case 'Todos': break;
+          case 'OK': estadoMovimiento = " and movimientos.estado='OK'";
+                     break;
+          case 'ERROR': estadoMovimiento = " and movimientos.estado='ERROR'";
+                        break;
+          default: break;              
+        }
+        
         var mensajeTipo = null;  
         if (validarTipo) { 
           if (tipo !== 'Todos') {
@@ -4114,7 +4138,7 @@ function realizarBusqueda(){
             }    
           }
           else {
-              mensajeTipo = "de todos los tipos (inc. AJUSTES)";
+            mensajeTipo = "de todos los tipos (inc. AJUSTES)";
           };
         }
 

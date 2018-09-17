@@ -14,7 +14,7 @@ if(!isset($_SESSION))
 *
 *******************************************************/
 require_once('..\..\fpdf\mc_table.php');
-require_once('data\colores.php');
+require_once('css\colores.php');
 
 
 class PDF extends PDF_MC_Table

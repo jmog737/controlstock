@@ -41,7 +41,6 @@ if ($result === TRUE) {
   if ($tam > 1){
     $result1 = consultarBD($queryUpdate, $dbc);
     if ($result1 === TRUE) {
-      //$dato["resultado"] = "OK";
       if ($log === "SI") {
         escribirLog($queryUpdate);
       }
@@ -54,6 +53,7 @@ if ($result === TRUE) {
 else {
   $dato["resultado"] = "ERROR INSERT";
 }
+
 $json = json_encode($dato);
 echo $json;
 ?>
