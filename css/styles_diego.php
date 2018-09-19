@@ -404,6 +404,23 @@ hr {
   color: #071c40;
   font-size: 10pt;
 }
+.tabla2 td input[type="checkbox"]{
+  text-align: center;
+  vertical-align: middle;
+  background-color:background;
+}
+.tabla2 label {
+  margin: 0px;
+  padding: 0px;
+  vertical-align: middle;
+  text-align: left !important; 
+  font-weight: bold;
+  background-color: #0066cc;
+  color: #ffff00;
+  border: #c0c0c0 1px solid;
+  line-height:none;
+  width: 100%;
+}
 /******************************* FIN TABLAS ***********************************/
 
 #snapshot {

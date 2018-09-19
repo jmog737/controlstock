@@ -33,8 +33,8 @@ require_once('..\..\fpdf\fpdf.php');
 require_once('data/baseMysql.php');
 ?>
 <head>
-  <link href='images/play-button-1.png' rel='shortcut icon' type='image/png'/>
-  <link href='images/play-button-1.png' rel='icon' type='image/png'/>
+  <link href='images/card31.png' rel='shortcut icon' type='image/png'/>
+  <link href='images/card31.png' rel='icon' type='image/png'/>
   <input id="tamPagina" name="tamPagina" type="text" value="<?php echo $_SESSION["tamPagina"] ?>" style="color: black; display: none">
   <input id="limiteSeleccion" name="limiteSeleccion" type="text" value="<?php echo $limiteSeleccion ?>" style="color: black; display: none">
   <input id="limiteSelects" name="limiteSelects" type="text" value="<?php echo $_SESSION["limiteSelects"] ?>" style="color: black; display: none">

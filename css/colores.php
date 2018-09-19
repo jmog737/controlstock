@@ -123,25 +123,29 @@ $colorFondoTituloLeyendaPie2 = '#7c90d4';
 $colorTabStock = '023184';
 $colorTabBoveda = '46A743';
 $colorTabMovimientos = 'E02309';
-$colorBordeTitulo = '023184';
 
+$colorBordeTitulo = '023184';
 $colorFondoTitulo = sprintf("%02x%02x%02x", colorSubtitulo[0], colorSubtitulo[1], colorSubtitulo[2]);
 //$colorFondoTitulo = '4acba7';
 
 $colorFondoCampos = 'AEE2FA';
 $colorFondoTextoLegal = 'DFDFDF';
+
 $colorTotal = 'ff0000';
 $colorFondoTotal = 'f3FF00';
+
 $colorStock = 'Blue';
 $colorFondoStockRegular = 'A9FF96';
 $colorFondoStockAlarma1 = 'FAFF98';
 $colorFondoStockAlarma2 = 'F94A3F';
 $colorStockBoveda = 'Black';
 $colorFondoStockBoveda = 'DADADA';
+
 $colorComRegular = 'd3d3d3';
 $colorComDiff = 'ffff00';
 $colorComStock = '38ff1d';
 $colorComPlastico = 'FF9999';
+
 $colorBordeRegular = '023184';
 $colorFondoCamposResumen = 'b3a8ac';
 $colorBordeResumen = '023184';
