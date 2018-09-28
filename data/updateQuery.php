@@ -41,6 +41,7 @@ if ($result === TRUE) {
   if ($tam > 1){
     $result1 = consultarBD($queryUpdate, $dbc);
     if ($result1 === TRUE) {
+      $dato["resultado"] = "OK";
       if ($log === "SI") {
         escribirLog($queryUpdate);
       }

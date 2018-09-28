@@ -20,7 +20,7 @@ ini_set('display_errors',0);
 *******************************************************/
 require_once("data/baseMysql.php");
 require_once('../../fpdf/mc_table.php');
-require_once("data/colores.php");
+require_once("css/colores.php");
 
 /** Include JPgraph files */
 require_once('../../jpgraph/jpgraph.php');
@@ -31,6 +31,14 @@ require_once ('../../jpgraph/jpgraph_line.php');
 
 class PDF extends PDF_MC_Table
   {
+  ///Constantes usadas por las funciones de ajuste de las imágenes:
+  const DPI_300 = 300;
+  const MM_IN_INCH = 25.4;
+  const GRAFICA_HEIGHT_MM = 100;
+  const GRAFICA_WIDTH_MM = 1.85*self::GRAFICA_HEIGHT_MM;
+  const GRAFICA_HEIGHT_PX = 400;
+  const GRAFICA_WIDTH_PX = 1.85*self::GRAFICA_HEIGHT_PX;
+  
   //Cabecera de página
   function Header()
     {
@@ -40,7 +48,7 @@ class PDF extends PDF_MC_Table
     $this->setY(10);
     $this->setX(20);
     //Defino características para el título y agrego el título:
-    $this->SetFont('Arial', 'BU', 18);
+    $this->SetFont('Arial', 'BU', 24);
     $this->Cell(200, $hHeader, utf8_decode($titulo), 0, 0, 'C');
     $this->Ln();
 
@@ -70,15 +78,38 @@ class PDF extends PDF_MC_Table
     $this->Cell(0, $hFooter, 'Pag. ' . $this->PageNo(), 0, 0, 'C');
   }
   
-  function graficarBarras($subtitulo, $meses, $totales, $data1, $data2, $data3, $data4, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg5, $destino, $nombreGrafica){
-    global $dirGraficas, $h, $colorRetirosGrafica, $colorRenosGrafica, $colorDestruccionesGrafica, $colorIngresosGrafica, $colorLeyendaRetiros, $colorLeyendaRenos;
+  ///Función auxiliar que ajusta el tamaño de la imagen a los parámetros de ancho y alto pasados:
+  ///Esta función está también en generarPDFs. Ver de compartirla.
+  function resizeToFit($imgFilename, $ancho, $alto) {
+    list($anchoImgPx, $altoImgPx) = getimagesize($imgFilename);
+    
+    ///Convierto de px a mm (usando los DPI estipulados):
+    $anchoImgMm = $anchoImgPx*self::MM_IN_INCH/self::DPI_300;
+    $altoImgMm = $altoImgPx*self::MM_IN_INCH/self::DPI_300;
+    
+    $widthScale = $ancho / $anchoImgMm;
+    $heightScale = $alto / $altoImgMm;
+    $scale = min($widthScale, $heightScale);
+    
+    return array(
+        round($scale * $anchoImgMm),
+        round($scale * $altoImgMm));        
+    }  
+  
+  function graficarBarras($subtitulo, $meses, $totales, $data1, $data2, $data3, $data4, $data5, $data6, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg41, $avg42, $avg5, $destino, $nombreGrafica){
+    global $dirGraficas, $h;
+    include "css/colores.php";
+    /*
+    global $colorRetirosGrafica, $colorRenosGrafica, $colorDestruccionesGrafica, $colorIngresosGrafica, $colorLeyendaRetiros, $colorLeyendaRenos, $colorBordeAjusteRetiros, $colorBordeAjusteIngresos;
     global $colorLeyendaDestrucciones, $colorLeyendaIngresos, $colorLeyendaConsumos, $colorGradiente1, $colorGradiente2, $colorTituloLeyenda, $colorFondoTituloLeyenda1, $colorFondoTituloLeyenda2;
-    global $colorNombreEjeX, $colorNombreEjeY, $colorEjeX, $colorEjeY, $colorFrame, $colorBordeRetiros, $colorBordeIngresos, $colorBordeRenos, $colorBordeDestrucciones;
+    global $colorNombreEjeX, $colorNombreEjeY, $colorEjeX, $colorEjeY, $colorFrame, $colorBordeRetiros, $colorBordeIngresos, $colorBordeRenos, $colorBordeDestrucciones, $colorLeyendaAjusteRetiros, $colorLeyendaAjusteIngresos;
+    global $colorAjusteRetirosGrafica, $colorAjusteIngresosGrafica, $colorFondoLeyendaAjusteRetiros1, $colorFondoLeyendaAjusteRetiros2, $colorFondoLeyendaAjusteIngresos1, $colorFondoLeyendaAjusteIngresos2;
     global $colorFondoLeyendaRetiros1, $colorFondoLeyendaRetiros2, $colorFondoLeyendaRenos1, $colorFondoLeyendaRenos2, $colorFondoLeyendaDestrucciones1, $colorFondoLeyendaDestrucciones2, $colorFondoLeyendaIngresos1, $colorFondoLeyendaIngresos2;
     global $colorFondoLeyendaConsumos1, $colorFondoLeyendaConsumos2, $colorShadowLeyenda, $colorFondoLeyenda, $colorTextoLeyenda, $colorBordeLeyenda;
-       
+    */  
+    
     // Create the graph. These two calls are always required
-    $graph = new Graph(830,350);
+    $graph = new Graph(self::GRAFICA_WIDTH_PX, self::GRAFICA_HEIGHT_PX);
     $graph->SetScale("textint");
     $graph->title->Set("MOVIMIENTOS DE STOCK");
     $graph->subtitle->Set($subtitulo." (".$totalRango." ".$tipoRango.").");
@@ -96,10 +127,10 @@ class PDF extends PDF_MC_Table
     $graph->xaxis->title->Set('Mes');
     $graph->xaxis->title->SetColor($colorNombreEjeX);
     $graph->xaxis->SetColor($colorEjeX); 
-    $graph->xaxis->SetTitlemargin(5);
+    $graph->xaxis->SetTitlemargin(8.2);
     $graph->xaxis->SetLabelMargin(8);
     // Setup Y-axis title
-    $graph->yaxis->title->Set('Cantidad');
+    $graph->yaxis->title->Set('Cantidad de Plásticos');
     $graph->yaxis->title->SetColor($colorNombreEjeY);
     $graph->yaxis->SetColor($colorEjeY);
     $graph->yaxis->SetTitlemargin(60);
@@ -111,67 +142,211 @@ class PDF extends PDF_MC_Table
     $graph->yaxis->HideTicks(false,false);
 
     ///*************************************************** INICIO Gráficas con los consumos del período: ************************************
-    // Create the bar plots
-    $b1 = new BarPlot($data1);
-    $b2 = new BarPlot($data2);
-    $b3 = new BarPlot($data3);
-    $b4 = new BarPlot($data4);
-
-    $consumosTemp = $totales[0] + $totales[2] + $totales[3];
-    $consumos = number_format($consumosTemp, 0, ',', '.');
-
-    $gbplot = new GroupBarPlot(array($b1,$b2,$b3,$b4));
-    $graph->Add($gbplot);
-      
-    $b1->value->Show();
-    $b1->SetColor($colorBordeRetiros);
-    $b1->SetFillColor($colorRetirosGrafica);
-    $b1->SetLegend("Retiros");
-    $b1->SetWidth(0.8);
-    $b1->value->SetAlign('left','center');
-    $b1->value->SetMargin(30);
-    $b1->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
-    $b1->value->SetAngle(75);
-    $b1->value->SetFormatCallback(formatoDato); 
-    /*$b1->value->SetFormat('%d');*/   
-    //$b1->value->HideZero();
-
-    $b2->value->Show();
-    $b2->SetColor($colorBordeIngresos);
-    $b2->SetFillColor($colorIngresosGrafica);
-    $b2->SetLegend("Ingresos");
-    $b2->SetWidth(0.8);
-    $b2->value->SetMargin(30);
-    $b2->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
-    $b2->value->SetAngle(75);
-    $b2->value->SetFormatCallback("formatoDato"); 
-    /*$b2->value->SetFormat('%d');*/
-    //$b2->value->HideZero();
-
-    $b3->value->Show();
-    $b3->SetColor($colorBordeRenos);
-    $b3->SetFillColor($colorRenosGrafica);
-    $b3->SetLegend("Renos");
-    $b3->SetWidth(0.8);
-    $b3->value->SetMargin(30);
-    $b3->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
-    $b3->value->SetAngle(75);
-    $b3->value->SetFormatCallback(formatoDato); 
-    /*$b3->value->SetFormat('%d');*/
-    //$b3->value->HideZero();
-
-    $b4->value->Show();
-    $b4->SetColor($colorBordeDestrucciones);
-    $b4->SetFillColor($colorDestruccionesGrafica);
-    $b4->SetLegend("Destrucciones");
-    $b4->SetWidth(0.8);
-    $b4->value->SetMargin(30);
-    $b4->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
-    $b4->value->SetAngle(75);
-    $b4->value->SetFormatCallback(formatoDato); 
-    /*$b4->value->SetFormat('%d');*/
-    //$b4->value->HideZero();
+    /// Primero detecto si es la gráfica de UN solo tipo, o de varios:
+    /// b1 - Retiros
+    /// b2 - Ingresos
+    /// b3 - Renos
+    /// b4 - Destrucciones
+    /// b5 - Ajustes Retiros
+    /// b6 - Ajustes Ingresos
     
+    $tipoMov = '';
+    $unMov = false;
+    $mostrarB1 = true;
+    $mostrarB2 = true;
+    $mostrarB3 = true;
+    $mostrarB4 = true;
+    $mostrarB5 = true;
+    $mostrarB6 = true;
+    if (stripos($subtitulo, 'Movimientos totales') !== FALSE) {
+      $tipoMov = 'Todos';
+    }
+    elseif (stripos($subtitulo, 'Movimientos') !== FALSE){
+      $tipoMov = 'Clientes';
+      $mostrarB5 = false;
+      $mostrarB6 = false;
+    }
+    elseif (stripos($subtitulo, 'Ajustes') !== FALSE){
+      $tipoMov = 'Ajustes';
+      $mostrarB1 = false;
+      $mostrarB2 = false;
+      $mostrarB3 = false;
+      $mostrarB4 = false;
+    }
+    elseif (stripos($subtitulo, 'AJUSTE Retiros') !== FALSE) {
+      $tipoMov = 'AjuRet';
+      $unMov = true;
+      $mostrarB1 = false;
+      $mostrarB2 = false;
+      $mostrarB3 = false;
+      $mostrarB4 = false;
+      $mostrarB6 = false;
+    }
+    elseif (stripos($subtitulo, 'Renovaciones') !== FALSE) {
+      $tipoMov = 'Renos';
+      $unMov = true;
+      $mostrarB1 = false;
+      $mostrarB2 = false;
+      $mostrarB4 = false;
+      $mostrarB5 = false;
+      $mostrarB6 = false;
+    }
+    elseif (stripos($subtitulo, 'AJUSTE Ingresos') !== FALSE) {
+      $tipoMov = 'AjuIng';
+      $unMov = true;
+      $mostrarB1 = false;
+      $mostrarB2 = false;
+      $mostrarB3 = false;
+      $mostrarB4 = false;
+      $mostrarB5 = false;     
+    }
+    elseif (stripos($subtitulo, 'Destrucciones') !== FALSE) {
+      $tipoMov = 'Destrucciones';
+      $unMov = true;
+      $mostrarB1 = false;
+      $mostrarB2 = false;
+      $mostrarB3 = false;
+      $mostrarB5 = false;
+      $mostrarB6 = false;
+    }
+    elseif (stripos($subtitulo, 'Retiros') !== FALSE) {
+      $tipoMov = 'Retiros';
+      $unMov = true;
+      $mostrarB2 = false;
+      $mostrarB3 = false;
+      $mostrarB4 = false;
+      $mostrarB5 = false;
+      $mostrarB6 = false;
+    }
+    else {
+      $tipoMov = 'Ingresos';
+      $unMov = true;
+      $mostrarB1 = false;
+      $mostrarB3 = false;
+      $mostrarB4 = false;
+      $mostrarB5 = false;
+      $mostrarB6 = false;
+    }
+    
+    $barras = array();
+    // Create the bar plots
+    if ($mostrarB1){
+      $b1 = new BarPlot($data1);
+      array_push($barras, $b1);
+    }
+    if ($mostrarB2){
+      $b2 = new BarPlot($data2);
+      array_push($barras, $b2);
+    }
+    if ($mostrarB3){
+      $b3 = new BarPlot($data3);
+      array_push($barras, $b3);
+    }
+    if ($mostrarB4){
+      $b4 = new BarPlot($data4);
+      array_push($barras, $b4);
+    }
+    if ($mostrarB5){
+      $b5 = new BarPlot($data5);
+      array_push($barras, $b5);
+    }
+    if ($mostrarB6){
+      $b6 = new BarPlot($data6);
+      array_push($barras, $b6);
+    }
+    
+    if (($tipoMov === 'Clientes')||($tipoMov === 'Todos')){
+      $consumosTemp = $totales[0] + $totales[2] + $totales[3];
+      $consumos = number_format($consumosTemp, 0, ',', '.');
+    }
+    
+    $gbplot = new GroupBarPlot($barras);
+    $graph->Add($gbplot);
+     
+    if ($mostrarB1){
+      $b1->value->Show();
+      $b1->SetColor($colorBordeRetiros);
+      $b1->SetFillColor($colorRetirosGrafica);
+      $b1->SetLegend("Retiros");
+      $b1->SetWidth(0.8);
+      $b1->value->SetAlign('left','center');
+      $b1->value->SetMargin(30);
+      $b1->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
+      $b1->value->SetAngle(75);
+      $b1->value->SetFormatCallback(formatoDato); 
+      /*$b1->value->SetFormat('%d');*/   
+      $b1->value->HideZero();
+    }
+    
+    if ($mostrarB2){
+      $b2->value->Show();
+      $b2->SetColor($colorBordeIngresos);
+      $b2->SetFillColor($colorIngresosGrafica);
+      $b2->SetLegend("Ingresos");
+      $b2->SetWidth(0.8);
+      $b2->value->SetMargin(30);
+      $b2->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
+      $b2->value->SetAngle(75);
+      $b2->value->SetFormatCallback("formatoDato"); 
+      /*$b2->value->SetFormat('%d');*/
+      $b2->value->HideZero();
+    }
+    
+    if ($mostrarB3){
+      $b3->value->Show();
+      $b3->SetColor($colorBordeRenos);
+      $b3->SetFillColor($colorRenosGrafica);
+      $b3->SetLegend("Renos");
+      $b3->SetWidth(0.8);
+      $b3->value->SetMargin(30);
+      $b3->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
+      $b3->value->SetAngle(75);
+      $b3->value->SetFormatCallback(formatoDato); 
+      /*$b3->value->SetFormat('%d');*/
+      $b3->value->HideZero();
+    }
+    
+    if ($mostrarB4){
+      $b4->value->Show();
+      $b4->SetColor($colorBordeDestrucciones);
+      $b4->SetFillColor($colorDestruccionesGrafica);
+      $b4->SetLegend("Destrucciones");
+      $b4->SetWidth(0.8);
+      $b4->value->SetMargin(30);
+      $b4->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
+      $b4->value->SetAngle(75);
+      $b4->value->SetFormatCallback(formatoDato); 
+      /*$b4->value->SetFormat('%d');*/
+      $b4->value->HideZero();
+    }
+    
+    if ($mostrarB5){
+      $b5->value->Show();
+      $b5->SetColor($colorBordeAjusteRetiros);
+      $b5->SetFillColor($colorAjusteRetirosGrafica);
+      $b5->SetLegend("AJUSTE Retiros");
+      $b5->SetWidth(0.8);
+      $b5->value->SetAlign('left','center');
+      $b5->value->SetMargin(30);
+      $b5->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
+      $b5->value->SetAngle(75);
+      $b5->value->SetFormatCallback(formatoDato); 
+      $b5->value->HideZero();
+    }
+    
+    if ($mostrarB6){
+      $b6->value->Show();
+      $b6->SetColor($colorBordeAjusteIngresos);
+      $b6->SetFillColor($colorAjusteIngresosGrafica);
+      $b6->SetLegend("AJUSTE Ingresos");
+      $b6->SetWidth(0.8);
+      $b6->value->SetAlign('left','center');
+      $b6->value->SetMargin(30);
+      $b6->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
+      $b6->value->SetAngle(75);
+      $b6->value->SetFormatCallback(formatoDato); 
+      $b6->value->HideZero();
+    }
     ///***************************************************** FIN Gráficas con los consumos del período: *************************************
 
     ///********************************************** INICIO Generación de las gráficas con los promedios: **********************************
@@ -206,71 +381,149 @@ class PDF extends PDF_MC_Table
     */
     ///************************************************** FIN Generación de las gráficas con los promedios: *********************************
 
-    ///******************************************************** INICIO Textos con los promedios: ********************************************
-    $separacion = 0.07;
-    $posPrimero = 0.5;
-
-    $txt = new Text("DATOS:"); 
-    $txt->SetFont(FF_FONT1,FS_BOLD); 
-    $txt->Align('right');
-    $txt->SetColor($colorTituloLeyenda);
-    $txt->SetPos(0.96,0.92*$posPrimero,'right','center');
-    $txt->SetBox($colorFondoTituloLeyenda1, $colorFondoTituloLeyenda2); 
-    $graph->AddText($txt); 
-
-    $avg1 = number_format($avg1, 0, ',', '.');
-    $retiros = number_format($totales[0], 0, ',', '.');
-    $txt1 = new Text("Retiros: ".$retiros." (Avg: ".$avg1.")"); 
-    $txt1->SetFont(FF_FONT1,FS_BOLD); 
-    $txt1->SetColor($colorLeyendaRetiros);
-    $txt1->SetPos(0.98,$posPrimero+0.8*$separacion,'right','center');
-    $txt1->SetBox($colorFondoLeyendaRetiros1, $colorFondoLeyendaRetiros2); 
-    $graph->AddText($txt1); 
-
-    $avg2 = number_format($avg2, 0, ',', '.');
-    $ingresos = number_format($totales[1], 0, ',', '.');
-    $txt2 = new Text("Ingresos: ".$ingresos." (Avg: ".$avg2.")"); 
-    $txt2->SetFont(FF_FONT1,FS_BOLD); 
-    $txt2->SetColor($colorLeyendaIngresos);
-    $txt2->SetPos(0.98,$posPrimero+1.8*$separacion,'right','center');
-    $txt2->SetBox($colorFondoLeyendaIngresos1, $colorFondoLeyendaIngresos2); 
-    $graph->AddText($txt2); 
-
-    $avg3 = number_format($avg3, 0, ',', '.');
-    $renos = number_format($totales[2], 0, ',', '.');
-    $txt3 = new Text("Renos: ".$renos." (Avg: ".$avg3.")"); 
-    $txt3->SetFont(FF_FONT1,FS_BOLD); 
-    $txt3->SetColor($colorLeyendaRenos);
-    $txt3->SetPos(0.98,$posPrimero+2.8*$separacion,'right','center');
-    $txt3->SetBox($colorFondoLeyendaRenos1, $colorFondoLeyendaRenos2); 
-    $graph->AddText($txt3); 
-
-    $avg4 = number_format($avg4, 0, ',', '.');
-    $destrucciones = number_format($totales[3], 0, ',', '.');
-    $txt4 = new Text("Destrucciones: ".$destrucciones." (Avg: ".$avg4.")"); 
-    $txt4->SetFont(FF_FONT1,FS_BOLD); 
-    $txt4->SetColor($colorLeyendaDestrucciones);
-    $txt4->SetPos(0.98,$posPrimero+3.8*$separacion,'right','center');
-    $txt4->SetBox($colorFondoLeyendaDestrucciones1, $colorFondoLeyendaDestrucciones2); 
-    $graph->AddText($txt4); 
-
-    $avg5 = number_format($avg5, 0, ',', '.');
-    $txt5 = new Text("Consumos: ".$consumos." (Avg: ".$avg5.")"); 
-    $txt5->SetFont(FF_FONT1,FS_BOLD); 
-    $txt5->SetColor($colorLeyendaConsumos);
-    $txt5->SetPos(0.98,$posPrimero+5.05*$separacion,'right','center');
-    $txt5->SetBox($colorFondoLeyendaConsumos1, $colorFondoLeyendaConsumos2); 
-    $graph->AddText($txt5);
-    ///************************************************************ FIN Textos con los promedios: *******************************************
-
+    ///***************************************************** Cálculo Posición de Legend y Textos según tipo: ********************************
+    if ($unMov){
+      $posLegendX = 0.03;
+      $posLegendY = 0.10;
+      $posTituloX = 0.96;
+      $posTituloY = 0.22;
+      $separacion = 0;
+      $posPrimeroX = 0.98;
+      $posPrimeroY = $posTituloY + 0.08;
+    }
+    elseif ($tipoMov === 'Ajustes'){
+      $posLegendX = 0.03;
+      $posLegendY = 0.10;
+      $posTituloX = 0.96;
+      $posTituloY = 0.26;
+      $separacion = 0.07;
+      $posPrimeroX = 0.98;
+      $posPrimeroY = $posTituloY + 0.08;
+    }
+    elseif ($tipoMov === 'Clientes'){
+      $posLegendX = 0.03;
+      $posLegendY = 0.10;
+      $posTituloX = 0.96;
+      $posTituloY = 0.35;
+      $separacion = 0.07;
+      $posPrimeroX = 0.98;
+      $posPrimeroY = $posTituloY + 0.08;
+    }
+    else {
+      $posLegendX = 0.03;
+      $posLegendY = 0.10;
+      $posTituloX = 0.96;
+      $posTituloY = 0.42;
+      $separacion = 0.07;
+      $posPrimeroX = 0.98;
+      $posPrimeroY = $posTituloY + 0.08;
+    }
+    
+    ///************************************************** FIN Cálculo Posición de Legend y Textos según tipo: *******************************
+    
+    ///****************************************************************Formato LEGEND *******************************************************
     $graph->legend->SetShadow($colorShadowLeyenda,1);
-    $graph->legend->SetPos(0.5,0.95,'center','bottom');
-    $graph->legend->SetPos(0.015,0.18,'right','top');
+    $graph->legend->SetPos($posLegendX, $posLegendY,'right','top');
     //$graph->legend->SetLayout(LEGEND_VER);
     $graph->legend->SetColumns(1);
     $graph->legend->SetColor($colorTextoLeyenda, $colorBordeLeyenda);
     $graph->legend->SetFillColor($colorFondoLeyenda);
+    ///************************************************************ FIN Formato LEGEND ******************************************************
+    
+    ///******************************************************** INICIO Textos con los promedios: ********************************************
+    $txt = new Text("DATOS:"); 
+    $txt->SetFont(FF_FONT1,FS_BOLD); 
+    $txt->Align('right');
+    $txt->SetColor($colorTituloLeyenda);
+    $txt->SetPos($posTituloX, $posTituloY,'right','center');
+    $txt->SetBox($colorFondoTituloLeyenda1, $colorFondoTituloLeyenda2); 
+    $graph->AddText($txt); 
 
+    $indSeparacion = 0;
+    
+    if (($mostrarB1)||($tipoMov === 'Todos')||($tipoMov === 'Clientes')){
+      $avg1 = number_format($avg1, 0, ',', '.');
+      $retiros = number_format($totales[0], 0, ',', '.');
+      $txt1 = new Text("Retiros: ".$retiros." (Avg: ".$avg1.")"); 
+      $txt1->SetFont(FF_FONT1,FS_BOLD); 
+      $txt1->SetColor($colorLeyendaRetiros);
+      $txt1->SetPos($posPrimeroX, $posPrimeroY,'right','center');
+      $txt1->SetBox($colorFondoLeyendaRetiros1, $colorFondoLeyendaRetiros2); 
+      $graph->AddText($txt1); 
+      $indSeparacion ++;
+    }
+    
+    if (($mostrarB3)||($tipoMov === 'Todos')||($tipoMov === 'Clientes')){
+      $avg3 = number_format($avg3, 0, ',', '.');
+      $renos = number_format($totales[2], 0, ',', '.');
+      $txt3 = new Text("Renos: ".$renos." (Avg: ".$avg3.")"); 
+      $txt3->SetFont(FF_FONT1,FS_BOLD); 
+      $txt3->SetColor($colorLeyendaRenos);
+      $txt3->SetPos($posPrimeroX, $posPrimeroY+$indSeparacion*$separacion,'right','center');
+      $txt3->SetBox($colorFondoLeyendaRenos1, $colorFondoLeyendaRenos2); 
+      $graph->AddText($txt3);
+      $indSeparacion++;
+    }
+    
+    if (($mostrarB4)||($tipoMov === 'Todos')||($tipoMov === 'Clientes')){
+      $avg4 = number_format($avg4, 0, ',', '.');
+      $destrucciones = number_format($totales[3], 0, ',', '.');
+      $txt4 = new Text("Destrucciones: ".$destrucciones." (Avg: ".$avg4.")"); 
+      $txt4->SetFont(FF_FONT1,FS_BOLD); 
+      $txt4->SetColor($colorLeyendaDestrucciones);
+      $txt4->SetPos($posPrimeroX, $posPrimeroY+$indSeparacion*$separacion,'right','center');
+      $txt4->SetBox($colorFondoLeyendaDestrucciones1, $colorFondoLeyendaDestrucciones2); 
+      $graph->AddText($txt4);
+      $indSeparacion++;
+    }
+    
+    if (($tipoMov === 'Clientes')||($tipoMov === 'Todos')){
+      $avg5 = number_format($avg5, 0, ',', '.');
+      $txt5 = new Text("Consumos: ".$consumos." (Avg: ".$avg5.")"); 
+      $txt5->SetFont(FF_FONT1,FS_BOLD); 
+      $txt5->SetColor($colorLeyendaConsumos);
+      $txt5->SetPos($posPrimeroX, $posPrimeroY+$indSeparacion*$separacion,'right','center');
+      $txt5->SetBox($colorFondoLeyendaConsumos1, $colorFondoLeyendaConsumos2); 
+      $graph->AddText($txt5);
+      $indSeparacion++;
+    }
+    
+    if (($mostrarB2)||($tipoMov === 'Todos')||($tipoMov === 'Clientes')){
+      $avg2 = number_format($avg2, 0, ',', '.');
+      $ingresos = number_format($totales[1], 0, ',', '.');
+      $txt2 = new Text("Ingresos: ".$ingresos." (Avg: ".$avg2.")"); 
+      $txt2->SetFont(FF_FONT1,FS_BOLD); 
+      $txt2->SetColor($colorLeyendaIngresos);
+      $txt2->SetPos($posPrimeroX, $posPrimeroY+$indSeparacion*$separacion,'right','center');
+      $txt2->SetBox($colorFondoLeyendaIngresos1, $colorFondoLeyendaIngresos2); 
+      $graph->AddText($txt2); 
+      $indSeparacion++;
+    }
+    
+    if (($mostrarB5)||($tipoMov === 'Ajustes')||($tipoMov === 'Todos')){
+      $avg41 = number_format($avg41, 0, ',', '.');
+      $ajusteRetiros = number_format($totales[4], 0, ',', '.');
+      $txt41 = new Text("AJUSTE Retiros: ".$ajusteRetiros." (Avg: ".$avg41.")"); 
+      $txt41->SetFont(FF_FONT1,FS_BOLD); 
+      $txt41->SetColor($colorLeyendaAjusteRetiros);
+      $txt41->SetPos($posPrimeroX, $posPrimeroY+$indSeparacion*$separacion,'right','center');
+      $txt41->SetBox($colorFondoLeyendaAjusteRetiros1, $colorFondoLeyendaAjusteRetiros2); 
+      $graph->AddText($txt41);
+      $indSeparacion++;
+    }
+    
+    if (($mostrarB6)||($tipoMov === 'Ajustes')||($tipoMov === 'Todos')){
+      $avg42 = number_format($avg42, 0, ',', '.');
+      $ajusteIngresos = number_format($totales[5], 0, ',', '.');
+      $txt42 = new Text("AJUSTE Ingresos: ".$ajusteIngresos." (Avg: ".$avg42.")"); 
+      $txt42->SetFont(FF_FONT1,FS_BOLD); 
+      $txt42->SetColor($colorLeyendaAjusteIngresos);
+      $txt42->SetPos($posPrimeroX, $posPrimeroY+$indSeparacion*$separacion,'right','center');
+      $txt42->SetBox($colorFondoLeyendaAjusteIngresos1, $colorFondoLeyendaAjusteIngresos2); 
+      $graph->AddText($txt42);
+    }
+    ///************************************************************ FIN Textos con los promedios: *******************************************
+    
     if ($destino === 'pdf'){
       $timestamp = date('dmY_His');
       $nombreArchivo = $nombreGrafica.$timestamp.".png";
@@ -287,7 +540,7 @@ class PDF extends PDF_MC_Table
       //Establezco las coordenadas del borde de arriba a la izquierda de la tabla:
       $this->SetY(25);
 
-      $titulo = utf8_decode("RESULTADO ESTADÍSTICAS");
+      $titulo = utf8_decode("GRÁFICA CON LAS ESTADÍSTICAS:");
       $tam = $this->GetStringWidth($titulo);
       $anchoPagina = $this->GetPageWidth();
       $xInicio = ($anchoPagina-$tam)/2;
@@ -295,26 +548,32 @@ class PDF extends PDF_MC_Table
 
       $this->Cell($tam, 1.5*$h, $titulo, 0, 0, 'C', 0);
       $this->Ln(20);
+      
+      list($anchoGrafica, $altoGrafica) = $this->resizeToFit($fileName, self::GRAFICA_WIDTH_MM, self::GRAFICA_HEIGHT_MM);
+      $xGrafica = round(($anchoPagina - $anchoGrafica)/2);
       $y = $this->getY();
-      $this->Image($fileName, 20, $y, 0, 80);
+      $this->Image($fileName, $xGrafica, $y, $anchoGrafica, $altoGrafica);
     }
     else {
       $graph->Stroke();
-      //Mandarlo al navegador
       $graph->img->Headers();
       $graph->img->Stream();
     }  
   }
 
-  function graficarTorta($subtitulo, $data, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg5, $destino, $nombreGrafica){
-    global $dirGraficas, $h, $coloresTorta, $colorLeyendaRetiros, $colorLeyendaRenos, $colorShadowLeyendaPie, $colorTituloLeyendaPie;
-    global $colorFondoTituloLeyendaPie1, $colorFondoTituloLeyendaPie2, $colorFondoLeyenda, $colorTextoLeyenda, $colorBordeLeyenda;
-    global $colorLeyendaDestrucciones, $colorLeyendaIngresos, $colorLeyendaConsumos, $colorBackgroundTorta;
-    global $colorFondoLeyendaRetiros1, $colorFondoLeyendaRetiros2, $colorFondoLeyendaRenos1, $colorFondoLeyendaRenos2, $colorFondoLeyendaDestrucciones1, $colorFondoLeyendaDestrucciones2, $colorFondoLeyendaIngresos1, $colorFondoLeyendaIngresos2;
-    global $colorFondoLeyendaConsumos1, $colorFondoLeyendaConsumos2, $colorPorcentajes;
-
+  function graficarTorta($subtitulo, $datos, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg41, $avg42, $avg5, $destino, $nombreGrafica){
+    global $dirGraficas, $h;
+    include "css/colores.php"; 
+//    global $coloresTorta, $colorLeyendaRetiros, $colorLeyendaRenos, $colorShadowLeyendaPie, $colorTituloLeyendaPie;
+//    global $colorFondoTituloLeyendaPie1, $colorFondoTituloLeyendaPie2, $colorFondoLeyenda, $colorTextoLeyenda, $colorBordeLeyenda;
+//    global $colorLeyendaDestrucciones, $colorLeyendaIngresos, $colorLeyendaConsumos, $colorBackgroundTorta;
+//    global $colorFondoLeyendaRetiros1, $colorFondoLeyendaRetiros2, $colorFondoLeyendaRenos1, $colorFondoLeyendaRenos2, $colorFondoLeyendaDestrucciones1, $colorFondoLeyendaDestrucciones2, $colorFondoLeyendaIngresos1, $colorFondoLeyendaIngresos2;
+//    global $colorFondoLeyendaConsumos1, $colorFondoLeyendaConsumos2, $colorPorcentajes;
+//    global $colorFondoLeyendaAjusteRetiros1, $colorFondoLeyendaAjusteRetiros2, $colorFondoLeyendaAjusteIngresos1, $colorFondoLeyendaAjusteIngresos2;
+//    global $colorLeyendaAjusteRetiros, $colorLeyendaAjusteIngresos; 
+      
     // A new pie graph
-    $graph = new PieGraph(750,350, 'auto');
+    $graph = new PieGraph(self::GRAFICA_WIDTH_PX, self::GRAFICA_HEIGHT_PX, 'auto');
     // Setup background
 
     $graph->title->Set("MOVIMIENTOS DE STOCK");
@@ -323,28 +582,252 @@ class PDF extends PDF_MC_Table
     $graph->SetMargin(1,1,40,1);
     $graph->SetMarginColor($colorBackgroundTorta);
 
-    // Setup the pie plot
-    $p1 = new PiePlot3D($data);
+    ///*************************************************** INICIO Gráficas con los consumos del período: ************************************
+    /// Primero detecto si es la gráfica de UN solo tipo, o de varios:
+    /// b1 - Retiros
+    /// b2 - Ingresos
+    /// b3 - Renos
+    /// b4 - Destrucciones
+    /// b5 - Ajustes Retiros
+    /// b6 - Ajustes Ingresos
+    
+    $tipoMov = '';
+    $unMov = false;
+    $mostrarB1 = true;
+    $mostrarB2 = true;
+    $mostrarB3 = true;
+    $mostrarB4 = true;
+    $mostrarB5 = true;
+    $mostrarB6 = true;
+    if (stripos($subtitulo, 'Movimientos totales') !== FALSE) {
+      $tipoMov = 'Todos';
+    }
+    elseif (stripos($subtitulo, 'Movimientos') !== FALSE){
+      $tipoMov = 'Clientes';
+      $mostrarB5 = false;
+      $mostrarB6 = false;
+    }
+    elseif (stripos($subtitulo, 'Ajustes') !== FALSE){
+      $tipoMov = 'Ajustes';
+      $mostrarB1 = false;
+      $mostrarB2 = false;
+      $mostrarB3 = false;
+      $mostrarB4 = false;
+    }
+    elseif (stripos($subtitulo, 'AJUSTE Retiros') !== FALSE) {
+      $tipoMov = 'AjuRet';
+      $unMov = true;
+      $mostrarB1 = false;
+      $mostrarB2 = false;
+      $mostrarB3 = false;
+      $mostrarB4 = false;
+      $mostrarB6 = false;
+    }
+    elseif (stripos($subtitulo, 'Renovaciones') !== FALSE) {
+      $tipoMov = 'Renos';
+      $unMov = true;
+      $mostrarB1 = false;
+      $mostrarB2 = false;
+      $mostrarB4 = false;
+      $mostrarB5 = false;
+      $mostrarB6 = false;
+    }
+    elseif (stripos($subtitulo, 'AJUSTE Ingresos') !== FALSE) {
+      $tipoMov = 'AjuIng';
+      $unMov = true;
+      $mostrarB1 = false;
+      $mostrarB2 = false;
+      $mostrarB3 = false;
+      $mostrarB4 = false;
+      $mostrarB5 = false;     
+    }
+    elseif (stripos($subtitulo, 'Destrucciones') !== FALSE) {
+      $tipoMov = 'Destrucciones';
+      $unMov = true;
+      $mostrarB1 = false;
+      $mostrarB2 = false;
+      $mostrarB3 = false;
+      $mostrarB5 = false;
+      $mostrarB6 = false;
+    }
+    elseif (stripos($subtitulo, 'Retiros') !== FALSE) {
+      $tipoMov = 'Retiros';
+      $unMov = true;
+      $mostrarB2 = false;
+      $mostrarB3 = false;
+      $mostrarB4 = false;
+      $mostrarB5 = false;
+      $mostrarB6 = false;
+    }
+    else {
+      $tipoMov = 'Ingresos';
+      $unMov = true;
+      $mostrarB1 = false;
+      $mostrarB3 = false;
+      $mostrarB4 = false;
+      $mostrarB5 = false;
+      $mostrarB6 = false;
+    }
+    
+    ///************************* Comienza separación del array con los datos para mejora manipulación según el caso *************************
+    $ajusteIngresos = array_pop($datos);
+    $ajusteRetiros = array_pop($datos);
+    $destrucciones = array_pop($datos);
+    $renos = array_pop($datos);
+    $ingresos = array_pop($datos);
+    $retiros = array_pop($datos);
+    
+    $retiros = number_format($retiros, 0, ',', '.');
+    $ingresos = number_format($ingresos, 0, ',', '.');
+    $renos = number_format($renos, 0, ',', '.');
+    $destrucciones = number_format($destrucciones, 0, ',', '.');
+    $ajusteRetiros = number_format($ajusteRetiros, 0, ',', '.');
+    $ajusteIngresos = number_format($ajusteIngresos, 0, ',', '.');
+    $consumosTemp = $retiros+$renos+$destrucciones;
+    $consumos = number_format($consumosTemp, 0, ',', '.');
+    
+    $colorAjusteIngresos = array_pop($coloresTorta);
+    $colorAjusteRetiros = array_pop($coloresTorta);
+    $colorDestrucciones = array_pop($coloresTorta);
+    $colorRenos = array_pop($coloresTorta);
+    $colorIngresos = array_pop($coloresTorta);
+    $colorRetiros = array_pop($coloresTorta);
+    
+    $colores = array();    
+    ///*************************** FIN separación del array con los datos para mejora manipulación según el caso ****************************
+    
+    switch ($tipoMov){
+      case 'Retiros': $p1 = new PiePlot3D($retiros);
+                      $colores[] = $colorRetiros;
+                      break;
+      case 'Renos': $p1 = new PiePlot3D($renos);
+                    $colores[] = $colorRenos;
+                    break;
+      case 'Destrucciones': $p1 = new PiePlot3D($destrucciones);
+                            $colores[] = $colorDestrucciones;
+                            break;
+      case 'Ingresos': $p1 = new PiePlot3D($ingresos);
+                       $colores[] = $colorIngresos;
+                       break;
+      case 'AjuRet':  $p1 = new PiePlot3D($ajusteRetiros);
+                      $colores[] = $colorAjusteRetiros;
+                      break;
+      case 'AjuIng':  $p1 = new PiePlot3D($ajusteIngresos);
+                      $colores[] = $colorAjusteIngresos;
+                      break;
+      case 'Ajustes': $data = array();
+                      $data[]= $ajusteRetiros;
+                      $data[] = $ajusteIngresos;
+                      $colores[] = $colorAjusteRetiros;
+                      $colores[] = $colorAjusteIngresos;
+                      $p1 = new PiePlot3D($data);
+                      break;
+      case 'Clientes': $data = array();
+                       $data[] = $retiros;
+                       $data[] = $renos;
+                       $data[] = $destrucciones;
+                       $data[] = $ingresos;
+                       $colores[] = $colorRetiros;
+                       $colores[] = $colorRenos;
+                       $colores[] = $colorDestrucciones;
+                       $colores[] = $colorIngresos;
+                       $p1 = new PiePlot3D($data);
+                       break;
+      case 'Todos': $data = array();
+                    $data[] = $retiros;
+                    $data[] = $renos;
+                    $data[] = $destrucciones;
+                    $data[] = $ingresos;
+                    $data[] = $ajusteRetiros;
+                    $data[] = $ajusteIngresos;
+                    $colores[] = $colorRetiros;
+                    $colores[] = $colorRenos;
+                    $colores[] = $colorDestrucciones;
+                    $colores[] = $colorIngresos;
+                    $colores[] = $colorAjusteRetiros;
+                    $colores[] = $colorAjusteIngresos;
+                    $p1 = new PiePlot3D($data);
+                    break;               
+      default: break;              
+    }
     
     $p1->ShowBorder(true, true);
     
     // Adjust size and position of plot
     $p1->SetSize(0.4);
-    $p1->SetCenter(0.5,0.5);
+    $p1->SetCenter(0.43,0.5);
     $p1->SetHeight(20);
     $p1->SetAngle(50);
-
-    $retiros = number_format($data[0], 0, ',', '.');
-    $ingresos = number_format($data[1], 0, ',', '.');
-    $renos = number_format($data[2], 0, ',', '.');
-    $destrucciones = number_format($data[3], 0, ',', '.');
-    $consumosTemp = $data[0]+$data[2]+$data[3];
-    $consumos = number_format($consumosTemp, 0, ',', '.');
-    $p1->SetLegends(array("Retiros: $retiros","Ingresos: $ingresos","Renos: $renos","Destrucciones: $destrucciones"));
-
+    
+    $leyendas = array();
+    $retirosLeyenda = "Retiros: $retiros";
+    $renosLeyenda = "Renos: $renos";
+    $destruccionesLeyenda = "Destrucciones: $destrucciones";
+    $ingresosLeyenda = "Ingresos: $ingresos";
+    $ajuRetirosLeyenda = "Ajuste Retiros: $ajusteRetiros";
+    $ajuIngresosLeyenda = "Ajuste Ingresos: $ajusteIngresos";
+    
+    if (($mostrarB1)||($tipoMov === 'Clientes')||($tipoMov === 'Todos')){ 
+      $leyendas[] = $retirosLeyenda;
+    }
+    if (($mostrarB3)||($tipoMov === 'Clientes')||($tipoMov === 'Todos')){
+      $leyendas[] = $renosLeyenda;
+    }
+    if (($mostrarB4)||($tipoMov === 'Clientes')||($tipoMov === 'Todos')){
+      $leyendas[] = $destruccionesLeyenda;
+    }
+    if (($mostrarB2)||($tipoMov === 'Clientes')||($tipoMov === 'Todos')){
+      $leyendas[] = $ingresosLeyenda;
+    }
+    if (($mostrarB5)||($tipoMov === 'Ajustes')||($tipoMov === 'Todos')){ 
+      $leyendas[] = $ajuRetirosLeyenda;
+    }
+    if (($mostrarB6)||($tipoMov === 'Ajustes')||($tipoMov === 'Todos')){ 
+      $leyendas[] = $ajuIngresosLeyenda;
+    }
+    
+    $p1->SetLegends($leyendas);
+    
+    ///***************************************************** Cálculo Posición de Legend y Textos según tipo: ********************************
+    if ($unMov){
+      $posLegendX = 0.03;
+      $posLegendY = 0.12;
+      $posTituloX = 0.955;
+      $posTituloY = $posLegendY + 0.12;
+      $separacion = 0;
+      $posPrimeroX = 0.97;
+      $posPrimeroY = $posTituloY + 0.09;
+    }
+    elseif ($tipoMov === 'Ajustes'){
+      $posLegendX = 0.03;
+      $posLegendY = 0.12;
+      $posTituloX = 0.935;
+      $posTituloY = $posLegendY + 0.15;
+      $separacion = 0.07;
+      $posPrimeroX = 0.97;
+      $posPrimeroY = $posTituloY + 0.08;
+    }
+    elseif ($tipoMov === 'Clientes'){
+      $posLegendX = 0.03;
+      $posLegendY = 0.11;
+      $posTituloX = 0.96;
+      $posTituloY = $posLegendY + 0.22;
+      $separacion = 0.07;
+      $posPrimeroX = 0.97;
+      $posPrimeroY = $posTituloY + 0.08;
+    }
+    else {
+      $posLegendX = 0.03;
+      $posLegendY = 0.11;
+      $posTituloX = 0.96;
+      $posTituloY = $posLegendY + 0.31;
+      $separacion = 0.07;
+      $posPrimeroX = 0.97;
+      $posPrimeroY = $posTituloY + 0.08;
+    }
+    ///************************************************** FIN Cálculo Posición de Legend y Textos según tipo: *******************************  
     $graph->legend->SetShadow($colorShadowLeyendaPie,1);
-    $graph->legend->SetPos(0.5,0.95,'center','bottom');
-    $graph->legend->SetPos(0.015,0.18,'right','top');
+    $graph->legend->SetPos($posLegendX, $posLegendY,'right','top');
     $graph->legend->SetLayout(LEGEND_VER);
     $graph->legend->SetColumns(1);
     $graph->legend->SetColor($colorTextoLeyenda, $colorBordeLeyenda);
@@ -352,68 +835,104 @@ class PDF extends PDF_MC_Table
 
     // Setup the labels
     $p1->SetLabelType(PIE_VALUE_ADJPERCENTAGE);    
-    $p1->SetLabelPos(1.0);
+    $p1->SetLabelMargin(10);
 
     $p1->value->SetColor($colorPorcentajes);
     $p1->value->SetFont(FF_FONT1,FS_BOLD);    
     $p1->value->SetFormat('%d%%');  
-    $p1->ExplodeAll(14);
+    $p1->value->HideZero();
+    $p1->value->Show(); 
+    $p1->ExplodeAll(18);
     $graph->Add($p1);
     
     ///Se setean los colores para las "porciones". HAY QUE HACERLO LUEGO DEL ADD PORQUE DE LO CONTRARIO NO LOS TOMA!!!
-    $p1->SetSliceColors($coloresTorta);
+    $p1->SetSliceColors($colores);
     
     ///******************************************************** INICIO Textos con los promedios: ***************************************************************
-    $separacion = 0.07;
-    $posPrimero = 0.45;
-
     $txt = new Text("PROMEDIOS:"); 
     $txt->SetFont(FF_FONT1,FS_BOLD); 
     $txt->Align('right');
     $txt->SetColor($colorTituloLeyendaPie);
-    $txt->SetPos(0.965,$posPrimero,'right','center');
+    $txt->SetPos($posTituloX, $posTituloY,'right','center');
     $txt->SetBox($colorFondoTituloLeyendaPie1, $colorFondoTituloLeyendaPie2); 
     $graph->AddText($txt); 
 
-    $avg1 = number_format($avg1, 0, ',', '.');
-    $txt1 = new Text("Retiros: ".$avg1); 
-    $txt1->SetFont(FF_FONT1,FS_BOLD); 
-    $txt1->SetColor($colorLeyendaRetiros);
-    $txt1->SetPos(0.98,$posPrimero+$separacion,'right','center');
-    $txt1->SetBox($colorFondoLeyendaRetiros1, $colorFondoLeyendaRetiros2); 
-    $graph->AddText($txt1); 
-
-    $avg2 = number_format($avg2, 0, ',', '.');
-    $txt2 = new Text("Ingresos: ".$avg2); 
-    $txt2->SetFont(FF_FONT1,FS_BOLD); 
-    $txt2->SetColor($colorLeyendaIngresos);
-    $txt2->SetPos(0.98,$posPrimero+2*$separacion,'right','center');
-    $txt2->SetBox($colorFondoLeyendaIngresos1, $colorFondoLeyendaIngresos2); 
-    $graph->AddText($txt2); 
-
-    $avg3 = number_format($avg3, 0, ',', '.');
-    $txt3 = new Text("Renos: ".$avg3); 
-    $txt3->SetFont(FF_FONT1,FS_BOLD); 
-    $txt3->SetColor($colorLeyendaRenos);
-    $txt3->SetPos(0.98,$posPrimero+3*$separacion,'right','center');
-    $txt3->SetBox($colorFondoLeyendaRenos1, $colorFondoLeyendaRenos2); 
-    $graph->AddText($txt3); 
-
-    $avg4 = number_format($avg4, 0, ',', '.');
-    $txt4 = new Text("Destrucciones: ".$avg4); 
-    $txt4->SetFont(FF_FONT1,FS_BOLD); 
-    $txt4->SetColor($colorLeyendaDestrucciones);
-    $txt4->SetPos(0.98,$posPrimero+4*$separacion,'right','center');
-    $txt4->SetBox($colorFondoLeyendaDestrucciones1, $colorFondoLeyendaDestrucciones2); 
-    $graph->AddText($txt4); 
-
-    $avg5 = number_format($avg5, 0, ',', '.');
-    $txt5 = new Text("Consumos: ".$avg5." (Total ".$consumos.")"); 
-    $txt5->SetFont(FF_FONT1,FS_BOLD); 
-    $txt5->SetColor($colorLeyendaConsumos);
-    $txt5->SetPos(0.98,$posPrimero+5*$separacion,'right','center');
-    $txt5->SetBox($colorFondoLeyendaConsumos1, $colorFondoLeyendaConsumos2); 
-    $graph->AddText($txt5); 
+    $indSeparacion = 0;
+    if (($mostrarB1)||($tipoMov === 'Todos')||($tipoMov === 'Clientes')){
+      $avg1 = number_format($avg1, 0, ',', '.');
+      $txt1 = new Text("Retiros: ".$avg1); 
+      $txt1->SetFont(FF_FONT1,FS_BOLD); 
+      $txt1->SetColor($colorLeyendaRetiros);
+      $txt1->SetPos($posPrimeroX, $posPrimeroY,'right','center');
+      $txt1->SetBox($colorFondoLeyendaRetiros1, $colorFondoLeyendaRetiros2); 
+      $graph->AddText($txt1); 
+      $indSeparacion++;
+    }
+    
+    if (($mostrarB3)||($tipoMov === 'Todos')||($tipoMov === 'Clientes')){
+      $avg3 = number_format($avg3, 0, ',', '.');
+      $txt3 = new Text("Renos: ".$avg3); 
+      $txt3->SetFont(FF_FONT1,FS_BOLD); 
+      $txt3->SetColor($colorLeyendaRenos);
+      $txt3->SetPos($posPrimeroX, $posPrimeroY+$indSeparacion*$separacion,'right','center');
+      $txt3->SetBox($colorFondoLeyendaRenos1, $colorFondoLeyendaRenos2); 
+      $graph->AddText($txt3); 
+      $indSeparacion++;
+    }
+    
+    if (($mostrarB4)||($tipoMov === 'Todos')||($tipoMov === 'Clientes')){
+      $avg4 = number_format($avg4, 0, ',', '.');
+      $txt4 = new Text("Destrucciones: ".$avg4); 
+      $txt4->SetFont(FF_FONT1,FS_BOLD); 
+      $txt4->SetColor($colorLeyendaDestrucciones);
+      $txt4->SetPos($posPrimeroX, $posPrimeroY+$indSeparacion*$separacion,'right','center');
+      $txt4->SetBox($colorFondoLeyendaDestrucciones1, $colorFondoLeyendaDestrucciones2); 
+      $graph->AddText($txt4); 
+      $indSeparacion++;
+    }
+    
+    if (($tipoMov === 'Clientes')||($tipoMov === 'Todos')){
+      $avg5 = number_format($avg5, 0, ',', '.');
+      $txt5 = new Text("Consumos: ".$avg5." (Total ".$consumos.")"); 
+      $txt5->SetFont(FF_FONT1,FS_BOLD); 
+      $txt5->SetColor($colorLeyendaConsumos);
+      $txt5->SetPos($posPrimeroX, $posPrimeroY+$indSeparacion*$separacion,'right','center');
+      $txt5->SetBox($colorFondoLeyendaConsumos1, $colorFondoLeyendaConsumos2); 
+      $graph->AddText($txt5); 
+      $indSeparacion++;
+    }
+  
+    if (($mostrarB2)||($tipoMov === 'Todos')||($tipoMov === 'Clientes')){ 
+      $avg2 = number_format($avg2, 0, ',', '.');
+      $txt2 = new Text("Ingresos: ".$avg2); 
+      $txt2->SetFont(FF_FONT1,FS_BOLD); 
+      $txt2->SetColor($colorLeyendaIngresos);
+      $txt2->SetPos($posPrimeroX, $posPrimeroY+$indSeparacion*$separacion,'right','center');
+      $txt2->SetBox($colorFondoLeyendaIngresos1, $colorFondoLeyendaIngresos2); 
+      $graph->AddText($txt2); 
+      $indSeparacion++;
+    }
+    
+    if (($mostrarB5)||($tipoMov === 'Todos')||($tipoMov === 'Ajustes')){
+      $avg41 = number_format($avg41, 0, ',', '.');
+      $txt41 = new Text("Ajuste Retiros: ".$avg41); 
+      $txt41->SetFont(FF_FONT1,FS_BOLD); 
+      $txt41->SetColor($colorLeyendaAjusteRetiros);
+      $txt41->SetPos($posPrimeroX, $posPrimeroY+$indSeparacion*$separacion,'right','center');
+      $txt41->SetBox($colorFondoLeyendaAjusteRetiros1, $colorFondoLeyendaAjusteRetiros2); 
+      $graph->AddText($txt41); 
+      $indSeparacion++;
+    }
+    
+    if (($mostrarB6)||($tipoMov === 'Todos')||($tipoMov === 'Ajustes')){
+      $avg42 = number_format($avg42, 0, ',', '.');
+      $txt42 = new Text("Ajuste Ingresos: ".$avg42); 
+      $txt42->SetFont(FF_FONT1,FS_BOLD); 
+      $txt42->SetColor($colorLeyendaAjusteIngresos);
+      $txt42->SetPos($posPrimeroX, $posPrimeroY+$indSeparacion*$separacion,'right','center');
+      $txt42->SetBox($colorFondoLeyendaAjusteIngresos1, $colorFondoLeyendaAjusteIngresos2); 
+      $graph->AddText($txt42); 
+    }
     ///************************************************************ FIN Textos con los promedios: **************************************************************
 
     if ($destino === 'pdf'){
@@ -432,7 +951,7 @@ class PDF extends PDF_MC_Table
       //Establezco las coordenadas del borde de arriba a la izquierda de la tabla:
       $this->SetY(25);
 
-      $titulo = utf8_decode("RESULTADO ESTADÍSTICAS");
+      $titulo = utf8_decode("GRÁFICA CON LAS ESTADÍSTICAS:");
       $tam = $this->GetStringWidth($titulo);
       $anchoPagina = $this->GetPageWidth();
       $xInicio = ($anchoPagina-$tam)/2;
@@ -440,8 +959,11 @@ class PDF extends PDF_MC_Table
 
       $this->Cell($tam, 1.5*$h, $titulo, 0, 0, 'C', 0);
       $this->Ln(20);
+      
+      list($anchoGrafica, $altoGrafica) = $this->resizeToFit($fileName, self::GRAFICA_WIDTH_MM, self::GRAFICA_HEIGHT_MM);
+      $xGrafica = round(($anchoPagina - $anchoGrafica)/2);
       $y = $this->getY();
-      $this->Image($fileName, 20, $y, 170, 80);
+      $this->Image($fileName, $xGrafica, $y, $anchoGrafica, $altoGrafica);
     }
     else {
       $graph->Stroke();
@@ -451,6 +973,7 @@ class PDF extends PDF_MC_Table
       
     } 
   }
+  
 }
 
 ///Función que da el formato de los valores en cada columna.
@@ -553,10 +1076,16 @@ $retiros = 0;
 $ingresos = 0;
 $destrucciones = 0;
 $renos = 0;
+$ajusteRetiros = 0;
+$ajusteIngresos = 0;
+
 $retirosTotal = 0;
 $ingresosTotal = 0;
 $renosTotal = 0;
 $destruccionesTotal = 0;
+$ajusteRetirosTotal = 0;
+$ajusteIngresosTotal = 0;
+
 $totalDatos = $result->num_rows;
 $indice = $fechaInicio;
 while (($fila = $result->fetch_array(MYSQLI_BOTH)) != NULL) { 
@@ -566,12 +1095,14 @@ while (($fila = $result->fetch_array(MYSQLI_BOTH)) != NULL) {
   $fechaTemp = explode('-', $fechaFila);
   $indiceFila = $fechaTemp[0].$fechaTemp[1];
   if ($indiceFila !== $indice) {
-    if (($retiros !== 0)||($ingresos !== 0)||($renos !== 0)||($destrucciones !== 0)) 
+    if (($retiros !== 0)||($ingresos !== 0)||($renos !== 0)||($destrucciones !== 0)||($ajusteRetiros !== 0)||($ajusteIngresos !== 0)) 
       {
       $datos[$indice]->retiros = $retiros;
       $datos[$indice]->ingresos = $ingresos;
       $datos[$indice]->renos = $renos;
       $datos[$indice]->destrucciones = $destrucciones;
+      $datos[$indice]->ajusteRetiros = $ajusteRetiros;
+      $datos[$indice]->ajusteIngresos = $ajusteIngresos;
     }
     else {
       array_splice($datos,$indice, 1);
@@ -581,26 +1112,36 @@ while (($fila = $result->fetch_array(MYSQLI_BOTH)) != NULL) {
     $datos[$indiceFila]->ingresos = 0;
     $datos[$indiceFila]->renos = 0;
     $datos[$indiceFila]->destrucciones = 0;
+    $datos[$indiceFila]->ajusteRetiros = 0;
+    $datos[$indiceFila]->ajusteIngresos = 0;
     
     $indice = $indiceFila;
     $retiros = 0;
     $ingresos = 0;
     $destrucciones = 0;
     $renos = 0;
+    $ajusteRetiros = 0;
+    $ajusteIngresos = 0;
   }
   switch ($tipoActual) {
-    case "Retiro": $retiros = $retiros + $cantidad;
-                   $retirosTotal = $retirosTotal + $cantidad;
+    case "Retiro": $retiros += $cantidad;
+                   $retirosTotal += $cantidad;
                    break;
-    case "Ingreso": $ingresos = $ingresos + $cantidad;
-                    $ingresosTotal = $ingresosTotal + $cantidad;
+    case "Ingreso": $ingresos += $cantidad;
+                    $ingresosTotal += $cantidad;
                     break;
-    case "Renovación": $renos = $renos + $cantidad;
-                       $renosTotal = $renosTotal + $cantidad;
+    case "Renovación": $renos += $cantidad;
+                       $renosTotal += $cantidad;
                        break;
-    case "Destrucción": $destrucciones = $destrucciones + $cantidad;
-                        $destruccionesTotal = $destruccionesTotal + $cantidad;
-                        break;               
+    case "Destrucción": $destrucciones += $cantidad;
+                        $destruccionesTotal += $cantidad;
+                        break;  
+    case "AJUSTE Retiro": $ajusteRetiros += $cantidad;
+                          $ajusteRetirosTotal += $cantidad;
+                          break;
+    case "AJUSTE Ingreso": $ajusteIngresos += $cantidad;
+                           $ajusteIngresosTotal += $cantidad;
+                           break;                 
     default: break; 
   } 
 }
@@ -611,7 +1152,47 @@ $datos[$indice]->retiros = $retiros;
 $datos[$indice]->ingresos = $ingresos;
 $datos[$indice]->renos = $renos;
 $datos[$indice]->destrucciones = $destrucciones;
+$datos[$indice]->ajusteRetiros = $ajusteRetiros;
+$datos[$indice]->ajusteIngresos = $ajusteIngresos;
 ///**************************************************** FIN de recuperación de los datos ****************************************************
+
+///********************************************************** Recupero TIPO Movimiento ******************************************************
+$tipoMov = '';
+$unMov = false;
+if (stripos($mensaje, 'Movimientos totales') !== FALSE) {
+  $tipoMov = 'Todos';
+}
+elseif (stripos($mensaje, 'Movimientos') !== FALSE){
+  $tipoMov = 'Clientes';
+}
+elseif (stripos($mensaje, 'Ajustes') !== FALSE){
+  $tipoMov = 'Ajustes';
+}
+elseif (stripos($mensaje, 'AJUSTE Retiros') !== FALSE) {
+  $tipoMov = 'AjuRet';
+  $unMov = true;
+}
+elseif (stripos($mensaje, 'Renovaciones') !== FALSE) {
+  $tipoMov = 'Renos';
+  $unMov = true;
+}
+elseif (stripos($mensaje, 'AJUSTE Ingresos') !== FALSE) {
+  $tipoMov = 'AjuIng';
+  $unMov = true;
+}
+elseif (stripos($mensaje, 'Destrucciones') !== FALSE) {
+  $tipoMov = 'Destrucciones';
+  $unMov = true;
+}
+elseif (stripos($mensaje, 'Retiros') !== FALSE) {
+  $tipoMov = 'Retiros';
+  $unMov = true;
+}
+else {
+  $tipoMov = 'Ingresos';
+  $unMov = true;
+}  
+///******************************************************** FIN Recupero Tipo Movimiento ***************************************************    
 
 ///**************************************************** INICIO reacomodo de los datos por tipo **********************************************
 $meses = array();
@@ -619,7 +1200,9 @@ $totalRetiros = array();
 $totalIngresos = array();
 $totalRenos = array();
 $totalDestrucciones = array();
-$totales = array(0=>$retirosTotal, 1=>$ingresosTotal, 2=>$renosTotal, 3=>$destruccionesTotal);
+$totalAjusteRetiros = array();
+$totalAjusteIngresos = array();
+$totales = array(0=>$retirosTotal, 1=>$ingresosTotal, 2=>$renosTotal, 3=>$destruccionesTotal, 4=>$ajusteRetirosTotal, 5=>$ajusteIngresosTotal);
 foreach ($datos as $index => $valor){
   ///Extraigo el año a partir del índice:
   $temp = substr($index, 2, 2);
@@ -658,6 +1241,8 @@ foreach ($datos as $index => $valor){
   array_push($totalIngresos, $datos[$index]->ingresos);
   array_push($totalRenos, $datos[$index]->renos);
   array_push($totalDestrucciones, $datos[$index]->destrucciones);
+  array_push($totalAjusteRetiros, $datos[$index]->ajusteRetiros);
+  array_push($totalAjusteIngresos, $datos[$index]->ajusteIngresos);
 }
 ///****************************************************** FIN reacomodo de los datos por tipo ***********************************************
 
@@ -720,6 +1305,8 @@ $avgRetiros = ceil($retirosTotal/$total);
 $avgIngresos = ceil($ingresosTotal/$total);
 $avgRenos = ceil($renosTotal/$total);
 $avgDestrucciones = ceil($destruccionesTotal/$total);
+$avgAjusteRetiros = ceil($ajusteRetirosTotal/$total);
+$avgAjusteIngresos = ceil($ajusteIngresosTotal/$total);
 $avgConsumos = ceil($consumosTotal/$total);
 
 /*
@@ -749,7 +1336,7 @@ $hora = date('H:i');
 //********************************************************** FIN Hora y título **************************************************************
 
 ///Título para el encabezado de la página:
-$titulo = "EXPORTACIÓN DE LA GRÁFICA";
+$titulo = "ESTADÍSTICAS";
 
 //Instancio objeto de la clase:
 $pdfGrafica = new PDF();
@@ -793,6 +1380,7 @@ else {
     $nombreProducto = trim($tempProd5[0]);
   }
 }
+
 $nombreProductoMostrar1 = str_replace($aguja, "", $nombreProducto);
 $nombreProductoMostrar = substr($nombreProductoMostrar1, 0, $tamMaximoNombre);
 $nombreGrafica = "gca_".$nombreProductoMostrar."_";
@@ -801,14 +1389,21 @@ $nombreArchivo = $nombreGrafica.$timestamp.".pdf";
 $salida = $dirGraficas.$nombreArchivo;
 
 if ($tipoGrafica === "producto"){
-  $pdfGrafica->graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, 'pdf', $nombreGrafica);
-  $pdfGrafica->Output('F', $salida);
-  $pdfGrafica->graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, '', $nombreGrafica);
+  if ($unMov){
+    $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, 'pdf', $nombreGrafica);
+    $pdfGrafica->Output('F', $salida);
+    $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, '', $nombreGrafica); 
+  }
+  else {
+    $pdfGrafica->graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, 'pdf', $nombreGrafica);
+    $pdfGrafica->Output('F', $salida);
+    $pdfGrafica->graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, '', $nombreGrafica);
+  }
 }
 else {
-  $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, 'pdf', $nombreGrafica);
+  $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, 'pdf', $nombreGrafica);
   $pdfGrafica->Output('F', $salida);
-  $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgConsumos, '', $nombreGrafica);
+  $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, '', $nombreGrafica);
 }
 error_reporting(E_ALL);
 ini_set('error_reporting', E_ALL);

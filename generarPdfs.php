@@ -56,7 +56,9 @@ class PDF extends PDF_MC_Table
     $q1 = stripos($tipoConsulta, " de todos los tipos (inc. AJUSTES)");
     if ($q1 !== FALSE) {
       if (stripos($titulo, "(TODOS)") === FALSE){
-        $titulo = $titulo." (TODOS)";
+        ///$titulo = $titulo." (TODOS)";
+        /// Se cambia el nombre del encabezado a pedido de Diego:
+        $titulo = "REPORTE INTERNO";
       }
     }
     
@@ -3370,11 +3372,6 @@ class PDF extends PDF_MC_Table
         $x2*$this->k, ($h-$y2)*$this->k, $x3*$this->k, ($h-$y3)*$this->k));
   }
   
-  ///Función auxiliar que calcula cuantos mm ocupará una imagen con determinados píxeles según los DPI:
-  function pixelsToMM($val) {
-        return $val * self::MM_IN_INCH / self::DPI_300;
-    }
-    
   ///Función auxiliar que ajusta el tamaño de la imagen a los parámetros de ancho y alto pasados:
   function resizeToFit($imgFilename, $ancho, $alto) {
     list($anchoImgPx, $altoImgPx) = getimagesize($imgFilename);

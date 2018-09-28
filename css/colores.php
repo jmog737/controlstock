@@ -62,6 +62,8 @@ $colorRetirosGrafica = array(17, 17, 204);
 $colorRenosGrafica = array(240, 138, 29);
 $colorDestruccionesGrafica = array(255, 7, 25);
 $colorIngresosGrafica = array(25, 82, 46);
+$colorAjusteRetirosGrafica = array(162, 92, 243);
+$colorAjusteIngresosGrafica = array(255, 193, 104);
 $colorNombreEjeX = 'white';
 $colorNombreEjeY = 'white';
 $colorEjeX = 'white';
@@ -71,6 +73,8 @@ $colorBordeRetiros = 'white';
 $colorBordeIngresos = 'white';
 $colorBordeRenos = 'white';
 $colorBordeDestrucciones = 'white';
+$colorBordeAjusteRetiros = 'white';
+$colorBordeAjusteIngresos = 'white';
 
 $colorTituloLeyenda = 'red';
 $colorFondoTituloLeyenda1 = '#ac90d4';
@@ -97,6 +101,14 @@ $colorLeyendaIngresos = '#258246:0.98';
 $colorFondoLeyendaIngresos1 = 'navajowhite1';
 $colorFondoLeyendaIngresos2 = 'white';
 
+$colorLeyendaAjusteRetiros = '#a25cf3:0.98';
+$colorFondoLeyendaAjusteRetiros1 = 'navajowhite1';
+$colorFondoLeyendaAjusteRetiros2 = 'white';
+
+$colorLeyendaAjusteIngresos = '#a25cf3:0.98';
+$colorFondoLeyendaAjusteIngresos1 = 'navajowhite1';
+$colorFondoLeyendaAjusteIngresos2 = 'white';
+
 $colorLeyendaConsumos = 'red:0.98';
 $colorFondoLeyendaConsumos1 = 'navajowhite1';
 $colorFondoLeyendaConsumos2 = 'white';
@@ -106,7 +118,7 @@ $colorGradiente2 = '#023184:0.98';
 
 ///Colores para la gráfica tipo torta (cuando es por producto).
 ///El orden es: retiros, ingresos, renos y destrucciones:
-$coloresTorta = array('blue','forestgreen','lightgoldenrod1', 'firebrick1');
+$coloresTorta = array('blue','forestgreen','#ff9600', 'red', '#a25cf3', '#ffc168');
 $colorPorcentajes = 'blue';
 $colorBackgroundTorta = 'ivory3';
 $colorShadowLeyendaPie = '#e2bd6e@1';

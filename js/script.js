@@ -289,7 +289,7 @@ function mostrarHistorial(prod){
   ///Vuelvo a redefinir limiteHistorialProducto para que tome el último valor en caso de que se haya cambiado con el modal.
   var limiteHistorialProducto = parseInt($("#limiteHistorialProducto").val(), 10);
   var url = "data/selectQuery.php";
-  var query = "select movimientos.idmov, productos.nombre_plastico as nombre, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i:%s') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios as comentarios from movimientos inner join productos on productos.idprod=movimientos.producto where productos.idprod="+prod+" order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorialProducto+"";
+  var query = "select movimientos.idmov, productos.nombre_plastico as nombre, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i:%s') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios as comentarios, movimientos.estado from movimientos inner join productos on productos.idprod=movimientos.producto where productos.idprod="+prod+" order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorialProducto+"";
   //alert(query);
   $.getJSON(url, {query: ""+query+""}).done(function(request){
     var datos = request.resultado;
@@ -306,7 +306,7 @@ function mostrarHistorial(prod){
         else {
           comentario = "&nbsp;["+comentario+"]";
         }
-        mostrar += "<a href='editarMovimiento.php?id="+datos[i]["idmov"]+"' target='_blank' class='linkHistorialProducto'>"+j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"</a><br>";
+        mostrar += "<a href='editarMovimiento.php?id="+datos[i]["idmov"]+"' target='_blank' class='linkHistorialProducto'>"+j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["tipo"]+' ('+datos[i]["estado"]+')'+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"</a><br>";
       }
       var popover = '<a role="button" tabindex="0" id="historial" class="btn btn-danger historial" title="Historial de '+datos[i]["nombre"]+'" data-container="body" data-toggle="popover" data-trigger="click" data-placement="right" data-content="'+mostrar+'">Historial</a>';
       
@@ -340,7 +340,7 @@ function mostrarHistorialGeneral(id){
   ///Vuelvo a redefinir limiteHistorialGeneral para que tome el último valor en caso de que se haya cambiado con el modal.
   var limiteHistorialGeneral = parseInt($("#limiteHistorialGeneral").val(), 10);
   var url = "data/selectQuery.php";
-  var query = "select movimientos.idmov, productos.entidad, productos.nombre_plastico as nombre, productos.codigo_emsa as codigo, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i:%s') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios as comentarios from movimientos inner join productos on productos.idprod=movimientos.producto order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorialGeneral+"";
+  var query = "select movimientos.idmov, productos.entidad, productos.nombre_plastico as nombre, productos.codigo_emsa as codigo, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i:%s') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios as comentarios, movimientos.estado from movimientos inner join productos on productos.idprod=movimientos.producto order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorialGeneral+"";
   //alert(query);
   $.getJSON(url, {query: ""+query+""}).done(function(request){
     var datos = request.resultado;
@@ -358,7 +358,7 @@ function mostrarHistorialGeneral(id){
           comentario = "&nbsp;["+comentario+"]";
         }
         //mostrar += j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["entidad"]+"/"+datos[i]["nombre"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"<br>";
-        mostrar += "<a href='editarMovimiento.php?id="+datos[i]["idmov"]+"' target='_blank' class='linkHistorialGeneral'>"+j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["codigo"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"</a><br>";
+        mostrar += "<a href='editarMovimiento.php?id="+datos[i]["idmov"]+"' target='_blank' class='linkHistorialGeneral'>"+j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["codigo"]+" - "+datos[i]["tipo"]+' ('+datos[i]["estado"]+')'+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"</a><br>";
       }
       var titulo = '&Uacute;ltimos '+limiteHistorialGeneral+' movimientos:';
       var popover = '<a role="button" tabindex="0" id="historialGeneral" class="btn btn-primary" title="'+titulo+'" data-container="#gralHistory" data-toggle="popover" data-trigger="click" data-placement="left" data-content="'+mostrar+'">Últimos '+limiteHistorialGeneral+' Movimientos</a>';
@@ -848,25 +848,25 @@ function agregarMovimiento(agregarRepetido){
       var log = "SI";
       
       $.getJSON(url, {query: ""+jsonQuery+"", log: log}).done(function(request) {
-        var resultado = request["resultado"];
+        var resultado = request["resultado"];//alert('resultado: '+resultado);
         /// Si el agregado es exitoso, actualizo el stock y la fecha de la última modificación en la tabla Productos:
         if (resultado === "OK") {
-          if (avisarAlarma1) {
-            //alert('El stock quedó por debajo de la alarma1 definida!. \n\nStock actual: ' + nuevoStock);
-          }
-          else {
-            if (avisarAlarma2) {
-              //alert('El stock quedó por debajo de la alarma2 definida!. \n\nStock actual: ' + nuevoStock);
-            }
-            else {
-              if (avisarInsuficiente) {
-                //alert('Stock insuficiente!. \nSe descuenta sólo la cantidad existente. \n\nStock 0!!.');
-              }
-              else {
-                //alert('Registro agregado correctamente!. \n\nStock actual: '+nuevoStock);
-              }
-            }
-          }
+//          if (avisarAlarma1) {
+//            //alert('El stock quedó por debajo de la alarma1 definida!. \n\nStock actual: ' + nuevoStock);
+//          }
+//          else {
+//            if (avisarAlarma2) {
+//              //alert('El stock quedó por debajo de la alarma2 definida!. \n\nStock actual: ' + nuevoStock);
+//            }
+//            else {
+//              if (avisarInsuficiente) {
+//                //alert('Stock insuficiente!. \nSe descuenta sólo la cantidad existente. \n\nStock 0!!.');
+//              }
+//              else {
+//                //alert('Registro agregado correctamente!. \n\nStock actual: '+nuevoStock);
+//              }
+//            }
+//          }
           var tipo1 = encodeURI(tipo);
           window.location.href = "../controlstock/movimiento.php?h="+busqueda+"&id="+idProd+"&t="+tipo1+"&f="+fecha+"&c="+cantidad;
         }
@@ -882,10 +882,10 @@ function agregarMovimiento(agregarRepetido){
       });            
     }
     else {
-      if (!repetido){
-        alert('Movimiento REPETIDO.\nNO se hace!');
-      }
-      else {
+//      if (!repetido){
+//        alert('Movimiento REPETIDO.\nNO se hace!');
+//      }
+      if (avisarInsuficiente) {
         alert('No hay stock suficiente del producto como para realizar el retiro.\n\n NO SE REALIZA!.');
       }  
     }
@@ -1257,19 +1257,28 @@ function cargarEditarMovimiento(idMov, selector){
     var selDestruccion = '';
     var selAjusteRetiro = '';
     var selAjusteIngreso = '';
+    var habilitarEgreso = ' disabled';
+    var habilitarIngreso = ' disabled';
+
     switch (tipo){
       case 'Retiro': selRetiro = 'selected';
+                     habilitarEgreso = '';
                      break;
       case 'Renovación':  selReno = 'selected';
+                          habilitarEgreso = '';
                           break;
       case 'Ingreso': selIngreso = 'selected';
+                      habilitarIngreso = '';
                       break;
       case 'Destrucción': selDestruccion = 'selected';
+                          habilitarEgreso = '';
                           break;
       case 'AJUSTE Retiro': selAjusteRetiro = 'selected';
-                          break;
+                            habilitarEgreso = '';
+                            break;
       case 'AJUSTE Ingreso': selAjusteIngreso = 'selected';
-                          break;                  
+                             habilitarIngreso = ' ';
+                             break;                  
       default: break;
     }
     
@@ -1305,12 +1314,12 @@ function cargarEditarMovimiento(idMov, selector){
               <th align="left"><font class="negra">Tipo:</font></th>\n\
               <td align="center">\n\
                 <select id="tipo" name="tipo" tabindex="4" style="width:100%" title="Seleccionar el tipo de movimiento" placeholder="Tipo de movimiento" >\n\
-                  <option value="Retiro" '+selRetiro+'>Retiro</option>\n\
-                  <option value="Ingreso" '+selIngreso+' disabled>Ingreso</option>\n\
-                  <option value="Renovaci&oacute;n" '+selReno+'>Renovaci&oacute;n</option>\n\
-                  <option value="Destrucci&oacute;n" '+selDestruccion+'>Destrucci&oacute;n</option>\n\
-                  <option value="AJUSTE Retiro" '+selAjusteRetiro+' disabled>AJUSTE Retiro</option>\n\
-                  <option value="AJUSTE Ingreso" '+selAjusteIngreso+' disabled>AJUSTE Ingreso</option>\n\
+                  <option value="Retiro" '+selRetiro+habilitarEgreso+'>Retiro</option>\n\
+                  <option value="Ingreso" '+selIngreso+habilitarIngreso+'>Ingreso</option>\n\
+                  <option value="Renovaci&oacute;n" '+selReno+habilitarEgreso+'>Renovaci&oacute;n</option>\n\
+                  <option value="Destrucci&oacute;n" '+selDestruccion+habilitarEgreso+'>Destrucci&oacute;n</option>\n\
+                  <option value="AJUSTE Retiro" '+selAjusteRetiro+habilitarEgreso+'>AJUSTE Retiro</option>\n\
+                  <option value="AJUSTE Ingreso" '+selAjusteIngreso+habilitarIngreso+'>AJUSTE Ingreso</option>\n\
                 </select>\n\
               </td>\n\
             </tr>';
@@ -1362,7 +1371,7 @@ function cargarEditarMovimiento(idMov, selector){
 //        }
 //      }
       if ((tipo === 'Ingreso')||(tipo === 'AJUSTE Ingreso')||(tipo === 'AJUSTE Retiro')){
-        $("#tipo").attr('disabled', true);
+        //$("#tipo").attr('disabled', true);
       }
       $("#nombre").val(producto);
       $("#codigo").val(codigo);
@@ -1807,26 +1816,27 @@ function actualizarParametros()  {
           if (request.resultadoDB === "OK"){
             //alert('Los parametros se actualizaron correctamente en la base de datos!');
             if (cambioPagina && cambioHistorialProducto && cambioHistorialGeneral && cambioSelects){
-              alert('Todos los parámetros se cambiaron con éxito:\n\nTamaño de página: '+pageSize+'\nTamaño de Selects: '+limiteSelects+"\nHistorial General: "+limiteHistorialGeneral+"\nHistorial Producto: "+limiteHistorialProducto);
+              alert('Todos los parámetros se cambiaron con éxito:\n\nNUEVOS PARÁMETROS:\n---------------------------\nTamaño de página: '+pageSize+'\nTamaño de Selects: '+limiteSelects+"\nHistorial General: "+limiteHistorialGeneral+"\nHistorial Producto: "+limiteHistorialProducto+'\n---------------------------');
             }
             else {
               if (!cambioPagina && !cambioHistorialProducto && !cambioHistorialGeneral && !cambioSelects){
                 alert('No se cambiaron los parámetros.');
               }
               else {
-                var mostrar = 'Nuevos parámetros:\n';
+                var mostrar = '-------- NUEVOS PARÁMETROS: --------';
                 if (cambioPagina){
-                  mostrar += '\nTamaño de página: '+pageSize;
+                  mostrar += '\n# Tamaño de página: '+pageSize;
                 }
                 if (cambioSelects){
-                  mostrar += '\nTamaño de Selects: '+limiteSelects;
+                  mostrar += '\n# Tamaño de Selects: '+limiteSelects;
                 }
                 if (cambioHistorialGeneral){
-                  mostrar += '\nHistorial General: '+limiteHistorialGeneral;
+                  mostrar += '\n# Historial General: '+limiteHistorialGeneral;
                 }
                 if (cambioHistorialProducto){
-                  mostrar += '\nHistorial Producto: '+limiteHistorialProducto;
+                  mostrar += '\n# Historial Producto: '+limiteHistorialProducto;
                 }
+                mostrar += '\n--------------------------------------------';
                 alert(mostrar);
               }
             }
@@ -4370,8 +4380,8 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
                 <th>Tipo:</th>\n\
                 <td colspan="1">\n\
                   <select id="tipo" name="tipo" title="Elegir el tipo de consulta a buscar" tabindex="10" style="width:100%">\n\
-                    <option value="Todos" selected="yes">---TODOS---</option>\n\
-                    <option value="Clientes">TODOS para CLIENTES</option>\n\
+                    <option value="Todos">---REPORTE INTERNO---</option>\n\
+                    <option value="Clientes" selected="yes">REPORTE CLIENTES</option>\n\
                     <option value="Retiro">Retiro</option>\n\
                     <option value="Ingreso">Ingreso</option>\n\
                     <option value="Renovaci&oacute;n">Reno</option>\n\
@@ -4598,9 +4608,9 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
           }
         }
         else {
-          $("#tipo").val('Todos');
-          $("#estadoMov").val('Todos');
-          $("#mostrarEstado").prop("checked", true);
+          $("#tipo").val('Clientes');
+          $("#estadoMov").val('OK');
+          $("#mostrarEstado").prop("checked", false);
           $("#estadoMov").prop("disabled", true);
           $("#mostrarEstado").prop("disabled", true);
         }
@@ -5067,11 +5077,15 @@ function cargarFormEstadisticas(selector){
             <th colspan="2">Tipo:</th>\n\
             <td colspan="3">\n\
               <select id="tipo" name="tipo" title="Elegir el tipo de movimiento a buscar" style="width:100%">\n\
-                <option value="Todos" selected="yes">---TODOS---</option>\n\
+                <option value="Todos">---REPORTE INTERNO---</option>\n\
+                <option value="Clientes" selected="yes">REPORTE CLIENTES</option>\n\
                 <option value="Retiro">Retiro</option>\n\
                 <option value="Ingreso">Ingreso</option>\n\
                 <option value="Renovaci&oacute;n">Reno</option>\n\
                 <option value="Destrucci&oacute;n">Destrucci&oacute;n</option>\n\
+                <option value="Ajustes">SOLO AJUSTES</option>\n\
+                <option value="AJUSTE Retiro">AJUSTE Retiro</option>\n\
+                <option value="AJUSTE Ingreso">AJUSTE Ingreso</option>\n\
               </select>\n\
             </td>\n\
           </tr>';
@@ -5217,7 +5231,7 @@ function cargarGrafica(selector){
   var formuInicio = '<form name="exportarGraph" id="exportarGraph" target="_blank" action="generarGrafica.php" method="POST">';
   var formuFin = "</form>";
   var grafica = '<figure>\n\
-                  <img src="graficar.php" id="grafiquita" width="750px" height="350px">\n\
+                  <img src="graficar.php" id="grafiquita" width="740px" height="400px">\n\
                   <figcaption>Gr&aacute;fica con las estad&iacute;sticas</figcaption>\n\
                 </figure>';
   
@@ -5274,6 +5288,7 @@ function cargarGrafica(selector){
     h = decodeURI(temp6[1]);
     param = '&e='+e+'&t='+t+'&h='+h+'';
   }
+  //alert(criterio+'\n'+param);
   var volver = '<a title="Volver a ESTADÍSTICAS" href="estadisticas.php?c='+criterio+param+'"">Volver</a>';
   mostrar += titulo;
   mostrar += formuInicio;
@@ -5405,12 +5420,16 @@ function realizarGrafica(){
                 else {
                   mesInicio = parseInt(mesInicio, 10);
                 }
+                if ((añoInicio === 2017)&&(mesInicio < 9)){
+                  mesInicio = 9;
+                }
                 if (mesFin === 'todos'){
                   mesFin = 12;
                 }
                 else {
                   mesFin = parseInt(mesFin, 10);
                 }
+                
                 ///Instancio dos objetos tipo Date con las fechas inicial y final:
                 var finDate1 = new Date(añoFin,mesFin,0, 23,59,59);
                 var inicioDate1 = new Date(añoInicio+"-"+mesInicio+"-01 00:00:00");
@@ -5497,9 +5516,9 @@ function realizarGrafica(){
                   rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin+"')";
                 }    
                 break;
-    case "todos": var fin1 = tempAño+"-"+tempMonth+"-"+tempDia;
+    case "todos": var fin = tempAño+"-"+tempMonth+"-"+tempDia;
                   inicio = '2017-09-01';
-                  rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin1+"')";
+                  rangoFecha = "(fecha >= '"+inicio + "') and (fecha <= '"+fin+"')";
                   mensajeFecha = "entre "+meses[09]+"/"+"2017"+" y "+meses[hoy.getUTCMonth()+1]+"/"+hoy.getFullYear();
                   break;
     default: break;
@@ -5537,25 +5556,41 @@ function realizarGrafica(){
       query += "and "+rangoFecha;
     }
     var mensajeTipo = null;
+    var tipo1 = '';
     if (tipo !== 'Todos') 
       {
-      query += " and tipo='"+tipo+"'";
-      var tipo1 = '';
-      switch (tipo) {
-        case "Retiro": tipo1 = "Retiros";
-                                break;
-        case "Ingreso": tipo1 = "Ingresos";
-                                break;
-        case "Renovación": tipo1 = "Renovaciones";
-                                break;
-        case "Destrucción": tipo1 = "Destrucciones";
-                                break;
-        default: break;
+      if (tipo === 'Clientes'){
+        query += " and tipo!='AJUSTE Retiro' and tipo!='AJUSTE Ingreso'";
+        tipo1 = 'Movimientos';
       }
+      else if (tipo === 'Ajustes'){
+        query += " and (tipo='AJUSTE Retiro' or tipo='AJUSTE Ingreso')";
+        tipo1 = 'Ajustes';
+      }
+      else {
+        query += " and tipo='"+tipo+"'";
+        switch (tipo) {
+          case "Retiro": tipo1 = "Retiros";
+                                  break;
+          case "Ingreso": tipo1 = "Ingresos";
+                                  break;
+          case "Renovación": tipo1 = "Renovaciones";
+                                  break;
+          case "Destrucción": tipo1 = "Destrucciones";
+                                  break;
+          case "AJUSTE Retiro": tipo1 = "AJUSTE Retiros";
+                                  break;
+          case "AJUSTE Ingreso": tipo1 = "AJUSTE Ingresos";
+                                  break;  
+          case "Ajustes": tipo1 = "Ajustes";
+                          break;
+          default: break;
+        }
+      }  
       mensajeTipo = tipo1+" ";
     }
     else {
-      mensajeTipo = "Movimientos ";
+      mensajeTipo = "Movimientos totales ";
     };
 
     query += " order by fecha asc, hora desc, entidad asc, nombre_plastico asc,  idprod";
@@ -5573,7 +5608,7 @@ function realizarGrafica(){
         $("#consulta").val(query);
         $("#mensaje").val(mensajeConsulta);
         $("#fechaInicio").val(inicio);
-        $("#fechaFin").val(fin);
+        $("#fechaFin").val(fin);//alert('inicio: '+inicio+'\nfin: '+fin);
         $("#hacerGrafica").val("yes");
         var parametros = '';
         switch (criterioFecha){
@@ -6887,7 +6922,7 @@ $(document).on("shown.bs.modal", "#modalMovRepetido", function() {
   $("#mdlCantidad").val(cantidadModal);
   $("#mdlProducto").val(productoModal);
   $("#btnModalRepCerrar").attr("autofocus", true);
-  setTimeout(function (){$("#btnModalRepCerrar").focus();}, 70);
+  setTimeout(function (){$("#btnModalRepCerrar").focus();}, 50);
 });
 /********** fin on("shown.bs.modal", "#modalMovRepetido", function() **********/
 
