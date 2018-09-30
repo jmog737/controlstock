@@ -799,7 +799,7 @@ function agregarMovimiento(agregarRepetido){
     /// CAMBIO: La política actual es DEJAR en suspenso el movimiento hasta que haya stock suficiente. NO HAY QUE HACER EL MOVIMIENTO!!
     var seguir = true;
     var repetido = false;
-
+    //alert('fecha: '+fecha+' - prod: '+idProd+' - cantidad: '+cantidad+' - tipo: '+tipo+'\nfecha: '+fechaAnterior+' - prod: '+idAnterior+' - cantidad: '+cantidadAnterior+' - tipo: '+tipoAnterior);
     if ((fecha == fechaAnterior)&&(idProd == idAnterior)&&(cantidad == cantidadAnterior)&&(tipo == tipoAnterior)){
       if (!agregarRepetido){
         $("#modalMovRepetido").modal("show");
@@ -904,11 +904,11 @@ function actualizarMovimiento(){
   var idprod = $("#idprod").val();
   var comentarios = $("#comentarios").val();
   var fecha = $("#fecha").val();
-  $("#tipo").attr('disabled', false);
-  var tipo = $("#tipo").val();
-  if (tipo === null){
-    tipo = 'Ingreso';
-  }
+  $("#tipoEditarMov").attr('disabled', false);
+  var tipo = $("#tipoEditarMov").val();
+//  if (tipo === null){
+//    tipo = 'Ingreso';
+//  }
   var estadoMov = $("#estadoMov").val();
   var ultimoMovimiento = $("#ultimoMovimiento").val();
   var tempUltimo = ultimoMovimiento.split(" ");
@@ -966,6 +966,7 @@ function actualizarMovimiento(){
                break;
     }
   }
+  
   if (estadoMov !== estadoMovViejo){
     cambiarEstado = true;
   }
@@ -1170,7 +1171,7 @@ function inhabilitarMovimiento(){
   document.getElementById("fecha").disabled = true;
   document.getElementById("hora").disabled = true;
   document.getElementById("nombre").disabled = true;
-  document.getElementById("tipo").disabled = true;
+  document.getElementById("tipoEditarMov").disabled = true;
   document.getElementById("cantidad").disabled = true;
   document.getElementById("estadoMov").disabled = true;
   document.getElementById("comentarios").disabled = true;
@@ -1186,7 +1187,7 @@ function habilitarMovimiento(){
   ///******* Queda hecho para poder editar el resto de los campos, pero la idea es SOLO poder editar los comentarios. **********
   ///******* Ahora (17/5/2018) se agrega también la edición de la fecha por lo que también se habilita la misma. ***************
   document.getElementById("fecha").disabled = false;
-  document.getElementById("tipo").disabled = false;
+  document.getElementById("tipoEditarMov").disabled = false;
   document.getElementById("estadoMov").disabled = false;
   //document.getElementById("hora").disabled = false;
   //document.getElementById("nombre").disabled = false;
@@ -1223,7 +1224,7 @@ function cargarEditarMovimiento(idMov, selector){
                    break;
         case 'ERROR': estadoERROR = 'selected';
                       break;
-        default: break;
+        default: alert('en default');break;
       }
       //var fecha = '';
       var hora = '';
@@ -1293,9 +1294,11 @@ function cargarEditarMovimiento(idMov, selector){
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Estado:</font></th>\n\
-              <td align="center" colspan="2"><select id="estadoMov" name="estadoMov" tabindex="10" style="width:100%" title="Cambiar el estado del movimiento" placeholder="Estado del movimiento" >\n\
+              <td align="center" colspan="2">\n\
+                <select id="estadoMov" name="estadoMov" tabindex="10" style="width:100%" title="Cambiar el estado del movimiento" placeholder="Estado del movimiento" >\n\
                   <option value="OK" '+estadoOK+'>OK</option>\n\
                   <option value="ERROR" '+estadoERROR+'>ERROR</option>\n\
+                </select>\n\
               </td>\n\
           </tr>';              
     tr += '<tr>\n\
@@ -1313,7 +1316,7 @@ function cargarEditarMovimiento(idMov, selector){
     tr += '<tr>\n\
               <th align="left"><font class="negra">Tipo:</font></th>\n\
               <td align="center">\n\
-                <select id="tipo" name="tipo" tabindex="4" style="width:100%" title="Seleccionar el tipo de movimiento" placeholder="Tipo de movimiento" >\n\
+                <select id="tipoEditarMov" name="tipoEditarMov" tabindex="4" style="width:100%" title="Seleccionar el tipo de movimiento" placeholder="Tipo de movimiento" >\n\
                   <option value="Retiro" '+selRetiro+habilitarEgreso+'>Retiro</option>\n\
                   <option value="Ingreso" '+selIngreso+habilitarIngreso+'>Ingreso</option>\n\
                   <option value="Renovaci&oacute;n" '+selReno+habilitarEgreso+'>Renovaci&oacute;n</option>\n\
@@ -1380,7 +1383,6 @@ function cargarEditarMovimiento(idMov, selector){
     }
     
     $("#comentarios").attr("autofocus", true);
-    
   }); 
 }
 /********** fin cargarEditarMovimiento(idMov, selector) **********/
