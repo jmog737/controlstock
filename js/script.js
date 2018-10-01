@@ -906,16 +906,22 @@ function actualizarMovimiento(){
   var fecha = $("#fecha").val();
   $("#tipoEditarMov").attr('disabled', false);
   var tipo = $("#tipoEditarMov").val();
-//  if (tipo === null){
-//    tipo = 'Ingreso';
-//  }
   var estadoMov = $("#estadoMov").val();
+  var cantidad = parseInt($("#cantidad").val(), 10);
   var ultimoMovimiento = $("#ultimoMovimiento").val();
   var tempUltimo = ultimoMovimiento.split(" ");
-  var fechaAnteriorTemp = tempUltimo[0].split("/");
-  var fechaAnterior = fechaAnteriorTemp[2] +'-'+ fechaAnteriorTemp[1] +'-'+ fechaAnteriorTemp[0];
-  var restoUltimo = tempUltimo[1]+' '+tempUltimo[2]+' '+tempUltimo[3]+' '+tempUltimo[4];
-  var cantidad = parseInt($("#cantidad").val(), 10);
+  var fechita = tempUltimo[0];
+  var horita = tempUltimo[1];
+  var tipito = '';
+  var cant = '';
+  if (tempUltimo[3] === 'AJUSTE'){
+    tipito = tempUltimo[3]+' '+tempUltimo[4];
+    cant = tempUltimo[5];
+  }
+  else {
+    tipito = tempUltimo[3];
+    cant = tempUltimo[4];
+  }
   
   var stockViejo = parseInt($("#stockViejo").val(), 10);
   var comentariosViejos = $("#comentariosViejos").val();
@@ -933,35 +939,47 @@ function actualizarMovimiento(){
   if (comentariosViejos !== comentarios){
     cambiarComentarios = true;
   }
-  //alert('tipo Viejo: '+tipoViejo+'\ntipo: '+tipo);
+  
   if (tipoViejo !== tipo){
     var tipoCambio = tipoViejo+'-'+tipo;
     cambiarTipo = true;
     switch (tipoCambio){
-      case 'Retiro-Renovación': break;
-      case 'Renovación-Retiro': break;
-      case 'Retiro-Destrucción': break;
-      case 'Destrucción-Retiro': break;
+      case 'Retiro-Renovación': 
+      case 'Renovación-Retiro': 
+      case 'Retiro-Destrucción': 
+      case 'Destrucción-Retiro':
+      case 'Renovación-Destrucción': 
+      case 'Destrucción-Renovación':    
+      case 'Renovación-AJUSTE Retiro': 
+      case 'AJUSTE Retiro-Renovación':
+      case 'Destrucción-AJUSTE Retiro':
+      case 'AJUSTE Retiro-Destrucción':
+      case 'Ingreso-AJUSTE Ingreso':
+      case 'AJUSTE Ingreso-Ingreso':
+      case 'Retiro-AJUSTE Retiro': 
+      case 'AJUSTE Retiro-Retiro': break;
+      
+      case 'AJUSTE Retiro-AJUSTE Ingreso':
+      case 'AJUSTE Retiro-Ingreso':
+      case 'Destrucción-AJUSTE Ingreso':                            
+      case 'Destrucción-Ingreso':
+      case 'Renovación-AJUSTE Ingreso':
+      case 'Renovación-Ingreso':
+      case 'Retiro-AJUSTE Ingreso':
       case 'Retiro-Ingreso':  nuevoStock = stockViejo + 2*cantidad;
                               cambiarStock = true;
                               break;
+         
+      case 'AJUSTE Ingreso-AJUSTE Retiro':
+      case 'Ingreso-AJUSTE Retiro':
+      case 'AJUSTE Ingreso-Destrucción': 
+      case 'Ingreso-Destrucción':                        
+      case 'AJUSTE Ingreso-Renovación':
+      case 'Ingreso-Renovación':                          
+      case 'AJUSTE Ingreso-Retiro':                        
       case 'Ingreso-Retiro':  nuevoStock = stockViejo - 2*cantidad;
                               cambiarStock = true;
-                              break;
-      case 'Renovación-Destrucción': break;
-      case 'Destrucción-Renovación': break;
-      case 'Renovación-Ingreso':  nuevoStock = stockViejo + 2*cantidad;
-                                  cambiarStock = true;
-                                  break;
-      case 'Ingreso-Renovación':  nuevoStock = stockViejo - 2*cantidad;
-                                  cambiarStock = true;
-                                  break;
-      case 'Destrucción-Ingreso': nuevoStock = stockViejo + 2*cantidad;
-                                  cambiarStock = true;
-                                  break;
-      case 'Ingreso-Destrucción': nuevoStock = stockViejo - 2*cantidad;
-                                  cambiarStock = true;
-                                  break;
+                              break;                 
       default: cambiarTipo = false;
                break;
     }
@@ -985,8 +1003,7 @@ function actualizarMovimiento(){
     mesHoy = '0'+mesHoy;
   }
   var hoyFecha = hoy.getFullYear()+'-'+mesHoy+'-'+diaHoy;
-  var validar = true;
-
+  
   if (fecha === ''){
     alert('Por favor ingrese la fecha del movimiento.');
     $("#fecha").focus();
@@ -1005,17 +1022,17 @@ function actualizarMovimiento(){
     }
   }
   
-
   ///Se comenta la validación del movimiento pues por el momento SÓLO se puede EDITAR el comentario el cual es opcional.
   ///De en un futuro querer editar algo más habrá que crear la función validarMovimiento. Se setea la variable validar a TRUE
   //var validar = validarMovimiento();
   //var validar = true;
-
+  var validar = true;
+  
   if (validar) {
     //var confirmar = confirm('¿Confirma la modificación del movimiento con los siguientes datos?\n\nFecha: '+fecha+'\nHora: '+hora+'\nProducto: '+nombre+'\nTipo: '+tipo+'\nCantidad: '+cantidad+'\nComentarios: '+comentarios+"\n?");
     var confirmar = true;
     if (confirmar) {
-      // Según lo que se haya o no cambiado, armo la consulta para la actualización:
+      // Según lo que se haya o no cambiado, armo la consulta para la actualización del MOVIMIENTO:
       if (cambiarFecha || cambiarComentarios || cambiarTipo || cambiarEstado){
         var url = "data/updateQuery.php";
         var query = 'update movimientos set ';
@@ -1086,23 +1103,44 @@ function actualizarMovimiento(){
           var resultado = request["resultado"];
           //var mensaje = request['mensaje'];//alert(mensaje);
           if (resultado === "OK") {
-            //si se hizo la actualización de los datos y se cambió la fecha, 
-            //hay que actualizar la fecha del último movimiento:
-            if (cambiarFecha || cambiarStock){
+            ///si se hizo la actualización de los datos y se cambió la fecha o el tipo 
+            ///hay que actualizar los parámetros del último movimiento.
+            ///Además, si hubo cambio en el stock, también hay que ajustarlo en la tabla de PRODUCTOS:
+            ///(ESTA OPCIÓN AÚN NO ESTÁ HABILITADA!!!!)
+            if (cambiarFecha || cambiarStock || cambiarTipo){
+              var ultMov = 'ultimoMovimiento="';
               var query = 'update productos set ';
-              if ((cambiarFecha)&&(fecha > fechaAnterior)){
+              //if ((cambiarFecha)&&(fecha > fechaAnterior)){
+              if (cambiarFecha){  
                 //alert('anterior: '+fechaAnterior+'\nnueva: '+fecha); 
                 var tempFecha = fecha.split("-");
                 var fechaUltimo = tempFecha[2]+'/'+tempFecha[1]+'/'+tempFecha[0];
-                query += 'ultimoMovimiento="'+fechaUltimo+' '+restoUltimo+'"';
-                
-                if (cambiarStock){
-                  query += ', stock='+nuevoStock+'';
-                }
+                //query += 'ultimoMovimiento="'+fechaUltimo+' '+restoUltimo+'"';
+                ultMov += fechaUltimo;
               }
               else {
+                ultMov += fechita;
+              }
+              ultMov += ' '+horita+' - ';
+              if (cambiarTipo){
+                ultMov += tipo+':';
+              }
+              else {
+                ultMov += tipito;
+              }
+              ultMov += ' '+cant;
+              query += ultMov+'"';
+              
+              if (cambiarStock){
+                query += ', stock='+nuevoStock+'';
+              }
+              
+              ///Caso casi improbable en que SÓLO haya habido cambio de stock
+              ///Ver de quitar, pues para que haya habido necesariamente tiene que haber habido cambio de tipo....
+              if ((cambiarStock)&&!(cambiarFecha)&&!(cambiarTipo)) {
                 query += 'stock='+nuevoStock+'';
               }
+              
               query += ' where idprod='+idprod+'';
               var jsonQuery = JSON.stringify(query);
               //alert(query);
@@ -1118,7 +1156,7 @@ function actualizarMovimiento(){
                   inhabilitarMovimiento();
                 }
                 else {
-                  alert('Hubo un problema en la actualización de la fecha del último movimiento.\n¡Por favor verifique!.');
+                  alert('Hubo un problema en la actualización del campo último movimiento.\nLos datos del MOVIMIENTO YA se actualizaron.\n¡Por favor verifique!.');
                 }
               });
             }
@@ -1134,7 +1172,7 @@ function actualizarMovimiento(){
             }  
           }
           else {
-            alert('Hubo un problema en la actualización de los datos.\n¡Por favor verifique!.');
+            alert('Hubo un problema en la actualización de los datos del movimiento.\n¡Por favor verifique!.');
           }
         });
       }// if or cambiarFecha, cambiarTipo, cambiarComentarios, cambiarEstado     

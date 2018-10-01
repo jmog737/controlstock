@@ -123,6 +123,8 @@ if (isset($_POST["idProd_$indice"])){
 ///Caracteres a ser reemplazados en caso de estar presentes en el nombre del producto o la entidad
 ///Esto se hace para mejorar la lectura (en caso de espacios en blanco), o por requisito para el nombre de la hoja de excel
 $aguja = array(0=>" ", 1=>".", 2=>"[", 3=>"]", 4=>"*", 5=>"/", 6=>"\\", 7=>"?", 8=>":", 9=>"_", 10=>"-");
+///Para el caso puntual de Henderson & Cia.:
+$aguja1 = array(0=>"&");
 
 ///Se define el tamaño máximo aceptable para el nombre teniendo en cuenta que el excel admite un máximo de 31 caracteres, y que además, 
 ///ya se tienen 6 fijos del stock_ (movs_ es uno menos).
@@ -151,6 +153,56 @@ if (isset($_POST["entidad_$indice"])){
     $entidadMostrar = 'TODOS';
   }
 }
+
+///************************************************************ Generación carpeta personalizada para el cliente: *************************
+///Acomodo el nombre de la entidad para que no genere problemas durante la creación de la carpeta:
+if (isset($entidad)){
+  if ($entidad === 'todas las entidades') {
+    $entidadCarpeta = 'Todos';
+  }
+  else {
+    $entidadCarpeta = str_replace($aguja, "", ucwords($entidad));
+  } 
+}
+else {
+  $entidadCarpeta = "Boveda";
+}
+
+$seguir = true;
+$fechaCarpeta = strftime("%d%b%Y", strtotime(date('dMY')));
+$rutaReporteFecha = $dir.$fechaCarpeta;
+if (is_dir($rutaReporteFecha)){
+  //echo "La carpeta del día ya existe.<br>";
+}
+else {
+  $creoCarpeta0 = mkdir($rutaReporteFecha);
+  if ($creoCarpeta0 === FALSE){
+   // echo "Error al crear la carpeta del día.<br>";
+    $seguir = false;
+  }
+  else {
+   // echo "Carpeta del día creada con éxito.<br>";
+  }
+}  
+
+  $rutaCarpetaCliente = $rutaReporteFecha."/".$entidadCarpeta;
+  if (is_dir($rutaCarpetaCliente)){
+    //echo "La carpeta del cliente ya existe.<br>";
+  }
+  else {
+    $creoCarpeta = mkdir($rutaCarpetaCliente);
+    if ($creoCarpeta === FALSE){
+      //echo "Error al crear la carpeta.<br>";
+      $seguir = false;
+    }
+    else {
+      //echo "Carpeta creada con éxito.<br>";
+    }
+  }
+
+
+///********************************************************** FIN Generación carpeta personalizada para el cliente: ***********************
+
 //echo "id: $id<br>query: $query<br>consultaCSV: $consultaCSV<br>campos: $campos1<br>largos: $largos<br>mostrar: $mostrar1<br>tipoConsulta: $tipoConsulta<br>idProd: $idProd<br>nombreProducto: $nombreProducto<br>entidad: $entidad"
 //        . "<br>x: $x<br>inicio: $inicio<br>fin: $fin<br>mes: $mes<br>año: $año<br>tipo: $tipo<br>usuario: $idUser<br>";
 
@@ -385,7 +437,17 @@ switch ($id) {
 
 $timestamp = date('dmy_His');
 $nombreArchivo = $nombreReporte."_".$timestamp.".pdf";
-$salida = $dir.$nombreArchivo;
+
+/// Si por algún motivo, la creación de alguna de las carpetas dio error, guardo en la carpeta ya configurada y creada que sé existe.
+/// Si no hubo problemas en la creación, guardo en la carpeta creada:
+if (!($seguir)){
+  $salida = $dir.$nombreArchivo;
+}
+else {
+  $salida = $rutaCarpetaCliente.'/'.$nombreArchivo;
+  $GLOBALS["dirExcel"] = $rutaCarpetaCliente.'/';
+}
+
 
 ///Guardo el archivo en el disco, y además lo muestro en pantalla:
 $pdfResumen->Output($salida, 'F');
@@ -435,9 +497,18 @@ $resultado2 = consultarBD($exportarCSV, $con);
 ///************************************************************ GENERACION ZIP FILE *********************************************************
 $zip = new ZipArchive;
 $nombreZip = $nombreReporte."_".$timestamp.".zip";
-$fileDir = $dir.$nombreZip;
 
-$excel = $dir.$archivo;
+/// Si por algún motivo la creación de alguna de las carpetas dio error, guardo en la carpeta ya configurada y creada que sé existe.
+/// Si no hubo problemas en la creación, guardo en la carpeta creada:
+if (!($seguir)){
+  $fileDir = $dir.$nombreZip;
+}
+else {
+  $fileDir = $rutaCarpetaCliente.'/'.$nombreZip;
+  $dirExcel = $rutaCarpetaCliente.'/';
+}
+
+$excel = $dirExcel.$archivo;
 
 if ($zip->open($fileDir, ZIPARCHIVE::CREATE ) !== TRUE) 
     {
