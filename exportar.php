@@ -200,7 +200,6 @@ else {
     }
   }
 
-
 ///********************************************************** FIN Generación carpeta personalizada para el cliente: ***********************
 
 //echo "id: $id<br>query: $query<br>consultaCSV: $consultaCSV<br>campos: $campos1<br>largos: $largos<br>mostrar: $mostrar1<br>tipoConsulta: $tipoConsulta<br>idProd: $idProd<br>nombreProducto: $nombreProducto<br>entidad: $entidad"
