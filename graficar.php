@@ -4,11 +4,6 @@ if(!isset($_SESSION))
   //Reanudamos la sesión:
   session_start(); 
 } 
-///Se deshabilita el reporte de errores dado que de estar habilitado NO genera la gráfica.
-///Se vuelven a habilitar al finalizar el script.
-error_reporting(NULL);
-ini_set('error_reporting', NULL);
-ini_set('display_errors',0);
 /**
 ******************************************************
 *  @file graficar.php
@@ -18,23 +13,29 @@ ini_set('display_errors',0);
 *  @date Diciembre 2017
 *
 *******************************************************/
+///Se deshabilita el reporte de errores dado que de estar habilitado NO genera la gráfica.
+///Se vuelven a habilitar al finalizar el script.
+error_reporting(NULL);
+ini_set('error_reporting', NULL);
+ini_set('display_errors',0);
+
+require ('vendor/autoload.php');
 require_once("data/baseMysql.php");
-require_once('../../fpdf/mc_table.php');
 require_once("css/colores.php");
-
+use Fpdf\Fpdf;
 /** Include JPgraph files */
-require_once('../../jpgraph/jpgraph.php');
-require_once('../../jpgraph/jpgraph_pie.php');
-require_once('../../jpgraph/jpgraph_pie3d.php');
-require_once('../../jpgraph/jpgraph_bar.php');
-require_once ('../../jpgraph/jpgraph_line.php');
+use JpGraph\JpGraph;
+JpGraph::module('bar');
+JpGraph::module('pie');
+JpGraph::module('pie3d');
+JpGraph::module('line');
 
-class PDF extends PDF_MC_Table
+class PDF_Grafica extends Fpdf
   {
   ///Constantes usadas por las funciones de ajuste de las imágenes:
   const DPI_300 = 300;
   const MM_IN_INCH = 25.4;
-  const GRAFICA_HEIGHT_MM = 100;
+  const GRAFICA_HEIGHT_MM = 80;
   const GRAFICA_WIDTH_MM = 1.85*self::GRAFICA_HEIGHT_MM;
   const GRAFICA_HEIGHT_PX = 400;
   const GRAFICA_WIDTH_PX = 1.85*self::GRAFICA_HEIGHT_PX;
@@ -81,20 +82,27 @@ class PDF extends PDF_MC_Table
   ///Función auxiliar que ajusta el tamaño de la imagen a los parámetros de ancho y alto pasados:
   ///Esta función está también en generarPDFs. Ver de compartirla.
   function resizeToFit($imgFilename, $ancho, $alto) {
-    list($anchoImgPx, $altoImgPx) = getimagesize($imgFilename);
-    
-    ///Convierto de px a mm (usando los DPI estipulados):
-    $anchoImgMm = $anchoImgPx*self::MM_IN_INCH/self::DPI_300;
-    $altoImgMm = $altoImgPx*self::MM_IN_INCH/self::DPI_300;
-    
-    $widthScale = $ancho / $anchoImgMm;
-    $heightScale = $alto / $altoImgMm;
-    $scale = min($widthScale, $heightScale);
-    
-    return array(
-        round($scale * $anchoImgMm),
-        round($scale * $altoImgMm));        
-    }  
+    $imageInfo = getimagesize($imgFilename);
+    $salida = array();
+    if ($imageInfo === FALSE){
+      $salida[] = null;
+      $salida[] = null;
+    }
+    else {
+      $anchoImgPx = $imageInfo[0];
+      $altoImgPx = $imageInfo[1];
+      ///Convierto de px a mm (usando los DPI estipulados):
+      $anchoImgMm = $anchoImgPx*self::MM_IN_INCH/self::DPI_300;
+      $altoImgMm = $altoImgPx*self::MM_IN_INCH/self::DPI_300;
+
+      $widthScale = $ancho / $anchoImgMm;
+      $heightScale = $alto / $altoImgMm;
+      $scale = min($widthScale, $heightScale);
+      $salida[] = round($scale * $anchoImgMm);
+      $salida[] = round($scale * $altoImgMm);
+    }
+    return $salida;        
+  }  
   
   function graficarBarras($subtitulo, $meses, $totales, $data1, $data2, $data3, $data4, $data5, $data6, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg41, $avg42, $avg5, $destino, $nombreGrafica){
     global $dirGraficas, $h;
@@ -528,7 +536,7 @@ class PDF extends PDF_MC_Table
       $timestamp = date('dmY_His');
       $nombreArchivo = $nombreGrafica.$timestamp.".png";
       $fileName = $dirGraficas.$nombreArchivo;
-
+      $graph->img->SetImgFormat('png');
       // Stroke image to a file
       $graph->Stroke($fileName);
       $graph->img->Stream($fileName);
@@ -549,28 +557,24 @@ class PDF extends PDF_MC_Table
       $this->Cell($tam, 1.5*$h, $titulo, 0, 0, 'C', 0);
       $this->Ln(20);
       
-      list($anchoGrafica, $altoGrafica) = $this->resizeToFit($fileName, self::GRAFICA_WIDTH_MM, self::GRAFICA_HEIGHT_MM);
+      //list($anchoGrafica, $altoGrafica) = $this->resizeToFit($fileName, self::GRAFICA_WIDTH_MM, self::GRAFICA_HEIGHT_MM);
       $xGrafica = round(($anchoPagina - $anchoGrafica)/2);
       $y = $this->getY();
-      $this->Image($fileName, $xGrafica, $y, $anchoGrafica, $altoGrafica);
+      //$this->Image($fileName, $xGrafica, $y, $anchoGrafica, $altoGrafica);
+      $this->Image($fileName);
+      //$this->Ln(20);
+      //$this->Image('images/logotipo.jpg');
     }
     else {
       $graph->Stroke();
       $graph->img->Headers();
       $graph->img->Stream();
     }  
-  }
+  }///****************** FIN graficarBarras *************************************************************************************************
 
   function graficarTorta($subtitulo, $datos, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg41, $avg42, $avg5, $destino, $nombreGrafica){
     global $dirGraficas, $h;
     include "css/colores.php"; 
-//    global $coloresTorta, $colorLeyendaRetiros, $colorLeyendaRenos, $colorShadowLeyendaPie, $colorTituloLeyendaPie;
-//    global $colorFondoTituloLeyendaPie1, $colorFondoTituloLeyendaPie2, $colorFondoLeyenda, $colorTextoLeyenda, $colorBordeLeyenda;
-//    global $colorLeyendaDestrucciones, $colorLeyendaIngresos, $colorLeyendaConsumos, $colorBackgroundTorta;
-//    global $colorFondoLeyendaRetiros1, $colorFondoLeyendaRetiros2, $colorFondoLeyendaRenos1, $colorFondoLeyendaRenos2, $colorFondoLeyendaDestrucciones1, $colorFondoLeyendaDestrucciones2, $colorFondoLeyendaIngresos1, $colorFondoLeyendaIngresos2;
-//    global $colorFondoLeyendaConsumos1, $colorFondoLeyendaConsumos2, $colorPorcentajes;
-//    global $colorFondoLeyendaAjusteRetiros1, $colorFondoLeyendaAjusteRetiros2, $colorFondoLeyendaAjusteIngresos1, $colorFondoLeyendaAjusteIngresos2;
-//    global $colorLeyendaAjusteRetiros, $colorLeyendaAjusteIngresos; 
       
     // A new pie graph
     $graph = new PieGraph(self::GRAFICA_WIDTH_PX, self::GRAFICA_HEIGHT_PX, 'auto');
@@ -943,8 +947,8 @@ class PDF extends PDF_MC_Table
       // Stroke image to a file
       $graph->Stroke($fileName);
       $graph->img->Stream($fileName);
-
-        //Defino tipo de letra y tamaño para el Título:
+      
+      //Defino tipo de letra y tamaño para el Título:
       $this->SetFont('Courier', 'BU', 18);
       $this->SetTextColor(255, 0, 0);
 
@@ -963,16 +967,16 @@ class PDF extends PDF_MC_Table
       list($anchoGrafica, $altoGrafica) = $this->resizeToFit($fileName, self::GRAFICA_WIDTH_MM, self::GRAFICA_HEIGHT_MM);
       $xGrafica = round(($anchoPagina - $anchoGrafica)/2);
       $y = $this->getY();
+
       $this->Image($fileName, $xGrafica, $y, $anchoGrafica, $altoGrafica);
     }
     else {
       $graph->Stroke();
       //Mandarlo al navegador
       $graph->img->Headers();
-      $graph->img->Stream();
-      
+      $graph->img->Stream();   
     } 
-  }
+  }///****************** FIN graficarTorta **************************************************************************************************
   
 }
 
@@ -1339,7 +1343,7 @@ $hora = date('H:i');
 $titulo = "ESTADÍSTICAS";
 
 //Instancio objeto de la clase:
-$pdfGrafica = new PDF();
+$pdfGrafica = new PDF_Grafica();
 //Agrego una página al documento:
 $pdfGrafica->AddPage();
 
@@ -1392,17 +1396,17 @@ if ($tipoGrafica === "producto"){
   if ($unMov){
     $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, 'pdf', $nombreGrafica);
     $pdfGrafica->Output('F', $salida);
-    $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, '', $nombreGrafica); 
+    $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, '', $nombreGrafica);   
   }
   else {
     $pdfGrafica->graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, 'pdf', $nombreGrafica);
     $pdfGrafica->Output('F', $salida);
-    $pdfGrafica->graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, '', $nombreGrafica);
+    $pdfGrafica->graficarTorta($mensaje, $totales, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, '', $nombreGrafica);  
   }
 }
 else {
   $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, 'pdf', $nombreGrafica);
-  $pdfGrafica->Output('F', $salida);
+  $pdfGrafica->Output('F', $salida); 
   $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, '', $nombreGrafica);
 }
 error_reporting(E_ALL);

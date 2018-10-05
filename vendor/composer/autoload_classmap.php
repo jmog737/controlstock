@@ -6,4 +6,5 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'JpGraph\\JpGraph' => $vendorDir . '/rulin132/jpgraph/lib/JpGraph.php',
 );

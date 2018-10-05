@@ -13,9 +13,8 @@ if(!isset($_SESSION))
 *  @date Noviembre 2017
 *
 *******************************************************/
-require_once('..\..\fpdf\mc_table.php');
-require_once('css\colores.php');
-
+require_once("css/colores.php");
+require_once("data/mc_table.php");
 
 class PDF extends PDF_MC_Table
   {
@@ -3374,20 +3373,27 @@ class PDF extends PDF_MC_Table
   
   ///Función auxiliar que ajusta el tamaño de la imagen a los parámetros de ancho y alto pasados:
   function resizeToFit($imgFilename, $ancho, $alto) {
-    list($anchoImgPx, $altoImgPx) = getimagesize($imgFilename);
-    
-    ///Convierto de px a mm (usando los DPI estipulados):
-    $anchoImgMm = $anchoImgPx*self::MM_IN_INCH/self::DPI_300;
-    $altoImgMm = $altoImgPx*self::MM_IN_INCH/self::DPI_300;
-    
-    $widthScale = $ancho / $anchoImgMm;
-    $heightScale = $alto / $altoImgMm;
-    $scale = min($widthScale, $heightScale);
-    
-    return array(
-        round($scale * $anchoImgMm),
-        round($scale * $altoImgMm));        
-    }  
+    $imageInfo = getimagesize($imgFilename);
+    $salida = array();
+    if ($imageInfo === FALSE){
+      $salida[] = null;
+      $salida[] = null;
+    }
+    else {
+      $anchoImgPx = $imageInfo[0];
+      $altoImgPx = $imageInfo[1];
+      ///Convierto de px a mm (usando los DPI estipulados):
+      $anchoImgMm = $anchoImgPx*self::MM_IN_INCH/self::DPI_300;
+      $altoImgMm = $altoImgPx*self::MM_IN_INCH/self::DPI_300;
+
+      $widthScale = $ancho / $anchoImgMm;
+      $heightScale = $alto / $altoImgMm;
+      $scale = min($widthScale, $heightScale);
+      $salida[] = round($scale * $anchoImgMm);
+      $salida[] = round($scale * $altoImgMm);
+    }
+    return $salida;       
+  }  
     
   ///Función auxiliar usada para generar las marcas de agua:
   ///Sacada del script: PDF_Rotate
