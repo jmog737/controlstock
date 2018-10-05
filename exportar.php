@@ -169,8 +169,23 @@ else {
 }
 
 $seguir = true;
+$rutaCarpetaCliente = $dir.$entidadCarpeta;
+if (is_dir($rutaCarpetaCliente)){
+  //echo "La carpeta del cliente ya existe.<br>";
+}
+else {
+  $creoCarpeta = mkdir($rutaCarpetaCliente);
+  if ($creoCarpeta === FALSE){
+    //echo "Error al crear la carpeta.<br>";
+    $seguir = false;
+  }
+  else {
+    //echo "Carpeta creada con éxito.<br>";
+  }
+}
+  
 $fechaCarpeta = strftime("%d%b%Y", strtotime(date('dMY')));
-$rutaReporteFecha = $dir.$fechaCarpeta;
+$rutaReporteFecha = $rutaCarpetaCliente."/".$fechaCarpeta;
 if (is_dir($rutaReporteFecha)){
   //echo "La carpeta del día ya existe.<br>";
 }
@@ -185,21 +200,33 @@ else {
   }
 }  
 
-  $rutaCarpetaCliente = $rutaReporteFecha."/".$entidadCarpeta;
-  if (is_dir($rutaCarpetaCliente)){
-    //echo "La carpeta del cliente ya existe.<br>";
+switch ($id){
+  case "1": $subRuta = $rutaReporteFecha."/StockENTIDAD";
+            break;
+  case "2": $subRuta = $rutaReporteFecha."/StockPRODUCTOS/".$nombreProductoMostrar;
+            break;
+  case "3": $subRuta = $rutaReporteFecha;
+            break;
+  case "4": $subRuta = $rutaReporteFecha."/MovsENTIDAD";
+            break;
+  case "5": $subRuta = $rutaReporteFecha."/MovsPRODUCTOS/".$nombreProductoMostrar;
+            break;
+  default: break;
+}
+
+if (is_dir($subRuta)){
+  //echo "La carpeta del día ya existe.<br>";
+}
+else {
+  $creoCarpeta0 = mkdir($subRuta, 0777, true);
+  if ($creoCarpeta0 === FALSE){
+    echo "Error al crear la carpeta del día.<br>";
+    $seguir = false;
   }
   else {
-    $creoCarpeta = mkdir($rutaCarpetaCliente);
-    if ($creoCarpeta === FALSE){
-      //echo "Error al crear la carpeta.<br>";
-      $seguir = false;
-    }
-    else {
-      //echo "Carpeta creada con éxito.<br>";
-    }
+   // echo "Carpeta del día creada con éxito.<br>";
   }
-
+} 
 ///********************************************************** FIN Generación carpeta personalizada para el cliente: ***********************
 
 //echo "id: $id<br>query: $query<br>consultaCSV: $consultaCSV<br>campos: $campos1<br>largos: $largos<br>mostrar: $mostrar1<br>tipoConsulta: $tipoConsulta<br>idProd: $idProd<br>nombreProducto: $nombreProducto<br>entidad: $entidad"
@@ -265,7 +292,7 @@ switch ($id) {
             break;       
   default: break;
 }
-
+$subRutita = null;
 if (($id === "4")||($id === "5")){
   if ($id === "4") {
     $nombre = $entidadMostrar;
@@ -278,30 +305,39 @@ if (($id === "4")||($id === "5")){
   switch ($tipo){
     case "todos": $tit = "MOVIMIENTOS";
                   $nomRep = "tod_";
+                  $subRutita = $subRuta."/TODOS";
                   break;
     case "Retiro": $tit = "RETIROS"; 
                    $nomRep = "ret_";
+                   $subRutita = $subRuta."/RETIROS";
                    break;
     case "Ingreso": $tit = "INGRESOS";
                     $nomRep = "ing_";
+                    $subRutita = $subRuta."/INGRESOS";
                     break;
     case "Renovación": $tit = "RENOVACIONES";
                        $nomRep = "ren_";
+                       $subRutita = $subRuta."/RENOVACIONES";
                        break;
     case "Destrucción": $tit = "DESTRUCCIONES";
                         $nomRep = "des_";
+                        $subRutita = $subRuta."/DESTRUCCIONES";
                         break;
     case "AJUSTE Retiro": $tit = "AJUSTE Retiros";
-                        $nomRep = "ajuRet_";
-                        break;
+                          $nomRep = "ajuRet_";
+                          $subRutita = $subRuta."/AJUSTE RETIROS";
+                          break;
     case "AJUSTE Ingreso": $tit = "AJUSTE Ingresos";
-                        $nomRep = "ajuIng_";
-                        break;       
+                           $nomRep = "ajuIng_";
+                           $subRutita = $subRuta."/AJUSTE INGRESOS";
+                           break;       
     case "Ajustes": $tit = "AJUSTES";
                     $nomRep = "aju_";
+                    $subRutita = $subRuta."/AJUSTES";
                     break;   
     case "Clientes": $tit = "MOVIMIENTOS";
                      $nomRep = "mov_";
+                     $subRutita = $subRuta."/CLIENTES";
                      break;              
     default: break;
   }
@@ -313,6 +349,26 @@ else {
     $nombreReporte = $nombreReporte."_".$ultimaParte;
   }
 }
+
+if ($subRutita !== null){
+  if (is_dir($subRutita)){
+    //echo "La carpeta del día ya existe.<br>";
+  }
+  else {
+    $creoCarpeta0 = mkdir($subRutita);
+    if ($creoCarpeta0 === FALSE){
+      //echo "Error al crear la carpeta del día.<br>";
+      $seguir = false;
+    }
+    else {
+     // echo "Carpeta del día creada con éxito.<br>";
+    }
+  } 
+}
+else {
+  $subRutita = $subRuta;
+}
+
 
 // Conectar con la base de datos
 $con = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
@@ -443,8 +499,8 @@ if (!($seguir)){
   $salida = $dir.$nombreArchivo;
 }
 else {
-  $salida = $rutaCarpetaCliente.'/'.$nombreArchivo;
-  $GLOBALS["dirExcel"] = $rutaCarpetaCliente.'/';
+  $salida = $subRutita."/".$nombreArchivo;
+  $GLOBALS["dirExcel"] = $subRutita."/";
 }
 
 
@@ -503,8 +559,7 @@ if (!($seguir)){
   $fileDir = $dir.$nombreZip;
 }
 else {
-  $fileDir = $rutaCarpetaCliente.'/'.$nombreZip;
-  $dirExcel = $rutaCarpetaCliente.'/';
+  $fileDir = $subRutita."/".$nombreZip;
 }
 
 $excel = $dirExcel.$archivo;
