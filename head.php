@@ -50,7 +50,7 @@ require_once('data/baseMysql.php');
   <meta http-equiv='X-UA-Compatible' content='IE=edge'>
   <link rel='stylesheet' href='vendor/twitter/bootstrap/dist/css/bootstrap.min.css'>
   <link rel='stylesheet' href='css/<?php echo $estilos ?>'>
-  <script src="js/jquery.min.js"></script>
+  <script src="vendor/components/jquery/jquery.min.js"></script>
   <script src='js/popper.min.js'></script>
   <script src='vendor/twitter/bootstrap/dist/js/bootstrap.min.js'></script>  
   <script src='js/script.js' type="text/javaScript"></script>
