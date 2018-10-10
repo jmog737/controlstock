@@ -59,7 +59,7 @@
     //var tam = temp.length;
     //if (temp[tam-1] !== 'index.php'){
       var duracion0 = <?php echo DURACION ?>;
-      var duracion = parseInt(duracion0*1000+2000, 10);
+      var duracion = parseInt(duracion0*1000+1000, 10);//alert('antes de setInterval en el header: '+duracion);
       setInterval(function(){verificarSesion()}, duracion);
     //}
   </script>

@@ -201,13 +201,23 @@ else {
 }  
 
 switch ($id){
-  case "1": $subRuta = $rutaReporteFecha."/StockENTIDAD";
+  case "1": if ($entidadCarpeta !== 'Todos'){
+              $subRuta = $rutaReporteFecha."/StockENTIDAD";
+            }
+            else {
+              $subRuta = $rutaReporteFecha."/Stock";  
+            }
             break;
   case "2": $subRuta = $rutaReporteFecha."/StockPRODUCTOS/".$nombreProductoMostrar;
             break;
   case "3": $subRuta = $rutaReporteFecha;
             break;
-  case "4": $subRuta = $rutaReporteFecha."/MovsENTIDAD";
+  case "4": if ($entidadCarpeta !== 'Todos'){
+              $subRuta = $rutaReporteFecha."/MovsENTIDAD";
+            }
+            else {
+              $subRuta = $rutaReporteFecha."/Movs";  
+            }           
             break;
   case "5": $subRuta = $rutaReporteFecha."/MovsPRODUCTOS/".$nombreProductoMostrar;
             break;
@@ -292,6 +302,7 @@ switch ($id) {
             break;       
   default: break;
 }
+  
 $subRutita = null;
 if (($id === "4")||($id === "5")){
   if ($id === "4") {

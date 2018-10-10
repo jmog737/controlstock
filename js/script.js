@@ -5143,6 +5143,7 @@ function cargarFormEstadisticas(selector){
             <td style="display:none"><input type="text" id="fechaInicio" name="fechaInicio" value=""></td>\n\
             <td style="display:none"><input type="text" id="fechaFin" name="fechaFin" value=""></td>\n\
             <td style="display:none"><input type="text" id="mensaje" name="mensaje" value=""></td>\n\
+            <td style="display:none"><input type="text" id="nombreGrafica" name="nombreGrafica" value=""></td>\n\
             <td style="display:none"><input type="text" id="hacerGrafica" name="hacerGrafica" value=""></td>\n\
           </tr>';
     tabla += tr;
@@ -5354,10 +5355,12 @@ function realizarGrafica(){
 
   if ((nombreProducto !== "undefined") && (nombreProducto !== '')) {
     ///Separo en partes el nombreProducto que contiene [entidad: codigo] --- nombreProducto
-    var tempo = nombreProducto.split("- ");
+    var tempo = nombreProducto.split("--- ");
     var nombreSolo = tempo[1].trim();
-    //var tempo2 = tempo1.split("{");
-    //var nombreSolo = tempo2[0].trim();
+    ///*** Extraigo también la entidad correspondiente para poder luego generar la carpeta bajo la misma:
+    var tempo2 = nombreProducto.split(":");
+    var tempo3 = tempo2[0].split('[');
+    var entProdGrafica = tempo3[1];
   }
 
   var tipo = $("#tipo").find('option:selected').val( ); 
@@ -5568,14 +5571,18 @@ function realizarGrafica(){
 
   var query = "select productos.nombre_plastico, movimientos.cantidad, movimientos.tipo, fecha from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
   //alert("rango: "+rangoFecha+"\nquery:"+query);
+  var nombre = '';
   switch (radio) {
     case 'entidadMovimiento': if (entidadGrafica !== 'todos') {
                                 query += "and entidad='"+entidadGrafica+"' ";
                                 tipoConsulta = 'de '+entidadGrafica;
+                                nombre = entidadGrafica;
                               } 
                               else {
                                 tipoConsulta = 'de todas las entidades';
+                                nombre = 'Todos';
                               }
+                              
                               break;                       
     case 'productoMovimiento':  if ((idProd === 'NADA') || (nombreProducto === '')){
                                   alert('Debe seleccionar un producto. Por favor verifique.');
@@ -5587,6 +5594,7 @@ function realizarGrafica(){
                                   query += "and idProd="+idProd+' ';
                                 }
                                 tipoConsulta = 'del producto '+nombreSolo;
+                                nombre = entProdGrafica+'---'+nombreSolo;
                                 break;
     default: break;
   }
@@ -5650,6 +5658,7 @@ function realizarGrafica(){
         $("#fechaInicio").val(inicio);
         $("#fechaFin").val(fin);//alert('inicio: '+inicio+'\nfin: '+fin);
         $("#hacerGrafica").val("yes");
+        $("#nombreGrafica").val(nombre);
         var parametros = '';
         switch (criterioFecha){
           case 'intervalo': parametros = '&d1='+diaInicio+'&d2='+diaFin+'';

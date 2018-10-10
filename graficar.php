@@ -105,7 +105,7 @@ class PDF_Grafica extends Fpdf
   }  
   
   function graficarBarras($subtitulo, $meses, $totales, $data1, $data2, $data3, $data4, $data5, $data6, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg41, $avg42, $avg5, $destino, $nombreGrafica){
-    global $dirGraficas, $h;
+    global $rutaGrafica, $h;
     include "css/colores.php";
     /*
     global $colorRetirosGrafica, $colorRenosGrafica, $colorDestruccionesGrafica, $colorIngresosGrafica, $colorLeyendaRetiros, $colorLeyendaRenos, $colorBordeAjusteRetiros, $colorBordeAjusteIngresos;
@@ -535,7 +535,7 @@ class PDF_Grafica extends Fpdf
     if ($destino === 'pdf'){
       $timestamp = date('dmY_His');
       $nombreArchivo = $nombreGrafica.$timestamp.".png";
-      $fileName = $dirGraficas.$nombreArchivo;
+      $fileName = $rutaGrafica.'/'.$nombreArchivo;
       $graph->img->SetImgFormat('png');
       // Stroke image to a file
       $graph->Stroke($fileName);
@@ -573,7 +573,7 @@ class PDF_Grafica extends Fpdf
   }///****************** FIN graficarBarras *************************************************************************************************
 
   function graficarTorta($subtitulo, $datos, $totalRango, $tipoRango, $avg1, $avg2, $avg3, $avg4, $avg41, $avg42, $avg5, $destino, $nombreGrafica){
-    global $dirGraficas, $h;
+    global $rutaGrafica, $h;
     include "css/colores.php"; 
       
     // A new pie graph
@@ -942,7 +942,7 @@ class PDF_Grafica extends Fpdf
     if ($destino === 'pdf'){
       $timestamp = date('dmY_His');
       $nombreArchivo = $nombreGrafica.$timestamp.".png";
-      $fileName = $dirGraficas.$nombreArchivo;
+      $fileName = $rutaGrafica.'/'.$nombreArchivo;
 
       // Stroke image to a file
       $graph->Stroke($fileName);
@@ -1061,6 +1061,7 @@ $fechaInicio = $_SESSION["fechaInicio"];
 $fechaFin = $_SESSION["fechaFin"];
 $mensaje = $_SESSION["mensaje"];
 $criterioFecha = $_SESSION["criterioFecha"];
+$nomGrafica = $_SESSION["nombreGrafica"];
 
 /*
 $query = $_POST["consulta"];
@@ -1162,41 +1163,132 @@ $datos[$indice]->ajusteIngresos = $ajusteIngresos;
 
 ///********************************************************** Recupero TIPO Movimiento ******************************************************
 $tipoMov = '';
+$tipoMovCorto = null;
 $unMov = false;
 if (stripos($mensaje, 'Movimientos totales') !== FALSE) {
   $tipoMov = 'Todos';
+  $tipoMovCorto = 'Tod';
 }
 elseif (stripos($mensaje, 'Movimientos') !== FALSE){
   $tipoMov = 'Clientes';
+  $tipoMovCorto = 'Cli';
 }
 elseif (stripos($mensaje, 'Ajustes') !== FALSE){
   $tipoMov = 'Ajustes';
+  $tipoMovCorto = 'Aju';
 }
 elseif (stripos($mensaje, 'AJUSTE Retiros') !== FALSE) {
   $tipoMov = 'AjuRet';
+  $tipoMovCorto = 'AjuRet';
   $unMov = true;
 }
 elseif (stripos($mensaje, 'Renovaciones') !== FALSE) {
   $tipoMov = 'Renos';
+  $tipoMovCorto = 'Ren';
   $unMov = true;
 }
 elseif (stripos($mensaje, 'AJUSTE Ingresos') !== FALSE) {
   $tipoMov = 'AjuIng';
+  $tipoMovCorto = 'AjuIng';
   $unMov = true;
 }
 elseif (stripos($mensaje, 'Destrucciones') !== FALSE) {
   $tipoMov = 'Destrucciones';
+  $tipoMovCorto = 'Des';
   $unMov = true;
 }
 elseif (stripos($mensaje, 'Retiros') !== FALSE) {
   $tipoMov = 'Retiros';
+  $tipoMovCorto = 'Ret';
   $unMov = true;
 }
 else {
   $tipoMov = 'Ingresos';
+  $tipoMovCorto = 'Ing';
   $unMov = true;
 }  
-///******************************************************** FIN Recupero Tipo Movimiento ***************************************************    
+///******************************************************** FIN Recupero Tipo Movimiento ****************************************************    
+
+///************************************************ Genero carpeta para guardar la gráfica  *************************************************
+$aguja = array(0=>" ", 1=>".", 2=>"[", 3=>"]", 4=>"*", 5=>"/", 6=>"\\", 7=>"?", 8=>":", 9=>"_", 10=>"-");
+///Acomodo el nombre de la entidad para que no genere problemas durante la creación de la carpeta:
+$prod = false;
+if (isset($nomGrafica)){
+  if (stripos($nomGrafica, "---") !== FALSE){
+    $tempEntGra = explode("---", "$nomGrafica");
+    $entidadCarpeta = $tempEntGra[0];
+    $prodGrafica = str_replace($aguja, "", ucwords($tempEntGra[1]));
+    $prod = true;
+  }
+  else {
+    $entidadCarpeta = $nomGrafica;
+  }
+  $entidadCarpeta = str_replace($aguja, "", ucwords($entidadCarpeta));
+}
+
+$seguir = true;
+$rutaCarpetaCliente = $dir.$entidadCarpeta;
+if (is_dir($rutaCarpetaCliente)){
+  //echo "La carpeta del cliente ya existe.<br>";
+}
+else {
+  $creoCarpeta = mkdir($rutaCarpetaCliente);
+  if ($creoCarpeta === FALSE){
+    //echo "Error al crear la carpeta.<br>";
+    $seguir = false;
+  }
+  else {
+    //echo "Carpeta creada con éxito.<br>";
+  }
+}
+  
+$fechaCarpeta = strftime("%d%b%Y", strtotime(date('dMY')));
+$rutaReporteFecha = $rutaCarpetaCliente."/".$fechaCarpeta;
+if (is_dir($rutaReporteFecha)){
+  //echo "La carpeta del día ya existe.<br>";
+}
+else {
+  $creoCarpeta0 = mkdir($rutaReporteFecha);
+  if ($creoCarpeta0 === FALSE){
+   // echo "Error al crear la carpeta del día.<br>";
+    $seguir = false;
+  }
+  else {
+   // echo "Carpeta del día creada con éxito.<br>";
+  }
+}
+$rutaGrafica = '';
+if ($prod === true){
+  if ($entidadCarpeta !== 'Todos'){
+    $rutaGrafica = $rutaReporteFecha."/GraficasPRODUCTO/".$prodGrafica;
+  }
+  else {
+    $rutaGrafica = $rutaReporteFecha."/Graficas";  
+  }
+}
+else {
+  if ($entidadCarpeta !== 'Todos'){
+    $rutaGrafica = $rutaReporteFecha."/GraficasENTIDAD";
+  }
+  else {
+    $rutaGrafica = $rutaReporteFecha."/Graficas";  
+  }
+}
+
+if (is_dir($rutaGrafica)){
+  //echo "La carpeta del día ya existe.<br>";
+}
+else {
+  $creoCarpeta1 = mkdir($rutaGrafica, 0777, true);
+  if ($creoCarpeta1 === FALSE){
+   // echo "Error al crear la carpeta del día.<br>";
+    $seguir = false;
+  }
+  else {
+   // echo "Carpeta del día creada con éxito.<br>";
+  }
+}
+///************************************************** FIN Genero carpeta para guardar la gráfica ********************************************
 
 ///**************************************************** INICIO reacomodo de los datos por tipo **********************************************
 $meses = array();
@@ -1351,7 +1443,7 @@ $timestamp = date('dmy_His');
 
 ///Caracteres a ser reemplazados en caso de estar presentes en el nombre del producto o la entidad
 ///Esto se hace para mejorar la lectura (en caso de espacios en blanco), o por requisito para el nombre de la hoja de excel
-$aguja = array(0=>" ", 1=>".", 2=>"[", 3=>"]", 4=>"*", 5=>"/", 6=>"\\", 7=>"?", 8=>":", 9=>"_", 10=>"-");
+//$aguja = array(0=>" ", 1=>".", 2=>"[", 3=>"]", 4=>"*", 5=>"/", 6=>"\\", 7=>"?", 8=>":", 9=>"_", 10=>"-");
 ///Se define el tamaño máximo aceptable para el nombre teniendo en cuenta que el excel admite un máximo de 31 caracteres, y que además, 
 ///ya se tienen 6 fijos del stock_ (movs_ es uno menos).
 $tamMaximoNombre = 25;
@@ -1367,7 +1459,7 @@ else {
   $tempProd = explode("de ", $mensaje);
   $tipoGrafica = "entidad";
 } 
-///Discrimino para escribir mensaje de fecha según período elegido:
+///Discrimino para escribir mensaje de fecha según período elegido (para ambos casos; entidad y producto):
 $tempProd1 = stripos($tempProd[1], " entre");
 if ($tempProd1 !== false){
   $tempProd2 = explode(" entre", $tempProd[1]);
@@ -1387,10 +1479,21 @@ else {
 
 $nombreProductoMostrar1 = str_replace($aguja, "", $nombreProducto);
 $nombreProductoMostrar = substr($nombreProductoMostrar1, 0, $tamMaximoNombre);
-$nombreGrafica = "gca_".$nombreProductoMostrar."_";
+if ($nombreProductoMostrar === 'todaslasentidades'){
+  $nombreProductoMostrar = '';
+}
+else {
+  $nombreProductoMostrar = "_".$nombreProductoMostrar;
+}
+if ($tipoMovCorto !== null){
+  $nombreGrafica = "gca".$tipoMovCorto.$nombreProductoMostrar."_";
+}
+else {
+  $nombreGrafica = "gca".$nombreProductoMostrar."_";
+}
 
 $nombreArchivo = $nombreGrafica.$timestamp.".pdf";
-$salida = $dirGraficas.$nombreArchivo;
+$salida = $rutaGrafica.'/'.$nombreArchivo;
 
 if ($tipoGrafica === "producto"){
   if ($unMov){

@@ -13,6 +13,7 @@ if (isset($_POST["hacerGrafica"])){
     $_SESSION["fechaFin"] = $_POST["fechaFin"];
     $_SESSION["mensaje"] = $_POST["mensaje"];
     $_SESSION["criterioFecha"] = $_POST["criterioFecha"];
+    $_SESSION["nombreGrafica"] = $_POST["nombreGrafica"];
   }
 }
 
