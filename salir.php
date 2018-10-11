@@ -16,6 +16,6 @@
   
 <script> 
  //alert('Ha cerrado correctamente su sesión');
-  window.location.href = "../controlstock/index.php";
+  window.location.href = "index.php";
 </script>
 

@@ -868,7 +868,7 @@ function agregarMovimiento(agregarRepetido){
 //            }
 //          }
           var tipo1 = encodeURI(tipo);
-          window.location.href = "../controlstock/movimiento.php?h="+busqueda+"&id="+idProd+"&t="+tipo1+"&f="+fecha+"&c="+cantidad;
+          window.location.href = "movimiento.php?h="+busqueda+"&id="+idProd+"&t="+tipo1+"&f="+fecha+"&c="+cantidad;
         }
         else {
           if (resultado === 'ERROR INSERT'){
@@ -1392,7 +1392,7 @@ function cargarEditarMovimiento(idMov, selector){
     formu += '</form>';
     mostrar += titulo;
     mostrar += formu;
-    var volver = '<br><a href="../controlstock/busquedas.php" name="volver" id="volverEdicionMovimiento" title="Volver a BÚSQUEDAS">Volver</a><br><br>';
+    var volver = '<br><a href="busquedas.php" name="volver" id="volverEdicionMovimiento" title="Volver a BÚSQUEDAS">Volver</a><br><br>';
     mostrar += volver;
     $(selector).html(mostrar);
   
@@ -3623,7 +3623,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
           idProds[j] = '';
         }
                 
-        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds+'&ent='+entUrl+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipoUrl+'&user='+user+'&est='+estadoMov+'&m='+mostrarEstado+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        var volver = '<br><a title="Volver a BÚSQUEDAS" href="busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds+'&ent='+entUrl+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipoUrl+'&user='+user+'&est='+estadoMov+'&m='+mostrarEstado+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         mostrar += '</div>';
         $("#pills-tabContent").append(mostrar);
@@ -3632,7 +3632,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
       }/// FIN del if de totalDatos>1  
       else {
         mostrar += "<br><hr><h3>No existen registros para la consulta realizada.</h3><hr>";
-        var volver = '<br><a title="Volver a BÚSQUEDAS" href="../controlstock/busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds+'&ent='+entUrl+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipoUrl+'&user='+user+'&est='+estadoMov+'&m='+mostrarEstado+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
+        var volver = '<br><a title="Volver a BÚSQUEDAS" href="busquedas.php?h='+prodHint+'&t='+tipMov+'&zip='+zip+'&planilla='+planilla+'&marca='+marcaAgua+'&id='+idProds+'&ent='+entUrl+'&p='+p+'&d1='+d1+'&d2='+d2+'&tipo='+tipoUrl+'&user='+user+'&est='+estadoMov+'&m='+mostrarEstado+'" name="volver" id="volverBusqueda" >Volver</a><br><br>';
         mostrar += volver;
         mostrar += '</div>';
         $("#pills-tabContent").append(mostrar);

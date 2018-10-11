@@ -138,7 +138,7 @@ else
   <!--<body>-->
   <div id='main-content' class='container-fluid'>
     <script type="text/javascript">
-      window.location.href = "../controlstock/movimiento.php";
+      window.location.href = "movimiento.php";
     </script> 
   </div> <!-- fin del div contenido -->
 <?php 
