@@ -3038,13 +3038,14 @@ class PDF extends PDF_MC_Table
     if (($foto !== null) && ($foto !== '')) {
       $this->Ln(3);
       $rutita = $rutaFotos."/".$foto;
-      list($anchoFoto, $altoFoto) = $this->resizeToFit($rutita, self::FOTO_WIDTH_MM, self::FOTO_HEIGHT_MM);
-
-      $xFoto = ($anchoPagina - $anchoFoto)/2;
-      $this->SetX($xFoto);
-      $yFoto = $this->GetY();
-      $this->Image($rutita, $xFoto, $yFoto, $anchoFoto, $altoFoto);
-      $this->Ln($altoFoto-3);
+      if (file_exists($rutita)){
+        list($anchoFoto, $altoFoto) = $this->resizeToFit($rutita, self::FOTO_WIDTH_MM, self::FOTO_HEIGHT_MM);
+        $xFoto = ($anchoPagina - $anchoFoto)/2;
+        $this->SetX($xFoto);
+        $yFoto = $this->GetY();
+        $this->Image($rutita, $xFoto, $yFoto, $anchoFoto, $altoFoto);
+        $this->Ln($altoFoto-3);
+      }   
     }
     ///*************************************************************** FIN FOTO **************************************************************
     $this->Ln(8);

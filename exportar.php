@@ -3,7 +3,16 @@ if(!isset($_SESSION))
   {
   //Reanudamos la sesión:
   session_start(); 
-} 
+  require_once("data/connectvars.php");
+  $test = true;
+  ///Obtenemos el timestamp del servidor de cuanto se hizo la petición
+  $hora = $_SERVER["REQUEST_TIME"];
+  if (!(isset($_SESSION['ultima_actividad']))||($hora - $_SESSION['ultima_actividad']) > DURACION) {
+    $test = false;
+    require("salir.php");
+  }
+}
+if ($test){
 require_once("data/sesiones.php");
 require_once('data/baseMysql.php');
 require_once('generarExcel.php');
@@ -12,6 +21,7 @@ require_once('data/config.php');
 //error_reporting(NULL);
 //ini_set('error_reporting', NULL);
 //ini_set('display_errors',0);
+
 
 //phpinfo();
 //***************************** DESTINATARIOS CORREOS ***********************************************************************************************
@@ -608,5 +618,5 @@ if (isset($mails)){
 error_reporting(E_ALL);
 ini_set('error_reporting', E_ALL);
 ini_set('display_errors',1);
-
+}
 ?>
