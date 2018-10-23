@@ -109,16 +109,20 @@ function vaciarContent (id) {
   \brief Función que valida que el parámetro pasado sea un entero.
   @param valor Dato a validar.                  
 */
-function validarEntero(valor) {
-  valor = parseInt(valor);
-  //Compruebo si es un valor num�rico
-  if (isNaN(valor)) {
-      //entonces (no es numero) devuelvo el valor cadena vacia
-      return false;
-      }
-  else{
-      //En caso contrario (Si era un n�mero) devuelvo el valor
+function validarEntero(numero) {//alert(valor);
+  if (isNaN(numero)){
+    //alert ("Ups... " + numero + " no es un número.");
+    return false;
+  } 
+  else {
+    if (numero % 1 == 0) {
+      //alert ("Es un numero entero");
       return true;
+    } 
+    else {
+      //alert ("Es un numero decimal");
+      return false;
+    }
   }
 }
 /********** fin validarEntero(valor) **********/
@@ -520,11 +524,13 @@ function validarMovimiento() {
       }
       else
         {
-        var cant = validarEntero(document.getElementById("cantidad").value);
-
+        var cant = validarEntero(cantidad);
+        if (cant){
+          cantidad = parseInt(cantidad, 10);
+        }
         if ((cantidad <= 0) || (cantidad === "null") || !cant)
           {
-          alert('La cantidad de tarjetas debe ser un entero mayor o igual a 1.');
+          alert('La cantidad de tarjetas debe ser un ENTERO mayor o igual a 1.');
           $("#cantidad").val("");
           document.getElementById("cantidad").focus();
           seguir = false;
@@ -749,7 +755,7 @@ function agregarMovimiento(agregarRepetido){
     var resultado = request["resultado"];
     var fechaAnterior = resultado[0]['fecha'];
     var tipoAnterior = resultado[0]['tipo'];
-    var cantidadAnterior = resultado[0]['cantidad'];
+    var cantidadAnterior = parseInt(resultado[0]['cantidad'], 10);
     var idAnterior = resultado[0]['producto'];
     
     var fecha = $("#fecha").val();
@@ -794,10 +800,10 @@ function agregarMovimiento(agregarRepetido){
 
     /// Si el nuevoStock es menor a 0, siginifica que no hay stock suficiente. Se alerta y se descuenta sólo la cantidad disponible.
     /// CAMBIO: La política actual es DEJAR en suspenso el movimiento hasta que haya stock suficiente. NO HAY QUE HACER EL MOVIMIENTO!!
-    var seguir = true;
+    var seguir = validarMovimiento();
     var repetido = false;
     //alert('fecha: '+fecha+' - prod: '+idProd+' - cantidad: '+cantidad+' - tipo: '+tipo+'\nfecha: '+fechaAnterior+' - prod: '+idAnterior+' - cantidad: '+cantidadAnterior+' - tipo: '+tipoAnterior);
-    if ((fecha == fechaAnterior)&&(idProd == idAnterior)&&(cantidad == cantidadAnterior)&&(tipo == tipoAnterior)){
+    if ((fecha === fechaAnterior)&&(idProd === idAnterior)&&(cantidad === cantidadAnterior)&&(tipo === tipoAnterior)){
       if (!agregarRepetido){
         $("#modalMovRepetido").modal("show");
         seguir = false;
@@ -819,10 +825,10 @@ function agregarMovimiento(agregarRepetido){
         avisarAlarma2 = true;
       }
     }
-
+    
     if (seguir) {
       inhabilitarAgregado();
-      var userSesion = $("#userID").val();
+      var userSesion = $("#userID").val();//alert('userSesion: '+userSesion);
       var userControl;
       if (userSesion === 2){
         userControl = 3;
@@ -876,7 +882,14 @@ function agregarMovimiento(agregarRepetido){
           }  
         }
         habilitarAgregado(); 
-      });            
+      })  
+      .fail(function() {
+        alert( "error" );
+      })
+      .always(function() {
+        //alert( "complete" );
+        habilitarAgregado(); 
+      });
     }
     else {
 //      if (!repetido){
@@ -5796,7 +5809,7 @@ function todo () {
                                                 var temp2 = temp1[0].split('=');
                                                 hacerGrafica = temp2[1];
                                               }
- 
+ a
                                              if (hacerGrafica ===  '1') {
                                                 setTimeout(function(){cargarGrafica("#main-content")}, 100);
                                               }

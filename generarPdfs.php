@@ -49,9 +49,9 @@ class PDF extends PDF_MC_Table
     
     //Agrego logo de EMSA:
     $logo = 'images/logotipo.jpg';
-
-    list($nuevoAncho, $nuevoAlto) = $this->resizeToFit($logo, self::LOGO_WIDTH_MM, self::LOGO_HEIGHT_MM);
-    
+    if (file_exists($logo)){
+      list($nuevoAncho, $nuevoAlto) = $this->resizeToFit($logo, self::LOGO_WIDTH_MM, self::LOGO_HEIGHT_MM);
+    }
     $q1 = stripos($tipoConsulta, " de todos los tipos (inc. AJUSTES)");
     if ($q1 !== FALSE) {
       if (stripos($titulo, "(TODOS)") === FALSE){
@@ -911,8 +911,8 @@ class PDF extends PDF_MC_Table
       ///*****************************************************************  FOTO ************************************************************
       ///Agrego un snapshot de la tarjeta debajo de la tabla (si es que existe!!):
       $foto = $registros[0][8];
-      if (($foto !== null) && ($foto !== '')) {
-        $rutita = $rutaFotos."/".$foto;
+      $rutita = $rutaFotos."/".$foto;
+      if (file_exists($rutita)){
         list($anchoFoto, $altoFoto) = $this->resizeToFit($rutita, self::FOTO_WIDTH_MM, self::FOTO_HEIGHT_MM);
         
         $xFoto = ($anchoPagina - $anchoFoto)/2;
