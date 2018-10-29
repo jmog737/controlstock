@@ -34,21 +34,23 @@ if ($tam > 1){
 $result = consultarBD($queryInsert, $dbc);
 $dato = array();
 if ($result === TRUE) {
-  $dato["resultado"] = "OK";
   if ($log === "SI") {
     escribirLog($queryInsert);
-  }
+  }  
   if ($tam > 1){
     $result1 = consultarBD($queryUpdate, $dbc);
     if ($result1 === TRUE) {
-      $dato["resultado"] = "OK";
       if ($log === "SI") {
         escribirLog($queryUpdate);
       }
+      $dato["resultado"] = "OK";
     }  
     else {
-      $dato["resultado"] = "ERROR UPDATE";
+      $dato["resultado"] = "ERROR UPDATE; pero el INSERT YA se hizo";
     } 
+  }
+  else {
+    $dato["resultado"] = "OK";
   }
 }
 else {
@@ -56,5 +58,6 @@ else {
 }
 
 $json = json_encode($dato);
+
 echo $json;
 ?>

@@ -37,12 +37,27 @@ function verificarSesion() {
   */
   xmlhttp.onreadystatechange = function() {
     if (this.readyState === 4 && this.status === 200) {
-      var myObj = JSON.parse(this.responseText);
-      var user = myObj.user;
-      var user_id = myObj.user_id;
-      var sesion = myObj.sesion;
-      var timestamp = myObj.timestamp;//alert('timestamp: '+timestamp);
-      var usuarioViejo = myObj.oldUser;
+      var myObj1 = JSON && JSON.parse(this.responseText) || $.parseJSON(this.responseText);
+      var user = '';
+      var user_id = '';
+      var sesion = '';
+      var timestamp = '';
+      var usuarioViejo = '';
+      if ($.isEmptyObject(myObj1)){
+        user = 'ERROR';
+        user_id = 0;
+        sesion = 'expirada';
+        timestamp = 0;
+        usuarioViejo = 'ERROR';
+      }
+      else {
+        user = myObj1.user;
+        user_id = myObj1.user_id;
+        sesion = myObj1.sesion;
+        timestamp = myObj1.timestamp;
+        usuarioViejo = myObj1.oldUser;
+      };
+      
 
       if (sesion === 'expirada'){
         var mostrarSesion = '';
@@ -107,7 +122,7 @@ function vaciarContent (id) {
 
 /**
   \brief Función que valida que el parámetro pasado sea un entero.
-  @param valor Dato a validar.                  
+  @param numero Dato a validar.                  
 */
 function validarEntero(numero) {//alert(valor);
   if (isNaN(numero)){
@@ -126,6 +141,14 @@ function validarEntero(numero) {//alert(valor);
   }
 }
 /********** fin validarEntero(valor) **********/
+
+
+function existeUrl(url) {
+   var http = new XMLHttpRequest();
+   http.open('HEAD', url, false);
+   http.send();
+   return http.status!=404;
+}
 
 /**
  * 
@@ -883,8 +906,9 @@ function agregarMovimiento(agregarRepetido){
         }
         habilitarAgregado(); 
       })  
-      .fail(function() {
-        alert( "error" );
+      .fail(function(d, textStatus, error) {
+        //alert('error: '+error+'\n'+textStatus+'\n'+d["resultado"]);
+        alert("Hubo un ERROR en la respuesta del servidor.\nPor favor VERIFICAR si el movimiento Y la actualización del STOCK correspondiente se lograron completar!.\nDe lo contrario avise." );
       })
       .always(function() {
         //alert( "complete" );
@@ -5809,7 +5833,7 @@ function todo () {
                                                 var temp2 = temp1[0].split('=');
                                                 hacerGrafica = temp2[1];
                                               }
- a
+ 
                                              if (hacerGrafica ===  '1') {
                                                 setTimeout(function(){cargarGrafica("#main-content")}, 100);
                                               }
@@ -5874,6 +5898,7 @@ $(document).on("blur", ".agrandar", function (){
 ******************************************************************************************************************************
 */
 
+
 ///Disparar funcion al cambiar el elemento elegido en el select con las sugerencias para los productos.
 ///Cambia el color de fondo para resaltarlo, carga un snapshot del plástico si está disponible, y muestra
 ///el stock actual.
@@ -5881,6 +5906,7 @@ $(document).on("change focusin", "#hint", function (){
   //verificarSesion();
   var rutaFoto = 'images/snapshots/';
   var nombreFoto = $(this).find('option:selected').attr("name");
+  
   var prod = $(this).find('option:selected').val();
   $(this).css('background-color', '#ffffff');
   //$(this).find('option:selected').css('background-color', '#ffffff');
@@ -6040,7 +6066,12 @@ $(document).on("change focusin", "#hint", function (){
           resaltado = 'resaltado';
         }  
       }
-      var mostrar = '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
+      var mostrar;
+      var dire = rutaFoto+nombreFoto;
+      if (existeUrl(dire)){alert('existe');
+        mostrar += '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
+      }
+      else {alert('no existe');}
       mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><strong>Stock actual: </strong><font class="'+resaltado+'" style="font-size:3.0em; font-style:italic;">'+stock.toLocaleString()+'</font></p>';
       mostrar += '<p id="promedio1" name="hint" style="padding-top: 1px;margin-bottom: 0px"><strong>Total Consumos (&uacute;lt. '+periodoDias1+' d&iacute;as):</strong> <font style="font-size:1.2em; font-style:italic;">'+totalConsumos1.toLocaleString()+' '+unidades1+' ('+promedioMensual1.toLocaleString()+' '+unidadesPromedio1+')</font></p>';
       mostrar += '<p id="promedio2" name="hint" style="padding-top: 1px"><strong>Total Consumos (&uacute;lt. '+periodoDias2+' d&iacute;as):</strong> <font style="font-size:1.2em; font-style:italic;">'+totalConsumos2.toLocaleString()+' '+unidades2+' ('+promedioMensual2.toLocaleString()+' '+unidadesPromedio2+')</font></p>';
@@ -6355,7 +6386,11 @@ $(document).on("change focusin", "#hintProd", function (){
     }  
   }
   
-  var mostrar = '<img id="snapshot" name="hintProd" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
+  var mostrar;
+  var dire = rutaFoto+nombreFoto;
+  if (existeUrl(dire)){
+    mostrar += '<img id="snapshot" name="hintProd" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
+  }
   mostrar += '<p id="stock" name="hintProd" style="padding-top: 10px"><strong>Stock actual: </strong><font class="'+resaltado+'" style="font-size:2.6em;font-style:italic;">'+stock.toLocaleString()+'</font></p>';
   mostrar += '<p id="ultimoMov" name="hintProd"><strong>Último Movimiento: <font style="font-size:1.1em;font-style:italic;">'+ultimoMovimiento+'</font></strong></p>';
   $(this).css('background-color', '#9db7ef');

@@ -39,12 +39,19 @@ function escribirLog($query){
   $query = "[".$_SESSION['username']."] ".$horaLog." - ".$query."\r\n";
   
   /// *********** ** AGREGADO PARA ESCRIBIR LINEAS AL INICIO EN LUGAR DE AL FINAL *******************************
-  //guardo en otra variable el contenido actual
-  $get = file_get_contents($archivo);
-  //creo una variable con el nuevo+actual
-  $nuevo = $query.$get;
-  //borro el texto
-  unlink($archivo);
+  /// Chequeo primero si el archivo existe, si es así recupero contenido y agrego consulta al inicio. De lo contrario
+  /// agrego solo la consulta.
+  if (file_exists($archivo)){
+    //guardo en otra variable el contenido actual
+    $get = file_get_contents($archivo);
+    //creo una variable con el nuevo+actual
+    $nuevo = $query.$get;
+    //borro el texto
+    unlink($archivo);
+  }
+  else {
+    $nuevo = $query;
+  }
   /// *********    FIN AGREGADO PARA ESCRIBIR LINEAS AL INICIO EN LUGAR DE AL FINAL *****************************
   
   $gestor = fopen($archivo, "cb");
