@@ -58,7 +58,7 @@ function verificarSesion() {
         usuarioViejo = myObj1.oldUser;
       };
       
-
+//alert('INICIO: \nusuarioSesion: '+user+'\nuserID: '+user_id+'\ntimestamp: '+timestamp);
       if (sesion === 'expirada'){
         var mostrarSesion = '';
         ///Se comenta siguiente línea usada para las pruebas:
@@ -72,7 +72,7 @@ function verificarSesion() {
         //segs = segs < 10 ? '0' + segs : segs;
         if (horas === 0){
           if (minutos === 0){
-            mostrarSesion = segs+'segs';
+            mostrarSesion = segs+' segs';
           }
           else {
             if (segs === 0){
@@ -96,13 +96,16 @@ function verificarSesion() {
             }
           }  
         }
+        //$("#usuarioSesion").val(user);
+        //$("#userID").val(user_id);
+       // $("#timestampSesion").val(timestamp);
         alert("Terminó el tiempo de sesión de "+mostrarSesion+".\nPor favor vuelve a loguearte "+usuarioViejo+"!.");
         window.location.assign("salir.php");
       }
       else {
         $("#usuarioSesion").val(user);
         $("#userID").val(user_id);
-        $("#timestampSesion").val(timestamp);
+        $("#timestampSesion").val(timestamp);alert('Sesion ACTUAL:\n'+window.location.href+'\nusuarioSesion: '+user+'\nuserID: '+user_id+'\ntimestamp: '+timestamp);
       }
     }
   };
@@ -759,6 +762,7 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
         ///showHint(hint, "#producto", "");
         $("#producto").focus();
       }   
+      
     }
   });    
 }
@@ -6066,12 +6070,8 @@ $(document).on("change focusin", "#hint", function (){
           resaltado = 'resaltado';
         }  
       }
-      var mostrar;
-      var dire = rutaFoto+nombreFoto;
-      if (existeUrl(dire)){alert('existe');
-        mostrar += '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
-      }
-      else {alert('no existe');}
+      
+      var mostrar = '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
       mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><strong>Stock actual: </strong><font class="'+resaltado+'" style="font-size:3.0em; font-style:italic;">'+stock.toLocaleString()+'</font></p>';
       mostrar += '<p id="promedio1" name="hint" style="padding-top: 1px;margin-bottom: 0px"><strong>Total Consumos (&uacute;lt. '+periodoDias1+' d&iacute;as):</strong> <font style="font-size:1.2em; font-style:italic;">'+totalConsumos1.toLocaleString()+' '+unidades1+' ('+promedioMensual1.toLocaleString()+' '+unidadesPromedio1+')</font></p>';
       mostrar += '<p id="promedio2" name="hint" style="padding-top: 1px"><strong>Total Consumos (&uacute;lt. '+periodoDias2+' d&iacute;as):</strong> <font style="font-size:1.2em; font-style:italic;">'+totalConsumos2.toLocaleString()+' '+unidades2+' ('+promedioMensual2.toLocaleString()+' '+unidadesPromedio2+')</font></p>';

@@ -7,6 +7,7 @@ if(!isset($_SESSION))
   $test = true;
   ///Obtenemos el timestamp del servidor de cuanto se hizo la petición
   $hora = $_SERVER["REQUEST_TIME"];
+  //$hora = time();
   if (!(isset($_SESSION['ultima_actividad']))||($hora - $_SESSION['ultima_actividad']) > DURACION) {
     $test = false;
     require("salir.php");

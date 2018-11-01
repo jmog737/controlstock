@@ -4,7 +4,7 @@ if(!isset($_SESSION))
   //Reanudamos la sesión:
   session_start(); 
 } 
-require_once("data/sesiones.php");
+//require("data/sesiones.php");
 /**
 ******************************************************
 *  @file moviemiento.php
@@ -22,7 +22,7 @@ require_once("data/sesiones.php");
   <body>
     <?php require_once('header.php');
     if (isset($_SESSION['user_id'])) 
-      {//echo "seteado user id<br>";
+      {
     ?>
     <main>
       <div id='main-content' class='container-fluid'>
@@ -31,13 +31,8 @@ require_once("data/sesiones.php");
     </main>
     <?php 
     }
-    else {//echo "no seteado user id<br>";
-    ?>
-<!--      <script> 
-        alert('Su sesión expiró (@movimiento). Por favor vuelva loguearse.'); 
-        window.location.href = "../controlstock/index.php";
-      </script>  -->
-    <?php
+    else {
+    
     }        
     ?>  
       
