@@ -1,9 +1,10 @@
 <?php
-if(!isset($_SESSION)) 
-  {
-  //Reanudamos la sesión:
-  session_start(); 
-} 
+//if(!isset($_SESSION)) 
+//  {
+//  //Reanudamos la sesión:
+//  session_start(); 
+//} 
+//require_once('data/sesiones');
 /**
 ******************************************************
 *  @file generarExcel.php

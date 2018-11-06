@@ -1,10 +1,4 @@
 <?php
-if(!isset($_SESSION)) 
-  {
-  //Reanudamos la sesión:
-  session_start(); 
-}
-require_once("connectvars.php");
 /**
 ******************************************************
 *  @file config.php
@@ -61,3 +55,5 @@ if(isset($_SESSION['user_id']))
 }
 
 $limiteSeleccion = 8;
+
+?>

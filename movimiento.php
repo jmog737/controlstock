@@ -1,10 +1,5 @@
 <?php
-if(!isset($_SESSION)) 
-  {
-  //Reanudamos la sesión:
-  session_start(); 
-} 
-//require("data/sesiones.php");
+require("data/sesiones.php");
 /**
 ******************************************************
 *  @file moviemiento.php
@@ -32,7 +27,7 @@ if(!isset($_SESSION))
     <?php 
     }
     else {
-    
+      echo "no está seteado el user_id";
     }        
     ?>  
       

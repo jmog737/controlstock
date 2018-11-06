@@ -1,27 +1,28 @@
 <?php
-if(!isset($_SESSION)) 
-  {
-  //Reanudamos la sesión:
-  session_start(); 
-}
-require_once('connectvars.php');
+session_start();
+//Comprobamos si esta definida la sesión 'tiempo'.
+if(isset($_SESSION['tiempo']) ) {
+  //Calculamos tiempo de vida inactivo.
+  $vida_session = time() - $_SESSION['tiempo'];
+  require_once('connectvars.php');
+  
+//echo "tiempo anterior: ".$_SESSION['tiempo']."<br>time en sesiones: ".time()."<br>vida sesiones: ".$vida_session."<br>duracion: ".DURACION."<br>";
 
-///Evitamos que nos salgan los NOTICES de PHP
-//error_reporting(E_ALL ^ E_NOTICE);
-
-///Si el tiempo de la petición es mayor al tiempo permitido de la duración, 
-///destruye la sesión y crea una nueva
-if (isset($_SESSION['ultima_actividad'])){
-  $secondsInactive = time() - $_SESSION['ultima_actividad'];
-  if($secondsInactive >= DURACION){
-    header('Location: salir.php');
+  //Compraración para redirigir página, si la vida de sesión sea mayor a el tiempo insertado en inactivo.
+  if($vida_session > DURACION)
+    {
+    echo "ver por que me saca";
+    // Delete the session vars by clearing the $_SESSION array
+    $_SESSION = array();
+    // Destroy the session
+    session_unset();
+    session_destroy();
+    //Redirigimos pagina.
+    header('Location: index.php');
   }
-//  else {
-//    if (isset($_SESSION['user_id'])){
-//      ///Definimos el valor de la sesión "ultima_actividad" como el timestamp del servidor
-//      $_SESSION['ultima_actividad'] = time();
-//    }
-//  }
+  else {
+    //Activamos sesion tiempo.
+    $_SESSION['tiempo'] = time();//echo "nuevo tiempo: ".$_SESSION['tiempo'];
+  }    
 }
-$_SESSION['ultima_actividad'] = time();
 ?>

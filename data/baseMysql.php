@@ -1,12 +1,8 @@
 <?php
-if(!isset($_SESSION)) 
-  {
-  //Reanudamos la sesión:
-  session_start(); 
-}
-require_once("config.php");
 require_once("sesiones.php");
-require_once ("escribirLog.php");
+//require_once("config.php");
+require_once ("connectvars.php");
+//require_once ("escribirLog.php");
 
 /**
  * \brief Función usada para conectarse a la base de datos especificada.

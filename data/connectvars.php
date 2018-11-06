@@ -1,9 +1,4 @@
 <?php
-if(!isset($_SESSION)) 
-  {
-  //Reanudamos la sesión:
-  session_start(); 
-}
 /*!
   @file connectvars.php
   @brief Archivo que contiene las constantes predefinidas para la conexión. \n
@@ -33,6 +28,6 @@ define('DB_NAME', 'controlstock');
 /**
   \param DURACION Constante que indica el tiempo de sesión permitido sin actividad (en segundos).
 */
-define('DURACION', 6);
+define('DURACION', 10);
 
 ?>

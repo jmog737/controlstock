@@ -1,11 +1,11 @@
 <?php
-if(!isset($_SESSION)) 
-  {
-  //Reanudamos la sesión:
-  session_start(); 
-}
+//if(!isset($_SESSION)) 
+//  {
+//  //Reanudamos la sesión:
+//  session_start(); 
+//}
 require_once ("baseMysql.php");
-
+require_once ("escribirLog.php");
 if (isset($_SESSION["username"])){
   $userDB = $_SESSION["username"];
   $pwDB = $_SESSION['username'];

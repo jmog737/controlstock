@@ -53,7 +53,7 @@
     </div><!-- .container -->
   </nav><!-- #header-nav -->
   <script lang="javasript/text">
-    verificarSesion();
+    //verificarSesion();
     var dir = window.location.pathname;
     var temp = dir.split("/");
     var tam = temp.length;
@@ -61,6 +61,7 @@
     
     if (pagina !== 'index.php'){
       var duracion0 = <?php echo DURACION ?>;
+      duracion0 = 10;
       var duracion = parseInt(duracion0*1000, 10);
       //alert('antes de setInterval en el header: '+duracion);
       /// Se agrega un tiempo extra cosa de estar seguro que venció el tiempo (si queda en el límite habrá veces 

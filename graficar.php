@@ -1,9 +1,9 @@
 <?php
-if(!isset($_SESSION)) 
-  {
-  //Reanudamos la sesión:
-  session_start(); 
-} 
+//if(!isset($_SESSION)) 
+//  {
+//  //Reanudamos la sesión:
+//  session_start(); 
+//} 
 /**
 ******************************************************
 *  @file graficar.php
@@ -19,8 +19,9 @@ error_reporting(NULL);
 ini_set('error_reporting', NULL);
 ini_set('display_errors',0);
 
-require ('vendor/autoload.php');
 require_once("data/baseMysql.php");
+require_once("data/config.php");
+require ('vendor/autoload.php');
 require_once("css/colores.php");
 use Fpdf\Fpdf;
 /** Include JPgraph files */

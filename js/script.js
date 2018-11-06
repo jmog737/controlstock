@@ -54,7 +54,7 @@ function verificarSesion() {
         user = myObj1.user;
         user_id = myObj1.user_id;
         sesion = myObj1.sesion;
-        timestamp = myObj1.timestamp;
+        timestamp = myObj1.time;
         usuarioViejo = myObj1.oldUser;
       };
       
@@ -99,13 +99,14 @@ function verificarSesion() {
         //$("#usuarioSesion").val(user);
         //$("#userID").val(user_id);
        // $("#timestampSesion").val(timestamp);
-        alert("Terminó el tiempo de sesión de "+mostrarSesion+".\nPor favor vuelve a loguearte "+usuarioViejo+"!.");
+        alert("Terminó tu tiempo de sesión de "+mostrarSesion+".\nPor favor "+usuarioViejo+", vuelve a loguearte!.");
         window.location.assign("salir.php");
       }
       else {
         $("#usuarioSesion").val(user);
         $("#userID").val(user_id);
-        $("#timestampSesion").val(timestamp);alert('Sesion ACTUAL:\n'+window.location.href+'\nusuarioSesion: '+user+'\nuserID: '+user_id+'\ntimestamp: '+timestamp);
+        $("#timestampSesion").val(timestamp);
+        //alert('Sesion ACTUAL:\n'+window.location.href+'\nSesion: '+sesion+'\nusuarioSesion: '+user+'\nuserID: '+user_id+'\ntimestamp: '+timestamp);
       }
     }
   };
@@ -1723,12 +1724,6 @@ function validarUsuario() {
  * \brief Función que primero valida la info ingresada, y de ser válida, hace la actualización del pwd del usuario del sistema.
  */
 function actualizarUser() {
-//  var timestamp = Math.round(Date.now() / 1000);
-//      
-//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-//    window.location.href = "../consultastock/index.php";
-//  }
-//  else {
     verificarSesion();
     
     var pw1 = $("#pw1").val();
@@ -1790,12 +1785,6 @@ function actualizarUser() {
  * \brief Función que primero valida la info ingresada, y de ser válida, hace la actualización de los parámetros del usuario.
  */
 function actualizarParametros()  {
-//  var timestamp = Math.round(Date.now() / 1000);
-//      
-//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-//    window.location.href = "../consultastock/index.php";
-//  }
-//  else {
     verificarSesion();
     
     ///Recupero parámetros pasados por el usuario:
@@ -6236,7 +6225,7 @@ $(document).on("keydown", "#hint", function (e){
 ///Disparar funcion al hacer clic en el botón para agregar el movimiento.
 $(document).on("click", "#agregarMovimiento", function (){
   //$(this).css('background-color', '#efe473');
-  verificarSesion();
+  //verificarSesion();
   var seguir = true;
   seguir = validarMovimiento();
   if (seguir) {
@@ -6444,13 +6433,6 @@ $(document).on("keypress", "#productoBusqueda", function(e) {
 
 ///Dispara función para realizar los cambios con las modificaciones para el producto (luego de validar los datos obviamente).
 $(document).on("click", "#actualizarProducto", function (){
-//  var timestamp = Math.round(Date.now() / 1000);
-//      
-//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-//    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-//    window.location.href = "../controlstock/index.php";
-//  }
-//  else {
     verificarSesion();
     var entidad = $("#entidad").val();
     var nombre = $("#nombre").val();
@@ -6626,13 +6608,6 @@ $(document).on("click", "#eliminarProducto", function (){
 ///Disparar función al hacer click en el botón de EDITAR del form para los productos.
 ///Cambia entre habilitar o deshabilitar los input del form cosa de poder hacer la edición del producto.
 $(document).on("click", "#editarProducto", function (){
-//  var timestamp = Math.round(Date.now() / 1000);
-//      
-//  if(timestamp - $("#timestampSesion").val() > $("#duracionSesion").val()) {
-//    alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-//    window.location.href = "../controlstock/index.php";
-//  }
-//  else {
     verificarSesion();
     var nombre = $(this).val();
     if (nombre === 'EDITAR') {
@@ -6641,7 +6616,6 @@ $(document).on("click", "#editarProducto", function (){
     else {
       inhabilitarProducto();
     }
-  //}
 });
 /********** fin on("click", "#editarProducto", function () **********/
 
