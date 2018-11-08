@@ -24,7 +24,7 @@ if(isset($_SESSION['tiempo']) ) {
       $myObj->oldUser = 'ERROR';
     }
     $myObj->user = "ERROR";
-    $myObj->time = 0;
+    $myObj->time = time();////***************** a cambiar por 0. Es solo para pruebas ****************
     $myObj->user_id = 0;
     $myObj->sesion = 'expirada';
   } 

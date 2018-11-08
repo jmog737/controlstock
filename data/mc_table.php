@@ -2,8 +2,6 @@
 require 'vendor/autoload.php';
 use Fpdf\Fpdf;
 
-//require_once('../../fpdf/fpdf.php');
-
 class PDF_MC_Table extends Fpdf
   {
   var $widths;

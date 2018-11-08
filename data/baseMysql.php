@@ -1,9 +1,6 @@
 <?php
 require_once("sesiones.php");
-//require_once("config.php");
 require_once ("connectvars.php");
-//require_once ("escribirLog.php");
-
 /**
  * \brief Función usada para conectarse a la base de datos especificada.
  * @param string $servidor Especifica cual es el servidor al que debe conectarse.

@@ -1,10 +1,4 @@
 <?php
-//if(!isset($_SESSION)) 
-//  {
-//  //Reanudamos la sesión:
-//  session_start(); 
-//}
-////require_once("connectvars.php");
 require_once("sesiones.php");
 require_once("config.php");
 

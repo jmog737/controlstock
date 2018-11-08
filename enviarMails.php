@@ -1,9 +1,4 @@
 <?php
-//if(!isset($_SESSION)) 
-//  {
-//  //Reanudamos la sesión:
-//  session_start(); 
-//} 
 /**
 ******************************************************
 *  @file enviarMails.php

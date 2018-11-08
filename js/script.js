@@ -96,16 +96,14 @@ function verificarSesion() {
             }
           }  
         }
-        //$("#usuarioSesion").val(user);
-        //$("#userID").val(user_id);
-       // $("#timestampSesion").val(timestamp);
-        alert("Terminó tu tiempo de sesión de "+mostrarSesion+".\nPor favor "+usuarioViejo+", vuelve a loguearte!.");
+        alert(usuarioViejo.toUpperCase()+":\nTú sesión ha estado inactiva por más de "+mostrarSesion+"\nPor favor, por seguridad, ¡vuelve a loguearte!.\ntiempo: "+myObj1.time);
         window.location.assign("salir.php");
       }
       else {
         $("#usuarioSesion").val(user);
         $("#userID").val(user_id);
         $("#timestampSesion").val(timestamp);
+        alert('actualicé: '+timestamp+'\nDesde: '+window.location.href);
         //alert('Sesion ACTUAL:\n'+window.location.href+'\nSesion: '+sesion+'\nusuarioSesion: '+user+'\nuserID: '+user_id+'\ntimestamp: '+timestamp);
       }
     }
@@ -3674,7 +3672,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
 /**
  * \brief Función que ejecuta la búsqueda y muestra el resultado.
  */
-function realizarBusqueda(){  
+function realizarBusqueda(){
     verificarSesion();
     var radio = $('input:radio[name=criterio]:checked').val();
     var entidadesStock = new Array();
@@ -6060,8 +6058,8 @@ $(document).on("change focusin", "#hint", function (){
         }  
       }
       
-      var mostrar = '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
-      mostrar += '<p id="stock" name="hint" style="padding-top: 10px"><strong>Stock actual: </strong><font class="'+resaltado+'" style="font-size:3.0em; font-style:italic;">'+stock.toLocaleString()+'</font></p>';
+      var mostrar = '<p id="stock" name="hint" style="padding-top: 10px"><strong>Stock actual: </strong><font class="'+resaltado+'" style="font-size:3.0em; font-style:italic;">'+stock.toLocaleString()+'</font></p>';
+      mostrar += '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
       mostrar += '<p id="promedio1" name="hint" style="padding-top: 1px;margin-bottom: 0px"><strong>Total Consumos (&uacute;lt. '+periodoDias1+' d&iacute;as):</strong> <font style="font-size:1.2em; font-style:italic;">'+totalConsumos1.toLocaleString()+' '+unidades1+' ('+promedioMensual1.toLocaleString()+' '+unidadesPromedio1+')</font></p>';
       mostrar += '<p id="promedio2" name="hint" style="padding-top: 1px"><strong>Total Consumos (&uacute;lt. '+periodoDias2+' d&iacute;as):</strong> <font style="font-size:1.2em; font-style:italic;">'+totalConsumos2.toLocaleString()+' '+unidades2+' ('+promedioMensual2.toLocaleString()+' '+unidadesPromedio2+')</font></p>';
       mostrar += '<p id="ultimoMov" name="ulitmoMov"><strong>Último Movimiento: <font style="font-style:italic;font-size:1.8em">'+ultimoMovimiento+'</font></strong></p>';
@@ -6224,7 +6222,6 @@ $(document).on("keydown", "#hint", function (e){
 
 ///Disparar funcion al hacer clic en el botón para agregar el movimiento.
 $(document).on("click", "#agregarMovimiento", function (){
-  //$(this).css('background-color', '#efe473');
   //verificarSesion();
   var seguir = true;
   seguir = validarMovimiento();
@@ -6306,13 +6303,6 @@ $(document).on("keypress", "#producto", function(e) {
   }  
 });
 /********** fin on("keypress", "#producto", function(e) **********/
-
-///Llamar a verificarSesion() para actualizar los parámetros de la sesión. 
-///En caso de estar vencidos, cierra la sesión y pide nuevo logueo.
-$(document).on("change focusin", "#entidadStock, #entidadMovimiento, #entidadGrafica", function (){
-  //verificarSesion();
-});
-/********** fin on("change focusin", "#entidadStock, #entidadMovimiento, #entidadGrafica", function () **********/
 
 /*****************************************************************************************************************************
 /// ***************************************************** FIN MOVIMIENTOS ****************************************************

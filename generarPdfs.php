@@ -1,9 +1,4 @@
 <?php
-//if(!isset($_SESSION)) 
-//  {
-//  //Reanudamos la sesión:
-//  session_start(); 
-//} 
 /**
 ******************************************************
 *  @file generarPdfs.php
@@ -1177,7 +1172,7 @@ class PDF extends PDF_MC_Table
       }
       else {
         if ($stock < $alarma2){
-          $this->SetFillColor(colorStoclAlarma2[0], colorStoclAlarma2[1], colorStoclAlarma2[2]);
+          $this->SetFillColor(colorStockAlarma2[0], colorStockAlarma2[1], colorStockAlarma2[2]);
           $this->SetTextColor(255);
         }
         else {
