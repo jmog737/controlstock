@@ -1238,7 +1238,12 @@ else {
   }
 }
   
-$fechaCarpeta = strftime("%d%b%Y", strtotime(date('dMY')));
+setlocale(LC_ALL, 'es_UY');
+$dia = strftime("%d", time());
+$mes = substr(ucwords(strftime("%b", time())), 0, -1);
+$year = strftime("%Y", time());
+$fechaCarpeta = $dia.$mes.$year;
+
 $rutaReporteFecha = $rutaCarpetaCliente."/".$fechaCarpeta;
 if (is_dir($rutaReporteFecha)){
   //echo "La carpeta del día ya existe.<br>";

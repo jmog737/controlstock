@@ -42,7 +42,7 @@ function verificarSesion() {
       var user_id = '';
       var sesion = '';
       var timestamp = '';
-      var usuarioViejo = '';
+      var usuarioViejo = 'ERRORs';
       if ($.isEmptyObject(myObj1)){
         user = 'ERROR';
         user_id = 0;
@@ -103,7 +103,7 @@ function verificarSesion() {
         $("#usuarioSesion").val(user);
         $("#userID").val(user_id);
         $("#timestampSesion").val(timestamp);
-        alert('actualicé: '+timestamp+'\nDesde: '+window.location.href);
+        alert('actualicé: '+timestamp+'\nsesion: '+sesion+'\nDesde: '+window.location.href);
         //alert('Sesion ACTUAL:\n'+window.location.href+'\nSesion: '+sesion+'\nusuarioSesion: '+user+'\nuserID: '+user_id+'\ntimestamp: '+timestamp);
       }
     }
@@ -4281,6 +4281,7 @@ function realizarBusqueda(){
  * @param {String} mostrarEstado String que indica si se muestra o no el estado de los movimientos en los reportes (si corresponde).
  */
 function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada, zip, planilla, marcaAgua, p, d1, d2, tipoFiltro, user, estadoMov, mostrarEstado){
+  verificarSesion();
   var url = "data/selectQuery.php";
   var consultarProductos = "select idprod, nombre_plastico as nombre from productos order by nombre_plastico asc";
   
@@ -4425,8 +4426,8 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
                 <td>\n\
                   <select id="año" name="año" title="Elegir el año\n(Sólo si se optó por una consulta por mes)" tabindex="9" style="width:100%">\n\
                     <option value="2017">2017</option>\n\
-                    <option value="2018" selected="yes">2018</option>\n\
-                    <option value="2019">2019</option>\n\
+                    <option value="2018">2018</option>\n\
+                    <option value="2019" selected="yes">2019</option>\n\
                     <option value="2020">2020</option>\n\
                     <option value="2021">2021</option>\n\
                   </select>\n\
@@ -4627,7 +4628,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
                               break;
             case 'mes': if (d1 === ''){
                           $("#mes").val('todos');
-                          $("#año").val('2018');
+                          $("#año").val('2019');
                         }
                         else {
                           $("#mes").val(d1);
@@ -4641,7 +4642,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
         }
         else {
           $("#mes").val('todos');
-          $("#año").val('2018');
+          $("#año").val('2019');
         }
         
         if (tipoFiltro !== ''){
@@ -5238,7 +5239,7 @@ function cargarFormEstadisticas(selector){
       $("#mesInicio").val('todos');
       $("#añoInicio").val('2018');
       $("#mesFin").val('todos');
-      $("#añoFin").val('2018');
+      $("#añoFin").val('2019');
       $("[name=criterioFecha]").val(["todos"]);
       if ((tipo === '')||(tipo === undefined)){
         $("#tipo").val('Todos');

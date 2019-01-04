@@ -22,9 +22,9 @@ if (!isset($_SESSION['user_id']))
 
    <h3>
 <?php
-  if (isset($_POST['submit']))
+  if (isset($_SESSION['error_msg']))
     {
-    echo $error_msg;
+    echo $_SESSION['error_msg'];
   }
 ?>
     </h3>  

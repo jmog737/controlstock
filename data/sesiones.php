@@ -16,7 +16,7 @@ if(isset($_SESSION['tiempo']) ) {
     $_SESSION = array();
     // Destroy the session
     session_unset();
-    session_destroy();
+    session_destroy();sleep(4);
     //Redirigimos pagina.
     header('Location: index.php');
   }

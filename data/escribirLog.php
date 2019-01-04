@@ -6,7 +6,7 @@ function escribirLog($query){
   global $dirLog;
   //recupero la fecha actual para generar nombre del archivo:
   $hoy = getdate();
-  $fecha = $hoy['mday'].$hoy['month'].$hoy['year'];
+  //$fecha = $hoy['mday'].$hoy['month'].$hoy['year'];
 
   if (strlen($hoy['hours']) === 1) {
     $hora = "0".$hoy['hours'];
@@ -28,6 +28,12 @@ function escribirLog($query){
   }
   $horaLog = $hora.":".$min.":".$sec;
 
+  setlocale(LC_ALL, 'es_UY');
+  $dia = strftime("%d", time());
+  $mes = ucwords(strftime("%B", time()));
+  $year = strftime("%Y", time());
+  $fecha = $dia.$mes.$year;
+  
   //armo nombre del arhivo según fecha y hora actuales:
   $archivo = $dirLog."log_".$fecha.".txt";//."@".$hora;
   $query = "[".$_SESSION['username']."] ".$horaLog." - ".$query."\r\n";

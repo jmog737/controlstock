@@ -46,14 +46,14 @@ if (!empty($user_username) && !empty($user_password))
   else 
     {
     //El usuario y/o la contraseña son incorrectos:
-    $error_msg = "Lo siento, el usuario y/o la contraseña ingresados no son correctos.<br>";
+    $_SESSION['error_msg'] = "Lo siento, el usuario y/o la contraseña ingresados no son correctos.<br>";
     header('Location: ../index.php');
   }
 }
 else 
   {
   //El usuario y/o la contraseña no fueron ingresados:
-  $error_msg = "Lo siento, se deben ingresar las credenciales para acceder al sitio.<br>";
+  $_SESSION['error_msg'] = "Lo siento, se deben ingresar las credenciales para acceder al sitio.<br>";
   header('Location: ../index.php');
 }
 mysqli_close($dbc);
