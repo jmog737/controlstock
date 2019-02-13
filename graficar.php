@@ -668,7 +668,7 @@ class PDF_Grafica extends Fpdf
       $mostrarB5 = false;
       $mostrarB6 = false;
     }
-    
+
     ///************************* Comienza separación del array con los datos para mejora manipulación según el caso *************************
     $ajusteIngresos = array_pop($datos);
     $ajusteRetiros = array_pop($datos);
@@ -676,15 +676,15 @@ class PDF_Grafica extends Fpdf
     $renos = array_pop($datos);
     $ingresos = array_pop($datos);
     $retiros = array_pop($datos);
+    $consumos = $retiros+$renos+$destrucciones;
     
-    $retiros = number_format($retiros, 0, ',', '.');
-    $ingresos = number_format($ingresos, 0, ',', '.');
-    $renos = number_format($renos, 0, ',', '.');
-    $destrucciones = number_format($destrucciones, 0, ',', '.');
-    $ajusteRetiros = number_format($ajusteRetiros, 0, ',', '.');
-    $ajusteIngresos = number_format($ajusteIngresos, 0, ',', '.');
-    $consumosTemp = $retiros+$renos+$destrucciones;
-    $consumos = number_format($consumosTemp, 0, ',', '.');
+    $retirosMostrar = number_format($retiros, 0, ',', '.');
+    $ingresosMostrar = number_format($ingresos, 0, ',', '.');
+    $renosMostrar = number_format($renos, 0, ',', '.');
+    $destruccionesMostrar = number_format($destrucciones, 0, ',', '.');
+    $ajusteRetirosMostrar = number_format($ajusteRetiros, 0, ',', '.');
+    $ajusteIngresosMostrar = number_format($ajusteIngresos, 0, ',', '.');
+    $consumosMostrar = number_format($consumos, 0, ',', '.');
     
     $colorAjusteIngresos = array_pop($coloresTorta);
     $colorAjusteRetiros = array_pop($coloresTorta);
@@ -693,59 +693,57 @@ class PDF_Grafica extends Fpdf
     $colorIngresos = array_pop($coloresTorta);
     $colorRetiros = array_pop($coloresTorta);
     
-    $colores = array();    
+    $colores = array();
+    $data = array();    
     ///*************************** FIN separación del array con los datos para mejora manipulación según el caso ****************************
     
     switch ($tipoMov){
       case 'Retiros': $p1 = new PiePlot3D($retiros);
-                      $colores[] = $colorRetiros;
+                      array_push($colores, $colorRetiros);
                       break;
       case 'Renos': $p1 = new PiePlot3D($renos);
-                    $colores[] = $colorRenos;
+                    array_push($colores, $colorRenos);
                     break;
       case 'Destrucciones': $p1 = new PiePlot3D($destrucciones);
-                            $colores[] = $colorDestrucciones;
+                            array_push($colores, $colorDestrucciones);
                             break;
       case 'Ingresos': $p1 = new PiePlot3D($ingresos);
-                       $colores[] = $colorIngresos;
+                       array_push($colores, $colorIngresos);
                        break;
       case 'AjuRet':  $p1 = new PiePlot3D($ajusteRetiros);
-                      $colores[] = $colorAjusteRetiros;
+                      array_push($colores, $colorAjusteRetiros);
                       break;
       case 'AjuIng':  $p1 = new PiePlot3D($ajusteIngresos);
-                      $colores[] = $colorAjusteIngresos;
+                      array_push($colores, $colorAjusteIngresos);
                       break;
-      case 'Ajustes': $data = array();
-                      $data[]= $ajusteRetiros;
-                      $data[] = $ajusteIngresos;
-                      $colores[] = $colorAjusteRetiros;
-                      $colores[] = $colorAjusteIngresos;
+      case 'Ajustes': array_push($data, $ajusteRetiros);
+                      array_push($data, $ajusteIngresos);
+                      array_push($colores, $colorAjusteRetiros);
+                      array_push($colores, $colorAjusteIngresos);
                       $p1 = new PiePlot3D($data);
                       break;
-      case 'Clientes': $data = array();
-                       $data[] = $retiros;
-                       $data[] = $renos;
-                       $data[] = $destrucciones;
-                       $data[] = $ingresos;
-                       $colores[] = $colorRetiros;
-                       $colores[] = $colorRenos;
-                       $colores[] = $colorDestrucciones;
-                       $colores[] = $colorIngresos;
+      case 'Clientes': array_push($data, $retiros);
+                       array_push($data, $renos);
+                       array_push($data, $destrucciones);
+                       array_push($data, $ingresos);
+                       array_push($colores, $colorRetiros);
+                       array_push($colores, $colorRenos);
+                       array_push($colores, $colorDestrucciones);
+                       array_push($colores, $colorIngresos);
                        $p1 = new PiePlot3D($data);
                        break;
-      case 'Todos': $data = array();
-                    $data[] = $retiros;
-                    $data[] = $renos;
-                    $data[] = $destrucciones;
-                    $data[] = $ingresos;
-                    $data[] = $ajusteRetiros;
-                    $data[] = $ajusteIngresos;
-                    $colores[] = $colorRetiros;
-                    $colores[] = $colorRenos;
-                    $colores[] = $colorDestrucciones;
-                    $colores[] = $colorIngresos;
-                    $colores[] = $colorAjusteRetiros;
-                    $colores[] = $colorAjusteIngresos;
+      case 'Todos': array_push($data, $retiros);
+                    array_push($data, $renos);
+                    array_push($data, $destrucciones);
+                    array_push($data, $ingresos);
+                    array_push($data, $ajusteRetiros);
+                    array_push($data, $ajusteIngresos);
+                    array_push($colores, $colorRetiros);
+                    array_push($colores, $colorRenos);
+                    array_push($colores, $colorDestrucciones);
+                    array_push($colores, $colorIngresos);
+                    array_push($colores, $colorAjusteRetiros);
+                    array_push($colores, $colorAjusteIngresos);
                     $p1 = new PiePlot3D($data);
                     break;               
       default: break;              
@@ -760,30 +758,30 @@ class PDF_Grafica extends Fpdf
     $p1->SetAngle(50);
     
     $leyendas = array();
-    $retirosLeyenda = "Retiros: $retiros";
-    $renosLeyenda = "Renos: $renos";
-    $destruccionesLeyenda = "Destrucciones: $destrucciones";
-    $ingresosLeyenda = "Ingresos: $ingresos";
-    $ajuRetirosLeyenda = "Ajuste Retiros: $ajusteRetiros";
-    $ajuIngresosLeyenda = "Ajuste Ingresos: $ajusteIngresos";
+    $retirosLeyenda = "Retiros: $retirosMostrar";
+    $renosLeyenda = "Renos: $renosMostrar";
+    $destruccionesLeyenda = "Destrucciones: $destruccionesMostrar";
+    $ingresosLeyenda = "Ingresos: $ingresosMostrar";
+    $ajuRetirosLeyenda = "Ajuste Retiros: $ajusteRetirosMostrar";
+    $ajuIngresosLeyenda = "Ajuste Ingresos: $ajusteIngresosMostrar";
     
     if (($mostrarB1)||($tipoMov === 'Clientes')||($tipoMov === 'Todos')){ 
-      $leyendas[] = $retirosLeyenda;
+      array_push($leyendas, $retirosLeyenda);
     }
     if (($mostrarB3)||($tipoMov === 'Clientes')||($tipoMov === 'Todos')){
-      $leyendas[] = $renosLeyenda;
+      array_push($leyendas, $renosLeyenda);
     }
     if (($mostrarB4)||($tipoMov === 'Clientes')||($tipoMov === 'Todos')){
-      $leyendas[] = $destruccionesLeyenda;
+      array_push($leyendas, $destruccionesLeyenda);
     }
     if (($mostrarB2)||($tipoMov === 'Clientes')||($tipoMov === 'Todos')){
-      $leyendas[] = $ingresosLeyenda;
+      array_push($leyendas, $ingresosLeyenda);
     }
     if (($mostrarB5)||($tipoMov === 'Ajustes')||($tipoMov === 'Todos')){ 
-      $leyendas[] = $ajuRetirosLeyenda;
+      array_push($leyendas, $ajuRetirosLeyenda);
     }
     if (($mostrarB6)||($tipoMov === 'Ajustes')||($tipoMov === 'Todos')){ 
-      $leyendas[] = $ajuIngresosLeyenda;
+      array_push($leyendas, $ajuIngresosLeyenda);
     }
     
     $p1->SetLegends($leyendas);
@@ -847,7 +845,7 @@ class PDF_Grafica extends Fpdf
     
     ///Se setean los colores para las "porciones". HAY QUE HACERLO LUEGO DEL ADD PORQUE DE LO CONTRARIO NO LOS TOMA!!!
     $p1->SetSliceColors($colores);
-    
+
     ///******************************************************** INICIO Textos con los promedios: ***************************************************************
     $txt = new Text("PROMEDIOS:"); 
     $txt->SetFont(FF_FONT1,FS_BOLD); 
@@ -893,7 +891,7 @@ class PDF_Grafica extends Fpdf
     
     if (($tipoMov === 'Clientes')||($tipoMov === 'Todos')){
       $avg5 = number_format($avg5, 0, ',', '.');
-      $txt5 = new Text("Consumos: ".$avg5." (Total ".$consumos.")"); 
+      $txt5 = new Text("Consumos: ".$avg5." (Total ".$consumosMostrar.")"); 
       $txt5->SetFont(FF_FONT1,FS_BOLD); 
       $txt5->SetColor($colorLeyendaConsumos);
       $txt5->SetPos($posPrimeroX, $posPrimeroY+$indSeparacion*$separacion,'right','center');
@@ -972,8 +970,7 @@ class PDF_Grafica extends Fpdf
       $graph->img->Headers();
       $graph->img->Stream();   
     } 
-  }///****************** FIN graficarTorta **************************************************************************************************
-  
+  }///****************** FIN graficarTorta ************************************************************************************************** 
 }
 
 ///Función que da el formato de los valores en cada columna.
@@ -1050,7 +1047,7 @@ function Evalua($arreglo)
 //$dirGrafica = "//".$ip."/Reportes/";
 
 ///*********************************************************************** FIN SETEO DE CARPETAS ********************************************
-
+$t = $_GET["t"];//echo $t;
 /// Recupero la consulta a ejecutar y el mes inicial:
 $query = $_SESSION["consulta"];
 $fechaInicio = $_SESSION["fechaInicio"];
@@ -1509,9 +1506,9 @@ if ($tipoGrafica === "producto"){
   }
 }
 else {
-  $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, 'pdf', $nombreGrafica);
-  $pdfGrafica->Output('F', $salida); 
-  $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, '', $nombreGrafica);
+    $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, 'pdf', $nombreGrafica);
+    $pdfGrafica->Output('F', $salida); 
+    $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, '', $nombreGrafica);  
 }
 error_reporting(E_ALL);
 ini_set('error_reporting', E_ALL);

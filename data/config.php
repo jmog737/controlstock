@@ -38,8 +38,8 @@ if (!file_exists($dir)){
   echo "No existe la carpeta: $dir. <br>Por favor verifique.";
 }
 
-if(isset($_SESSION['user_id'])) 
-  {
+//if(isset($_SESSION['user_id'])) 
+//  {
   if (!isset($_SESSION["tamPagina"])){
     $_SESSION["tamPagina"] = 50;
   }
@@ -52,7 +52,10 @@ if(isset($_SESSION['user_id']))
   if (!isset($_SESSION["limiteHistorialGeneral"])){
     $_SESSION["limiteHistorialGeneral"] = 10;
   }
-}
+  if (!isset($_SESSION["nombreGrafica"])){
+    $_SESSION["nombreGrafica"] = 'TEST';
+  }
+//}
 
 $limiteSeleccion = 8;
 

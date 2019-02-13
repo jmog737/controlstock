@@ -57,15 +57,14 @@
     var temp = dir.split("/");
     var tam = temp.length;
     var pagina = temp[tam-1];
-    //verificarSesion();
-    if (pagina !== 'index.php'){verificarSesion();
+    if (pagina !== 'index.php'){
+      verificarSesion('');
       var duracion0 = <?php echo DURACION ?>;
-      duracion0 = 10;
-      var duracion = parseInt(duracion0*1000, 10);
-      //alert('antes de setInterval en el header: '+duracion);
+      //duracion0 = 20;
+      var duracion = parseInt(duracion0*1000, 10)+2000;
       /// Se agrega un tiempo extra cosa de estar seguro que venció el tiempo (si queda en el límite habrá veces 
       ///que lo detecta y otras que no teniendo que esperar nuevamente un tiempo de DURACION para volver a probar
-      setInterval(function(){verificarSesion()}, duracion+2500);
+      setInterval(function(){verificarSesion('¡¡¡Llamé desde setInterval!!\n\nSetInterval: '+duracion)}, duracion);
     }
   </script>
 <!-- Modal para cambiar la contraseña -->

@@ -117,7 +117,7 @@ $colorGradiente1 = '#02bd6e';
 $colorGradiente2 = '#023184:0.98';
 
 ///Colores para la gráfica tipo torta (cuando es por producto).
-///El orden es: retiros, ingresos, renos y destrucciones:
+///El orden es: retiros, ingresos, renos, destrucciones, ajuste retiros y ajuste ingresos:
 $coloresTorta = array('blue','forestgreen','#ff9600', 'red', '#a25cf3', '#ffc168');
 $colorPorcentajes = 'blue';
 $colorBackgroundTorta = 'ivory3';

@@ -1,11 +1,13 @@
 <?php
-//require_once('data/sesiones.php');
+require_once('data/sesiones.php');
 require_once('data/baseMysql.php');
 require_once('generarExcel.php');
 require_once('generarPdfs.php');
 //error_reporting(NULL);
 //ini_set('error_reporting', NULL);
 //ini_set('display_errors',0);
+if(isset($_SESSION['tiempo']) ) {
+  
 
 //phpinfo();
 //***************************** DESTINATARIOS CORREOS ***********************************************************************************************
@@ -607,5 +609,11 @@ if (isset($mails)){
 error_reporting(E_ALL);
 ini_set('error_reporting', E_ALL);
 ini_set('display_errors',1);
-//}
+}
+else {
+  echo '<script type="text/javascript">'
+  . 'alert("Tú sesión expiró.\n¡Por favor vuelve a loguearte!.");window.close();
+    window.location.assign("salir.php");
+     </script>';
+}
 ?>

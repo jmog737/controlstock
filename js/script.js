@@ -22,9 +22,18 @@ var duracionSesion = parseInt($("#duracionSesion").val(), 10);
 
 /**
  * \brief Función que chequea las variables de sesión para saber si la misma aún está activa o si ya expiró el tiempo.
+ * @param mensaje {String} String con un mensaje opcional usado para debug.
  */
-function verificarSesion() {
+function verificarSesion(mensaje) {
   var xmlhttp = new XMLHttpRequest();
+  if (mensaje !== ''){ 
+    const dateTime = Date.now();
+    const tiempo = Math.floor(dateTime / 1000);
+    //alert(mensaje+': '+tiempo);
+  }
+  else {
+    mensaje = 'XXX';
+  }
   /*
   onreadystatechange: Defines a function to be called when the readyState property changes.
   readyState property:
@@ -42,12 +51,15 @@ function verificarSesion() {
       var user_id = '';
       var sesion = '';
       var timestamp = '';
+      var oldTime = '';
       var usuarioViejo = 'ERRORs';
+      var duracionSesion = myObj1.duracion;
       if ($.isEmptyObject(myObj1)){
         user = 'ERROR';
         user_id = 0;
         sesion = 'expirada';
         timestamp = 0;
+        oldTime = 0;
         usuarioViejo = 'ERROR';
       }
       else {
@@ -55,10 +67,11 @@ function verificarSesion() {
         user_id = myObj1.user_id;
         sesion = myObj1.sesion;
         timestamp = myObj1.time;
+        oldTime = myObj1.oldTime;
         usuarioViejo = myObj1.oldUser;
       };
-      
-//alert('INICIO: \nusuarioSesion: '+user+'\nuserID: '+user_id+'\ntimestamp: '+timestamp);
+      var temp = String(timestamp).substr(-3);
+
       if (sesion === 'expirada'){
         var mostrarSesion = '';
         ///Se comenta siguiente línea usada para las pruebas:
@@ -96,22 +109,21 @@ function verificarSesion() {
             }
           }  
         }
-        alert(usuarioViejo.toUpperCase()+":\nTú sesión ha estado inactiva por más de "+mostrarSesion+"\nPor favor, por seguridad, ¡vuelve a loguearte!.\ntiempo: "+myObj1.time);
+        alert(usuarioViejo.toUpperCase()+":\nTú sesión ha estado inactiva por más de "+mostrarSesion+"\nPor favor, por seguridad, ¡vuelve a loguearte!.\n\ntiempo seteado: "+oldTime+'\nactual: '+temp+'\n\nDuración Sesión: '+duracionSesion+'\nmensaje: '+mensaje);
         window.location.assign("salir.php");
       }
       else {
         $("#usuarioSesion").val(user);
         $("#userID").val(user_id);
         $("#timestampSesion").val(timestamp);
-        alert('actualicé: '+timestamp+'\nsesion: '+sesion+'\nDesde: '+window.location.href);
-        //alert('Sesion ACTUAL:\n'+window.location.href+'\nSesion: '+sesion+'\nusuarioSesion: '+user+'\nuserID: '+user_id+'\ntimestamp: '+timestamp);
+        //alert('¡Actualicé!\n\nTiempo viejo: '+oldTime+'\nNuevo tiempo: '+temp+'\n\nDuración Sesión: '+duracionSesion+'\nmensaje: '+mensaje+'\n\nsesion: '+sesion+'\nDesde: '+window.location.href);
       }
     }
   };
   xmlhttp.open("GET", "data/estadoSesion.php", true);
   xmlhttp.send();
 }
-/********** fin verificarSesion() **********/
+/********** fin verificarSesion(mensaje) **********/
 
 /**
  * \brief Función que vacía el contenido del div cuyo Id se pasa como parámetro.
@@ -773,7 +785,7 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
  *        Se separó del evento agregarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento cantidad.         
  */
 function agregarMovimiento(agregarRepetido){
-  verificarSesion();
+  verificarSesion('');
   
   var url = "data/selectQuery.php";
   var ultimoRegistro = "select fecha, producto, tipo, cantidad from movimientos order by fecha desc, hora desc limit 1";
@@ -936,7 +948,7 @@ function agregarMovimiento(agregarRepetido){
  *        Se separó del evento actualizarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento comentarios.
  */
 function actualizarMovimiento(){
-  verificarSesion();
+  verificarSesion('');
   var idmov = $("input[name='idMov']").val();
   var idprod = $("#idprod").val();
   var comentarios = $("#comentarios").val();
@@ -1722,7 +1734,7 @@ function validarUsuario() {
  * \brief Función que primero valida la info ingresada, y de ser válida, hace la actualización del pwd del usuario del sistema.
  */
 function actualizarUser() {
-    verificarSesion();
+    verificarSesion('');
     
     var pw1 = $("#pw1").val();
     var pw2 = $("#pw2").val();
@@ -1783,7 +1795,7 @@ function actualizarUser() {
  * \brief Función que primero valida la info ingresada, y de ser válida, hace la actualización de los parámetros del usuario.
  */
 function actualizarParametros()  {
-    verificarSesion();
+    verificarSesion('');
     
     ///Recupero parámetros pasados por el usuario:
     var pageSize = $("#pageSize").val();
@@ -3673,7 +3685,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
  * \brief Función que ejecuta la búsqueda y muestra el resultado.
  */
 function realizarBusqueda(){
-    verificarSesion();
+    verificarSesion('');
     var radio = $('input:radio[name=criterio]:checked').val();
     var entidadesStock = new Array();
     $("#entidadStock option:selected").each(function() {
@@ -4281,7 +4293,7 @@ function realizarBusqueda(){
  * @param {String} mostrarEstado String que indica si se muestra o no el estado de los movimientos en los reportes (si corresponde).
  */
 function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada, zip, planilla, marcaAgua, p, d1, d2, tipoFiltro, user, estadoMov, mostrarEstado){
-  verificarSesion();
+  //verificarSesion('');
   var url = "data/selectQuery.php";
   var consultarProductos = "select idprod, nombre_plastico as nombre from productos order by nombre_plastico asc";
   
@@ -5298,9 +5310,13 @@ function cargarGrafica(selector){
   var formuInicio = '<form name="exportarGraph" id="exportarGraph" target="_blank" action="generarGrafica.php" method="POST">';
   var formuFin = "</form>";
   var grafica = '<figure>\n\
-                  <img src="graficar.php" id="grafiquita" width="740px" height="400px">\n\
+                  <img src="graficar.php?t=1" id="grafiquita" width="740px" height="400px">\n\
                   <figcaption>Gr&aacute;fica con las estad&iacute;sticas</figcaption>\n\
                 </figure>';
+//  grafica += '<figure>\n\
+//                <img src="graficar.php?t=2" id="grafiquita1" width="740px" height="400px">\n\
+//                <figcaption>Gr&aacute;fica con las estad&iacute;sticas</figcaption>\n\
+//              </figure>';
   
   var parametros = jQuery(location).attr('search');//alert('en cargar gráfica\np: '+parametros);
   var temp = parametros.split('?');
@@ -5372,7 +5388,7 @@ function cargarGrafica(selector){
   \brief Función que se encarga de realizar la gráfica.
 */
 function realizarGrafica(){
-  verificarSesion();
+  verificarSesion('');
   var radio = $('input:radio[name=criterio]:checked').val();
   var entidadGrafica = document.getElementById("entidadGrafica").value;
   var idProd = $("#hint").val();
@@ -5895,7 +5911,7 @@ $(document).on("blur", ".agrandar", function (){
 ///Cambia el color de fondo para resaltarlo, carga un snapshot del plástico si está disponible, y muestra
 ///el stock actual.
 $(document).on("change focusin", "#hint", function (){
-  //verificarSesion();
+  //verificarSesion('');
   var rutaFoto = 'images/snapshots/';
   var nombreFoto = $(this).find('option:selected').attr("name");
   
@@ -6223,7 +6239,7 @@ $(document).on("keydown", "#hint", function (e){
 
 ///Disparar funcion al hacer clic en el botón para agregar el movimiento.
 $(document).on("click", "#agregarMovimiento", function (){
-  //verificarSesion();
+  //verificarSesion('');
   var seguir = true;
   seguir = validarMovimiento();
   if (seguir) {
@@ -6424,7 +6440,7 @@ $(document).on("keypress", "#productoBusqueda", function(e) {
 
 ///Dispara función para realizar los cambios con las modificaciones para el producto (luego de validar los datos obviamente).
 $(document).on("click", "#actualizarProducto", function (){
-    verificarSesion();
+    verificarSesion('');
     var entidad = $("#entidad").val();
     var nombre = $("#nombre").val();
     var alarma1 = $("#alarma1").val();
@@ -6549,7 +6565,7 @@ $(document).on("keypress", "#productUpdate input", function(e) {
 
 ///Dispara función que da de baja el producto. NO lo borra, sino que le cambia su estado a INACTIVO.
 $(document).on("click", "#eliminarProducto", function (){
-  verificarSesion();
+  verificarSesion('');
   var nombre = $("#nombre").val();
   var idProducto = $("#hintProd").val();
 
@@ -6599,7 +6615,7 @@ $(document).on("click", "#eliminarProducto", function (){
 ///Disparar función al hacer click en el botón de EDITAR del form para los productos.
 ///Cambia entre habilitar o deshabilitar los input del form cosa de poder hacer la edición del producto.
 $(document).on("click", "#editarProducto", function (){
-    verificarSesion();
+    verificarSesion('');
     var nombre = $(this).val();
     if (nombre === 'EDITAR') {
       habilitarProducto();
@@ -6613,7 +6629,7 @@ $(document).on("click", "#editarProducto", function (){
 ///Disparar función al hacer click en el botón AGREGAR (o NUEVO) del form productos.
 ///Según si dice NUEVO o AGREGAR, vacío el form para poder agregar los datos o envío los datos para agregarlo a la base de datos.
 $(document).on("click", "#agregarProducto", function (){
-  verificarSesion();
+  verificarSesion('');
   var accion = $("#agregarProducto").val();
   if (accion === "NUEVO") {
     $("#agregarProducto").val("AGREGAR");
@@ -7014,7 +7030,7 @@ $(document).on("hide.bs.modal", "#modalMovRepetido", function() {
 ///Disparar función al hacer click en el link con el nombre del usuario que está logueado.
 ///Esto hace que se abra el modal para cambiar la contraseña.
 $(document).on("click", "#user", function(){
-  verificarSesion();
+  verificarSesion('');
   $("#modalPwd").modal("show");
 });
 /********** fin on("click", "#user", function() **********/
@@ -7070,7 +7086,7 @@ $(document).on("keypress", "#pw2", function(e) {
 ///Disparar función al hacer click en el link que dice PARAMETROS debajo del usuario logueado
 ///Esto hace que se abra el modal para cambiar los parámetros.
 $(document).on("click", "#param", function(){
-  verificarSesion();
+  verificarSesion('');
   $("#modalParametros").modal("show");
 });
 /********** fin on("click", "#param", function() **********/
