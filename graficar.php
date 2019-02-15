@@ -25,6 +25,7 @@ JpGraph::module('bar');
 JpGraph::module('pie');
 JpGraph::module('pie3d');
 JpGraph::module('line');
+JpGraph::module('plotline');
 
 class PDF_Grafica extends Fpdf
   {
@@ -156,6 +157,7 @@ class PDF_Grafica extends Fpdf
     
     $tipoMov = '';
     $unMov = false;
+    $mostrarAvg = false;
     $mostrarB1 = true;
     $mostrarB2 = true;
     $mostrarB3 = true;
@@ -232,47 +234,89 @@ class PDF_Grafica extends Fpdf
       $mostrarB6 = false;
     }
     
-    $barras = array();
-    // Create the bar plots
-    if ($mostrarB1){
-      $b1 = new BarPlot($data1);
-      array_push($barras, $b1);
+    if (!$unMov){
+      $barras = array();
+      // Create the bar plots
+      if ($mostrarB1){
+        $b1 = new BarPlot($data1);
+        array_push($barras, $b1);
+      }
+      if ($mostrarB2){
+        $b2 = new BarPlot($data2);
+        array_push($barras, $b2);
+      }
+      if ($mostrarB3){
+        $b3 = new BarPlot($data3);
+        array_push($barras, $b3);
+      }
+      if ($mostrarB4){
+        $b4 = new BarPlot($data4);
+        array_push($barras, $b4);
+      }
+      if ($mostrarB5){
+        $b5 = new BarPlot($data5);
+        array_push($barras, $b5);
+      }
+      if ($mostrarB6){
+        $b6 = new BarPlot($data6);
+        array_push($barras, $b6);
+      }
+
+      if (($tipoMov === 'Clientes')||($tipoMov === 'Todos')){
+        $consumosTemp = $totales[0] + $totales[2] + $totales[3];
+        $consumos = number_format($consumosTemp, 0, ',', '.');
+      }
+
+      $gbplot = new GroupBarPlot($barras);
+      $graph->Add($gbplot);
     }
-    if ($mostrarB2){
-      $b2 = new BarPlot($data2);
-      array_push($barras, $b2);
+    else {
+      $mostrarAvg = true;
+      if ($mostrarB1){
+        $b1 = new LinePlot($data1);
+        $graph->Add($b1);
+        $bAvg = new PlotLine(HORIZONTAL, $avg1, $colorPromedio, 1);
+      }
+      elseif ($mostrarB2) {
+        $b2 = new LinePlot($data2);
+        $graph->Add($b2);
+        $bAvg = new PlotLine(HORIZONTAL, $avg2, $colorPromedio, 1);
+      }
+      elseif ($mostrarB3) {
+        $b3 = new LinePlot($data3);
+        $graph->Add($b3);
+        $bAvg = new PlotLine(HORIZONTAL, $avg3, $colorPromedio, 1);
+      }
+      elseif ($mostrarB4) {
+        $b4 = new LinePlot($data4);
+        $graph->Add($b4);
+        $bAvg = new PlotLine(HORIZONTAL, $avg4, $colorPromedio, 1);
+      }
+      elseif ($mostrarB5) {
+        $b5 = new LinePlot($data5);
+        $graph->Add($b5);
+        $bAvg = new PlotLine(HORIZONTAL, $avg41, $colorPromedio, 1);
+      }
+      else {
+        $b6 = new LinePlot($data6);
+        $graph->Add($b6);
+        $bAvg = new PlotLine(HORIZONTAL, $avg42, $colorPromedio, 1);
+      }
+      $graph->Add($bAvg);
     }
-    if ($mostrarB3){
-      $b3 = new BarPlot($data3);
-      array_push($barras, $b3);
-    }
-    if ($mostrarB4){
-      $b4 = new BarPlot($data4);
-      array_push($barras, $b4);
-    }
-    if ($mostrarB5){
-      $b5 = new BarPlot($data5);
-      array_push($barras, $b5);
-    }
-    if ($mostrarB6){
-      $b6 = new BarPlot($data6);
-      array_push($barras, $b6);
-    }
-    
-    if (($tipoMov === 'Clientes')||($tipoMov === 'Todos')){
-      $consumosTemp = $totales[0] + $totales[2] + $totales[3];
-      $consumos = number_format($consumosTemp, 0, ',', '.');
-    }
-    
-    $gbplot = new GroupBarPlot($barras);
-    $graph->Add($gbplot);
      
     if ($mostrarB1){
       $b1->value->Show();
-      $b1->SetColor($colorBordeRetiros);
-      $b1->SetFillColor($colorRetirosGrafica);
       $b1->SetLegend("Retiros");
-      $b1->SetWidth(0.8);
+      if (!$unMov){
+        $b1->SetFillColor($colorRetirosGrafica);
+        $b1->SetColor($colorBordeRetiros);
+        $b1->SetWidth(0.8);
+      }
+      else {
+        $b1->SetColor($colorRetirosGrafica);
+        $b1->mark->SetType(MARK_UTRIANGLE);
+      }
       $b1->value->SetAlign('left','center');
       $b1->value->SetMargin(30);
       $b1->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
@@ -284,10 +328,16 @@ class PDF_Grafica extends Fpdf
     
     if ($mostrarB2){
       $b2->value->Show();
-      $b2->SetColor($colorBordeIngresos);
-      $b2->SetFillColor($colorIngresosGrafica);
       $b2->SetLegend("Ingresos");
-      $b2->SetWidth(0.8);
+      if (!$unMov){
+        $b2->SetColor($colorBordeIngresos);
+        $b2->SetFillColor($colorIngresosGrafica);
+        $b2->SetWidth(0.8);
+      }
+      else {
+        $b2->SetColor($colorIngresosGrafica);
+        $b2->mark->SetType(MARK_UTRIANGLE);
+      }
       $b2->value->SetMargin(30);
       $b2->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
       $b2->value->SetAngle(75);
@@ -298,10 +348,16 @@ class PDF_Grafica extends Fpdf
     
     if ($mostrarB3){
       $b3->value->Show();
-      $b3->SetColor($colorBordeRenos);
-      $b3->SetFillColor($colorRenosGrafica);
       $b3->SetLegend("Renos");
-      $b3->SetWidth(0.8);
+      if (!$unMov){
+        $b3->SetColor($colorBordeRenos);
+        $b3->SetFillColor($colorRenosGrafica);
+        $b3->SetWidth(0.8);
+      }
+      else {
+        $b3->SetColor($colorRenosGrafica);
+        $b3->mark->SetType(MARK_UTRIANGLE);
+      }
       $b3->value->SetMargin(30);
       $b3->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
       $b3->value->SetAngle(75);
@@ -312,10 +368,16 @@ class PDF_Grafica extends Fpdf
     
     if ($mostrarB4){
       $b4->value->Show();
-      $b4->SetColor($colorBordeDestrucciones);
-      $b4->SetFillColor($colorDestruccionesGrafica);
       $b4->SetLegend("Destrucciones");
-      $b4->SetWidth(0.8);
+      if (!$unMov){
+        $b4->SetColor($colorBordeDestrucciones);
+        $b4->SetFillColor($colorDestruccionesGrafica);
+        $b4->SetWidth(0.8);
+      }
+      else {
+        $b4->SetColor($colorDestruccionesGrafica);
+        $b4->mark->SetType(MARK_UTRIANGLE);
+      }
       $b4->value->SetMargin(30);
       $b4->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
       $b4->value->SetAngle(75);
@@ -325,11 +387,17 @@ class PDF_Grafica extends Fpdf
     }
     
     if ($mostrarB5){
-      $b5->value->Show();
-      $b5->SetColor($colorBordeAjusteRetiros);
-      $b5->SetFillColor($colorAjusteRetirosGrafica);
+      $b5->value->Show(); 
       $b5->SetLegend("AJUSTE Retiros");
-      $b5->SetWidth(0.8);
+      if (!$unMov){
+        $b5->SetColor($colorBordeAjusteRetiros);
+        $b5->SetFillColor($colorAjusteRetirosGrafica);
+        $b5->SetWidth(0.8);
+      }
+      else {
+        $b5->SetColor($colorAjusteRetirosGrafica);
+        $b5->mark->SetType(MARK_UTRIANGLE);
+      }
       $b5->value->SetAlign('left','center');
       $b5->value->SetMargin(30);
       $b5->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
@@ -340,16 +408,34 @@ class PDF_Grafica extends Fpdf
     
     if ($mostrarB6){
       $b6->value->Show();
-      $b6->SetColor($colorBordeAjusteIngresos);
-      $b6->SetFillColor($colorAjusteIngresosGrafica);
       $b6->SetLegend("AJUSTE Ingresos");
-      $b6->SetWidth(0.8);
+      if (!$unMov){
+        $b6->SetColor($colorBordeAjusteIngresos);
+        $b6->SetFillColor($colorAjusteIngresosGrafica);
+        $b6->SetWidth(0.8);
+      }
+      else {
+        $b6->SetColor($colorAjusteIngresosGrafica);
+        $b6->mark->SetType(MARK_UTRIANGLE);
+      }
       $b6->value->SetAlign('left','center');
       $b6->value->SetMargin(30);
       $b6->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
       $b6->value->SetAngle(75);
       $b6->value->SetFormatCallback(formatoDato); 
       $b6->value->HideZero();
+    }
+    
+    if ($mostrarAvg){
+      //$bAvg->value->Show();
+      $bAvg->SetLegend("Promedio");
+      //$bAvg->value->SetAlign('left','center');
+      //$bAvg->value->SetMargin(30);
+      //$bAvg->value->SetFont(FF_ARIAL,FS_NORMAL, 11);
+      //$bAvg->value->SetAngle(75);
+      //$bAvg->value->SetFormatCallback(formatoDato); 
+      /*$b1->value->SetFormat('%d');*/   
+      //$bAvg->value->HideZero();
     }
     ///***************************************************** FIN Gráficas con los consumos del período: *************************************
 
@@ -526,6 +612,7 @@ class PDF_Grafica extends Fpdf
       $txt42->SetBox($colorFondoLeyendaAjusteIngresos1, $colorFondoLeyendaAjusteIngresos2); 
       $graph->AddText($txt42);
     }
+    
     ///************************************************************ FIN Textos con los promedios: *******************************************
     
     if ($destino === 'pdf'){
@@ -1495,8 +1582,8 @@ $salida = $rutaGrafica.'/'.$nombreArchivo;
 
 if ($tipoGrafica === "producto"){
   if ($unMov){
-    $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, 'pdf', $nombreGrafica);
-    $pdfGrafica->Output('F', $salida);
+    //$pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, 'pdf', $nombreGrafica);
+    //$pdfGrafica->Output('F', $salida);
     $pdfGrafica->graficarBarras($mensaje, $meses, $totales, $totalRetiros, $totalIngresos, $totalRenos, $totalDestrucciones, $totalAjusteRetiros, $totalAjusteIngresos, $total, $tipo, $avgRetiros, $avgIngresos, $avgRenos, $avgDestrucciones, $avgAjusteRetiros, $avgAjusteIngresos, $avgConsumos, '', $nombreGrafica);   
   }
   else {

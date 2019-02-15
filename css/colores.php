@@ -52,6 +52,8 @@ define("colorIngresos", array(39, 222, 93));
 define("colorAjusteRetiros", array(162, 92, 243));
 define("colorAjusteIngresos", array(255, 193, 104));
 
+define("colorPromedio", array(249, 143, 8));
+
 define("colorTotal", array(0, 255, 255));
 ///********************************************************** FIN COLORES PDFs **************************************************
 
@@ -64,6 +66,7 @@ $colorDestruccionesGrafica = array(255, 7, 25);
 $colorIngresosGrafica = array(25, 82, 46);
 $colorAjusteRetirosGrafica = array(162, 92, 243);
 $colorAjusteIngresosGrafica = array(255, 193, 104);
+$colorPromedio = array(249, 143, 8);
 $colorNombreEjeX = 'white';
 $colorNombreEjeY = 'white';
 $colorEjeX = 'white';
