@@ -1,5 +1,8 @@
 <?php
-require_once("data/sesiones.php");
+if(!isset($_SESSION)) 
+  { 
+  session_start(); 
+} 
 
 if (isset($_POST["hacerGrafica"])){
   if ($_POST["hacerGrafica"] === "yes") {

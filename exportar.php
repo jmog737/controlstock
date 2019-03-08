@@ -1,5 +1,8 @@
 <?php
-require_once("data/sesiones.php");
+if(!isset($_SESSION)) 
+  { 
+  session_start(); 
+} 
 require_once('data/baseMysql.php');
 require_once('generarExcel.php');
 require_once('generarPdfs.php');

@@ -1,5 +1,9 @@
 <?php
-require_once("sesiones.php");
+//require_once("sesiones.php");
+if(!isset($_SESSION)) 
+  { 
+  session_start(); 
+} 
 require_once("config.php");
 
 function escribirLog($query){ 
