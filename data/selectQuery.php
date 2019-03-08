@@ -11,7 +11,6 @@ else {
 }
 
 //Conexión con la base de datos:
-//$dbc = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 $dbc = crearConexion(DB_HOST, $userDB, $pwDB, DB_NAME);
 
 $query = $_GET["query"];

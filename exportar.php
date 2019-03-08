@@ -1,5 +1,5 @@
 <?php
-require_once('data/sesiones.php');
+require_once("data/sesiones.php");
 require_once('data/baseMysql.php');
 require_once('generarExcel.php');
 require_once('generarPdfs.php');

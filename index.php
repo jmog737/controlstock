@@ -1,5 +1,5 @@
 <?php
-require_once('data/sesiones.php');
+require_once("data/sesiones.php");
 require_once("data/config.php");
 
 //Borro los mensajes de error:

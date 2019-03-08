@@ -1,5 +1,5 @@
 <?php
-require("data/sesiones.php");
+require_once("data/sesiones.php");
 /**
 ******************************************************
 *  @file moviemiento.php

@@ -2,6 +2,14 @@
 require_once("sesiones.php");
 require_once ("connectvars.php");
 require_once("config.php");
+
+//try {
+//  $pdo = new PDO('mysql:host=localhost;port=3306;dbname=controlstock;charset=utf8',$userDB, $pwDB);
+//  $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+//} catch (PDOException $e) {
+//    print "¡Error!: " . $e->getMessage() . "<br/>";
+//    die();
+//}
 /**
  * \brief Función usada para conectarse a la base de datos especificada.
  * @param string $servidor Especifica cual es el servidor al que debe conectarse.
@@ -12,13 +20,6 @@ require_once("config.php");
  */
 function crearConexion($servidor, $usuario, $pass, $base)
   {
-  if (!isset($pass)) {
-    $pass = 'jmpp';
-    }
-  if (!isset($pass)) {
-    $usuario = 'root';
-    } 
-
   $mysqli = new mysqli($servidor, $usuario, $pass, $base);
   if ($mysqli->connect_error)
       {
@@ -30,12 +31,7 @@ function crearConexion($servidor, $usuario, $pass, $base)
       exit();
   }   
   return $mysqli;
-  }
-
-function cerrarConexion($mysqli)
-  {
-  $mysqli->close();
-  }
+}
 
 function consultarBD($consulta, $mysqli)
   {
@@ -49,7 +45,7 @@ function consultarBD($consulta, $mysqli)
     $salida = $mysqli->error;
   }
   return $salida;
-  }
+}
 
 function obtenerResultados($resultado)
   {
@@ -62,7 +58,7 @@ function obtenerResultados($resultado)
       }  
   $resultado->close();    
   return $salida;
-  }
+}
   
 function obtenerResultadosArray($resultado)
   {
@@ -73,26 +69,6 @@ function obtenerResultadosArray($resultado)
       $i++;
       }
   return $salida;
-  }  
+}
 
-function mostrarResultados($resultado)
-  {
-  $campos = $resultado->fetch_fields();
-  $tam = count($campos);
-  $i = 1;
-  echo "<table><tr>";
-  foreach ($campos as $campo)
-      {
-      echo "<td>$campo->name</td>";
-      }
-  $datos = $resultado->fetch_array(MYSQLI_NUM);
-  foreach ($datos as $dato)
-      {
-      while ($i<=$tam)
-          {
-          echo "<td>$dato[$i]</td>";
-          }
-      }
-  echo "</tr></table>";    
-  }
 ?>

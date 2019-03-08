@@ -40,21 +40,21 @@ if (!file_exists($dir)){
 
 //if(isset($_SESSION['user_id'])) 
 //  {
-  if (!isset($_SESSION["tamPagina"])){
-    $_SESSION["tamPagina"] = 50;
-  }
-  if (!isset($_SESSION["limiteSelects"])){
-    $_SESSION["limiteSelects"] = 15;
-  }
-  if (!isset($_SESSION["limiteHistorialProducto"])){
-    $_SESSION["limiteHistorialProducto"] = 5;
-  }
-  if (!isset($_SESSION["limiteHistorialGeneral"])){
-    $_SESSION["limiteHistorialGeneral"] = 10;
-  }
-  if (!isset($_SESSION["nombreGrafica"])){
-    $_SESSION["nombreGrafica"] = 'TEST';
-  }
+if (!isset($_SESSION["tamPagina"])){
+  $_SESSION["tamPagina"] = 50;
+}
+if (!isset($_SESSION["limiteSelects"])){
+  $_SESSION["limiteSelects"] = 15;
+}
+if (!isset($_SESSION["limiteHistorialProducto"])){
+  $_SESSION["limiteHistorialProducto"] = 5;
+}
+if (!isset($_SESSION["limiteHistorialGeneral"])){
+  $_SESSION["limiteHistorialGeneral"] = 10;
+}
+if (!isset($_SESSION["nombreGrafica"])){
+  $_SESSION["nombreGrafica"] = 'TEST';
+}
 //}
 
 $limiteSeleccion = 8;

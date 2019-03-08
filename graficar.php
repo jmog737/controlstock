@@ -1134,7 +1134,7 @@ function Evalua($arreglo)
 //$dirGrafica = "//".$ip."/Reportes/";
 
 ///*********************************************************************** FIN SETEO DE CARPETAS ********************************************
-$t = $_GET["t"];//echo $t;
+$t = $_GET["t"];
 /// Recupero la consulta a ejecutar y el mes inicial:
 $query = $_SESSION["consulta"];
 $fechaInicio = $_SESSION["fechaInicio"];

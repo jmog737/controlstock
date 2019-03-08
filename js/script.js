@@ -799,7 +799,8 @@ function agregarMovimiento(agregarRepetido){
     var fecha = $("#fecha").val();
     var idProd = $("#hint").val();
     var busqueda = $("#producto").val();
-    var stockActual = parseInt($("#hint").find('option:selected').attr("stock"), 10);
+    var stockActual = -1;
+    stockActual = parseInt($("#hint").find('option:selected').attr("stock"), 10);
     var alarma1 = parseInt($("#hint").find('option:selected').attr("alarma1"), 10);
     var alarma2 = parseInt($("#hint").find('option:selected').attr("alarma2"), 10);
     var tipo = $("#tipo").val();
@@ -817,7 +818,8 @@ function agregarMovimiento(agregarRepetido){
       segs = "0"+segs;
     }
     var hora = tempDate.getHours()+":"+minutos+":"+segs;
-    var nuevoStock = stockActual;
+    var nuevoStock = -1;
+    nuevoStock = stockActual;
 
     /// Elimino el pop up de confirmación a pedido de Diego: 
     /// Esto elimina también la necesidad de chequear la variable confirmar en el if más abajo
@@ -826,10 +828,10 @@ function agregarMovimiento(agregarRepetido){
     /// Si el movimiento NO es una devolución, calculo el nuevo stock. 
     // De serlo, NO se quita de stock pues las tarjetas se reponen (igualmente, por ahora no existe el tipo "Devolución"):
     if ((tipo !== 'Ingreso') && (tipo !== 'AJUSTE Ingreso')){
-      nuevoStock = stockActual - cantidad;
+      nuevoStock -= cantidad;
     }
     if ((tipo === 'Ingreso') || (tipo === 'AJUSTE Ingreso')) {
-      nuevoStock = stockActual + cantidad;
+      nuevoStock += cantidad;
     }
 
     var avisarAlarma1 = false;
@@ -866,7 +868,7 @@ function agregarMovimiento(agregarRepetido){
     
     if (seguir) {
       inhabilitarAgregado();
-      var userSesion = $("#userID").val();//alert('userSesion: '+userSesion);
+      var userSesion = $("#userID").val();
       var userControl;
       if (userSesion === 2){
         userControl = 3;
@@ -4720,7 +4722,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
 */
 function cargarProducto(idProd, selector){
   var url = "data/selectQuery.php";
-  var query = 'select idprod, nombre_plastico, entidad, codigo_emsa, bin, codigo_origen, contacto, snapshot, stock, alarma1, alarma2, ultimoMovimiento, comentarios from productos where idprod='+idProd+' limit 1';
+  var query = 'select idprod, nombre_plastico, entidad, fechaCreacion, codigo_emsa, bin, codigo_origen, contacto, snapshot, stock, alarma1, alarma2, ultimoMovimiento, comentarios from productos where idprod='+idProd+' limit 1';
   
   $.getJSON(url, {query: ""+query+""}).done(function(request) {
     var resultado = request["resultado"];
@@ -4733,6 +4735,16 @@ function cargarProducto(idProd, selector){
       if ((ultimoMovimiento === undefined) || (ultimoMovimiento === null)||(ultimoMovimiento === "null")){
         ultimoMovimiento = 'NO HAY';
       }
+      var t1 = resultado[0]['fechaCreacion'];
+      var fechaCreacion;
+      if ((t1 === undefined) || (t1 === null)||(t1 === "null")){
+          fechaCreacion = 'NO seteada';
+      }
+      else {
+        var temp = t1.split('-');
+        fechaCreacion = temp[2]+'/'+temp[1]+'/'+temp[0]; 
+      }
+      //alert(fechaCreacion);
     }
     var mostrar = "";
     var formu = '<form method="post" id="productUpdate" name="productUpdate" action="producto.php">';
@@ -4755,6 +4767,10 @@ function cargarProducto(idProd, selector){
               <th align="left"><font class="negra">Código Origen:</font></th>\n\
               <td align="center" colspan="2"><input type="text" name="codigo_origen" id="codigo_origen" title="Ingresar el código de origen" placeholder="C&oacute;digo Origen" tabindex="7" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
           </tr>';
+    tr += '<tr>\n\
+              <th align="left"><font class="negra">Fecha de Creación:</font></th>\n\
+              <td align="center" colspan="2"><input type="text" name="fechaCreacion" id="fechaCreacion" title="Fecha en que fue creado el producto. NO es editable." placeholder="Fecha de creaci&oacute;n" tabindex="-2" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+          </tr>';  
     tr += '<tr>\n\
               <th align="left"><font class="negra">Contacto:</font></th>\n\
               <td align="center" colspan="2"><input type="text" id="contacto" name="contacto2" title="Ingresar el contacto" placeholder="Contacto" tabindex="8" class="agrandar" maxlength="35" size="9"></td>\n\
@@ -4810,6 +4826,7 @@ function cargarProducto(idProd, selector){
     $("#nombre").val(resultado[0]['nombre_plastico']);
     $("#codigo_emsa").val(resultado[0]['codigo_emsa']);
     $("#codigo_origen").val(resultado[0]['codigo_origen']);
+    $("#fechaCreacion").val(fechaCreacion);
     $("#contacto").val(resultado[0]['contacto']);
     $("#nombreFoto").val(resultado[0]['snapshot']);
     $("#stockProducto").val(stock.toLocaleString());
@@ -4893,11 +4910,11 @@ function validarProducto(nuevo) {
   /// Si estoy agregando un producto nuevo, y si se ingresa el stock inicial, debo validarlo:
   if (nuevo) {
     if (seguir) {
-      if (stockProducto1 !== undefined){
+      if ((stockProducto1 !== undefined)&&(stockProducto1 !== '')){
         var stockProducto = parseInt(stockProducto1, 10);
         var stock1 = validarEntero(stockProducto);
-        if ((!stock1) || (stockProducto <= 0)) {
-          alert('El stock inicial debe ser un entero mayor que 0. Por favor verifique.');
+        if ((!stock1) || (stockProducto < 0)) {
+          alert('El stock inicial debe ser un entero mayor o igual a 0. Por favor verifique.');
           $("#stockProducto").val('');
           $("#stockProducto").focus();
           seguir = false;
@@ -4986,6 +5003,7 @@ function inhabilitarProducto(){
   document.getElementById("entidad").disabled = true;
   document.getElementById("codigo_origen").disabled = true;
   document.getElementById("codigo_emsa").disabled = true;
+  document.getElementById("fechaCreacion").disabled = true;
   document.getElementById("contacto").disabled = true;
   document.getElementById("nombreFoto").disabled = true;
   document.getElementById("bin").disabled = true;
@@ -5007,6 +5025,7 @@ function habilitarProducto(){
   document.getElementById("entidad").disabled = false;
   document.getElementById("codigo_origen").disabled = false;
   document.getElementById("codigo_emsa").disabled = false;
+  //document.getElementById("fechaCreacion").disabled = false;
   document.getElementById("contacto").disabled = false;
   document.getElementById("nombreFoto").disabled = false;
   document.getElementById("bin").disabled = false;
@@ -5914,7 +5933,7 @@ $(document).on("change focusin", "#hint", function (){
   //verificarSesion('');
   var rutaFoto = 'images/snapshots/';
   var nombreFoto = $(this).find('option:selected').attr("name");
-  
+ 
   var prod = $(this).find('option:selected').val();
   $(this).css('background-color', '#ffffff');
   //$(this).find('option:selected').css('background-color', '#ffffff');
@@ -6074,7 +6093,7 @@ $(document).on("change focusin", "#hint", function (){
           resaltado = 'resaltado';
         }  
       }
-      
+
       var mostrar = '<p id="stock" name="hint" style="padding-top: 10px"><strong>Stock actual: </strong><font class="'+resaltado+'" style="font-size:3.0em; font-style:italic;">'+stock.toLocaleString()+'</font></p>';
       mostrar += '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
       mostrar += '<p id="promedio1" name="hint" style="padding-top: 1px;margin-bottom: 0px"><strong>Total Consumos (&uacute;lt. '+periodoDias1+' d&iacute;as):</strong> <font style="font-size:1.2em; font-style:italic;">'+totalConsumos1.toLocaleString()+' '+unidades1+' ('+promedioMensual1.toLocaleString()+' '+unidadesPromedio1+')</font></p>';
@@ -6342,7 +6361,6 @@ $(document).on("change focusin", "#hintProd", function (){
   var nombreFoto = $(this).find('option:selected').attr("name");
   $(this).css('background-color', '#ffffff');
   
-  
   $("#snapshot").remove();
   $("#stock").remove();
   $("#promedio1").remove();
@@ -6382,11 +6400,12 @@ $(document).on("change focusin", "#hintProd", function (){
     }  
   }
   
-  var mostrar;
+  var mostrar = '';
   var dire = rutaFoto+nombreFoto;
   if (existeUrl(dire)){
-    mostrar += '<img id="snapshot" name="hintProd" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
+    mostrar += '<img id="snapshot" name="hintProd" src="'+dire+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
   }
+
   mostrar += '<p id="stock" name="hintProd" style="padding-top: 10px"><strong>Stock actual: </strong><font class="'+resaltado+'" style="font-size:2.6em;font-style:italic;">'+stock.toLocaleString()+'</font></p>';
   mostrar += '<p id="ultimoMov" name="hintProd"><strong>Último Movimiento: <font style="font-size:1.1em;font-style:italic;">'+ultimoMovimiento+'</font></strong></p>';
   $(this).css('background-color', '#9db7ef');
@@ -6407,6 +6426,11 @@ $(document).on("change focusin", "#hintProd", function (){
     $("#alarma2").val('');
     $("#ultimoMovimiento").val('');
     $("#comentarios").val('');
+    $("#stock").remove();
+    $("#ultimoMov").remove();
+    $("#stockProducto").removeClass('alarma1');
+    $("#stockProducto").removeClass('alarma2');
+    $("#stockProducto").removeClass('resaltado');
   }
 });
 /********** fin on("change focusin", "#hintProd", function () **********/
@@ -6637,9 +6661,10 @@ $(document).on("click", "#agregarProducto", function (){
     $("#nombre").val('');
     $("#codigo_emsa").val('');
     $("#codigo_origen").val('');
+    $("#fechaCreacion").val('');
     $("#contacto").val('');
     $("#nombreFoto").val('');
-    $("#stockProducto").val('');
+    $("#stockProducto").val(0);
     $("#comentarios").val('');
     $("#alarma1").val('');
     $("#alarma2").val('');
@@ -6655,7 +6680,7 @@ $(document).on("click", "#agregarProducto", function (){
     $("#promedio2").remove();
     $("#ultimoMov").remove();
     habilitarProducto();
-    $("#stockProducto").attr("disabled", false);
+    $("#stockProducto").attr("disabled", true);
     $("#editarProducto").attr("disabled", true);
     $("#actualizarProducto").attr("disabled", true);
     $("#eliminarProducto").attr("disabled", true);
@@ -6669,16 +6694,30 @@ $(document).on("click", "#agregarProducto", function (){
       var codigo_emsa = $("#codigo_emsa").val();
       var codigo_origen = $("#codigo_origen").val();
       var contacto = $("#contacto").val();
-      var stock = parseInt($("#stockProducto").val(), 10);
+      ///Se comenta la recuperación del valor de stock inicial dado que, para que figure en los reportes, 
+      ///el stock inicial SIEMPRE se pone como 0 cosa de forzar el ingreso inicial - 07/03/2019.
+      //var stock = parseInt($("#stockProducto").val(), 10);
+      var stock = 0;
       var alarma1 = parseInt($("#alarma1").val(), 10);
       var alarma2 = parseInt($("#alarma2").val(), 10);
       var nombreFoto = $("#nombreFoto").val();
        
       var comentarios = $("#comentarios").val();
       var bin = $("#bin").val();
+      var fechaMseg = Date.now();
+      var fechaTemp = new Date(fechaMseg);
+      var mesActual = parseInt(fechaTemp.getMonth(), 10) + 1;
+      var dia = parseInt(fechaTemp.getDate(), 10);
+      if (mesActual < 10){
+        mesActual = "0"+mesActual;
+      }
+      if (dia < 10){
+        dia = "0"+dia;
+      }
+      var fechaCreacion = fechaTemp.getFullYear()+'-'+mesActual+'-'+dia;
       
       var url = "data/updateQuery.php";
-      var query = "insert into productos (entidad, nombre_plastico, codigo_emsa, codigo_origen, contacto, snapshot, stock, bin, comentarios, alarma1, alarma2, estado) values ('"+entidad+"', '"+nombre+"', '"+codigo_emsa+"', '"+codigo_origen+"', '"+contacto+"', '"+nombreFoto+"', "+stock+", '"+bin+"', '"+comentarios+"', "+alarma1+", "+alarma2+", 'activo')";
+      var query = "insert into productos (entidad, nombre_plastico, codigo_emsa, codigo_origen, contacto, snapshot, stock, bin, comentarios, alarma1, alarma2, estado, fechaCreacion) values ('"+entidad+"', '"+nombre+"', '"+codigo_emsa+"', '"+codigo_origen+"', '"+contacto+"', '"+nombreFoto+"', "+stock+", '"+bin+"', '"+comentarios+"', "+alarma1+", "+alarma2+", 'activo', '"+fechaCreacion+"')";
       var log = "SI";
       var jsonQuery = JSON.stringify(query);
       
