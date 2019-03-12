@@ -3,14 +3,14 @@ if(!isset($_SESSION))
   { 
   session_start(); 
 } 
-require_once('data/baseMysql.php');
-require_once('generarExcel.php');
-require_once('generarPdfs.php');
+
 //error_reporting(NULL);
 //ini_set('error_reporting', NULL);
 //ini_set('display_errors',0);
 if(isset($_SESSION['tiempo']) ) {
-  
+  require_once('data/pdo.php');
+  require_once('generarExcel.php');
+  require_once('generarPdfs.php');
 
 //phpinfo();
 //***************************** DESTINATARIOS CORREOS ***********************************************************************************************
@@ -385,12 +385,13 @@ else {
 }
 
 
-// Conectar con la base de datos
-$con = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 /// Ejecuto la consulta:
-$resultado1 = consultarBD($query, $con);
+$resultado1 = $pdo->query($query);
 //echo "consulta: $query<br>";
-$totalRegistros = $resultado1->num_rows;
+
+$queryTemp = explode('from', $query);
+$query1 = "select count(*) from ".$queryTemp[1];
+$totalRegistros = $pdo->query($query1)->fetchColumn();
 
 if ($orientacion == 'P'){
   $c1 = 18;
@@ -416,7 +417,14 @@ else {
 $totalCampos = sizeof($campos);
 $pdfResumen->SetWidths($largoCampos);
 
-$filas = obtenerResultadosArray($resultado1);
+$filas = array();
+$m = 1;
+while ($row = $resultado1->fetch(PDO::FETCH_NUM))
+  {
+  $filas[$m] = $row;
+  $m++;
+}
+
 $registros = array();
 $i = 1;
 $total = 0;
@@ -436,8 +444,14 @@ foreach($filas as $fila)
 //echo "total: ".$total."<br>";
 //echo $consultaCSV."<br>";
 ///Ejecuto consulta para la generación del excel:
-$resultado2 = consultarBD($consultaCSV, $con);
-$filas1 = obtenerResultadosArray($resultado2);
+$resultado2 = $pdo->query($consultaCSV);
+$filas1 = array();
+$n = 1;
+while ($row1 = $resultado2->fetch(PDO::FETCH_NUM))
+  {
+  $filas1[$n] = $row1;
+  $n++;
+}
 $registros1 = array();
 $j = 1;
 //$total1 = 0;
@@ -560,7 +574,7 @@ switch ($id) {
 $nombreCSV = $nombreReporte.$timestamp."_CSV.csv";
 $dirCSV = $dir."/".$nombreCSV;
 $exportarCSV = $nombreCampos." union all (".$consultaCSV." into outfile '".$dirCSV."' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\r\n')";
-$resultado2 = consultarBD($exportarCSV, $con);
+$resultado2 = $pdo->query($exportarCSV);
 //echo $exportarCSV;
 */
 

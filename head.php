@@ -7,7 +7,6 @@
     $estilos = 'styles.php';
   }
 require 'vendor/autoload.php';
-require_once('data/baseMysql.php');
 
 ?>
 <head>

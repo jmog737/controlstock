@@ -30,8 +30,8 @@ if(!isset($_SESSION))
     <?php 
     }
     else {
-      echo "no está seteado el user_id";
-    }        
+      echo '<p>Por favor <a href="index.php">Log In</a> para comenzar.</p>';
+    }  
     ?>  
       
     <?php require('footer.php');?>

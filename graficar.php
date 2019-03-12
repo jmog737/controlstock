@@ -14,7 +14,7 @@ error_reporting(NULL);
 ini_set('error_reporting', NULL);
 ini_set('display_errors',0);
 
-require_once("data/baseMysql.php");
+require_once("data/pdo.php");
 require_once("data/config.php");
 require ('vendor/autoload.php');
 require_once("css/colores.php");
@@ -1151,10 +1151,7 @@ $mensaje = $_POST["mensaje"];
 */
 
 ///********************************************************************** RECUPERO DATOS ****************************************************
-//Conexión con la base de datos:
-$dbc = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-
-$result = consultarBD($query, $dbc);
+$result = $pdo->query($query);
 
 $datos = array();
 $retiros = 0;
@@ -1171,9 +1168,8 @@ $destruccionesTotal = 0;
 $ajusteRetirosTotal = 0;
 $ajusteIngresosTotal = 0;
 
-$totalDatos = $result->num_rows;
 $indice = $fechaInicio;
-while (($fila = $result->fetch_array(MYSQLI_BOTH)) != NULL) { 
+while (($fila = $result->fetch(PDO::FETCH_ASSOC)) != NULL) { 
   $cantidad = $fila["cantidad"];
   $tipoActual = $fila["tipo"];  
   $fechaFila = $fila["fecha"];

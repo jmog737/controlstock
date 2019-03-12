@@ -34,12 +34,7 @@ if(!isset($_SESSION))
     <?php 
     }
     else {
-    ?>
-<!--      <script> 
-        alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-        window.location.href = "../controlstock/index.php";
-      </script>  -->
-    <?php
+
     }        
     ?>  
       

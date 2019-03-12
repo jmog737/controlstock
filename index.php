@@ -19,7 +19,7 @@ if ( isset($_POST["usuario"]) && isset($_POST["password"]) ) {
   
   $sql = "SELECT COUNT(*) FROM appusers WHERE user = '$userDB' AND password = SHA1('$pwDB') limit 1";
   $resultado = $pdo->query($sql);
-  if ($resultado) {
+  if ($resultado !== false) {
     /* Comprobar el número de filas que coinciden con la sentencia SELECT */
     if ($resultado->fetchColumn() > 0) {
       $stmt = $pdo->query("SELECT id_usuario, user, historialGeneral, historialProducto, tamPagina, limiteSelects FROM appusers WHERE user = '$userDB' AND password = SHA1('$pwDB') limit 1");
@@ -28,7 +28,6 @@ if ( isset($_POST["usuario"]) && isset($_POST["password"]) ) {
       //Si el usuario existe, seteo las variables de sesión y cookies (user_id y username), y lo redirijo a la página principal:
       $_SESSION['user_id'] = $row['id_usuario'];
       $_SESSION['username'] = $row['user'];
-      echo "<br>se setea user_id: ".$_SESSION['user_id']."<br>se setea username: ".$_SESSION['username'];
       ///Recupero los parámetros del usuario:
       if (($row['historialGeneral'] !== '')&&($row['historialGeneral'] !== null)){
         $_SESSION["limiteHistorialGeneral"] = $row['historialGeneral'];
@@ -55,14 +54,8 @@ if ( isset($_POST["usuario"]) && isset($_POST["password"]) ) {
     }
   }
 }
-else {
-  if (isset($_SESSION["username"])){
-    header( 'Location: movimiento.php' ) ;
-    return;
-  }
-}
 
-  require_once ('head.php');
+require_once ('head.php');
 ?>
   <body>
 <?php

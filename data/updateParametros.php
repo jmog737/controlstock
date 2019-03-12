@@ -1,17 +1,6 @@
 <?php
-require_once ("baseMysql.php");
+require_once("pdo.php");
 require_once ("escribirLog.php");
-if (isset($_SESSION["username"])){
-  $userDB = $_SESSION["username"];
-  $pwDB = $_SESSION['username'];
-}
-else {
-  $userDB = DB_USER;
-  $pwDB = DB_PASSWORD;
-}
-
-//Conexión con la base de datos:
-$dbc = crearConexion(DB_HOST, $userDB, $pwDB, DB_NAME);
 
 $query = "update appusers";
 
@@ -84,8 +73,8 @@ if ($cambioLimiteSelects){
 $query = $query." where id_usuario=".$_SESSION['user_id'];
 
 if ($cambioPagina || $cambioHistoryGeneral || $cambioHistoryProducto || $cambioLimiteSelects){
-  $result1 = consultarBD($query, $dbc);
-  if ($result1 === TRUE) {
+  $result1 = $pdo->query($query);
+  if ($result1 !== FALSE) {
     $datos["resultadoDB"] = "OK";
   }
   else {

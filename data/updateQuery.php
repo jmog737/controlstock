@@ -1,17 +1,6 @@
 <?php
-require_once ("baseMysql.php");
+require_once ("pdo.php");
 require_once ("escribirLog.php");
-if (isset($_SESSION["username"])){
-  $userDB = $_SESSION["username"];
-  $pwDB = $_SESSION['username'];
-}
-else {
-  $userDB = DB_USER;
-  $pwDB = DB_PASSWORD;
-}
-
-//Conexión con la base de datos:
-$dbc = crearConexion(DB_HOST, $userDB, $pwDB, DB_NAME);
 
 $queries = (array)json_decode($_GET["query"],true);
 $tam = count($queries);
@@ -25,15 +14,15 @@ if ($tam > 1){
 }
 
 
-$result = consultarBD($queryInsert, $dbc);
+$result = $pdo->query($queryInsert);
 $dato = array();
-if ($result === TRUE) {
+if ($result !== FALSE) {
   if ($log === "SI") {
     escribirLog($queryInsert);
   }  
   if ($tam > 1){
-    $result1 = consultarBD($queryUpdate, $dbc);
-    if ($result1 === TRUE) {
+    $result1 = $pdo->query($queryUpdate);
+    if ($result1 !== FALSE) {
       if ($log === "SI") {
         escribirLog($queryUpdate);
       }

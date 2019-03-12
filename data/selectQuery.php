@@ -1,25 +1,15 @@
 <?php
-require_once ("baseMysql.php");
-
-if (isset($_SESSION["username"])){
-  $userDB = $_SESSION["username"];
-  $pwDB = $_SESSION['username'];
-}
-else {
-  $userDB = DB_USER;
-  $pwDB = DB_PASSWORD;
-}
-
-//Conexión con la base de datos:
-$dbc = crearConexion(DB_HOST, $userDB, $pwDB, DB_NAME);
+require_once 'pdo.php';
 
 $query = $_GET["query"];
+$stmt = $pdo->query($query);
 
-$result = consultarBD($query, $dbc);
+$queryTemp = explode('from', $query);
+$query1 = "select count(*) from ".$queryTemp[1];
 
 $datos = array();
-$datos['rows'] = $result->num_rows;
-while (($fila = $result->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+$datos['rows'] = $pdo->query($query1)->fetchColumn();
+while (($fila = $stmt->fetch(PDO::FETCH_ASSOC)) != NULL) { 
   $datos['resultado'][] = $fila;
 }
 

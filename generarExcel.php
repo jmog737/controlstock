@@ -694,6 +694,7 @@ function generarExcelBoveda($registros) {
 
 function generarExcelMovimientos($registros, $mostrarEstado) {
   global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta, $textoLegalExcel;
+  include_once('css/colores.php');
 //  global $colorTabMovimientos, $colorBordeTitulo, $colorFondoTitulo, $colorFondoCampos, $colorFondoTextoLegal, $colorBordeRegular; 
 //  global $colorBordeResumen, $colorFondoCamposResumen, $colorCategorias, $colorFondoConsumos, $colorFondoIngresos, $colorFondoTotalConsumos, $colorFondoTotalIngresos;
 //  global $colorFondoFecha, $colorFondoStockRegular, $colorStock, $colorTotalesCategoria, $colorTextoTotalesCategoria, $colorFondoTotalesCategoria;
@@ -869,7 +870,6 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
     $spreadsheet->setActiveSheetIndex(0)->setCellValue($colEstado.$filaEncabezado, 'Estado');
   }
   
-  
   /// Formato de los títulos:
   $header = $colId.$filaEncabezado.':'.$colCantidad.$filaEncabezado;
   $styleHeader = array(
@@ -966,6 +966,7 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   
   
   ///************************************ MUESTRO TOTALES **********************************************
+  $colFinal = '';
   if (($tipoMov === 'AJUSTE Retiros')||($tipoMov === 'AJUSTE Ingresos')||($tipoMov === 'Ajustes')||($tipoMov === 'Todos')){
     $colFinal = $colAjuIngresos;
     $hoja->setCellValue($colAjuRetiros.'2', 'Ajustes Retiros');
@@ -1078,6 +1079,7 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
     $hoja->setCellValue($colAjuRetiros.$n, '=SUM('.$colAjuRetiros.'3:'.$colAjuRetiros.$finDatos.')');
     $hoja->setCellValue($colAjuIngresos.$n, '=SUM('.$colAjuIngresos.'3:'.$colAjuIngresos.$finDatos.')');
   }
+  
   ///************************************* Formato Título Resumen **************************************
   $header1 = $colNombreTotales.'1:'.$colFinal.'1';
   $styleTituloTotales = array(
@@ -1182,9 +1184,10 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
     'font' => array(
         'bold' => true,
         'size' => 13,
+        'color' => array('rgb' => $GLOBALS["colorConsumos"]),
       ),
     'numberFormat' => array(
-        'formatCode' => '['.$GLOBALS["colorConsumos"].']#,##0',
+        'formatCode' => '#,##0',
       ),
     'borders' => array(
               'allBorders' => array(
@@ -1211,9 +1214,10 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
     'font' => array(
         'bold' => true,
         'size' => 13,
+      'color' => array('rgb' => $GLOBALS["colorIngresos"]),
       ),
     'numberFormat' => array(
-        'formatCode' => '['.$GLOBALS["colorIngresos"].']#,##0',
+        'formatCode' => '#,##0',
       ),
     'borders' => array(
               'allBorders' => array(
@@ -1241,9 +1245,10 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
       'font' => array(
           'bold' => true,
           'size' => 13,
+        'color' => array('rgb' => $GLOBALS["colorAjustesRetiros"]),
         ),
       'numberFormat' => array(
-          'formatCode' => '['.$GLOBALS["colorAjustesRetiros"].']#,##0',
+          'formatCode' => '#,##0',
         ),
       'borders' => array(
                 'allBorders' => array(
@@ -1270,9 +1275,10 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
       'font' => array(
           'bold' => true,
           'size' => 13,
+          'color' => array('rgb' => $GLOBALS["colorAjustesIngresos"]),
         ),
       'numberFormat' => array(
-          'formatCode' => '['.$GLOBALS["colorAjustesIngresos"].']#,##0',
+          'formatCode' => '#,##0',
         ),
       'borders' => array(
                 'allBorders' => array(
@@ -1327,9 +1333,10 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
         'bold' => true,
         'size' => 13,
         'italic' => true,
+        'color' => array('rgb' => $GLOBALS["colorConsumosTotal"]),
       ),
     'numberFormat' => array(
-        'formatCode' => '['.$GLOBALS["colorConsumosTotal"].']#,##0',
+        'formatCode' => '#,##0',
       ),
     'borders' => array(
               'allBorders' => array(
@@ -1357,9 +1364,10 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
         'bold' => true,
         'size' => 13,
         'italic' => true,
+        'color' => array('rgb' => $GLOBALS["colorIngresosTotal"]),
       ),
     'numberFormat' => array(
-        'formatCode' => '['.$GLOBALS["colorIngresosTotal"].']#,##0',
+        'formatCode' => '#,##0',
       ),
     'borders' => array(
               'allBorders' => array(
@@ -1388,9 +1396,10 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
           'bold' => true,
           'size' => 13,
           'italic' => true,
+          'color' => array('rgb' => $GLOBALS["colorAjustesRetirosTotal"]),
         ),
       'numberFormat' => array(
-          'formatCode' => '['.$GLOBALS["colorAjustesRetirosTotal"].']#,##0',
+          'formatCode' => '#,##0',
         ),
       'borders' => array(
                 'allBorders' => array(
@@ -1418,9 +1427,10 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
           'bold' => true,
           'size' => 13,
           'italic' => true,
+          'color' => array('rgb' => $GLOBALS["colorAjustesIngresosTotal"]),
         ),
       'numberFormat' => array(
-          'formatCode' => '['.$GLOBALS["colorAjustesIngresosTotal"].']#,##0',
+          'formatCode' => '#,##0',
         ),
       'borders' => array(
                 'allBorders' => array(
@@ -1450,9 +1460,9 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
         'size' => 13,
         'color' => array('rgb' => $GLOBALS["colorTextoTotalesCategoria"]),
         'italic' => true,
-      ),
+      ),//
     'numberFormat' => array(
-        'formatCode' => '['.$GLOBALS["colorTotalesCategoria"].']#,##0',
+        'formatCode' => '#,##0',
       ),
     'alignment' => array(
          'wrap' => true,
@@ -1569,19 +1579,19 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
           ),
       ),
       'alignment' => array(
-        'wrap' => false,
+        'wrap' => true,
         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
       )
   );
   $hoja->getStyle($rango)->applyFromArray($styleGeneral);
   ///**************************************** FIN FORMATO GENERAL: *************************************
-  
+
   ///**************************************** INICIO AJUSTE ANCHO COLUMNAS *****************************
   /// Ajusto el auto size para que las celdas no se vean cortadas:
   for ($col = ord($colId); $col <= ord($colFinal); $col++)
     {
-    $hoja->getColumnDimension(chr($col))->setAutoSize(true);
+    $hoja->getColumnDimension(chr($col))->setAutoSize(TRUE);
   }
   ///Elimino seteo de ajuste máximo en caso de ser muy grande del campo COMENTARIOS pues ya NO se muestra el mismo:
   

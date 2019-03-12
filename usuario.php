@@ -29,12 +29,7 @@ if(!isset($_SESSION))
     <?php 
             }
     else {
-    ?>
-<!--      <script> 
-        alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-        window.location.href = "../testKMS/index.php";
-      </script>  -->
-    <?php
+
     }        
     ?>  
       

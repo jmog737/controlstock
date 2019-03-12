@@ -21,29 +21,29 @@ if(!isset($_SESSION))
     <?php require_once('header.php');
     if (isset($_SESSION['user_id'])) 
       {
-      //Conexión con la base de datos:
-      $dbc = crearConexion(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-      $consultarProductos = "select idprod, nombre_plastico as nombre from productos order by nombre_plastico asc";
-      $result = consultarBD($consultarProductos, $dbc);
+      require_once("data/pdo.php");
 
+      $consultarProductos = "select idprod, nombre_plastico as nombre from productos order by nombre_plastico asc";
+      $stmt = $pdo->query($consultarProductos);
+      
       $productos = array();
-      while (($fila = $result->fetch_array(MYSQLI_ASSOC)) != NULL) { 
-        $productos[] = $fila;
+      while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+        $productos[] = $row;
       }
       
       $consultarEntidades = "select distinct entidad from productos order by entidad asc, nombre_plastico asc";
-      $result1 = consultarBD($consultarEntidades, $dbc);
+      $stmt1 = $pdo->query($consultarEntidades);
 
       $entidades = array();
-      while (($fila = $result1->fetch_array(MYSQLI_ASSOC)) != NULL) { 
-        $entidades[] = $fila['entidad'];
+      while ($row = $stmt1->fetch(PDO::FETCH_ASSOC)){
+        $entidades[] = $row['entidad'];
       }
       
       $consultarUsuarios = "select iduser, apellido, nombre from usuarios order by sector asc, apellido asc, nombre asc";
-      $result2 = consultarBD($consultarUsuarios, $dbc);
-
+      $stmt2 = $pdo->query($consultarUsuarios);
+      
       $usuarios = array();
-      while (($fila = $result2->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+      while (($fila = $stmt2->fetch(PDO::FETCH_ASSOC)) != NULL) { 
         $usuarios[] = $fila;
       }
       
@@ -60,12 +60,7 @@ if(!isset($_SESSION))
     <?php 
     }
     else {
-    ?> 
-<!--    <script> 
-      alert('Su sesión expiró. Por favor vuelva loguearse.'); 
-      window.location.href = "../controlstock/index.php";
-    </script>  -->
-    <?php
+
     }        
     ?>      
     

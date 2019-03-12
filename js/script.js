@@ -3355,6 +3355,22 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
   var tipMov = '';
   var selected = '';
   
+  switch (radio){
+    case 'entidadStockViejo':
+    case 'entidadStock':tipMov = 'entStock'; 
+                        break;
+    case 'productoStockViejo':                      
+    case 'productoStock': tipMov = 'prodStock';
+                          break;
+    case 'totalStock':  tipMov = 'totalStock';
+                        break;                  
+    case 'entidadMovimiento': tipMov = 'entMov';
+                              break;
+    case 'productoMovimiento':  tipMov = 'prodMov';
+                                break;
+    default: break;
+  }
+  
   for (var n in queries){
     if (n == 0) {
       activo = 'active';
@@ -3478,6 +3494,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         else {
           mostrarEstadoBinario = '1';
         }
+
         var datosOcultos = '<table id="datosOcultos_'+j+'" name="datosOcultos" class="tabla2" style="display:none">';
         switch (radio){
           case 'entidadStockViejo':

@@ -1,19 +1,7 @@
 <?php
-require_once ("baseMysql.php");
-
-if (isset($_SESSION["username"])){
-  $userDB = $_SESSION["username"];
-  $pwDB = $_SESSION['username'];
-}
-else {
-  $userDB = DB_USER;
-  $pwDB = DB_PASSWORD;
-}
+require_once('pdo.php');
 
 $tamPage = $_SESSION["tamPagina"];
-
-//Conexión con la base de datos:
-$dbc = crearConexion(DB_HOST, $userDB, $pwDB, DB_NAME);
 
 $tipo = $_GET["tipo"];
 
@@ -49,16 +37,16 @@ for ($i = 0; $i < count($query); $i++){
     else {
       $consultaSuma = "select sum(stock) as total from productos where ".$temp[1];
     }
-    $result0 = consultarBD($consultaSuma, $dbc);
-    while (($fila0 = $result0->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+    $result0 = $pdo->query($consultaSuma);
+    while (($fila0 = $result0->fetch(PDO::FETCH_ASSOC)) != NULL) { 
       $datos["$i"]['suma'] = $fila0["total"];
     }
   }
   
   if ($tipo === 'totalStock'){
     $consultaSuma = "select sum(stock) as total from productos where estado='activo'";
-    $result0 = consultarBD($consultaSuma, $dbc);
-    while (($fila0 = $result0->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+    $result0 = $pdo->query($consultaSuma);
+    while (($fila0 = $result0->fetch(PDO::FETCH_ASSOC)) != NULL) { 
       $datos["$i"]['suma'] = $fila0["total"];
     }
   }
@@ -142,44 +130,44 @@ for ($i = 0; $i < count($query); $i++){
     $consultaAjusteIngreso = $consultaAjusteIngreso." group by productos.idprod";
     
     if (($tipo1 === 'Retiro')||($tipo1 === 'todos')||($tipo1 === 'clientes')){
-      $resultRetiros = consultarBD($consultaRetiros, $dbc);
-      while (($filaRetiros = $resultRetiros->fetch_array(MYSQLI_ASSOC)) != NULL) {
+      $resultRetiros = $pdo->query($consultaRetiros);
+      while (($filaRetiros = $resultRetiros->fetch(PDO::FETCH_ASSOC)) != NULL) {
         $idprod = $filaRetiros["idprod"];
         $datos["$i"]["retiros"][$idprod] = $filaRetiros["retiros"];
         //$datos["$i"]["retiros"][$idprod] = $consultaRetiros;
       }
     }
     if (($tipo1 === 'Renovación')||($tipo1 === 'todos')||($tipo1 === 'clientes')){
-      $resultRenovaciones = consultarBD($consultaRenovaciones, $dbc);
-      while (($filaRenovaciones = $resultRenovaciones->fetch_array(MYSQLI_ASSOC)) != NULL) {
+      $resultRenovaciones = $pdo->query($consultaRenovaciones);
+      while (($filaRenovaciones = $resultRenovaciones->fetch(PDO::FETCH_ASSOC)) != NULL) {
         $idprod = $filaRenovaciones["idprod"];
         $datos["$i"]["renovaciones"][$idprod] = $filaRenovaciones["renovaciones"];
       }
     }
     if (($tipo1 === 'Destrucción')||($tipo1 === 'todos')||($tipo1 === 'clientes')){
-      $resultDestrucciones = consultarBD($consultaDestrucciones, $dbc);
-      while (($filaDestrucciones = $resultDestrucciones->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+      $resultDestrucciones = $pdo->query($consultaDestrucciones);
+      while (($filaDestrucciones = $resultDestrucciones->fetch(PDO::FETCH_ASSOC)) != NULL) { 
         $idprod = $filaDestrucciones["idprod"];
         $datos["$i"]["destrucciones"][$idprod] = $filaDestrucciones["destrucciones"];
       }
     }
     if (($tipo1 === 'Ingreso')||($tipo1 === 'todos')||($tipo1 === 'clientes')){
-      $resultIngresos = consultarBD($consultaIngresos, $dbc);
-      while (($filaIngresos = $resultIngresos->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+      $resultIngresos = $pdo->query($consultaIngresos);
+      while (($filaIngresos = $resultIngresos->fetch(PDO::FETCH_ASSOC)) != NULL) { 
         $idprod = $filaIngresos["idprod"];
         $datos["$i"]["ingresos"][$idprod] = $filaIngresos["ingresos"];
       } 
     }
     if (($tipo1 === 'AJUSTE Retiro')||($tipo1 === 'todos')||($tipo1 === 'ajustes')){
-      $resultAjusteRetiros = consultarBD($consultaAjusteRetiro, $dbc);
-      while (($filaAjusteRetiros = $resultAjusteRetiros->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+      $resultAjusteRetiros = $pdo->query($consultaAjusteRetiro);
+      while (($filaAjusteRetiros = $resultAjusteRetiros->fetch(PDO::FETCH_ASSOC)) != NULL) { 
         $idprod = $filaAjusteRetiros["idprod"];
         $datos["$i"]["ajusteRetiros"][$idprod] = $filaAjusteRetiros["ajusteRetiros"];
       } 
     }
     if (($tipo1 === 'AJUSTE Ingreso')||($tipo1 === 'todos')||($tipo1 === 'ajustes')){
-      $resultAjusteIngresos = consultarBD($consultaAjusteIngreso, $dbc);
-      while (($filaAjusteIngresos = $resultAjusteIngresos->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+      $resultAjusteIngresos = $pdo->query($consultaAjusteIngreso);
+      while (($filaAjusteIngresos = $resultAjusteIngresos->fetch(PDO::FETCH_ASSOC)) != NULL) { 
         $idprod = $filaAjusteIngresos["idprod"];
         $datos["$i"]["ajusteIngresos"][$idprod] = $filaAjusteIngresos["ajusteIngresos"];
       } 
@@ -246,48 +234,48 @@ for ($i = 0; $i < count($query); $i++){
    
     if (($tipo2 === 'Retiro')||($tipo2 === 'todos')||($tipo2 === 'clientes')){
       $consultaRetiros = "select productos.idprod as idprod, sum(cantidad) as retiros from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='retiro' and productos.idprod='".$idprod."'".$fecha.$estadoMov." group by productos.idprod";
-      $resultRetiros = consultarBD($consultaRetiros, $dbc);
-      while (($filaRetiros = $resultRetiros->fetch_array(MYSQLI_ASSOC)) != NULL) {
+      $resultRetiros = $pdo->query($consultaRetiros);
+      while (($filaRetiros = $resultRetiros->fetch(PDO::FETCH_ASSOC)) != NULL) {
         $idprod = $filaRetiros["idprod"];
         $datos["$i"]["retiros"][$idprod] = $filaRetiros["retiros"];
       }
     }  
     if (($tipo2 === 'Renovación')||($tipo2 === 'todos')||($tipo2 === 'clientes')){  
       $consultaRenovaciones = "select productos.idprod as idprod, sum(cantidad) as renovaciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='renovación' and productos.idprod='".$idprod."'".$fecha.$estadoMov." group by productos.idprod";
-      $resultRenovaciones = consultarBD($consultaRenovaciones, $dbc);
-      while (($filaRenovaciones = $resultRenovaciones->fetch_array(MYSQLI_ASSOC)) != NULL) {
+      $resultRenovaciones = $pdo->query($consultaRenovaciones);
+      while (($filaRenovaciones = $resultRenovaciones->fetch(PDO::FETCH_ASSOC)) != NULL) {
         $idprod = $filaRenovaciones["idprod"];
         $datos["$i"]["renovaciones"][$idprod] = $filaRenovaciones["renovaciones"];
       }
     }   
     if (($tipo2 === 'Destrucción')||($tipo2 === 'todos')||($tipo2 === 'clientes')){
       $consultaDestrucciones = "select productos.idprod as idprod, sum(cantidad) as destrucciones from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='destrucción' and productos.idprod='".$idprod."'".$fecha.$estadoMov." group by productos.idprod";
-      $resultDestrucciones = consultarBD($consultaDestrucciones, $dbc);
-      while (($filaDestrucciones = $resultDestrucciones->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+      $resultDestrucciones = $pdo->query($consultaDestrucciones);
+      while (($filaDestrucciones = $resultDestrucciones->fetch(PDO::FETCH_ASSOC)) != NULL) { 
         $idprod = $filaDestrucciones["idprod"];
         $datos["$i"]["destrucciones"][$idprod] = $filaDestrucciones["destrucciones"];
       }
     }
     if (($tipo2 === 'Ingreso')||($tipo2 === 'todos')||($tipo2 === 'clientes')){
       $consultaIngresos = "select productos.idprod as idprod, sum(cantidad) as ingresos from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='ingreso' and productos.idprod='".$idprod."'".$fecha.$estadoMov." group by productos.idprod";
-      $resultIngresos = consultarBD($consultaIngresos, $dbc);
-      while (($filaIngresos = $resultIngresos->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+      $resultIngresos = $pdo->query($consultaIngresos);
+      while (($filaIngresos = $resultIngresos->fetch(PDO::FETCH_ASSOC)) != NULL) { 
         $idprod = $filaIngresos["idprod"];
         $datos["$i"]["ingresos"][$idprod] = $filaIngresos["ingresos"];
       } 
     }
     if (($tipo2 === 'AJUSTE Retiro')||($tipo2 === 'todos')||($tipo2 === 'ajustes')){
       $consultaAjusteRetiro = "select productos.idprod as idprod, sum(cantidad) as ajusteRetiros from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='AJUSTE Retiro' and productos.idprod='".$idprod."'".$fecha.$estadoMov." group by productos.idprod";
-      $resultAjusteRetiros = consultarBD($consultaAjusteRetiro, $dbc);
-      while (($filaAjusteRetiros = $resultAjusteRetiros->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+      $resultAjusteRetiros = $pdo->query($consultaAjusteRetiro);
+      while (($filaAjusteRetiros = $resultAjusteRetiros->fetch(PDO::FETCH_ASSOC)) != NULL) { 
         $idprod = $filaAjusteRetiros["idprod"];
         $datos["$i"]["ajusteRetiros"][$idprod] = $filaAjusteRetiros["ajusteRetiros"];
       } 
     }
     if (($tipo2 === 'AJUSTE Ingreso')||($tipo2 === 'todos')||($tipo2 === 'ajustes')){  
       $consultaAjusteIngresos = "select productos.idprod as idprod, sum(cantidad) as ajusteIngresos from productos inner join movimientos on movimientos.producto=productos.idprod where tipo='AJUSTE Ingreso' and productos.idprod='".$idprod."'".$fecha.$estadoMov." group by productos.idprod";
-      $resultAjusteIngresos = consultarBD($consultaAjusteIngresos, $dbc);
-      while (($filaAjusteIngresos = $resultAjusteIngresos->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+      $resultAjusteIngresos = $pdo->query($consultaAjusteIngresos);
+      while (($filaAjusteIngresos = $resultAjusteIngresos->fetch(PDO::FETCH_ASSOC)) != NULL) { 
         $idprod = $filaAjusteIngresos["idprod"];
         $datos["$i"]["ajusteIngresos"][$idprod] = $filaAjusteIngresos["ajusteIngresos"];
       } 
@@ -302,16 +290,16 @@ for ($i = 0; $i < count($query); $i++){
     $temp = explode("from", $query[$i]);
     $totalConsulta[$i] = "select count(*) as total from ".$temp[1];
   }
-  $result1 = consultarBD($totalConsulta[$i], $dbc);
-  while (($fila1 = $result1->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+  $result1 = $pdo->query($totalConsulta[$i]);
+  while (($fila1 = $result1->fetch(PDO::FETCH_ASSOC)) != NULL) { 
     $datos["$i"]['totalRows'] = $fila1["total"];
   }
     
   ///Recupero primera página para mostrar:
   $query[$i] = $query[$i]." limit ".$limite;
-  $result = consultarBD($query[$i], $dbc);
+  $result = $pdo->query($query[$i]);
   
-  while (($fila = $result->fetch_array(MYSQLI_ASSOC)) != NULL) { 
+  while (($fila = $result->fetch(PDO::FETCH_ASSOC)) != NULL) { 
     $datos["$i"]['resultado'][] = $fila;
   }
   
