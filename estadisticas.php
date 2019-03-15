@@ -30,7 +30,7 @@ if (isset($_POST["hacerGrafica"])){
   <?php require_once('head.php');?>
   
   <body>
-    <?php require_once('header.php');
+    <?php require('header.php');
     if (isset($_SESSION['user_id'])) 
       {
     ?>

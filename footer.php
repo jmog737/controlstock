@@ -30,7 +30,7 @@
       <section id='address' class='col-sm-4 d-none d-sm-block'>
         <span>Dirección:</span><br>
         Buenos Aires 486<br>
-        Montevideo, Uruguay<br>v.3.7<br>
+        Montevideo, Uruguay<br>v.4.0<br>
         &copy; Copyright Juan M. Ortega 2017
         <hr class='d-block d-sm-none'>
       </section>

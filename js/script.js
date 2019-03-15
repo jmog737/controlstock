@@ -23,8 +23,9 @@ var duracionSesion = parseInt($("#duracionSesion").val(), 10);
 /**
  * \brief Función que chequea las variables de sesión para saber si la misma aún está activa o si ya expiró el tiempo.
  * @param mensaje {String} String con un mensaje opcional usado para debug.
+ * @param cookie {String} String que indica si se debe o no actualizar la expiración de la cookie.
  */
-function verificarSesion(mensaje) {
+function verificarSesion(mensaje, cookie) {
   var xmlhttp = new XMLHttpRequest();
   if (mensaje !== ''){ 
     const dateTime = Date.now();
@@ -52,7 +53,7 @@ function verificarSesion(mensaje) {
       var sesion = '';
       var timestamp = '';
       var oldTime = '';
-      var usuarioViejo = 'ERRORs';
+      var usuarioViejo = 'ERROR';
       var duracionSesion = myObj1.duracion;
       if ($.isEmptyObject(myObj1)){
         user = 'ERROR';
@@ -109,21 +110,23 @@ function verificarSesion(mensaje) {
             }
           }  
         }
-        alert(usuarioViejo.toUpperCase()+":\nTú sesión ha estado inactiva por más de "+mostrarSesion+"\nPor favor, por seguridad, ¡vuelve a loguearte!.\n\ntiempo seteado: "+oldTime+'\nactual: '+temp+'\n\nDuración Sesión: '+duracionSesion+'\nmensaje: '+mensaje);
+        alert('Usuario: '+user+'\n'+usuarioViejo.toUpperCase()+":\nTú sesión ha estado inactiva por más de "+mostrarSesion+"\nPor favor, por seguridad, ¡vuelve a loguearte!.\n\ntiempo seteado: "+oldTime+'\nactual: '+temp+'\n\nDuración Sesión: '+duracionSesion+'\nmensaje: '+mensaje);
         window.location.assign("salir.php");
       }
       else {
         $("#usuarioSesion").val(user);
         $("#userID").val(user_id);
         $("#timestampSesion").val(timestamp);
+        $("#main-content").focus();
         //alert('¡Actualicé!\n\nTiempo viejo: '+oldTime+'\nNuevo tiempo: '+temp+'\n\nDuración Sesión: '+duracionSesion+'\nmensaje: '+mensaje+'\n\nsesion: '+sesion+'\nDesde: '+window.location.href);
       }
     }
   };
-  xmlhttp.open("GET", "data/estadoSesion.php", true);
+
+  xmlhttp.open("GET", "data/estadoSesion.php?c="+cookie+"", true);
   xmlhttp.send();
 }
-/********** fin verificarSesion(mensaje) **********/
+/********** fin verificarSesion(mensaje, cookie) **********/
 
 /**
  * \brief Función que vacía el contenido del div cuyo Id se pasa como parámetro.
@@ -156,7 +159,10 @@ function validarEntero(numero) {//alert(valor);
 }
 /********** fin validarEntero(valor) **********/
 
-
+/**
+  \brief Función que detecta si el archivo pasado en la url existe.
+  @param url String Dirección del archivo a comprobar.                  
+*/
 function existeUrl(url) {
    var http = new XMLHttpRequest();
    http.open('HEAD', url, false);
@@ -646,7 +652,7 @@ function validarMovimiento() {
 function cargarMovimiento(selector, hint, prod, tipo, fecha){
   var url = "data/selectQuery.php";
   var query = "select iduser, apellido, nombre from usuarios where (estado='activo' and (sector='Bóveda' or sector='Grabaciones')) order by nombre asc, apellido asc";
-  
+
   /// Recupero fecha actual para pre setear en el campo Fecha:
   var actual = new Date();
   var dia = actual.getDate();
@@ -785,7 +791,7 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
  *        Se separó del evento agregarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento cantidad.         
  */
 function agregarMovimiento(agregarRepetido){
-  verificarSesion('');
+  verificarSesion('', 's');
   
   var url = "data/selectQuery.php";
   var ultimoRegistro = "select fecha, producto, tipo, cantidad from movimientos order by fecha desc, hora desc limit 1";
@@ -946,15 +952,17 @@ function agregarMovimiento(agregarRepetido){
 /********** fin agregarMovimiento() **********/
 
 /**
+ * @param {Boolean} agregarCbioFecha Booleano que indica si a pesar de cambiar la fecha se modifica el movimiento.
  * \brief Función que hace la actualización del movimiento en la base de datos. 
- *        Se separó del evento actualizarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento comentarios.
+ *        Se separó del evento actualizarMoviemiento para poder hacer el agregado al detectar el ENTER en el elemento comentarios.       
  */
-function actualizarMovimiento(){
-  verificarSesion('');
+function actualizarMovimiento(agregarCbioFecha){
+  verificarSesion('', 's');
   var idmov = $("input[name='idMov']").val();
   var idprod = $("#idprod").val();
   var comentarios = $("#comentarios").val();
   var fecha = $("#fecha").val();
+  var nombre = $("#nombre").val();
   $("#tipoEditarMov").attr('disabled', false);
   var tipo = $("#tipoEditarMov").val();
   var estadoMov = $("#estadoMov").val();
@@ -1054,7 +1062,7 @@ function actualizarMovimiento(){
     mesHoy = '0'+mesHoy;
   }
   var hoyFecha = hoy.getFullYear()+'-'+mesHoy+'-'+diaHoy;
-  
+  var validar = true;
   if (fecha === ''){
     alert('Por favor ingrese la fecha del movimiento.');
     $("#fecha").focus();
@@ -1068,7 +1076,11 @@ function actualizarMovimiento(){
     }
     else {
       if (fecha !== fechaVieja){
-        cambiarFecha = true;
+        if (!agregarCbioFecha){
+          $("#modalCbioFecha").modal("show");
+          validar = false;
+          return;
+        }    
       }
     }
   }
@@ -1077,11 +1089,17 @@ function actualizarMovimiento(){
   ///De en un futuro querer editar algo más habrá que crear la función validarMovimiento. Se setea la variable validar a TRUE
   //var validar = validarMovimiento();
   //var validar = true;
-  var validar = true;
   
   if (validar) {
-    //var confirmar = confirm('¿Confirma la modificación del movimiento con los siguientes datos?\n\nFecha: '+fecha+'\nHora: '+hora+'\nProducto: '+nombre+'\nTipo: '+tipo+'\nCantidad: '+cantidad+'\nComentarios: '+comentarios+"\n?");
-    var confirmar = true;
+    var confirmar;
+    if (agregarCbioFecha){
+      confirmar = true;
+      cambiarFecha = true;
+    }  
+    else {
+      confirmar = confirm('¿Confirma la modificación del movimiento con los siguientes datos?\n\nFecha: '+fecha+'\nHora: '+horita+'\nProducto: '+nombre+'\nTipo: '+tipo+'\nCantidad: '+cantidad+'\nComentarios: '+comentarios+"\n?");
+    }
+
     if (confirmar) {
       // Según lo que se haya o no cambiado, armo la consulta para la actualización del MOVIMIENTO:
       if (cambiarFecha || cambiarComentarios || cambiarTipo || cambiarEstado){
@@ -1199,6 +1217,7 @@ function actualizarMovimiento(){
                 var resultado1 = request["resultado"];
                 if (resultado1 === "OK") {
                   alert('¡Los datos del movimiento se actualizaron correctamente!.');
+                  $("#modalCbioFecha").modal("hide");
                   $("#estadoMovViejo").val(estadoMov);
                   $("#comentariosViejos").val(comentarios);
                   $("#tipoViejo").val(tipo);
@@ -1443,7 +1462,8 @@ function cargarEditarMovimiento(idMov, selector){
     formu += '</form>';
     mostrar += titulo;
     mostrar += formu;
-    var volver = '<br><a href="busquedas.php" name="volver" id="volverEdicionMovimiento" title="Volver a BÚSQUEDAS">Volver</a><br><br>';
+    //var volver = '<br><a href="busquedas.php" name="volver" id="volverEdicionMovimiento" title="Volver a BÚSQUEDAS">Volver</a><br><br>';
+    var volver = '<a href="#" name="volver" id="volverEdicionMovimiento" title="Cerrar la ventana" onclick="javascript:window.close()">Cerrar</a><br><br>';
     mostrar += volver;
     $(selector).html(mostrar);
   
@@ -1736,7 +1756,7 @@ function validarUsuario() {
  * \brief Función que primero valida la info ingresada, y de ser válida, hace la actualización del pwd del usuario del sistema.
  */
 function actualizarUser() {
-    verificarSesion('');
+    verificarSesion('', 's');
     
     var pw1 = $("#pw1").val();
     var pw2 = $("#pw2").val();
@@ -1797,7 +1817,7 @@ function actualizarUser() {
  * \brief Función que primero valida la info ingresada, y de ser válida, hace la actualización de los parámetros del usuario.
  */
 function actualizarParametros()  {
-    verificarSesion('');
+    verificarSesion('', 's');
     
     ///Recupero parámetros pasados por el usuario:
     var pageSize = $("#pageSize").val();
@@ -3704,7 +3724,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
  * \brief Función que ejecuta la búsqueda y muestra el resultado.
  */
 function realizarBusqueda(){
-    verificarSesion('');
+    verificarSesion('', 's');
     var radio = $('input:radio[name=criterio]:checked').val();
     var entidadesStock = new Array();
     $("#entidadStock option:selected").each(function() {
@@ -4312,7 +4332,7 @@ function realizarBusqueda(){
  * @param {String} mostrarEstado String que indica si se muestra o no el estado de los movimientos en los reportes (si corresponde).
  */
 function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada, zip, planilla, marcaAgua, p, d1, d2, tipoFiltro, user, estadoMov, mostrarEstado){
-  //verificarSesion('');
+  //verificarSesion('', 's');
   var url = "data/selectQuery.php";
   var consultarProductos = "select idprod, nombre_plastico as nombre from productos order by nombre_plastico asc";
   
@@ -5346,7 +5366,7 @@ function cargarGrafica(selector){
   var formuInicio = '<form name="exportarGraph" id="exportarGraph" target="_blank" action="generarGrafica.php" method="POST">';
   var formuFin = "</form>";
   var grafica = '<figure>\n\
-                  <img src="graficar.php?t=1" id="grafiquita" width="740px" height="400px">\n\
+                  <img src="graficar.php?" id="grafiquita" width="740px" height="400px">\n\
                   <figcaption>Gr&aacute;fica con las estad&iacute;sticas</figcaption>\n\
                 </figure>';
 //  grafica += '<figure>\n\
@@ -5407,7 +5427,7 @@ function cargarGrafica(selector){
     h = decodeURI(temp6[1]);
     param = '&e='+e+'&t='+t+'&h='+h+'';
   }
-  //alert(criterio+'\n'+param);
+  //alert('tam: '+tam+'\ncriterio: '+criterio+'\nparam: '+param);
   var volver = '<a title="Volver a ESTADÍSTICAS" href="estadisticas.php?c='+criterio+param+'"">Volver</a>';
   mostrar += titulo;
   mostrar += formuInicio;
@@ -5424,7 +5444,7 @@ function cargarGrafica(selector){
   \brief Función que se encarga de realizar la gráfica.
 */
 function realizarGrafica(){
-  verificarSesion('');
+  verificarSesion('', 's');
   var radio = $('input:radio[name=criterio]:checked').val();
   var entidadGrafica = document.getElementById("entidadGrafica").value;
   var idProd = $("#hint").val();
@@ -5947,7 +5967,7 @@ $(document).on("blur", ".agrandar", function (){
 ///Cambia el color de fondo para resaltarlo, carga un snapshot del plástico si está disponible, y muestra
 ///el stock actual.
 $(document).on("change focusin", "#hint", function (){
-  //verificarSesion('');
+  //verificarSesion('', 's');
   var rutaFoto = 'images/snapshots/';
   var nombreFoto = $(this).find('option:selected').attr("name");
  
@@ -6112,7 +6132,10 @@ $(document).on("change focusin", "#hint", function (){
       }
 
       var mostrar = '<p id="stock" name="hint" style="padding-top: 10px"><strong>Stock actual: </strong><font class="'+resaltado+'" style="font-size:3.0em; font-style:italic;">'+stock.toLocaleString()+'</font></p>';
-      mostrar += '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
+      var dire = rutaFoto+nombreFoto;
+      if (existeUrl(dire)){
+        mostrar += '<img id="snapshot" name="hint" src="'+rutaFoto+nombreFoto+'" alt="No se cargó la foto aún." height="127" width="200"></img>';
+      }
       mostrar += '<p id="promedio1" name="hint" style="padding-top: 1px;margin-bottom: 0px"><strong>Total Consumos (&uacute;lt. '+periodoDias1+' d&iacute;as):</strong> <font style="font-size:1.2em; font-style:italic;">'+totalConsumos1.toLocaleString()+' '+unidades1+' ('+promedioMensual1.toLocaleString()+' '+unidadesPromedio1+')</font></p>';
       mostrar += '<p id="promedio2" name="hint" style="padding-top: 1px"><strong>Total Consumos (&uacute;lt. '+periodoDias2+' d&iacute;as):</strong> <font style="font-size:1.2em; font-style:italic;">'+totalConsumos2.toLocaleString()+' '+unidades2+' ('+promedioMensual2.toLocaleString()+' '+unidadesPromedio2+')</font></p>';
       mostrar += '<p id="ultimoMov" name="ulitmoMov"><strong>Último Movimiento: <font style="font-style:italic;font-size:1.8em">'+ultimoMovimiento+'</font></strong></p>';
@@ -6275,7 +6298,7 @@ $(document).on("keydown", "#hint", function (e){
 
 ///Disparar funcion al hacer clic en el botón para agregar el movimiento.
 $(document).on("click", "#agregarMovimiento", function (){
-  //verificarSesion('');
+  //verificarSesion('', 's');
   var seguir = true;
   seguir = validarMovimiento();
   if (seguir) {
@@ -6319,7 +6342,7 @@ $(document).on("click", "#actualizarMovimiento", function (){
   var tipo = $("#tipo").val();
   var cantidad = $("#cantidad").val();
   */
-  actualizarMovimiento();
+  actualizarMovimiento(false);
 });
 /********** fin on("click", "#actualizarMovimiento", function () **********/
 
@@ -6335,7 +6358,7 @@ $(document).on("keypress", "#comentarios", function(e) {
                     }                   
                     break;
     case "comEditMov":  if(e.which === 13) {
-                          actualizarMovimiento();
+                          actualizarMovimiento(false);
                         }
                         break;
     case "comProd": if(e.which === 13) {
@@ -6416,7 +6439,7 @@ $(document).on("change focusin", "#hintProd", function (){
       resaltado = 'resaltado';
     }  
   }
-  
+
   var mostrar = '';
   var dire = rutaFoto+nombreFoto;
   if (existeUrl(dire)){
@@ -6481,7 +6504,7 @@ $(document).on("keypress", "#productoBusqueda", function(e) {
 
 ///Dispara función para realizar los cambios con las modificaciones para el producto (luego de validar los datos obviamente).
 $(document).on("click", "#actualizarProducto", function (){
-    verificarSesion('');
+    verificarSesion('', 's');
     var entidad = $("#entidad").val();
     var nombre = $("#nombre").val();
     var alarma1 = $("#alarma1").val();
@@ -6606,7 +6629,7 @@ $(document).on("keypress", "#productUpdate input", function(e) {
 
 ///Dispara función que da de baja el producto. NO lo borra, sino que le cambia su estado a INACTIVO.
 $(document).on("click", "#eliminarProducto", function (){
-  verificarSesion('');
+  verificarSesion('', 's');
   var nombre = $("#nombre").val();
   var idProducto = $("#hintProd").val();
 
@@ -6656,7 +6679,7 @@ $(document).on("click", "#eliminarProducto", function (){
 ///Disparar función al hacer click en el botón de EDITAR del form para los productos.
 ///Cambia entre habilitar o deshabilitar los input del form cosa de poder hacer la edición del producto.
 $(document).on("click", "#editarProducto", function (){
-    verificarSesion('');
+    verificarSesion('', 's');
     var nombre = $(this).val();
     if (nombre === 'EDITAR') {
       habilitarProducto();
@@ -6670,7 +6693,7 @@ $(document).on("click", "#editarProducto", function (){
 ///Disparar función al hacer click en el botón AGREGAR (o NUEVO) del form productos.
 ///Según si dice NUEVO o AGREGAR, vacío el form para poder agregar los datos o envío los datos para agregarlo a la base de datos.
 $(document).on("click", "#agregarProducto", function (){
-  verificarSesion('');
+  verificarSesion('', 's');
   var accion = $("#agregarProducto").val();
   if (accion === "NUEVO") {
     $("#agregarProducto").val("AGREGAR");
@@ -7079,6 +7102,51 @@ $(document).on("hide.bs.modal", "#modalMovRepetido", function() {
 
 
 /*****************************************************************************************************************************
+/// ********************************************* INICIO MODAL CAMBIO FECHA **************************************************
+******************************************************************************************************************************
+*/
+
+///Disparar función al abrirse el modal con la alerta de movimiento repetido.
+$(document).on("shown.bs.modal", "#modalCbioFecha", function() {
+  var fechaActualModal = $("#fecha").val();
+  var separoFechaModal = fechaActualModal.split('-');
+  fechaActualModal = separoFechaModal[2]+'/'+separoFechaModal[1]+'/'+separoFechaModal[0];
+  
+  var fechaViejaModal = $("#fechaVieja").val();
+  var separoFechaViejaModal = fechaViejaModal.split('-');
+  fechaViejaModal = separoFechaViejaModal[2]+'/'+separoFechaViejaModal[1]+'/'+separoFechaViejaModal[0];
+  
+  $("#mdlFechaActual").val(fechaViejaModal);
+  $("#mdlFechaNueva").val(fechaActualModal);
+
+  $("#btnModalCbioFechaCerrar").attr("autofocus", true);
+  setTimeout(function (){$("#btnModalCbioFechaCerrar").focus();}, 50);
+});
+/********** fin on("shown.bs.modal", "#modalMovRepetido", function() **********/
+
+///Disparar función al hacer click en el botón de AGREGAR que está en el MODAL.
+$(document).on("click", "#btnModalCbioFecha", function(){
+  actualizarMovimiento(true);
+});
+/************** fin on("click", "#btnModalRepetido", function() ***************/
+
+///Disparar función al cerrarse el modal con la alerta de movimiento repetido. Ya sea desde el botón cerrar como con "la cruz" para 
+///cerrar de arriba a la derecha.
+$(document).on("hide.bs.modal", "#modalCbioFecha", function() {
+  var fechaViejaModal = $("#fechaVieja").val();  
+  $("#fecha").val(fechaViejaModal);
+  setTimeout(function (){$("#fecha").focus();}, 50);
+});
+/********** fin on("shown.bs.modal", "#modalMovRepetido", function() **********/
+
+/*****************************************************************************************************************************
+/// ********************************************** FIN MODAL CAMBIO FECHA ****************************************************
+******************************************************************************************************************************
+*/
+
+
+
+/*****************************************************************************************************************************
 /// **************************************************** INICIO MODAL USARIO *************************************************
 ******************************************************************************************************************************
 */
@@ -7086,7 +7154,7 @@ $(document).on("hide.bs.modal", "#modalMovRepetido", function() {
 ///Disparar función al hacer click en el link con el nombre del usuario que está logueado.
 ///Esto hace que se abra el modal para cambiar la contraseña.
 $(document).on("click", "#user", function(){
-  verificarSesion('');
+  verificarSesion('', 's');
   $("#modalPwd").modal("show");
 });
 /********** fin on("click", "#user", function() **********/
@@ -7142,7 +7210,7 @@ $(document).on("keypress", "#pw2", function(e) {
 ///Disparar función al hacer click en el link que dice PARAMETROS debajo del usuario logueado
 ///Esto hace que se abra el modal para cambiar los parámetros.
 $(document).on("click", "#param", function(){
-  verificarSesion('');
+  verificarSesion('', 's');
   $("#modalParametros").modal("show");
 });
 /********** fin on("click", "#param", function() **********/

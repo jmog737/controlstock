@@ -22,7 +22,7 @@
             <a class="nav-link" href="index.php"><img src="images/home.png" alt="HOME" title="Ir al inicio"></a>  
           </li>
           <?php
-          require_once 'data/connectvars.php';
+          //require_once 'data/config.php';
           if (isset($_SESSION['user_id'])) 
             {
           ?>            
@@ -58,13 +58,15 @@
     var tam = temp.length;
     var pagina = temp[tam-1];
     if (pagina !== 'index.php'){
-      verificarSesion('');
+      verificarSesion('', 's');
       var duracion0 = <?php echo DURACION ?>;
-      //duracion0 = 20;
-      var duracion = parseInt(duracion0*1000, 10)+2000;
       /// Se agrega un tiempo extra cosa de estar seguro que venció el tiempo (si queda en el límite habrá veces 
       ///que lo detecta y otras que no teniendo que esperar nuevamente un tiempo de DURACION para volver a probar
-      setInterval(function(){verificarSesion('¡¡¡Llamé desde setInterval!!\n\nSetInterval: '+duracion)}, duracion);
+      var tiempoChequeo = parseInt(duracion0*1000, 10)+2000;
+      
+      setInterval(function(){
+        verificarSesion('¡Llamé desde setInterval!', 'n');
+      }, tiempoChequeo);
     }
   </script>
 <!-- Modal para cambiar la contraseña -->
@@ -200,6 +202,44 @@
     </div>   
   </div>
 </div><!-- FIN Modal de movimiento REPETIDO -->
+
+<!-- Modal de cambio de FECHA -->
+<div class="modal fade" id="modalCbioFecha" tabindex="-1" role="dialog" aria-labelledby="Modal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document"> 
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header tituloModal">
+        <h4 class="modal-title">¡ATENCI&Oacute;N: CAMBIO DE FECHA!</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" tabindex="32"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <table id="tblModal" class="tblModal">
+          <tr>
+            <td colspan="2">Está a punto de cambiar la fecha del movimiento:</td>
+          </tr>
+          <tr>
+            <td width="100"><strong>Fecha Actual:</strong></td>
+            <td><input type="text" id="mdlFechaActual" disabled="" size="6"></input></td>
+          </tr>
+          <tr>
+            <td width="100"><strong>Fecha Nueva:</strong></td>
+            <td><input type="text" id="mdlFechaNueva" disabled="" size="6" align="left"></input></td>
+          </tr>
+          <tr>
+            <td> </td>
+          </tr>
+          <tr>
+            <td colspan="2">¿Desea continuar?</td>
+          </tr>
+        </table>  
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-warning" title="AGREGAR el movimiento" id="btnModalCbioFecha" tabindex="31">AGREGAR</button>
+        <button type="button" class="btn btn-primary" title="Cerrar ventana SIN realizar el movimiento" id="btnModalCbioFechaCerrar" data-dismiss="modal" tabindex="30">CANCELAR</button>
+      </div>
+    </div>   
+  </div>
+</div><!-- FIN Modal de cambio de FECHA -->
 
 </header>
 

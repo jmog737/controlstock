@@ -1,10 +1,11 @@
 {
     "name": "vendor/controlstock",
-    "description": "Proyecto para el manejo del stock.",
+    "description": "Proyecto para el manejo del stock de plásticos e insumos.",
     "authors": [
         {
             "name": "Juan Martin Ortega",
-            "email": "juanortega@emsa.com.uy"
+            "email": "juanortega@emsa.com.uy",
+            "role": "Developer"
         }
     ],
     "require": {

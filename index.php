@@ -41,7 +41,8 @@ if ( isset($_POST["usuario"]) && isset($_POST["password"]) ) {
       if (($row['limiteSelects'] !== '')&&($row['limiteSelects'] !== null)){
         $_SESSION["limiteSelects"] = $row['limiteSelects'];
       }
-
+      require_once('data/config.php');
+      setcookie('tiempo', time(), time()+TIEMPOCOOKIE);
       $_SESSION["success"] = "Logged in.";
       header( 'Location: movimiento.php' ) ;
       return;
@@ -54,7 +55,13 @@ if ( isset($_POST["usuario"]) && isset($_POST["password"]) ) {
     }
   }
 }
-
+else {
+  if (isset($_SESSION['user_id'])) 
+    {
+    header('Location: movimiento.php');
+    return;
+  }
+}
 require_once ('head.php');
 ?>
   <body>

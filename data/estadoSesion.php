@@ -1,23 +1,20 @@
 <?php
 session_start(); 
-require_once "connectvars.php";
+require_once('config.php');
+
+$cookie = $_GET['c'];
+if ($cookie === 's'){
+  setcookie('tiempo', time(), time()+TIEMPOCOOKIE);
+}  
 
 $myObj = new stdClass();
-$myObj->time = 0;
-$myObj->user = '';
-$myObj->sesion = '';
-$myObj->user_id = 0;
-$myObj->oldUser = '';
-$myObj->oldTime = 0;
-$myObj->sesion = 'expirada';
-$myObj->duracion = 0;
 
 //Comprobamos si esta definida la sesión 'tiempo'.
-if(isset($_SESSION['tiempo']) ) {
+if(isset($_SESSION['tiempo']) && isset($_COOKIE['tiempo'])) {
   $myObj->duracion = DURACION;
   //Calculamos tiempo de vida inactivo.
   $vida_session = time() - $_SESSION['tiempo'];
-  require_once('connectvars.php');
+  
   //Compraración para redirigir página, si la vida de sesión sea mayor a el tiempo insertado en inactivo.
   if($vida_session > DURACION)
     {
@@ -46,6 +43,27 @@ if(isset($_SESSION['tiempo']) ) {
     $myObj->sesion = 'activa';
   }
 }
+else {
+  $myObj->time = 0;
+  $myObj->user = '';
+  $myObj->sesion = '';
+  $myObj->user_id = 0;
+  $myObj->oldUser = $_SESSION['username'];
+  $myObj->oldTime = 0;
+  $myObj->sesion = '';
+  $myObj->duracion = 0;
+  $myObj->sesion = 'expirada';
+  if (!isset($_COOKIE['tiempo'])){
+    $myObj->user = 'COOKIE';
+  }
+}
+
+//if (isset($_COOKIE['tiempo'])){
+//  $myObj->user = 'COOKIE SETEADA';
+//}
+//else {
+//  $myObj->user = 'COOKIE EXPIRADA';
+//}
 
 $myJSON = json_encode($myObj);
 
