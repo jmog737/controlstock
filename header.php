@@ -2,8 +2,8 @@
   <nav id='header-nav' class='navbar navbar-expand' role="navigation">
     <div class='container-fluid'>
       <div class='navbar-header'>
-        <a href='index.php' title="Ir al inicio" class='float-left '>
-          <div id='logo-img'></div>
+        <a href='index.php' title="Ir al inicio" class='float-left d-none d-sm-block'>
+          <div id='logo-img' class='d-none d-sm-block'></div>
         </a>
 
         <div class='navbar-brand'>
@@ -18,14 +18,14 @@
 
       <div id='collapsable-nav' class='collapse navbar-collapse align-middle'>
         <ul id='nav-list' class='navbar-nav ml-auto my-auto pr-2 pb-2'>
-          <li id='navHomeButton' class='nav-item active d-none d-sm-block align-middle' >
-            <a class="nav-link" href="index.php"><img src="images/home.png" alt="HOME" title="Ir al inicio"></a>  
-          </li>
-          <?php
+        <?php
           //require_once 'data/config.php';
           if (isset($_SESSION['user_id'])) 
             {
-          ?>            
+          ?> 
+          <li id='navHomeButton' class='nav-item active d-none d-sm-block align-middle' >
+            <a class="nav-link" href="index.php"><img src="images/home.png" alt="HOME" title="Ir al inicio"></a>  
+          </li>
           <li id='navMenuButton' class="nav-item dropdown align-bottom">            
             <a href="#" class="nav-link dropdown-toggle d-none d-sm-block pt-3" title="Desplegar el MENU" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               Menu
@@ -45,6 +45,11 @@
             <a class='d-block d-sm-none' title="Editar Productos" href="producto.php">Productos</a>
             <a class='d-block d-sm-none' title="Ver Estad&iacute;siticas" href="estadisticas.php">Estadisticas</a> 
           </li>
+          <?php
+          }
+          else{
+          ?>  
+            
           <?php
           }
           ?>  
@@ -79,7 +84,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
       </div>
       <div class="modal-body">
-        <table id="tblModal" class="tblModal">
+        <table id="tblModalPwd" class="tblModal">
 <!--          <tr>
             <td>Nuevo nombre:</td>
             <td>
@@ -118,7 +123,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
       </div>
       <div class="modal-body">
-        <table id="tblModal" class="tblModal">
+        <table id="tblModalParametros" class="tblModal">
 <!--          <tr>
             <td>Nuevo nombre:</td>
             <td>
@@ -169,7 +174,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close" tabindex="32"><span aria-hidden="true">&times;</span></button>
       </div>
       <div class="modal-body">
-        <table id="tblModal" class="tblModal">
+        <table id="tblModalMovRepetido" class="tblModal">
           <tr>
             <td colspan="2">YA hay un movimiento con los mismos parámetros:</td>
           </tr>
@@ -213,25 +218,21 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close" tabindex="32"><span aria-hidden="true">&times;</span></button>
       </div>
       <div class="modal-body">
-        <table id="tblModal" class="tblModal">
+        ¡Esto <strong><i>puede</i></strong> generar diferencias con los reportes <strong>YA</strong> enviados!
+        <table id="tblModalCbioFecha" class="tblModal">
           <tr>
-            <td colspan="2">Está a punto de cambiar la fecha del movimiento:</td>
-          </tr>
-          <tr>
-            <td width="100"><strong>Fecha Actual:</strong></td>
+            <th>Fecha Actual:</th>
             <td><input type="text" id="mdlFechaActual" disabled="" size="6"></input></td>
           </tr>
           <tr>
-            <td width="100"><strong>Fecha Nueva:</strong></td>
+            <th>Fecha Nueva:</th>
             <td><input type="text" id="mdlFechaNueva" disabled="" size="6" align="left"></input></td>
           </tr>
           <tr>
             <td> </td>
           </tr>
-          <tr>
-            <td colspan="2">¿Desea continuar?</td>
-          </tr>
-        </table>  
+        </table>
+        ¿Desea continuar?
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-warning" title="AGREGAR el movimiento" id="btnModalCbioFecha" tabindex="31">AGREGAR</button>

@@ -6,7 +6,7 @@
   if (!isset($_SESSION["username"])||(!file_exists("css/".$estilos))){
     $estilos = 'styles.php';
   }
-  $estilos = 'styles.css';
+  //$estilos = 'styles.css';
   require 'vendor/autoload.php';
   require_once 'data/config.php';
 ?>

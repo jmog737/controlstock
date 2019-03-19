@@ -32,27 +32,40 @@ echo <<<FINCSS
   font-family: serif, helvetica, arial;
   text-align: inherit;
 }
-
 html {
   min-height: 100%;
+  width: 100%;
   position: relative;
-}
-body {
   font-size: 16px;
   color: #fff;
   background-color: $colorFondo;
   font-family: sans-serif;
-  margin-bottom: 150px;
-  height: 100%;
+  padding: 0px;
+  margin: 0px;
+}
+
+body {
+  width: 100%;
+  font-size: 16px;
+  color: #fff;
+  background-color: $colorFondo;
+  font-family: sans-serif;
+  padding: 0px;
+  margin: 0px;
+  margin-bottom: 110px;
+  margin-top: 120px;
 }
 
 /****************************** HEADER **************************************/
-#header-nav {
+header {
   background-color: #023184;
   border-radius: 0;
   border: 0;
   width: 100%;
+  position: absolute;
+  top: 0;
   margin: 0;
+  height: 120px;
 }
 .container {
   width: 100%;
@@ -110,34 +123,14 @@ body {
 /*************************** END HEADER *************************************/
 
 
-
-/****************************** FOOTER **************************************/
-.panel-footer {
-  /*margin-top: 10px;*/
-  padding-top: 10px;
-  padding-bottom: 10px;
-  background-color: #023184;
-  border-top: 0;
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  max-height: 150px;
-}
-.panel-footer div.row {
-  margin-bottom: 15px;
-  text-align: center;
-}
-/**************************** END FOOTER ************************************/
-
-
-
 /**************************** HOME PAGE *************************************/
 .container .jumbotron {
   box-shadow: 0 0 50px #3F0C1F;
   border: 2px solid #3F0C1F;
   margin: 0px;
   width: 100%;
-  min-height:100%;
+  height: 100%;
+  /*min-height:100%;*/
 }
 h2 {
   color:#ffcc66;
@@ -161,26 +154,29 @@ input[type=checkbox] {
 .izquierda {
   float: left;
 }
+
+main {
+/*  height: 72%;*/
+  background-color: #07ff00;
+  /*min-height: 515px !important;*/
+}
+
 #main-content {
   text-align: center;
   background-color: #ffff99;/* agregardo durante el desarrollo para diferenciar!!!*/
   background-color: $colorFondo;
   margin: auto;
-  position: relative;
   padding: 0px;
   padding-top: 20px;
-  height: 100%;
-  min-height: 600px !important;
 }
-#main {
-  min-height: 600px !important;
-}
+
 #fila {
   background-color: $colorFondo;
   /*background-color: #99ffff;*/
   padding: 30px;
   padding-top: 0px;
   margin: 0px;
+  height: 100%;
 }
 #volverActividad, #volverReferencia, #volverUsuario {
   color:#fff;
@@ -209,6 +205,22 @@ a.detailObject:focus, a.detailObject:hover {
   position: relative;
   padding: 0px;
 }
+
+/****************************** FOOTER **************************************/
+.panel-footer {
+  padding-top: 2px;
+  padding-bottom: 2px;
+  background-color: #023184;
+  border-top: 0;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 110px;
+}
+.panel-footer div.row {
+  text-align: center;
+}
+/**************************** END FOOTER ************************************/
 
 /************************************ TABS ************************************/
 #pills-tab {
@@ -421,7 +433,11 @@ hr {
   line-height:none;
   width: 100%;
 }
+
 /******************************* FIN TABLAS ***********************************/
+.btn {
+  padding: .3rem .75rem !important;
+}
 
 #snapshot {
   padding: 10px;
@@ -443,6 +459,12 @@ hr {
 }
 .naranja {
   color: #ecb127;
+}
+
+.usuarioIndex {
+  color: #007bff;
+  background-color: #ffff00;
+  font-weight: bold;
 }
 
 .fondoNaranja {
@@ -654,7 +676,6 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
   background-color: #5c8260;
   color: #000;
   font-size: 16px;
-  
 }
 #modalMovRepetido .modal-footer {
   background-color: #d2d2d2;
@@ -662,7 +683,6 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
   font-size: 14px;
   text-align: center;
 }
-
 #btnModalRepetido {
   /*background-color:#ffff33;*/
   font-weight: bold;
@@ -675,6 +695,40 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
 #modalMovRepetido input[type="text"]:disabled {
   background-color: #e8efb0;
 }
+
+#modalCbioFecha .modal-header {
+  background-color: #1270e0;
+  font-weight: bolder;
+  color: #fff;
+  font-size: 16px;
+  text-align: center;
+}
+#modalCbioFecha .modal-body {
+  background-color: #5c8260;
+  color: #000;
+  font-size: 1.16em;
+}
+#modalCbioFecha .modal-body table {
+  margin: auto;
+  padding: 10px;
+}
+#modalCbioFecha .modal-body table td, th{
+  padding-right: 10px;
+  padding-right: 10px;
+}
+#modalCbioFecha .modal-footer {
+  background-color: #d2d2d2;
+  color: #000;
+  font-size: 14px;
+  text-align: center;
+}
+#mdlFechaActual {
+  background-color: #eeff88;  
+}
+#mdlFechaNueva {
+  background-color: #ffb8d7;  
+}
+
 /**************************** FIN MODAL **************************************/
 
 /************************* END HOME PAGE *************************************/
@@ -829,7 +883,7 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
 }
 
 /********** Medium devices only (992px - 1199px )**********/
-@media (min-width: 992px) and (max-width: 1199px) {
+@media (min-width: 992px) and (max-width: 1199.98px) {
   /* Header */
   .navbar-brand h1 { /* Page section name */
   font-size: 4.15vw; /* 1vw = 1% of viewport width */
@@ -846,7 +900,7 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
 }
 
 /********** Small devices only (768px - 991px ) **********/
-@media (min-width: 768px) and (max-width: 991px) {
+@media (min-width: 768px) and (max-width: 991.98px) {
   /* Header */
   .navbar-brand {
     padding-top: 5px;
@@ -855,7 +909,7 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
     margin-top: 10px
   }
   .navbar-brand h1 { /* Page section name */
-  font-size: 3.73vw; /* 1vw = 1% of viewport width */
+  font-size: 3.75vw; /* 1vw = 1% of viewport width */
   padding-top: 20px;
   padding-right: 10px;
   }
@@ -877,10 +931,16 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
   #testimonials {
     font-size: 15px;
   }
+  
+  #address {
+    font-size: 15px;
+    padding-left: 0px;
+    padding-right: 0px;
+  }
 }
 
-/********** Extra small devices only (480px - 767px) **********/
-@media (max-width: 767px) {
+/********** Extra small devices only (577px - 767px) **********/
+@media (min-width: 576px) and (max-width: 767.98px) {
   /* Header */
   .navbar-brand {
     padding-top: 10px;
@@ -889,7 +949,7 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
   }
   .navbar-brand h1 { /* Restaurant name */
     padding-top: 20px;
-    font-size: 3.6vw; /* 1vw = 1% of viewport width */
+    font-size: 3.79vw; /* 1vw = 1% of viewport width */
   }
 
   #logo-img {
@@ -909,7 +969,7 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
   margin-top: -85px;
   }
   #collapsable-nav a { /* Collapsed nav menu text */
-    font-size: 1.2em;
+    font-size: 0.9em;
   }
   #collapsable-nav a span { /* Collapsed nav menu glyph */
     font-size: 1em;
@@ -935,12 +995,17 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
   .panel-footer section hr {
     width: 100%;
   }
+  #address {
+    font-size: 11px;
+    padding-left: 0px;
+    padding-right: 0px;
+  }
   /* End Footer */
 }
 
 
 /********** Super extra small devices Only :-) (e.g., iPhone 4) **********/
-@media (max-width: 576px) {
+@media (max-width: 575.98px) {
   /* Header */
   .navbar-brand {
     padding-top: 10px;
@@ -949,16 +1014,20 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
   }
   .navbar-brand h1 { /* Restaurant name */
     padding-top: 15px;
-    font-size: 3.5vw;
+    font-size: 5.0vw;
   }
-  #logo-img {
+/*  #logo-img {
     background: url('../images/logo-emsa150.png') no-repeat;
     width: 150px;
     height: 100px;
     margin: 20px 10px 10px 0;
+  }*/
+  #collapsable-nav{
+    padding-left: 0px;
   }
   #nav-list  {
-    font-size: 1.9vw;
+    font-size: 2.9vw;
+    margin: 0px;
   }
   /* End Header */
   hr{
@@ -976,6 +1045,28 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
     float: left;
     width: 100%;
   }
+  /* Footer */
+  .panel-footer {
+    max-height: 150px;
+    font-size: 11px;
+}
+  .panel-footer section {
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  .panel-footer section:nth-child(3) {
+    margin-bottom: 0; /* margin already exists on the whole row */
+  }
+  .panel-footer section hr {
+    width: 100%;
+  }
+  #address {
+    font-size: 11px;
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+  /* End Footer */
+
 }
 
 /************************* END MEDIA QUERIES ********************************/

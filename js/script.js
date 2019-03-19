@@ -21,6 +21,23 @@ var duracionSesion = parseInt($("#duracionSesion").val(), 10);
 */
 
 /**
+ * \brief Función que valida los datos de ingreso (por ahora, solo que se haya ingresado el usuario).
+ */
+function validarIngreso () {
+  var usuario = $("#nombreUsuario").val();
+  if ((usuario === ' ')||(usuario === "null")){ 
+    alert('¡Debe ingresar el nombre de usuario!');
+    
+    $("#nombreUsuario").focus();
+  }
+  else {
+    $("#frmLogin").submit();
+  }
+}
+/********** fin validarIngreso **********/
+
+
+/**
  * \brief Función que chequea las variables de sesión para saber si la misma aún está activa o si ya expiró el tiempo.
  * @param mensaje {String} String con un mensaje opcional usado para debug.
  * @param cookie {String} String que indica si se debe o no actualizar la expiración de la cookie.
@@ -406,6 +423,7 @@ function mostrarHistorialGeneral(id){
       }
       var titulo = '&Uacute;ltimos '+limiteHistorialGeneral+' movimientos:';
       var popover = '<a role="button" tabindex="0" id="historialGeneral" class="btn btn-primary" title="'+titulo+'" data-container="#gralHistory" data-toggle="popover" data-trigger="click" data-placement="left" data-content="'+mostrar+'">Últimos '+limiteHistorialGeneral+' Movimientos</a>';
+      //var popover = '<a role="button" tabindex="0" id="historialGeneral" class="btn btn-primary" title="'+titulo+'" data-container="#gralHistory" data-toggle="popover" data-trigger="click" data-placement="left" data-content="'+mostrar+'">Last</a>';
       
       $(id).append(popover);
       $("#historialGeneral").popover({html:true});
@@ -413,6 +431,7 @@ function mostrarHistorialGeneral(id){
     else {
       ///ver si avisar que no hay movimientos.
     }
+   //$("#miFooter").css("background-color", "red");
   });
 }
 /********** fin mostrarHistorialGeneral(id) **********/
@@ -757,8 +776,6 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
       mostrar += formu;
       $(selector).html(mostrar);
       
-      setTimeout(function(){mostrarHistorialGeneral("#gralHistory")}, 160);
-      
       if ((tipo !== '') && (tipo !== undefined)){
         if ((tipo === 'Ingreso')||(tipo === 'Retiro')){
           $("#tipo option[value="+ tipo +"]").attr("selected",true);
@@ -780,6 +797,7 @@ function cargarMovimiento(selector, hint, prod, tipo, fecha){
         $("#producto").focus();
       }   
       
+      setTimeout(function(){mostrarHistorialGeneral("#gralHistory")}, 0);
     }
   });    
 }
@@ -5930,7 +5948,7 @@ function todo () {
 ///Disparar funcion cuando algún elemento de la clase agrandar reciba el foco.
 ///Se usa para resaltar el elemento seleccionado.
 $(document).on("focus", ".agrandar", function (){
-  $(this).css("font-size", 24);
+  $(this).css("font-size", "1.35em");
   $(this).css("background-color", "#e7f128");
   $(this).css("font-weight", "bolder");
   $(this).css("color", "red");
@@ -7047,6 +7065,23 @@ $(document).on("keypress", "#nombreUsuario", function(e) {
   }  
 });
 /********** fin on("keypress", "#nombreUsuario", function(e) **********/
+
+///Disparar función al hacer enter estando en el elemento password.
+///Básicamente, la idea es hacer el submit cosa de ahorrar tiempo en el ingreso.
+$(document).on("keypress", "#password", function(e) {
+  if(e.which === 13) {
+    e.preventDefault();
+    validarIngreso();
+  }  
+});
+/********** fin on("keypress", "#password", function(e) **********/
+
+///Disparar función al detectar el submit en el formulario de ingreso.
+$(document).on("click", "#login", function(e) {
+  e.preventDefault();
+  validarIngreso();
+});
+/********** fin on("click", "#login", function(e) **********/
 
 /*****************************************************************************************************************************
 /// **************************************************** FIN USUARIOS ********************************************************

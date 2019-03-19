@@ -12,12 +12,12 @@
 /**
   \param DURACION Constante que indica el tiempo de sesión permitido sin actividad (en segundos).
 */
-define('DURACION', 20);
+define('DURACION', 300);
 
 /**
   \param DURACION Constante que indica el tiempo de sesión permitido sin actividad (en segundos).
 */
-define('TIEMPOCOOKIE', 25);
+define('TIEMPOCOOKIE', 310);
 
 ///Consulto nombre del HOST y en base al mismo, configuro la IP (porque el HSA tiene diferente rango de IPs):
 $hostname = getHostName();
