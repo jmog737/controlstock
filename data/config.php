@@ -12,15 +12,16 @@
 /**
   \param DURACION Constante que indica el tiempo de sesión permitido sin actividad (en segundos).
 */
-define('DURACION', 300);
+define('DURACION', 150);
 
 /**
-  \param DURACION Constante que indica el tiempo de sesión permitido sin actividad (en segundos).
+  \param TIEMPOCOOKIE Constante que indica el tiempo de vida del cookie a setear (en segundos).
 */
-define('TIEMPOCOOKIE', 310);
+define('TIEMPOCOOKIE', 160);
 
 ///Consulto nombre del HOST y en base al mismo, configuro la IP (porque el HSA tiene diferente rango de IPs):
 $hostname = getHostName();
+$ip = '';
 if ($hostname === "JUANMA") {
   $ip = "192.168.1.145";
 }
@@ -31,8 +32,12 @@ else {
 
 $unidad = "D:";
 
-
-$dir = "//".$ip."/Reportes/";
+if ($ip === ''){
+  $dir = $unidad."/Reportes/";
+}
+else {
+  $dir = "//".$ip."/Reportes/";
+}
 //$dir = "//".$hostname."/Reportes/";
 
 $dirExcel = $dir;
@@ -48,8 +53,6 @@ if (!file_exists($dir)){
   echo "No existe la carpeta: $dir. <br>Por favor verifique.";
 }
 
-//if(isset($_SESSION['user_id'])) 
-//  {
 if (!isset($_SESSION["tamPagina"])){
   $_SESSION["tamPagina"] = 50;
 }
@@ -65,7 +68,6 @@ if (!isset($_SESSION["limiteHistorialGeneral"])){
 if (!isset($_SESSION["nombreGrafica"])){
   $_SESSION["nombreGrafica"] = 'TEST';
 }
-//}
 
 $limiteSeleccion = 8;
 

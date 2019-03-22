@@ -26,7 +26,7 @@ if(isset($_SESSION['tiempo']) && isset($_COOKIE['tiempo'])) {
     }
     
     $myObj->oldTime = substr($_SESSION['tiempo'], -3);
-    $myObj->user = "ERROR";
+    $myObj->user = "TIMEOUT";
     $myObj->time = time();
     //$myObj->time = time();////***************** a cambiar por 0. Es solo para pruebas ****************
     $myObj->user_id = 0;

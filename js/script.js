@@ -127,7 +127,8 @@ function verificarSesion(mensaje, cookie) {
             }
           }  
         }
-        alert('Usuario: '+user+'\n'+usuarioViejo.toUpperCase()+":\nTú sesión ha estado inactiva por más de "+mostrarSesion+"\nPor favor, por seguridad, ¡vuelve a loguearte!.\n\ntiempo seteado: "+oldTime+'\nactual: '+temp+'\n\nDuración Sesión: '+duracionSesion+'\nmensaje: '+mensaje);
+        //alert('Motivo: '+user+'\n'+usuarioViejo.toUpperCase()+":\nTú sesión ha estado inactiva por más de "+mostrarSesion+"\nPor favor, por seguridad, ¡vuelve a loguearte!.\n\ntiempo seteado: "+oldTime+'\nactual: '+temp+'\n\nDuración Sesión: '+duracionSesion+'s\nmensaje: '+mensaje);
+        alert(usuarioViejo.toUpperCase()+":\nTú sesión ha estado inactiva por más de "+mostrarSesion+"\nPor favor, por seguridad, ¡vuelve a loguearte!.\n\n"+'Motivo: '+user+"\nTiempo seteado: "+oldTime+'\nTiempo actual: '+temp+'\n\nDuración Sesión: '+duracionSesion+'seg');
         window.location.assign("salir.php");
       }
       else {
@@ -203,7 +204,7 @@ function showHint(str, id, seleccionado) {
     $("#promedio2").remove();
     $("#ultimoMov").remove();
     $("#historial").remove();
-    document.getElementById("producto").innerHTML = "";
+    $("#producto").val("");
     return;
   } 
   else {
@@ -401,7 +402,7 @@ function mostrarHistorialGeneral(id){
   ///Vuelvo a redefinir limiteHistorialGeneral para que tome el último valor en caso de que se haya cambiado con el modal.
   var limiteHistorialGeneral = parseInt($("#limiteHistorialGeneral").val(), 10);
   var url = "data/selectQuery.php";
-  var query = "select movimientos.idmov, productos.entidad, productos.nombre_plastico as nombre, productos.codigo_emsa as codigo, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i:%s') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios as comentarios, movimientos.estado from movimientos inner join productos on productos.idprod=movimientos.producto order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorialGeneral+"";
+  var query = "select movimientos.idmov, productos.entidad, productos.nombre_plastico as nombre, productos.codigo_emsa as codigo, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i:%s') as hora, movimientos.cantidad as cantidad, movimientos.tipo, movimientos.comentarios as comentarios, movimientos.estado from movimientos inner join productos on productos.idprod=movimientos.producto order by movimientos.fecha desc, movimientos.hora desc limit "+limiteHistorialGeneral+"";
   //alert(query);
   $.getJSON(url, {query: ""+query+""}).done(function(request){
     var datos = request.resultado;
@@ -418,8 +419,12 @@ function mostrarHistorialGeneral(id){
         else {
           comentario = "&nbsp;["+comentario+"]";
         }
-        //mostrar += j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["entidad"]+"/"+datos[i]["nombre"]+" - "+datos[i]["tipo"]+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"<br>";
-        mostrar += "<a href='editarMovimiento.php?id="+datos[i]["idmov"]+"' target='_blank' class='linkHistorialGeneral'>"+j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["codigo"]+" - "+datos[i]["tipo"]+' ('+datos[i]["estado"]+')'+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"</a><br>";
+        var codigo = datos[i]["codigo"];
+        if ((codigo === '')||(codigo === null)||(codigo === "undefined")){
+          codigo = 'COD. NO INGRESADO';
+        }
+        //mostrar += j+": "+datos[i]['fecha']+" "+datos[i]['hora']+" - "+datos[i]['entidad']+"/"+datos[i]['nombre']+" - "+datos[i]['tipo']+": <span class='negritaGrande'>"+cantidad+"</span>"+comentario+"<br>";
+        mostrar += "<a href='editarMovimiento.php?id="+datos[i]['idmov']+"' target='_blank' class='linkHistorialGeneral'>"+j+": "+datos[i]['fecha']+" "+datos[i]['hora']+" - "+datos[i]['entidad']+"/"+codigo+" - "+datos[i]['tipo']+' ('+datos[i]['estado']+')'+": <span class='negritaGrande'>"+datos[i]['cantidad']+"</span>"+comentario+"</a><br>";
       }
       var titulo = '&Uacute;ltimos '+limiteHistorialGeneral+' movimientos:';
       var popover = '<a role="button" tabindex="0" id="historialGeneral" class="btn btn-primary" title="'+titulo+'" data-container="#gralHistory" data-toggle="popover" data-trigger="click" data-placement="left" data-content="'+mostrar+'">Últimos '+limiteHistorialGeneral+' Movimientos</a>';
@@ -452,7 +457,7 @@ function showHintProd(str, id, seleccionado) {
     $("#promedio2").remove();
     $("#ultimoMov").remove();
     $("#historial").remove();
-    document.getElementById("producto").innerHTML = "";
+    $("#producto").val();
     return;
   } 
   else {
@@ -549,10 +554,10 @@ function showHintProd(str, id, seleccionado) {
 function validarMovimiento() {
   var seguir = false;
   var cantidad = $("#cantidad").val();
-  //var cantidad2 = document.getElementById("cantidad2").value;
+  //var cantidad2 = $("#cantidad2").val();
   var fecha = $("#fecha").val();
-  //var usuarioBoveda = document.getElementById("usuarioBoveda").value;
-  //var usuarioGrabaciones = document.getElementById("usuarioGrabaciones").value;
+  //var usuarioBoveda = $("#usuarioBoveda").val();
+  //var usuarioGrabaciones = $("#usuarioGrabaciones").val();
   var hoy = new Date();
   var diaHoy = hoy.getDate();
   var mesHoy = hoy.getMonth()+1;
@@ -2148,7 +2153,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                           else {
                             subtitulo = 'TOTAL';
                             totalPlasticos1 = parseInt(totalPlasticos, 10);
-                            tabla += '<tr><th colspan="9" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos1, 10).toLocaleString()+'</td><th></th></tr>';
+                            tabla += '<tr><th colspan="9" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos1, 10).toLocaleString()+'</td></tr>';
                           }  
 
                           //var subtotalesJson = JSON.stringify(subtotales);
