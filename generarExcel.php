@@ -21,8 +21,8 @@ $textoLegalExcel = "EMSA S.A. informa y hace de conocimiento de nuestros cliente
 function generarExcelStock($reg) {
   global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta, $textoLegalExcel;
   //include_once("css/colores.php");
-//  global $colorFondoCampos, $colorFondoTextoLegal, $colorTotal, $colorFondoTotal, $colorStock, $colorFondoStockRegular, $colorFondoStockAlarma1, $colorFondoStockAlarma2;
-//  global $colorBordeRegular, $colorComRegular, $colorTabStock, $colorBordeTitulo, $colorFondoTitulo, $colorComStock, $colorComDiff, $colorComPlastico;
+  //global $colorFondoCampos, $colorFondoTextoLegal, $colorTotal, $colorFondoTotal, $colorStock, $colorFondoStockRegular, $colorFondoStockAlarma1, $colorFondoStockAlarma2;
+  //global $colorBordeRegular, $colorComRegular, $colorTabStock, $colorBordeTitulo, $colorFondoTitulo, $colorComStock, $colorComDiff, $colorComPlastico;
   //include_once('css/colores.php');
   //$textoLegal = "EMSA S.A. informa y hace de conocimiento de nuestros clientes, la exclusión de responsabilidades frente a casos de daño, robo, incendio o catástrofe que pudiesen estropear el stock de tarjetas de vuestra propiedad que se encuentran resguardadas en nuestra bóveda. Esto no afectará en absoluto la calidad y prestancia de nuestra operativa diaria y de los protocolos administrativos y de seguridad que se cumplen actualmente. El alcance ofrecido en nuestro servicio es pura y exclusivamente para la reserva y utilización del espacio físico y el control diario en la producción de embosados a través de los informes respectivos, coordinados previamente con el cliente. Esta comunicación es a modo informativo y las cláusulas respectivas serán anexadas a los contratos existentes o futuros. Agradecemos en forma insistente la comprensión y preferencia que ante todo siguen teniendo para con nuestros servicios.";
   $spreadsheet = new Spreadsheet();
@@ -68,23 +68,46 @@ function generarExcelStock($reg) {
   $hoja->setTitle($nombreReporte1);
   $hoja->getTabColor()->setRGB($GLOBALS["colorTabStock"]);
   
+  $buscar = stripos($tipoConsulta, 'producto');
+  if ($buscar !== FALSE){
+    $tipoProducto = true;
+  }
+  else {
+    $tipoProducto = false;
+  }
+  
   $colId = 'A';
   $colEntidad = chr(ord($colId)+1);
   $colNombre = chr(ord($colId)+2);
   $colBin = chr(ord($colId)+3);
-  $colCodEMSA = chr(ord($colId)+4);
-  $colCodOrigen = chr(ord($colId)+5);
-  //$colComent = chr(ord($colId)+6);
-  $colStock = chr(ord($colId)+6);
-  $colAl1 = chr(ord($colId)+7);
-  $colAl2 = chr(ord($colId)+8); 
-
+  if ($tipoProducto){
+    $colFechaCreacion = chr(ord($colId)+4);
+    $colCodEMSA = chr(ord($colId)+5);
+    $colCodOrigen = chr(ord($colId)+6);
+    $colStock = chr(ord($colId)+7);
+    $colAl1 = chr(ord($colId)+8);
+    $colAl2 = chr(ord($colId)+9); 
+    
+  }
+  else {
+    $colCodEMSA = chr(ord($colId)+4);
+    $colCodOrigen = chr(ord($colId)+5);
+    //$colComent = chr(ord($colId)+6);
+    $colStock = chr(ord($colId)+6);
+    $colAl1 = chr(ord($colId)+7);
+    $colAl2 = chr(ord($colId)+8); 
+    $colFechaCreacion = chr(ord($colId)+9);
+  }
+  
+  
+  
   $filaEncabezado = '3';
   $filaUnoDatos = $filaEncabezado + 1;
   
   ///*************************************** INICIO formato tipo consulta ******************************
   $hoja->mergeCells($colId.'1:'.$colStock.'1');
   $hoja->setCellValue($colId."1", $tipoConsulta);
+  
   /// Formato del mensaje con el tipo de consulta:
   $mensajeTipo = $colId.'1:'.$colStock.'1';
 
@@ -112,9 +135,22 @@ function generarExcelStock($reg) {
   $hoja->getStyle($mensajeTipo)->applyFromArray($styleMensajeTipo);
   ///***************************************** FIN formato tipo consulta *******************************
   
-  
-  // Agrego los títulos:
+  if ($tipoProducto){
+    // Agrego los títulos:
   $spreadsheet->setActiveSheetIndex(0)
+              ->setCellValue($colId.$filaEncabezado, 'Id')
+              ->setCellValue($colEntidad.$filaEncabezado, 'Entidad')
+              ->setCellValue($colNombre.$filaEncabezado, 'Nombre')
+              ->setCellValue($colBin.$filaEncabezado, 'BIN')
+              ->setCellValue($colFechaCreacion.$filaEncabezado, 'Fecha de Creación')
+              ->setCellValue($colCodEMSA.$filaEncabezado, 'Cód. EMSA')
+              ->setCellValue($colCodOrigen.$filaEncabezado, 'Cód. Origen')
+              //->setCellValue($colComent.'1', 'Comentarios')
+              ->setCellValue($colStock.$filaEncabezado, 'Stock');
+  }
+  else {
+    // Agrego los títulos:
+    $spreadsheet->setActiveSheetIndex(0)
               ->setCellValue($colId.$filaEncabezado, 'Id')
               ->setCellValue($colEntidad.$filaEncabezado, 'Entidad')
               ->setCellValue($colNombre.$filaEncabezado, 'Nombre')
@@ -123,6 +159,8 @@ function generarExcelStock($reg) {
               ->setCellValue($colCodOrigen.$filaEncabezado, 'Cód. Origen')
               //->setCellValue($colComent.'1', 'Comentarios')
               ->setCellValue($colStock.$filaEncabezado, 'Stock');
+  }
+  
   /// Formato de los títulos:
   $header = $colId.$filaEncabezado.':'.$colStock.$filaEncabezado;
   $styleHeader = array(
@@ -141,6 +179,15 @@ function generarExcelStock($reg) {
 
   /// Datos de los campos:
   foreach ($reg as $i => $dato) {
+    $fechaCreacion = array_pop($dato);
+    if (($fechaCreacion === '')||($fechaCreacion === null)){
+      $fechaCreacion = 'NO Ingresada';
+    }
+    else {
+      $fechaTemp = explode('-', $fechaCreacion);
+      $fechaCreacion = $fechaTemp[2].'/'.$fechaTemp[1].'/'.$fechaTemp[0];
+    }
+    
     $al2 = array_pop($dato);
     $al1 = array_pop($dato);
     $stock = (integer)array_pop($dato);
@@ -159,6 +206,9 @@ function generarExcelStock($reg) {
     }
     
     array_push($dato, $codBin);
+    if ($tipoProducto){
+      array_push($dato, $fechaCreacion);
+    }
     array_push($dato, $codEMSA);
     array_push($dato, $codOrigen);
     array_push($dato, $stock);
@@ -736,6 +786,7 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   $colBin = chr(ord($colId)+5);
   $colCodEMSA = chr(ord($colId)+6);
   $colCodOrigen = chr(ord($colId)+7);
+  //$colFechaCreacion = chr(ord($colId)+8);
   $colTipo = chr(ord($colId)+8);
   if ($mostrarEstado){
     $colEstado = chr(ord($colId)+9);
@@ -898,6 +949,7 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
     $estado = array_pop($dato);
     $cantidad = array_pop($dato);
     $tipo = array_pop($dato);
+    $fechaCreacion = array_pop($dato);
     
     $codOrigen = array_pop($dato);
     if (($codOrigen === null)||($codOrigen === '')){
@@ -991,8 +1043,8 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   foreach ($registros as $datito){
     $idprod = $datito[0];
     $nombre = $datito[5];
-    $tipo = $datito[9];
-    $cantidad = $datito[10];
+    $tipo = $datito[10];
+    $cantidad = $datito[11];
     //echo "idprod: $idprod - nombre: $nombre - tipo: $tipo - cantidad: $cantidad<br>";
     if (!(isset($resumen["$idprod"]['retiros']))){
       $resumen["$idprod"]['retiros'] = 0;

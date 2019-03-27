@@ -281,6 +281,7 @@ class PDF extends PDF_MC_Table
     $indiceUltMov = '' ;
     $indiceAlarma1 = '';
     $indiceAlarma2 = '';
+    $indiceFechaCreacion = '';
     $this->SetFillColor(colorCampos[0], colorCampos[1], colorCampos[2]);
     $this->SetTextColor(255, 255, 255);
     $this->SetX($x);
@@ -295,9 +296,7 @@ class PDF extends PDF_MC_Table
             $indiceAlarma2 = $i + 2;
           }
         }
-        if ($campos[$i] === 'Entidad') {
-          $indiceEntidad = $i;
-        }
+        
         if ($campos[$i] === 'Mensaje') {
           $indiceMensaje = $i;
         }
@@ -309,6 +308,9 @@ class PDF extends PDF_MC_Table
         }
         if ($campos[$i] === utf8_decode('Últ. Mov.')) {
           $indiceUltMov = $i;
+        }
+        if ($campos[$i] === 'Fecha Creación') {
+          $indiceFechaCreacion = $i;
         }
       }
     }
@@ -502,6 +504,16 @@ class PDF extends PDF_MC_Table
           if ($i === $indiceCodOrigen) {
             if (($datito === '')||($datito === null)){
               $datito = 'NO Ingresado';
+            }
+          }
+          
+          if ($i === $indiceFechaCreacion) {
+            if (($datito === '')||($datito === null)){
+              $datito = 'NO Ingresada';
+            }
+            else {
+              $datito1 = explode('-', $datito);
+              $datito = $datito1[2]."/".$datito1[1]."/".$datito1[0];
             }
           }
           
@@ -1020,6 +1032,25 @@ class PDF extends PDF_MC_Table
       $this->Ln();
       $this->SetX($x);
       ///************************************************************ FIN CAMPO CODIGO ORIGEN ***********************************************
+      
+      ///*********************************************************** CAMPO FECHA CREACION ***************************************************
+      $fechaCreacion = $registros[0][14];
+      if (($fechaCreacion === '')||($fechaCreacion === null)) {
+        $fechaCreacion = 'No Ingresada';
+      }
+      else {
+        $fechaTemp = explode('-', $fechaCreacion);
+        $fechaCreacion = $fechaTemp[2].'/'.$fechaTemp[1].'/'.$fechaTemp[0];
+      }
+      $this->SetTextColor(255, 255, 255);
+      $this->SetFont('Courier', 'B', 10);
+      $this->Cell($cCampo, $h, utf8_decode("Fecha de Creación:"), 'LRBT', 0, 'L', true);
+      $this->SetFont('Courier', '', 9);
+      $this->SetTextColor(0);
+      $this->Cell($cResto, $h, $fechaCreacion, 'LRBT', 0, 'C', false);
+      $this->Ln();
+      $this->SetX($x);
+      ///************************************************************ FIN CAMPO FECHA CREACION **********************************************
       
       ///***************************************************************** CAMPO BIN ********************************************************
       $bin = $registros[0][4];
@@ -2939,6 +2970,7 @@ class PDF extends PDF_MC_Table
     $contacto = $registros[0][7];
     $foto = $registros[0][8];
     $ultimoMovimiento = trim(utf8_decode($registros[0][9]));
+    $fechaCreacion = $registros[0][14];
     $idprod = $registros[0][1];
     
     if (!isset($subtotales[$idprod])){
@@ -3141,6 +3173,24 @@ class PDF extends PDF_MC_Table
     $this->Ln();
     $this->SetX($x);
     ///************************************************************ FIN CAMPO CODIGO ORIGEN ***************************************************
+    
+    ///*********************************************************** CAMPO FECHA CREACION *******************************************************
+    if (($fechaCreacion === '')||($fechaCreacion === null)) {
+      $fechaCreacion = 'No Ingresada';
+    }
+    else {
+      $fechaTemp = explode('-', $fechaCreacion);
+      $fechaCreacion = $fechaTemp[2].'/'.$fechaTemp[1].'/'.$fechaTemp[0];
+    }
+    $this->SetTextColor(255, 255, 255);
+    $this->SetFont('Courier', 'B', 10);
+    $this->Cell($cCampo, $h, utf8_decode("Fecha de Creación:"), 'LRBT', 0, 'L', true);
+    $this->SetFont('Courier', '', 9);
+    $this->SetTextColor(0);
+    $this->Cell($cResto, $h, $fechaCreacion, 'LRBT', 0, 'C', false);
+    $this->Ln();
+    $this->SetX($x);
+    ///************************************************************ FIN CAMPO FECHA CREACION **************************************************
     
     ///**************************************************************** CAMPO BIN *************************************************************
     if (($bin === '')||($bin === null)) {

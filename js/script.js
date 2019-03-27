@@ -437,6 +437,7 @@ function mostrarHistorialGeneral(id){
       ///ver si avisar que no hay movimientos.
     }
    //$("#miFooter").css("background-color", "red");
+   
   });
 }
 /********** fin mostrarHistorialGeneral(id) **********/
@@ -2183,6 +2184,15 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                               {
                               codigo_emsa = 'NO Ingresado';
                             }   
+                          var fechaCreacion = datos[0]['fechaCreacion'];
+                          if ((fechaCreacion === '')||(fechaCreacion === null)) 
+                            {
+                            fechaCreacion = 'NO Ingresada';
+                          }
+                          else {
+                            var fechaTemp = fechaCreacion.split('-');
+                            fechaCreacion = fechaTemp[2]+'/'+fechaTemp[1]+'/'+fechaTemp[0];
+                          }
                           var alarma1 = parseInt(datos[0]['alarma1'], 10);
                           var alarma2 = parseInt(datos[0]['alarma2'], 10);
                           var stock = parseInt(datos[0]['stock'], 10);
@@ -2253,6 +2263,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                           tabla += '<tr><th style="text-align:left">Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
                           tabla += '<tr><th style="text-align:left">C&oacute;digo EMSA:</th><td>'+codigo_emsa+'</td></tr>';
                           tabla += '<tr><th style="text-align:left">C&oacute;digo Origen:</th><td>'+codigo_origen+'</td></tr>';
+                          tabla += '<tr><th style="text-align:left">Fecha de Creaci&oacute;n:</th><td>'+fechaCreacion+'</td></tr>';
                           tabla += '<tr><th style="text-align:left">BIN:</th><td nowrap>'+bin+'</td></tr>';
                           tabla += '<tr><th style="text-align:left">Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
                           tabla += '<tr><th style="text-align:left">Contacto:</th><td>'+contacto+'</td></tr>';
@@ -2281,7 +2292,16 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   if ((codigo_emsa === '')||(codigo_emsa === null)) 
                                       {
                                       codigo_emsa = 'NO Ingresado';
-                                    }   
+                                    }  
+                                  var fechaCreacion = datos[0]['fechaCreacion'];
+                                  if ((fechaCreacion === '')||(fechaCreacion === null)) 
+                                    {
+                                    fechaCreacion = 'NO Ingresada';
+                                  }
+                                  else {
+                                    var fechaTemp = fechaCreacion.split('-');
+                                    fechaCreacion = fechaTemp[2]+'/'+fechaTemp[1]+'/'+fechaTemp[0];
+                                  }  
                                   var alarma1 = parseInt(datos[0]['alarma1'], 10);
                                   var alarma2 = parseInt(datos[0]['alarma2'], 10);
                                   var stock = parseInt(subtotales["stockViejo"][produ], 10);
@@ -2351,6 +2371,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   tabla += '<tr><th style="text-align:left">Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
                                   tabla += '<tr><th style="text-align:left">C&oacute;digo EMSA:</th><td>'+codigo_emsa+'</td></tr>';
                                   tabla += '<tr><th style="text-align:left">C&oacute;digo Origen:</th><td>'+codigo_origen+'</td></tr>';
+                                  tabla += '<tr><th style="text-align:left">Fecha de Creaci&oacute;n:</th><td>'+fechaCreacion+'</td></tr>';
                                   tabla += '<tr><th style="text-align:left">BIN:</th><td nowrap>'+bin+'</td></tr>';
                                   tabla += '<tr><th style="text-align:left">Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
                                   tabla += '<tr><th style="text-align:left">Contacto:</th><td>'+contacto+'</td></tr>';
@@ -2532,7 +2553,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                 else {
                                   subtitulo = 'TOTAL';
                                   totalPlasticos2 = parseInt(totalPlasticos, 10);
-                                  tabla += '<tr><th colspan="9" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+totalPlasticos2.toLocaleString()+'</td><th></th></tr>';
+                                  tabla += '<tr><th colspan="9" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+totalPlasticos2.toLocaleString()+'</td></tr>';
                                 } 
                           
                                 var subtotalesJson = JSON.stringify(subtotales);
@@ -3039,6 +3060,15 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     {
                                     codigo_origen = 'NO Ingresado';
                                   }  
+                                  var fechaCreacion = datos[0]['fechaCreacion'];
+                                  if ((fechaCreacion === '')||(fechaCreacion === null)) 
+                                    {
+                                    fechaCreacion = 'NO Ingresada';
+                                  }
+                                  else {
+                                    var fechaTemp = fechaCreacion.split('-');
+                                    fechaCreacion = fechaTemp[2]+'/'+fechaTemp[1]+'/'+fechaTemp[0];
+                                  }
                                   var comentarios = datos[0]['prodcom'];
                                   var claseComentario = "";
                                   if ((comentarios === "undefined")||(comentarios === null)||(comentarios === "")) 
@@ -3106,6 +3136,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   tabla += '<tr><th>Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
                                   tabla += '<tr><th>C&oacute;d. EMSA:</th><td>'+codigo_emsa+'</td></tr>';
                                   tabla += '<tr><th>C&oacute;d. Origen:</th><td>'+codigo_origen+'</td></tr>';
+                                  tabla += '<tr><th>Fecha de Creaci&oacute;n:</th><td>'+fechaCreacion+'</td></tr>';
                                   tabla += '<tr><th>BIN:</th><td nowrap>'+bin+'</td></tr>';
                                   tabla += '<tr><th>Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
                                   tabla += '<tr><th>Contacto:</th><td>'+contacto+'</td></tr>';
@@ -3541,9 +3572,9 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         var datosOcultos = '<table id="datosOcultos_'+j+'" name="datosOcultos" class="tabla2" style="display:none">';
         switch (radio){
           case 'entidadStockViejo':
-          case 'entidadStock':  campos = "Id-IdProd-Entidad-Nombre-BIN-C&oacute;d. EMSA-C&oacute;d. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje";
-                                largos = "0.8-0.5-1.2-2.5-0.8-1.9-1.5-1-1-1.2-1.6-1-2-1.7";
-                                mostrarCamposQuery = "1-0-1-1-0-1-1-0-0-1-1-0-0-0";
+          case 'entidadStock':  campos = "Id-IdProd-Entidad-Nombre-BIN-C&oacute;d. EMSA-C&oacute;d. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje-Fecha Creaci&oacute;n";
+                                largos = "0.8-0.5-1.2-2.5-0.8-1.9-1.5-1-1-1.2-1.6-1-2-1.7-1.5";
+                                mostrarCamposQuery = "1-0-1-1-0-1-1-0-0-1-1-0-0-0-0";
                                 x = 20;
                                 tipMov = 'entStock';
                                 datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
@@ -3566,9 +3597,9 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                   </tr>';
                                 break;
           case 'productoStockViejo':                      
-          case 'productoStock': campos = "Id-IdProd-Entidad-Nombre-BIN-C&oacute;d. EMSA-C&oacute;d. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje";
-                                largos = "0.8-0.5-1.2-2.5-0.8-2-1.5-1-1-1.2-1.4-1-2-1.7";
-                                mostrarCamposQuery = "1-0-1-1-0-1-1-0-0-1-1-0-0-0";
+          case 'productoStock': campos = "Id-IdProd-Entidad-Nombre-BIN-C&oacute;d. EMSA-C&oacute;d. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje-Fecha Creaci&oacute;n";
+                                largos = "0.8-0.5-1.2-2.5-0.8-2-1.5-1-1-1.2-1.4-1-2-1.7-1.5";
+                                mostrarCamposQuery = "1-0-1-1-0-1-1-0-0-1-1-0-0-0-0";
                                 x = 22;
                                 tipMov = 'prodStock';
                                 datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
@@ -3613,10 +3644,10 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                 <td style="display:none"><input type="text" id="marcaAgua_'+j+'" name="marcaAgua_'+j+'" value="'+marcaAgua+'"></td>\n\
                                               </tr>';
                              break;
-          case 'entidadMovimiento': campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios-Estado-IdMov';
-                                    //Orden de la consulta: idprod - entidad - nombre - bin - cod emsa - cod origen - contacto - snapshot - ult.Mov - stock - alarma1 - alarma2 - prodcom - fecha - hora - cantidad - tipo - comentarios - estado - idmov
-                                    largos = '0.75-0.5-1.6-1.9-1-2.0-1.5-1-1-1-1-1-1.1-1.5-1.25-0.8-1.2-1.3-2-1-0.5';
-                                    mostrarCamposQuery = '1-0-1-1-0-1-1-0-0-0-0-0-0-0-1-1-1-1-1-'+mostrarEstadoBinario+'-0';
+          case 'entidadMovimiento': campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha Creaci&oacute;n-Fecha-Hora-Cantidad-Tipo-Comentarios-Estado-IdMov';
+                                    //Orden de la consulta: idprod - entidad - nombre - bin - cod emsa - cod origen - contacto - snapshot - ult.Mov - stock - alarma1 - alarma2 - prodcom - fechaCreacion - fecha - hora - cantidad - tipo - comentarios - estado - idmov
+                                    largos = '0.75-0.5-1.6-1.9-1-2.0-1.5-1-1-1-1-1-1.1-1.5-1.25-1.25-0.8-1.2-1.3-2-1-0.5';
+                                    mostrarCamposQuery = '1-0-1-1-0-1-1-0-0-0-0-0-0-0-0-1-1-1-1-1-'+mostrarEstadoBinario+'-0';
                                     x = 40;
                                     tipMov = 'entMov';
                                     datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
@@ -3637,10 +3668,10 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                         <td style="display:none"><input type="text" id="marcaAgua_'+j+'" name="marcaAgua_'+j+'" value="'+marcaAgua+'"></td>\n\
                                                       </tr>';
                                     break;
-          case 'productoMovimiento':  campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha-Hora-Cantidad-Tipo-Comentarios-Estado-IdMov';
-                                      //Orden de la consulta: idprod - entidad - nombre - bin - cod emsa - cod origen - contacto - snapshot - ult.Mov - stock - alarma1 - alarma2 - prodcom - fecha - hora - cantidad - tipo - comentarios - estado - idmov
-                                      largos = '0.65-0.5-1.5-1.8-1-1-1-1-1-1-1-1-1.1-1.5-1.25-0.8-1.2-1.4-2-1-0.8';
-                                      mostrarCamposQuery = '1-0-0-0-0-0-0-0-0-0-0-0-0-0-1-1-1-1-1-'+mostrarEstadoBinario+'-0';
+          case 'productoMovimiento':  campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha Creaci&oacute;n-Fecha-Hora-Cantidad-Tipo-Comentarios-Estado-IdMov';
+                                      //Orden de la consulta: idprod - entidad - nombre - bin - cod emsa - cod origen - contacto - snapshot - ult.Mov - stock - alarma1 - alarma2 - prodcom - fechaCreacion - fecha - hora - cantidad - tipo - comentarios - estado - idmov
+                                      largos = '0.65-0.5-1.5-1.8-1-1-1-1-1-1-1-1-1.1-1.5-1.25-1.25-0.8-1.2-1.4-2-1-0.8';
+                                      mostrarCamposQuery = '1-0-0-0-0-0-0-0-0-0-0-0-0-0-0-1-1-1-1-1-'+mostrarEstadoBinario+'-0';
                                       x = 40;
                                       tipMov = 'prodMov';
                                       datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
@@ -3872,8 +3903,8 @@ function realizarBusqueda(){
                               delete (consultaCSV);
                               delete (tipoConsulta);
                               var tipoConsulta = '';
-                              var query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
-                              var consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
+                              var query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion';
+                              var consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios, productos.fechaCreacion';
                               if (entidadesStock[i] !== 'todos') {
                                 ent.push(entidadesStock[i]);
                                 query += " from productos where entidad='"+entidadesStock[i]+"' and estado='activo'";
@@ -3918,9 +3949,9 @@ function realizarBusqueda(){
                                   return false;
                                 }
                                 else {
-                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion';
                                   query += " from productos where idProd="+idProds[i];
-                                  consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
+                                  consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios, productos.fechaCreacion';
                                   consultaCSV += " from productos where idProd="+idProds[i];
                                   tipoConsulta = 'Stock del producto <b><i>'+nombres[i]+'</i></b> al d&iacute;a: '+hoyMostrar+' ('+horaMostrar+')';
                                   queries.push(query);
@@ -3953,9 +3984,9 @@ function realizarBusqueda(){
       case 'entidadStockViejo': delete nombres;
                                 var nombres = new Array();
                                 for (var i in entidadesStock){
-                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion';
                                   query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.estado, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
-                                  var consultaCSV = "select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios from productos where productos.estado='activo' ";
+                                  var consultaCSV = "select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios, productos.fechaCreacion from productos where productos.estado='activo' ";
                                   if (entidadesStock[i] !== 'todos') {
                                     ent.push(entidadesStock[i]);
                                     query += "and productos.entidad='"+entidadesStock[i]+"'";
@@ -3992,9 +4023,9 @@ function realizarBusqueda(){
                                 break;
       case 'productoStockViejo':  if (idProds.length > 0){
                                     for (var k in idProds){
-                                    query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                                    query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion';
                                     query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.estado, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where idprod="+idProds[k];
-                                    consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios';
+                                    consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios, productos.fechaCreacion';
                                     consultaCSV += " from productos where idProd="+idProds[k];
                                     if ((idProds[k] === 'NADA') || (nombresProductos[k] === '')){
                                       alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
@@ -4024,9 +4055,9 @@ function realizarBusqueda(){
       case 'entidadMovimiento': delete nombres;
                                 var nombres = new Array();
                                 for (var i in entidadesMovimiento){
-                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion';
                                   query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios,  movimientos.estado, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
-                                  consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, movimientos.tipo, movimientos.cantidad, movimientos.comentarios, movimientos.estado from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
+                                  consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.fechaCreacion, movimientos.tipo, movimientos.cantidad, movimientos.comentarios, movimientos.estado from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
                                   if (entidadesMovimiento[i] !== 'todos') {
                                     ent.push(entidadesMovimiento[i]);
                                     query += "and productos.entidad='"+entidadesMovimiento[i]+"'";
@@ -4078,10 +4109,10 @@ function realizarBusqueda(){
                                 break;
       case 'productoMovimiento':  if (idProds.length > 0){
                                   for (var k in idProds){
-                                    query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom';
+                                    query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion';
                                     query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios,  movimientos.estado, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where ";
                                     //consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
-                                    consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, movimientos.tipo, movimientos.cantidad, movimientos.comentarios, movimientos.estado from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";                                 
+                                    consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.fechaCreacion, movimientos.tipo, movimientos.cantidad, movimientos.comentarios, movimientos.estado from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";                                 
                                     if ((idProds[k] === 'NADA') || (nombresProductos[k] === '')){
                                       alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
                                       document.getElementById("productoMovimiento").focus();

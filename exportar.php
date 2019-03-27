@@ -105,7 +105,7 @@ $campos = preg_split("/-/", $campos1);
 
 $largos = $_POST["largos_$indice"];
 $temp = explode('-', $largos);
-
+//echo "campos: ".$campos1."<br><br>largos: ".$largos."<br><br>mostrar: ".$mostrar1."<br>";
 $x = $_POST["x_$indice"];
 
 $zipSeguridad = $_POST["zip_$indice"];
@@ -384,7 +384,7 @@ else {
   $subRutita = $subRuta;
 }
 
-
+//echo "Query: ".$query."<br>";
 /// Ejecuto la consulta:
 $resultado1 = $pdo->query($query);
 //echo "consulta: $query<br>";
@@ -442,7 +442,7 @@ foreach($filas as $fila)
   $registros[] = $fila;
 }
 //echo "total: ".$total."<br>";
-//echo $consultaCSV."<br>";
+//echo "<br>CSV: ".$consultaCSV."<br>";
 ///Ejecuto consulta para la generación del excel:
 $resultado2 = $pdo->query($consultaCSV);
 $filas1 = array();
@@ -470,6 +470,7 @@ foreach($filas1 as $fila)
   }
   else {
     if (($id == 1)||($id == 2)){
+      $fechaCreacion = array_pop($fila);
       $coment = array_pop($fila);
       $al2 = array_pop($fila);
       $al1 = array_pop($fila);
@@ -490,6 +491,7 @@ foreach($filas1 as $fila)
 
       array_push($fila, $al1);
       array_push($fila, $al2);
+      array_push($fila, $fechaCreacion);
     }
     array_unshift($fila, $j); //echo $coment." - ".$al1." - ".$al2." - ".$stock."<br>";
   }

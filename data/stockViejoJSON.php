@@ -105,10 +105,10 @@ for ($i = 0; $i < count($query); $i++){
 
     ///Recupero primera página para mostrar:
     if ($test !== false){
-      $query[$i] = "select idprod, entidad, nombre_plastico, bin, codigo_emsa, codigo_origen, contacto, snapshot, ultimoMovimiento, stock, alarma1, alarma2, comentarios from productos where entidad='".$entidad."' and estado='activo' order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";// limit ".$limite;
+      $query[$i] = "select idprod, entidad, nombre_plastico, bin, codigo_emsa, codigo_origen, contacto, snapshot, ultimoMovimiento, stock, alarma1, alarma2, comentarios, fechaCreacion from productos where entidad='".$entidad."' and estado='activo' order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";// limit ".$limite;
     }
     else {
-      $query[$i] = "select idprod, entidad, nombre_plastico, bin, codigo_emsa, codigo_origen, contacto, snapshot, ultimoMovimiento, stock, alarma1, alarma2, comentarios from productos where estado='activo' order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";
+      $query[$i] = "select idprod, entidad, nombre_plastico, bin, codigo_emsa, codigo_origen, contacto, snapshot, ultimoMovimiento, stock, alarma1, alarma2, comentarios, fechaCreacion from productos where estado='activo' order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";
     }
     
     $result = $pdo->query($query[$i]);
@@ -207,7 +207,7 @@ for ($i = 0; $i < count($query); $i++){
     } 
 
     ///Recupero primera página para mostrar:
-    $query[$i] = "select idprod, entidad, nombre_plastico, bin, codigo_emsa, codigo_origen, contacto, snapshot, ultimoMovimiento, stock, alarma1, alarma2, comentarios as prodcom from productos where idprod=".$idprod;
+    $query[$i] = "select idprod, entidad, nombre_plastico, bin, codigo_emsa, codigo_origen, contacto, snapshot, ultimoMovimiento, stock, alarma1, alarma2, comentarios as prodcom, fechaCreacion from productos where idprod=".$idprod;
     $result = $pdo->query($query[$i]);
 
     while (($fila = $result->fetch(PDO::FETCH_ASSOC)) != NULL) { 
