@@ -3646,7 +3646,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                              break;
           case 'entidadMovimiento': campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha Creaci&oacute;n-Fecha-Hora-Cantidad-Tipo-Comentarios-Estado-IdMov';
                                     //Orden de la consulta: idprod - entidad - nombre - bin - cod emsa - cod origen - contacto - snapshot - ult.Mov - stock - alarma1 - alarma2 - prodcom - fechaCreacion - fecha - hora - cantidad - tipo - comentarios - estado - idmov
-                                    largos = '0.75-0.5-1.6-1.9-1-2.0-1.5-1-1-1-1-1-1.1-1.5-1.25-1.25-0.8-1.2-1.3-2-1-0.5';
+                                    largos = '0.75-0.5-1.6-1.9-1-2.0-1.5-1-1-1-1-1-1.1-1.5-1.85-1.25-0.8-1.2-1.3-2-1-0.5';
                                     mostrarCamposQuery = '1-0-1-1-0-1-1-0-0-0-0-0-0-0-0-1-1-1-1-1-'+mostrarEstadoBinario+'-0';
                                     x = 40;
                                     tipMov = 'entMov';
@@ -3670,7 +3670,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                     break;
           case 'productoMovimiento':  campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha Creaci&oacute;n-Fecha-Hora-Cantidad-Tipo-Comentarios-Estado-IdMov';
                                       //Orden de la consulta: idprod - entidad - nombre - bin - cod emsa - cod origen - contacto - snapshot - ult.Mov - stock - alarma1 - alarma2 - prodcom - fechaCreacion - fecha - hora - cantidad - tipo - comentarios - estado - idmov
-                                      largos = '0.65-0.5-1.5-1.8-1-1-1-1-1-1-1-1-1.1-1.5-1.25-1.25-0.8-1.2-1.4-2-1-0.8';
+                                      largos = '0.65-0.5-1.5-1.8-1-1-1-1-1-1-1-1-1.1-1.5-1.85-1.25-0.8-1.2-1.4-2-1-0.8';
                                       mostrarCamposQuery = '1-0-0-0-0-0-0-0-0-0-0-0-0-0-0-1-1-1-1-1-'+mostrarEstadoBinario+'-0';
                                       x = 40;
                                       tipMov = 'prodMov';

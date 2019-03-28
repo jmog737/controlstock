@@ -1285,10 +1285,12 @@ class PDF extends PDF_MC_Table
                             break;
         case "BIN": $indBin = $i;
                     break;
+        case utf8_decode("Fecha Creación"): $indFechaCreacion = $i;
+                                            break;          
         case utf8_decode("Cód. EMSA"): $indCodEMSA = $i;
-                          break;
+                                       break;
         case utf8_decode("Cód. Origen"): $indCodOrigen = $i;
-                            break;                 
+                                         break;                 
         case "Contacto":  $indContacto = $i;
                           break;              
         case "Snapshot":  $indSnapshot = $i;
@@ -1330,6 +1332,9 @@ class PDF extends PDF_MC_Table
     }
     if ($mostrar[$indBin]) {
       $this->Cell($largoCampos[$indBin], $h, $campos[$indBin], 'LRBT', 0, 'C', true);
+    }
+    if ($mostrar[$indFechaCreacion]) {
+      $this->Cell($largoCampos[$indFechaCreacion], $h, $campos[$indFechaCreacion], 'LRBT', 0, 'C', true);
     }
     if ($mostrar[$indCodEMSA]) {
       $this->Cell($largoCampos[$indCodEMSA], $h, $campos[$indCodEMSA], 'LRBT', 0, 'C', true);
@@ -1693,6 +1698,8 @@ class PDF extends PDF_MC_Table
                                   break;
               case "BIN": $indBin = $i;
                           break;
+              case utf8_decode("Fecha Creación"): $indFechaCreacion = $i;
+                                                  break;          
               case utf8_decode("Cód. EMSA"): $indCodEMSA = $i;
                                 break;
               case utf8_decode("Cód. Origen"): $indCodOrigen = $i;
@@ -1749,6 +1756,9 @@ class PDF extends PDF_MC_Table
           }
           if ($mostrar[$indBin]) {
             $this->Cell($largoCampos[$indBin], $h, $campos[$indBin], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indFechaCreacion]) {
+            $this->Cell($largoCampos[$indFechaCreacion], $h, $campos[$indFechaCreacion], 'LRBT', 0, 'C', true);
           }
           if ($mostrar[$indCodEMSA]) {
             $this->Cell($largoCampos[$indCodEMSA], $h, $campos[$indCodEMSA], 'LRBT', 0, 'C', true);
@@ -1908,6 +1918,8 @@ class PDF extends PDF_MC_Table
                                 break;
             case "BIN": $indBin = $i;
                         break;
+            case utf8_decode("Fecha Creación"): $indFechaCreacion = $i;
+                                                break;          
             case utf8_decode("Cód. EMSA"): $indCodEMSA = $i;
                               break;
             case utf8_decode("Cód. Origen"): $indCodOrigen = $i;
@@ -1952,6 +1964,9 @@ class PDF extends PDF_MC_Table
         }
         if ($mostrar[$indBin]) {
           $this->Cell($largoCampos[$indBin], $h, $campos[$indBin], 'LRBT', 0, 'C', true);
+        }
+        if ($mostrar[$indFechaCreacion]) {
+          $this->Cell($largoCampos[$indFechaCreacion], $h, $campos[$indFechaCreacion], 'LRBT', 0, 'C', true);
         }
         if ($mostrar[$indCodEMSA]) {
           $this->Cell($largoCampos[$indCodEMSA], $h, $campos[$indCodEMSA], 'LRBT', 0, 'C', true);
@@ -2235,6 +2250,46 @@ class PDF extends PDF_MC_Table
         $this->SetXY($x1+$w,$y);
       }
       ///************************************************************ FIN CAMPO BIN *********************************************************
+      
+      ///********************************************************* CAMPO FECHA CREACION *****************************************************
+      /// Chequeo si se tiene que mostrar el campo Fecha de Creación, y de ser así lo muestro:
+      if ($mostrar[$indFechaCreacion]) 
+        {
+        $w = $largoCampos[$indFechaCreacion];
+        $fechaCreacion1 = trim(utf8_decode($dato[$indFechaCreacion]));
+        if (($fechaCreacion1 === '')||($fechaCreacion1 === null)) {
+          $fechaCreacion = 'No Ingresada';
+        }
+        else {
+          $fechaTemp = explode('-', $fechaCreacion1);
+          $fechaCreacion = $fechaTemp[2].'/'.$fechaTemp[1].'/'.$fechaTemp[0];
+        }
+        $nb1 = $this->NbLines($w,$fechaCreacion);
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h1, $fechaCreacion,1,'C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, $fechaCreacion,1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      }
+      ///******************************************************* FIN CAMPO FECHA CREACION ***************************************************
       
       ///********************************************************** CAMPO CODIGO EMSA *******************************************************
       /// Chequeo si se tiene que mostrar el campo Codigo EMSA, y de ser así lo muestro:

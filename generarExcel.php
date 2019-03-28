@@ -778,23 +778,49 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   $hoja->getTabColor()->setRGB($GLOBALS["colorTabMovimientos"]);
   ///************************************ FIN PARAMETROS BASICOS ***************************************
 
+  $buscar = stripos($tipoConsulta, 'producto');
+  if ($buscar !== FALSE){
+    $tipoProducto = true;
+  }
+  else {
+    $tipoProducto = false;
+  }
+  
   $colId = 'A';
   $colFecha = chr(ord($colId)+1);
   $colHora = chr(ord($colId)+2);
   $colEntidad = chr(ord($colId)+3);
   $colNombre = chr(ord($colId)+4);
   $colBin = chr(ord($colId)+5);
-  $colCodEMSA = chr(ord($colId)+6);
-  $colCodOrigen = chr(ord($colId)+7);
-  //$colFechaCreacion = chr(ord($colId)+8);
-  $colTipo = chr(ord($colId)+8);
-  if ($mostrarEstado){
-    $colEstado = chr(ord($colId)+9);
-    $colCantidad = chr(ord($colId)+10);
+  
+  if ($tipoProducto){
+    $colFechaCreacion = chr(ord($colId)+6);
+    $colCodEMSA = chr(ord($colId)+7);
+    $colCodOrigen = chr(ord($colId)+8);
+    //$colFechaCreacion = chr(ord($colId)+8);
+    $colTipo = chr(ord($colId)+9);
+    if ($mostrarEstado){
+      $colEstado = chr(ord($colId)+10);
+      $colCantidad = chr(ord($colId)+11);
+    }
+    else {
+      $colCantidad = chr(ord($colId)+10);
+    }
   }
   else {
-    $colCantidad = chr(ord($colId)+9);
+    $colCodEMSA = chr(ord($colId)+6);
+    $colCodOrigen = chr(ord($colId)+7);
+    //$colFechaCreacion = chr(ord($colId)+8);
+    $colTipo = chr(ord($colId)+8);
+    if ($mostrarEstado){
+      $colEstado = chr(ord($colId)+9);
+      $colCantidad = chr(ord($colId)+10);
+    }
+    else {
+      $colCantidad = chr(ord($colId)+9);
+    }
   }
+  
   
   //$colComent = chr(ord($colId)+10);
   $colVacia1 = chr(ord($colCantidad)+1);
@@ -814,60 +840,60 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   ///**   ********************************* TEST EXTRACCIÓN TIPO CONSULTA ******************************
   $tipoConsulta1 = utf8_decode($tipoConsulta);
   $q1 = stripos($tipoConsulta1, " de todos los tipos (inc. AJUSTES)");
-    if ($q1 !== FALSE) {
-      $temp1 = explode(" de todos los tipos (inc. AJUSTES)", $tipoConsulta1);
+  if ($q1 !== FALSE) {
+    $temp1 = explode(" de todos los tipos (inc. AJUSTES)", $tipoConsulta1);
+    $nombre1 = strtoupper($temp1[0]);
+    $mostrarResumenProducto = true;
+    $tipoMov = 'Todos';
+  }
+  else { 
+    $q2 = stripos($tipoConsulta, " de todos los tipos");
+    if ($q2 !== FALSE) {
+      $temp1 = explode(" de todos los tipos", $tipoConsulta1);
       $nombre1 = strtoupper($temp1[0]);
       $mostrarResumenProducto = true;
-      $tipoMov = 'Todos';
+      $tipoMov = 'Clientes';
     }
-    else { 
-      $q2 = stripos($tipoConsulta, " de todos los tipos");
-      if ($q2 !== FALSE) {
-        $temp1 = explode(" de todos los tipos", $tipoConsulta1);
-        $nombre1 = strtoupper($temp1[0]);
-        $mostrarResumenProducto = true;
-        $tipoMov = 'Clientes';
+    else {
+      $t0 = stripos($tipoConsulta1, " del tipo Retiro");
+      if ($t0 !== FALSE){
+        $tipoMov = "Retiros";
       }
       else {
-        $t0 = stripos($tipoConsulta1, " del tipo Retiro");
-        if ($t0 !== FALSE){
-          $tipoMov = "Retiros";
+        $t1 = stripos($tipoConsulta1, "del tipo Ingreso");
+        if ($t1 !== FALSE){
+          $tipoMov = "Ingresos";
         }
         else {
-          $t1 = stripos($tipoConsulta1, "del tipo Ingreso");
-          if ($t1 !== FALSE){
-            $tipoMov = "Ingresos";
+          $t2 = stripos($tipoConsulta1, utf8_decode("del tipo Renovación"));
+          if ($t2 !== FALSE){
+            $tipoMov = "Renovaciones";
           }
           else {
-            $t2 = stripos($tipoConsulta1, utf8_decode("del tipo Renovación"));
-            if ($t2 !== FALSE){
-              $tipoMov = "Renovaciones";
+            $t3 = stripos($tipoConsulta1, utf8_decode("del tipo Destrucción"));
+            if ($t3 !== FALSE){
+              $tipoMov = "Destrucciones";
             }
             else {
-              $t3 = stripos($tipoConsulta1, utf8_decode("del tipo Destrucción"));
-              if ($t3 !== FALSE){
-                $tipoMov = "Destrucciones";
+              $t4 = stripos($tipoConsulta1, " del tipo AJUSTE Retiro");
+              if ($t4 !== FALSE){
+                $tipoMov = "AJUSTE Retiros";
               }
               else {
-                $t4 = stripos($tipoConsulta1, " del tipo AJUSTE Retiro");
-                if ($t4 !== FALSE){
-                  $tipoMov = "AJUSTE Retiros";
+                $t5 = stripos($tipoConsulta1, " del tipo AJUSTE Ingreso");
+                if ($t5 !== FALSE){
+                  $tipoMov = "AJUSTE Ingresos";
                 }
                 else {
-                  $t5 = stripos($tipoConsulta1, " del tipo AJUSTE Ingreso");
-                  if ($t5 !== FALSE){
-                    $tipoMov = "AJUSTE Ingresos";
-                  }
-                  else {
-                    $tipoMov = "Ajustes";
-                  }
+                  $tipoMov = "Ajustes";
                 }
               }
-            }  
-          }
+            }
+          }  
         }
-      } 
-    }  
+      }
+    } 
+  }  
   ///************************************* FIN TEST EXTRACCIÓN TIPO CONSULTA ***************************
   
   
@@ -904,7 +930,23 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   
   ///**************************************** INICIO formato encabezado ********************************
   // Agrego los títulos:
-  $spreadsheet->setActiveSheetIndex(0)
+  if ($tipoProducto){
+    $spreadsheet->setActiveSheetIndex(0)
+              ->setCellValue($colId.$filaEncabezado, 'Id')
+              ->setCellValue($colFecha.$filaEncabezado, 'Fecha')
+              ->setCellValue($colHora.$filaEncabezado, 'Hora')
+              ->setCellValue($colEntidad.$filaEncabezado, 'Entidad')
+              ->setCellValue($colNombre.$filaEncabezado, 'Nombre')
+              ->setCellValue($colBin.$filaEncabezado, 'BIN')
+              ->setCellValue($colFechaCreacion.$filaEncabezado, 'Fecha de Creación')
+              ->setCellValue($colCodEMSA.$filaEncabezado, 'Cód. EMSA')
+              ->setCellValue($colCodOrigen.$filaEncabezado, 'Cód. Origen')
+              ->setCellValue($colTipo.$filaEncabezado, 'Tipo')              
+              ->setCellValue($colCantidad.$filaEncabezado, 'Cantidad')
+              /*->setCellValue($colComent.'1', 'Comentarios')*/;
+  }
+  else {
+    $spreadsheet->setActiveSheetIndex(0)
               ->setCellValue($colId.$filaEncabezado, 'Id')
               ->setCellValue($colFecha.$filaEncabezado, 'Fecha')
               ->setCellValue($colHora.$filaEncabezado, 'Hora')
@@ -916,6 +958,8 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
               ->setCellValue($colTipo.$filaEncabezado, 'Tipo')              
               ->setCellValue($colCantidad.$filaEncabezado, 'Cantidad')
               /*->setCellValue($colComent.'1', 'Comentarios')*/;
+  }
+  
   
   if ($mostrarEstado){
     $spreadsheet->setActiveSheetIndex(0)->setCellValue($colEstado.$filaEncabezado, 'Estado');
@@ -949,7 +993,14 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
     $estado = array_pop($dato);
     $cantidad = array_pop($dato);
     $tipo = array_pop($dato);
-    $fechaCreacion = array_pop($dato);
+    $fechaCreacion1 = array_pop($dato);
+    if (($fechaCreacion1 === '')||($fechaCreacion1 === null)) {
+      $fechaCreacion = 'No Ingresada';
+    }
+    else {
+      $fechaTemp = explode('-', $fechaCreacion1);
+      $fechaCreacion = $fechaTemp[2].'/'.$fechaTemp[1].'/'.$fechaTemp[0];
+    }
     
     $codOrigen = array_pop($dato);
     if (($codOrigen === null)||($codOrigen === '')){
@@ -967,6 +1018,9 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
     }
     
     array_push($dato, $bin);
+    if ($tipoProducto){
+      array_push($dato, $fechaCreacion);
+    }
     array_push($dato, $codEMSA);
     array_push($dato, $codOrigen);
     array_push($dato, $tipo);
