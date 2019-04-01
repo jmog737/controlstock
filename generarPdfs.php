@@ -918,15 +918,17 @@ class PDF extends PDF_MC_Table
       ///*****************************************************************  FOTO ************************************************************
       ///Agrego un snapshot de la tarjeta debajo de la tabla (si es que existe!!):
       $foto = $registros[0][8];
-      $rutita = $rutaFotos."/".$foto;
-      if (file_exists($rutita)){
-        list($anchoFoto, $altoFoto) = $this->resizeToFit($rutita, self::FOTO_WIDTH_MM, self::FOTO_HEIGHT_MM);
-        
-        $xFoto = ($anchoPagina - $anchoFoto)/2;
-        $this->SetX($xFoto);
-        $yFoto = $this->GetY();
-        $this->Image($rutita, $xFoto, $yFoto, $anchoFoto, $altoFoto);
-        $this->Ln($altoFoto+8);
+      if (($foto !== '')&&($foto !== null)){
+        $rutita = $rutaFotos."/".$foto;
+        if (file_exists($rutita)){
+          list($anchoFoto, $altoFoto) = $this->resizeToFit($rutita, self::FOTO_WIDTH_MM, self::FOTO_HEIGHT_MM);
+
+          $xFoto = ($anchoPagina - $anchoFoto)/2;
+          $this->SetX($xFoto);
+          $yFoto = $this->GetY();
+          $this->Image($rutita, $xFoto, $yFoto, $anchoFoto, $altoFoto);
+          $this->Ln($altoFoto+8);
+        }
       }
       ///***************************************************************  FIN FOTO **********************************************************
       

@@ -215,7 +215,7 @@ function showHint(str, id, seleccionado) {
     }
     $.getJSON(url, {query: ""+query+""}).done(function(request) {
       var sugerencias = request.resultado;
-      var totalSugerencias = request.rows;
+      var totalSugerencias = parseInt(request.rows, 10);
       $("[name='hint']").remove();
       $("#ultimoMov").remove();
       $("#historial").remove();
@@ -223,7 +223,7 @@ function showHint(str, id, seleccionado) {
       var mostrar = '';
       var unico = '';
       if (totalSugerencias >= 1) {
-        if (($("#productoGrafica").length > 0)||($("#producto").length > 0)){
+        if ((parseInt($("#productoGrafica").length, 10) > 0)||(parseInt($("#producto").length, 10) > 0)){
           mostrar = '<select name="hint" id="hint" class="hint" size="15">';
         }
         else {
@@ -298,7 +298,7 @@ function showHint(str, id, seleccionado) {
       $(id).after(mostrar);
       
       /// Agregado a pedido de Diego para que se abra el select automáticamente:
-      var length = $('#hint> option').length;
+      var length = parseInt($('#hint> option').length, 10);
       if (length > limiteSelects) {
         length = limiteSelects;
       }
@@ -343,7 +343,7 @@ function showHint(str, id, seleccionado) {
  * @param {String} prod String con el id del producto a consultar.
 */
 function mostrarHistorial(prod){
-  //if ($("#historial").length > 0){
+  //if (parseInt($("#historial").length, 10) > 0){
     $("#historial").popover('dispose');
     $("#historial").remove();//alert('fsd');
   //}
@@ -355,7 +355,7 @@ function mostrarHistorial(prod){
   //alert(query);
   $.getJSON(url, {query: ""+query+""}).done(function(request){
     var datos = request.resultado;
-    var totalDatos = request.rows;
+    var totalDatos = parseInt(request.rows, 10);
     if (totalDatos > 0){
       var mostrar = '';
       var j = 0;
@@ -368,13 +368,13 @@ function mostrarHistorial(prod){
         else {
           comentario = "&nbsp;["+comentario+"]";
         }
-        mostrar += "<a href='editarMovimiento.php?id="+datos[i]["idmov"]+"' target='_blank' class='linkHistorialProducto'>"+j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["tipo"]+' ('+datos[i]["estado"]+')'+": <font class='negritaGrande'>"+datos[i]["cantidad"]+"</font>"+comentario+"</a><br>";
+        mostrar += "<a href='editarMovimiento.php?id="+datos[i]["idmov"]+"' target='_blank' class='linkHistorialProducto'>"+j+": "+datos[i]["fecha"]+" "+datos[i]["hora"]+" - "+datos[i]["tipo"]+' ('+datos[i]["estado"]+')'+": <span class='negritaGrande'>"+datos[i]["cantidad"]+"</span>"+comentario+"</a><br>";
       }
       var popover = '<a role="button" tabindex="0" id="historial" class="btn btn-danger historial" title="Historial de '+datos[i]["nombre"]+'" data-container="body" data-toggle="popover" data-trigger="click" data-placement="right" data-content="'+mostrar+'">Historial</a>';
       
       $("#historial").popover('dispose');
       $("#historial").remove();
-      if ($("#comentHint").length > 0) {
+      if (parseInt($("#comentHint").length, 10) > 0) {
         $("#comentHint").after(popover);
       }
       else {
@@ -395,7 +395,7 @@ function mostrarHistorial(prod){
  *        @param {String} id String con el id del elemento delante del cual debe ir el botón para ver el historial.
 */
 function mostrarHistorialGeneral(id){
-  if ($("#historialGeneral").length > 0){
+  if (parseInt($("#historialGeneral").length, 10) > 0){
     $("#historialGeneral").popover('dispose');
     $("#historialGeneral").remove();
   }
@@ -406,7 +406,7 @@ function mostrarHistorialGeneral(id){
   //alert(query);
   $.getJSON(url, {query: ""+query+""}).done(function(request){
     var datos = request.resultado;
-    var totalDatos = request.rows;
+    var totalDatos = parseInt(request.rows, 10);
     if (totalDatos > 0){
       var mostrar = '';
       var j = 0;
@@ -467,7 +467,7 @@ function showHintProd(str, id, seleccionado) {
     //alert(query);
     $.getJSON(url, {query: ""+query+""}).done(function(request) {
       var sugerencias = request.resultado;
-      var totalSugerencias = request.rows;
+      var totalSugerencias = parseInt(request.rows, 10);
       $("[name='hintProd']").remove();
             
       var mostrar = '';
@@ -509,7 +509,7 @@ function showHintProd(str, id, seleccionado) {
       //$("#hintProd").focusin();
       
       /// Agregado a pedido de Diego para que se abra el select automáticamente:
-      var length = $("#hintProd > option").length;
+      var length = parseInt($("#hintProd > option").length, 10);
 
       if ((length > 10)||(length === 0)) {
         length = 10;
@@ -1613,7 +1613,7 @@ function cargarDetalleUsuario(user) {
     var mail = usuario["mail"];if (mail === null) mail = '';
     var tel = usuario["telefono"];if (tel === null) tel = '';
     var obs = usuario["observaciones"];if (obs === null) obs = '';
-    if ($("#content").length === 0) {
+    if (parseInt($("#content").length, 10) === 0) {
       var divs = "<div id='fila' class='row'>\n\
                     <div id='selector' class='col-md-6 col-sm-12'></div>\n\
                     <div id='content' class='col-md-6 col-sm-12'></div>\n\
@@ -1733,7 +1733,7 @@ function habilitarUsuario(){
 function validarUsuario() {
   var seguir = false;
   
-  if (document.getElementById("nombre").value.length === 0)
+  if (parseInt($("#nombre").length, 10) === 0)
     {
     alert('Debe ingresar el nombre del usuario.');
     document.getElementById("nombre").focus();
@@ -1741,7 +1741,7 @@ function validarUsuario() {
   }
   else
     {
-    if (document.getElementById("apellido").value.length === 0)
+    if (parseInt($("#apellido").length, 10) === 0)
       {
       alert('Debe ingresar el apellido del usuario.');
       document.getElementById("apellido").focus();
@@ -1749,7 +1749,7 @@ function validarUsuario() {
     } 
     else
       {
-      if (document.getElementById("empresa").value.length === 0)
+      if (parseInt($("#empresa").length, 10) === 0)
         {
         alert('Debe ingresar la empresa donde trabaja el usuario.');
         document.getElementById("empresa").focus();
@@ -3265,7 +3265,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   /// SE COMENTA PUES totalPaginas ahora se pasa como parámetro
                                   ///Agrego if para saber si la variable con el total de páginas existe o no pues solo existirá si el total de datos 
                                   ///es mayor al tamaño de página elegida (de lo contrario no se crea el div con los datosOcultos
-//                                  if ($("#totalPaginas_"+j).length > 0){
+//                                  if (parseInt($("#totalPaginas_"+j).length, 10) > 0){
 //                                    totalPaginas = parseInt($("#totalPaginas_"+j).val(), 10);alert('en el if');
 //                                  }
 //                                  else {
@@ -5803,7 +5803,7 @@ function realizarGrafica(){
     var url = "data/selectQuery.php";
     //alert(query);
     $.getJSON(url, {query: ""+query+""}).done(function(request){
-      var totalDatos = request.rows;     
+      var totalDatos = parseInt(request.rows, 10);     
       if (totalDatos >= 1) {
         $("#consulta").val(query);
         $("#mensaje").val(mensajeConsulta);
@@ -6112,25 +6112,25 @@ $(document).on("change focusin", "#hint", function (){
     }
     
     $.getJSON(url, {query: ""+query2+""}).done(function(request2) {
-      if ($("#stock").length > 0){
+      if (parseInt($("#stock").length, 10) > 0){
         $("#stock").remove();
       }
-      if ($("#promedio1").length > 0){
+      if (parseInt($("#promedio1").length, 10) > 0){
         $("#promedio1").remove();
       }
-      if ($("#promedio2").length > 0){
+      if (parseInt($("#promedio2").length, 10) > 0){
         $("#promedio2").remove();
       }
-      if ($("#snapshot").length > 0){
+      if (parseInt($("#snapshot").length, 10) > 0){
         $("#snapshot").remove();
       }
-      if ($("#ultimoMov").length > 0){
+      if (parseInt($("#ultimoMov").length, 10) > 0){
         $("#ultimoMov").remove();
       }
-      if ($("#comentHint").length > 0){
+      if (parseInt($("#comentHint").length, 10) > 0){
         $("#comentHint").remove();
       }
-      if ($(".popover").length > 0){
+      if (parseInt($(".popover").length, 10) > 0){
         $(".popover").remove();
       }
       var totalConsumos2 = request2.resultado[0]['total2'];
@@ -6238,7 +6238,7 @@ $(document).on("change focusin", "#hint", function (){
 //$(document).on("click", "#hint", function (){
 //  $("#historial").remove();
 //  var prod = $(this).val();
-//  if ($("#historial").length > 0){
+//  if (parseInt($("#historial").length, 10) > 0){
 //    $("#historial").remove();
 //  }
 //  setTimeout(function(){mostrarHistorial(prod)}, 200);       
@@ -6687,7 +6687,7 @@ $(document).on("click", "#eliminarProducto", function (){
   var nombre = $("#nombre").val();
   var idProducto = $("#hintProd").val();
 
-  if ((idProducto === 'NADA')||($("#hintProd").length === 0)) {
+  if ((idProducto === 'NADA')||(parseInt($("#hintProd").length, 10) === 0)) {
     alert('Se debe seleccionar un producto para poder eliminar. Por favor verifique.');
     $("#producto").focus();
   }
@@ -7066,7 +7066,7 @@ $(document).on("click", "#agregarUsuario", function(){
             $.getJSON(url, {query: ""+query+""}).done(function(request) {
               var iduser = request.resultado[0]["ultimoUser"];
               alert('Registro agregado correctamente!');
-              if ($("#content").length === 0) {
+              if (parseInt($("#content").length, 10) === 0) {
                 var divs = "<div id='fila' class='row'>\n\
                               <div id='selector' class='col-md-5 col-sm-12'></div>\n\
                               <div id='content' class='col-md-7 col-sm-12'></div>\n\
@@ -7387,7 +7387,7 @@ $(document).on("keydown", "#parametros input, #movimiento input", function(e) {
   if ((sel === "productoStock")||(sel === "productoMovimiento")||(sel === "producto")){
     if (keyCode == 9) { 
       e.preventDefault(); 
-      var length = $('#hint> option').length;
+      var length = parseInt($('#hint> option').length, 10);
       if (length > 0) {
         $("#hint").focus();
       }
@@ -7840,7 +7840,7 @@ $(document).on("click", ".paginate", function (){
     var tabla = mostrarTabla(radio, datos, indice, todos, primerRegistro, fin, subtotales, max, totalPlasticos, tipoConsulta, totalPaginas);
     
     $("#resultados_"+indice+"").remove();
-    if ($("#detallesProducto_"+indice+"").length > 0){
+    if (parseInt($("#detallesProducto_"+indice+"").length, 10) > 0){
       $("#detallesProducto_"+indice+"").remove();
     }
     $("#rango_"+indice+"").remove();

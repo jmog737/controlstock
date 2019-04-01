@@ -12,7 +12,7 @@ header('content-type:text/css');
 /****** FIN STYLES1 ******/
 
 /******** STYLES2: *******/ 
-$colorFondo = '#cc514d';
+$colorFondo = '#4e5f4e';
 /****** FIN STYLES2 ******/
 
 echo <<<FINCSS
