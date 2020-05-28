@@ -185,7 +185,7 @@ else {
 
 setlocale(LC_ALL, 'es_UY');
 $dia = strftime("%d", time());
-$mes = substr(ucwords(strftime("%b", time())), 0, -1);
+$mes = substr(ucwords(strftime("%b", time())), 0);
 $year = strftime("%Y", time());
 $fechaCarpeta = $dia.$mes.$year;
 

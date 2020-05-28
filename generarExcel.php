@@ -191,7 +191,7 @@ function generarExcelStock($reg) {
     $al2 = array_pop($dato);
     $al1 = array_pop($dato);
     $stock = (integer)array_pop($dato);
-    
+
     $codOrigen = array_pop($dato);
     if (($codOrigen === null)||($codOrigen === '')){
       $codOrigen = 'NO ingresado';
@@ -218,7 +218,7 @@ function generarExcelStock($reg) {
     /// Acomodo el índice pues empieza en 0, y en el 1 están los nombres de los campos:
     $i = $i + $filaEncabezado + 1;
     $celda = $colId.$i;
-    $hoja->fromArray($dato, '""', $celda);
+    $hoja->fromArray($dato, '""', $celda, true);
   }
 
   /// Agrego línea con el total del stock:

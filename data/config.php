@@ -22,12 +22,12 @@ define('TIEMPOCOOKIE', 610);
 ///Consulto nombre del HOST y en base al mismo, configuro la IP (porque el HSA tiene diferente rango de IPs):
 $hostname = getHostName();
 $ip = '';
-if ($hostname === "JUANMA") {
-  $ip = "192.168.1.145";
-}
-else {
-  $ip = "192.168.10.56";
-}
+//if ($hostname === "JUANMA") {
+//  $ip = "192.168.1.145";
+//}
+//else {
+//  $ip = "192.168.10.56";
+//}
 //echo "host: ".$hostname."<br>ip: ".$ip;
 
 $unidad = "D:";
