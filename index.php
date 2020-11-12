@@ -20,6 +20,7 @@ if ( isset($_POST["usuario"]) && isset($_POST["password"]) ) {
   $sql = "SELECT COUNT(*) FROM appusers WHERE user = '$userDB'";
   $resultado = $pdo->query($sql);
   if ($resultado !== false) {
+    require_once('data/escribirLog.php');
     /* Comprobar el número de filas que coinciden con la sentencia SELECT */
     if ($resultado->fetchColumn() > 0) {
       $stmt = $pdo->query("SELECT id_usuario, user, password, historialGeneral, historialProducto, tamPagina, limiteSelects FROM appusers WHERE user = '$userDB'");
@@ -46,11 +47,13 @@ if ( isset($_POST["usuario"]) && isset($_POST["password"]) ) {
         require_once('data/config.php');
         setcookie('tiempo', time(), time()+TIEMPOCOOKIE);
         $_SESSION["success"] = " - Bienvenid@ ".strtoupper($row['user'])." -";
+        escribirLog('Inicia sesión: '.$row['user']);
         header( 'Location: movimiento.php' ) ;
         return;
       }
       /* Hay usuarios coincidentes, pero no con esa contraseña */
       else {
+        escribirLog('Contraseña incorrecta: '.$row['user']);
         $_SESSION['error_msg'] = "Lo siento <font class='usuarioIndex'>".strtoupper($userDB)."</font>, la contraseña ingresada no es correcta.<br>";
         header('Location: index.php');
         return;
@@ -58,6 +61,7 @@ if ( isset($_POST["usuario"]) && isset($_POST["password"]) ) {
     }
     /* No coincide ningua fila; no hay usuarios */
     else {
+      escribirLog('Usuario NO habilitado: '.$userDB);
       $_SESSION['error_msg'] = "Lo siento, <font class='usuarioIndex'>".strtoupper($userDB)."</font> NO está habilitado para ingresar al programa.<br>";
       header('Location: index.php');
       return;

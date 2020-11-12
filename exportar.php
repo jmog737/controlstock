@@ -3,7 +3,7 @@ if(!isset($_SESSION))
   { 
   session_start(); 
 } 
-
+$start = microtime(true);
 //error_reporting(NULL);
 //ini_set('error_reporting', NULL);
 //ini_set('display_errors',0);
@@ -11,7 +11,7 @@ if(isset($_SESSION['tiempo']) ) {
   require_once('data/pdo.php');
   require_once('generarExcel.php');
   require_once('generarPdfs.php');
-
+  require_once('data/escribirLog.php');
 //phpinfo();
 //***************************** DESTINATARIOS CORREOS ***********************************************************************************************
 //$paraListados = array();
@@ -100,6 +100,18 @@ $mostrarEstado = array_pop($mostrar);
 $mostrar[] = $mostrarEstado;
 $mostrar[] = $idmovsTemp;
 
+///**** Agregado prefijo para saber estado del producto *****/
+$estadoProd = $_POST["estadoProd_$indice"];
+escribirLog("estado RECIBIDO: ".$estadoProd);
+$prefijoEstado = '';
+switch ($estadoProd){
+  case 'activo':  $prefijoEstado = '_ACT';
+                  break;
+  case 'inactivo':  $prefijoEstado = '_INA';
+                  break;
+  default: break;
+}
+
 $campos1 = utf8_decode($_POST["campos_$indice"]);
 $campos = preg_split("/-/", $campos1);
 
@@ -127,9 +139,16 @@ $aguja1 = array(0=>"&");
 
 ///Se define el tamaño máximo aceptable para el nombre teniendo en cuenta que el excel admite un máximo de 31 caracteres, y que además, 
 ///ya se tienen 6 fijos del stock_ (movs_ es uno menos).
-$tamMaximoNombreEntidad = 20;
-$tamMaximoNombreProducto = 20;
+///**** 06/11/20: ****
+///Se cambia el máximo del producto a 40 pues se comprobó la limitante está SOLO en el nombre de la hoja del excel (a esos 31 caracteres)
+///Luego, al generar el excel se tendrán en cuenta esos 31 y se limitarán los nombres acorde
+///**** 07/11/20 ****
+///Se define mantener mismo largo para todos los casos por lo que queda TODO en 16 caracteres.
+///Queda igualmente parametrizado por si se tiene que cambiar más adelante:
+$tamMaximoNombreEntidad = 16;
+$tamMaximoNombreProducto = 16;//considero los casos regulares de prefijosTipo de 3 caracteres (todos menos ajuRet y ajuIng)
 
+$esProducto = false;
 if (isset($_POST["nombreProducto_$indice"])){
   $nombreProducto1 = $_POST["nombreProducto_$indice"];
   $sep = explode("[", $nombreProducto1);
@@ -142,6 +161,15 @@ if (isset($_POST["nombreProducto_$indice"])){
   $nombreProducto = trim($entidad1[3]);
   $nombreProductoMostrar1 = str_replace($aguja, "", $nombreProducto);
   $nombreProductoMostrar = substr($nombreProductoMostrar1, 0, $tamMaximoNombreProducto);
+  
+  ///**** A pedido, se agrega el prefijo también para la carpeta.
+  ///Si bien queda igual a nombreProductoMostrar, se mantienen separados por
+  ///futuros cambios */
+  $nombreProductoCarpeta = $nombreProductoMostrar.$prefijoEstado;
+  ///**** Agregado del prefijo indicando el estado del producto (si lo amerita) */
+  $nombreProductoMostrar = $nombreProductoMostrar.$prefijoEstado;
+  ///**** Fin Agregado del prefijo indicando el estado */
+  $esProducto = true;
 }
 if (isset($_POST["entidad_$indice"])){
   $entidad = $_POST["entidad_$indice"];
@@ -151,6 +179,9 @@ if (isset($_POST["entidad_$indice"])){
     $entidad = 'todas las entidades';
     $entidadMostrar = 'TODOS';
   }
+  ///**** Agregado del prefijo indicando el estado del producto (si lo amerita) */
+  $entidadMostrar = $entidadMostrar.$prefijoEstado;
+  ///**** Fin Agregado del prefijo indicando el estado */
 }
 
 ///************************************************************ Generación carpeta personalizada para el cliente: *************************
@@ -212,7 +243,7 @@ switch ($id){
               $subRuta = $rutaReporteFecha."/Stock";  
             }
             break;
-  case "2": $subRuta = $rutaReporteFecha."/StockPRODUCTOS/".$nombreProductoMostrar;
+  case "2": $subRuta = $rutaReporteFecha."/StockPRODUCTOS/".$nombreProductoCarpeta;
             break;
   case "3": $subRuta = $rutaReporteFecha;
             break;
@@ -223,7 +254,7 @@ switch ($id){
               $subRuta = $rutaReporteFecha."/Movs";  
             }           
             break;
-  case "5": $subRuta = $rutaReporteFecha."/MovsPRODUCTOS/".$nombreProductoMostrar;
+  case "5": $subRuta = $rutaReporteFecha."/MovsPRODUCTOS/".$nombreProductoCarpeta;
             break;
   default: break;
 }
@@ -263,9 +294,9 @@ switch ($id) {
   case "1": $tituloTabla = "LISTADO DE STOCK";
             $titulo = "STOCK POR ENTIDAD";
             $nombreReporte = "stk_".$entidadMostrar;
-//            if ($entidadMostrar === 'TODOS'){
-//              $nombreReporte = "stk".$entidadMostrar;
-//            }
+  //            if ($entidadMostrar === 'TODOS'){
+  //              $nombreReporte = "stk".$entidadMostrar;
+  //            }
             $asunto = "Reporte con el Stock de la Entidad";
             $indiceStock = 10;
             break;
@@ -286,23 +317,23 @@ switch ($id) {
             $asunto = "Reporte con los movimientos de la Entidad";
             $indiceStock = 12;
             $orientacion = 'L';
-//            if (isset($inicio)) {
-//              $inicioTemp = explode("-", $inicio);
-//              $inicioMostrar = $inicioTemp[2]."/".$inicioTemp[1]."/".$inicioTemp[0];
-//              $finTemp = explode("-", $fin);
-//              $finMostrar = $finTemp[2]."/".$finTemp[1]."/".$finTemp[0];
-//            }
+  //            if (isset($inicio)) {
+  //              $inicioTemp = explode("-", $inicio);
+  //              $inicioMostrar = $inicioTemp[2]."/".$inicioTemp[1]."/".$inicioTemp[0];
+  //              $finTemp = explode("-", $fin);
+  //              $finMostrar = $finTemp[2]."/".$finTemp[1]."/".$finTemp[0];
+  //            }
             break;
   case "5": $tituloTabla = "MOVIMIENTOS DEL PRODUCTO";
             $titulo = "MOVIMIENTOS POR PRODUCTO";
             $asunto = "Reporte con los movimientos del Producto";
             $indiceStock = 12;
-//            if (isset($inicio)) {
-//              $inicioTemp = explode("-", $inicio);
-//              $inicioMostrar = $inicioTemp[2]."/".$inicioTemp[1]."/".$inicioTemp[0];
-//              $finTemp = explode("-", $fin);
-//              $finMostrar = $finTemp[2]."/".$finTemp[1]."/".$finTemp[0];
-//            }
+  //            if (isset($inicio)) {
+  //              $inicioTemp = explode("-", $inicio);
+  //              $inicioMostrar = $inicioTemp[2]."/".$inicioTemp[1]."/".$inicioTemp[0];
+  //              $finTemp = explode("-", $fin);
+  //              $finMostrar = $finTemp[2]."/".$finTemp[1]."/".$finTemp[0];
+  //            }
             break;       
   default: break;
 }
@@ -384,6 +415,9 @@ else {
   $subRutita = $subRuta;
 }
 
+escribirLog("NUEVA:");
+escribirLog("query @exportar: ".$query);
+
 //echo "Query: ".$query."<br>";
 /// Ejecuto la consulta:
 $resultado1 = $pdo->query($query);
@@ -419,6 +453,7 @@ $pdfResumen->SetWidths($largoCampos);
 
 $filas = array();
 $m = 1;
+$sigo = true;
 while ($row = $resultado1->fetch(PDO::FETCH_NUM))
   {
   $filas[$m] = $row;
@@ -437,10 +472,13 @@ foreach($filas as $fila)
     $total = $total + $subtotales[$fila[1]];//echo $fila[3]." -- ".$subtotales[$fila[1]]."<br>";
   }
   else {
-    $total = $total + $fila[$indiceStock];
+    $total = $total + $fila[$indiceStock];//escribirLog("total: ".$total." - stock: ".$fila[$indiceStock]);
   }
   $registros[] = $fila;
 }
+
+escribirLog("csv @exportar: ".$consultaCSV);
+
 //echo "total: ".$total."<br>";
 //echo "<br>CSV: ".$consultaCSV."<br>";
 ///Ejecuto consulta para la generación del excel:
@@ -464,12 +502,13 @@ foreach($filas1 as $fila)
     array_unshift($fila, $primerColumna);
     ///Quito la columna de COMENTARIOS pues ya no se muestran en el EXCEL a pedido de Diego:
     ///(primero quito estado que es la última, luego la de comentarios, y finalmente, agrego la de estado nuevamente:
-    $estado = array_pop($fila);
+    $estadoMov = array_pop($fila);
     array_pop($fila);
-    array_push($fila, $estado);
+    array_push($fila, $estadoMov);
   }
   else {
     if (($id == 1)||($id == 2)){
+      $estadoProducto = array_pop($fila);
       $fechaCreacion = array_pop($fila);
       $coment = array_pop($fila);
       $al2 = array_pop($fila);
@@ -492,19 +531,28 @@ foreach($filas1 as $fila)
       array_push($fila, $al1);
       array_push($fila, $al2);
       array_push($fila, $fechaCreacion);
+      array_push($fila, $estadoProducto);
     }
     array_unshift($fila, $j); //echo $coment." - ".$al1." - ".$al2." - ".$stock."<br>";
   }
   $j++;
   //Acumulo el total de plásticos ya sea en stock o movidos:
-//  if (($radio === 'entidadStockViejo')||($radio === 'productoStockViejo')){
-//    $total1 = $total1 + $subtotales[$fila[1]];
-//  }
-//  else {
-//    $total1 = $total1 + $fila[5];
-//  }
+  //  if (($radio === 'entidadStockViejo')||($radio === 'productoStockViejo')){
+  //    $total1 = $total1 + $subtotales[$fila[1]];
+  //  }
+  //  else {
+  //    $total1 = $total1 + $fila[5];
+  //  }
   $registros1[] = $fila;
 }
+
+$end = microtime(true);
+$tiempoTotalInicio = round(($end - $start), 4);
+escribirLog("Duracion Inicio: ".$tiempoTotalInicio."seg");
+escribirLog("---Inicia generación de archivos:---");
+
+//Inicio contador de tiempo para PDF:
+$start = microtime(true);
 
 //Según el ID, genero los PDFs correspondientes:
 switch ($id) {
@@ -520,6 +568,9 @@ switch ($id) {
             break;
   default: break;
 }    
+//PRUEBA LARGO NOMBRE DEL ARCHIVO:
+//$nombreReporte = $nombreReporte.'12345678910111213141516171819202122232425262728293031323334353637383940';
+// FIN PRUEBA
 
 $timestamp = date('dmy_His');
 $nombreArchivo = $nombreReporte."_".$timestamp.".pdf";
@@ -534,11 +585,27 @@ else {
   $GLOBALS["dirExcel"] = $subRutita."/";
 }
 
-
 ///Guardo el archivo en el disco, y además lo muestro en pantalla:
 $pdfResumen->Output($salida, 'F');
+
+/* $nuevaDir = "//192.168.0.106/tests-pc/";
+if(copy($salida, $nuevaDir."test.pdf")){
+  escribirLog("El archivo: ".$nombreArchivo." se copió con éxito a: ".$nuevaDir);
+}
+else {
+  escribirLog("Falló la copia del archivo: ".$nombreArchivo);
+} */
+
+$end = microtime(true);
+$tiempoPDFile = round(($end - $start), 4);
+escribirLog("Duracion pdf file: ".$tiempoPDFile."seg");
+
+$start = microtime(true);
 $pdfResumen->Output($salida, 'I');
 
+$end = microtime(true);
+$tiempoPDFScreen = round(($end - $start), 4);
+escribirLog("Duracion pdf screen: ".$tiempoPDFScreen."seg");
 ///****************************************************** ESTABLECER CONTRASEÑA PARA EL ZIP  ************************************************
 ///*********************************** (requerida por el EXCEL, por esto se pone antes de la generación del mismo)  *************************
 switch ($zipSeguridad){
@@ -553,7 +620,7 @@ switch ($zipSeguridad){
   default: break;
 }
 ///******************************************************* FIN ESTABLECER CONTRASEÑA PARA EL ZIP ********************************************
-
+$start = microtime(true);
 ///****************************************************************** GENERACIÓN DEL EXCEL **************************************************
 ///Según el ID, genero los listados en Excel:
 switch ($id) {
@@ -570,7 +637,9 @@ switch ($id) {
   default: break;
 }  
 ///****************************************************************** FIN GENERACIÓN DEL EXCEL **********************************************
-
+$end = microtime(true);
+$tiempoXLS = round(($end - $start), 4);
+escribirLog("Duracion xls: ".$tiempoXLS."seg");
 /*
 /// Exportación de la consulta a CSV:
 $nombreCSV = $nombreReporte.$timestamp."_CSV.csv";
@@ -581,6 +650,7 @@ $resultado2 = $pdo->query($exportarCSV);
 */
 
 ///************************************************************ GENERACION ZIP FILE *********************************************************
+$start = microtime(true);
 $zip = new ZipArchive;
 $nombreZip = $nombreReporte."_".$timestamp.".zip";
 
@@ -610,6 +680,17 @@ if ($zipSeguridad !== 'nada'){
 }
 
 $zip->close();
+$end = microtime(true);
+$tiempoZIP = round(($end - $start), 4);
+escribirLog("Duracion zip: ".$tiempoZIP."seg");
+
+$tiempoTotalFiles = $tiempoPDFile + $tiempoPDFScreen + $tiempoXLS + $tiempoZIP;
+escribirLog("TOTAL ARCHIVOS (PDF, XLS, ZIP): ".$tiempoTotalFiles."seg");
+escribirLog("---Fin generación de archivos---");
+
+$tiempoTotal = $tiempoTotalFiles + $tiempoTotalInicio;
+escribirLog("TOTAL: ".$tiempoTotal."seg");
+escribirLog("FIN");
 ///********************************************************** FIN GENERACION ZIP FILE *******************************************************
 
 ///************************************************************** ENVÍO DE MAILS ************************************************************

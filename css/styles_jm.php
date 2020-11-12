@@ -712,7 +712,7 @@ a.linkHistorialGeneral:hover, a.linkHistorialProducto:hover{
   margin: auto;
   padding: 10px;
 }
-#modalCbioFecha .modal-body table td, th{
+#modalCbioFecha .modal-body table td, #modalCbioFecha .modal-body table th{
   padding-right: 10px;
   padding-right: 10px;
 }

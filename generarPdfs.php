@@ -10,6 +10,7 @@
 *******************************************************/
 require_once("css/colores.php");
 require_once("data/mc_table.php");
+require_once("data/escribirLog.php");
 
 class PDF extends PDF_MC_Table
   {
@@ -117,7 +118,8 @@ class PDF extends PDF_MC_Table
     $this->setX($x);
     }
 
-  //Pie de página
+  
+    //Pie de página
   function Footer()
     {
     global $h, $hFooter, $textoLegal;
@@ -145,7 +147,7 @@ class PDF extends PDF_MC_Table
     $this->SetFont('Arial', 'I', 8);
     $this->SetTextColor(0);
     $this->Cell($anchoTipoFooter, $h, 'Pag. ' . $this->PageNo(), 0, 0, 'C', false);
-    }
+  }
 
   //Tabla tipo listado para el stock de una o todas las entidades, o también para el total de plásticos en bóveda:
   function tablaStockEntidad($total, $tipo)
@@ -170,9 +172,9 @@ class PDF extends PDF_MC_Table
     ///***************************************************************** TITULO *************************************************************
     //Defino tipo de letra y tamaño para el Título:
     $this->SetFont('Courier', 'B', 12);
-    //$this->SetY(20);
-
-    //$tipoTotal = "Stock de $entidad";
+    
+    //escribirLog("recibo: ".$tipoConsulta);
+    
     $tipoTotal = $tipoConsulta;
     $tam = $this->GetStringWidth($tipoTotal);
     $xInicio = $xTipo + (($anchoTipo-$tam)/2);
@@ -184,8 +186,29 @@ class PDF extends PDF_MC_Table
     //Save the current position
     $x1=$this->GetX();
     $y=$this->GetY();
-    $tam1 = $this->GetStringWidth("Stock de ");
-    
+
+    $primPart = '';
+    $incActivos = stripos($tipoTotal, "activos de ");
+    if ($incActivos !== false){
+      $pAct = explode("activos de ", $tipoTotal);
+      $primPart = $pAct[0]."activos de ";
+      $tamPrimPart = $this->GetStringWidth($primPart);
+    }
+    else {
+      $incInactivos = stripos($tipoTotal, "inactivos de ");
+      if ($incInactivos !== false){
+        $pInact = explode("inactivos de ", $tipoTotal);
+        $primPart = $pInact[0]."inactivos de ";
+        $tamPrimPart = $this->GetStringWidth($primPart);
+      }
+      else {
+        $primPart = "Stock de ";
+        $tamPrimPart = $this->GetStringWidth($primPart);
+      }
+    }
+
+    //escribirLog("primParte: ".$primPart);
+
     $fraccionado = false;
     $parteTipo = stripos($tipoTotal, ": ");
     if ($parteTipo !== false){
@@ -209,7 +232,7 @@ class PDF extends PDF_MC_Table
     else {
       if ($nbTitulo > 1) {
         $this->SetTextColor(0);
-        $this->Cell($tam1,$h, "Stock de ",0, 0, 'R', 0);
+        $this->Cell($tamPrimPart,$h, $primPart,0, 0, 'R', 0);
         $this->SetTextColor(255, 0, 0);
         $this->SetFont('Courier', 'BI', 12);
         $tamNombre1 = $this->GetStringWidth($entidad);
@@ -221,7 +244,7 @@ class PDF extends PDF_MC_Table
       }
       else {
         $this->SetTextColor(0);
-        $this->Cell($tam1,$hTitulo, "Stock de",0, 0,'R', 0);
+        $this->Cell($tamPrimPart,$hTitulo, $primPart,0, 0,'R', 0);
         $this->SetTextColor(255, 0, 0);
         $this->SetFont('Courier', 'BI', 12);
         $tamNombre1 = $this->GetStringWidth($entidad);
@@ -230,7 +253,7 @@ class PDF extends PDF_MC_Table
         if ($fraccionado){
           $this->Cell($tamUlitmaParte,$hTitulo, $ultimaParte,0, 0, 'L', 0);
         }
-      }  
+      } 
     }
     ///************************************************************** FIN TITULO ************************************************************
     
@@ -255,8 +278,7 @@ class PDF extends PDF_MC_Table
       $y = $this->GetY();
     }
     ///************************************************************** FIN SUB-TITULO *********************************************************
-    
-    
+  
     
     //************************************** TÍTULO TABLA ***********************************************************************************
     $this->SetX($x);
@@ -354,42 +376,23 @@ class PDF extends PDF_MC_Table
         ///***************************************************************** TITULO ************************************************************
         //Defino tipo de letra y tamaño para el Título:
         $this->SetFont('Courier', 'B', 12);
-        //$this->SetY(20);
-
-        //$tipoTotal = "Stock de $entidad";
-        $tipoTotal = $tipoConsulta;
-        $tam = $this->GetStringWidth($tipoTotal);
-        $xInicio = $xTipo + (($anchoTipo-$tam)/2);
-        $this->SetX($xInicio);
-
-        $nbTitulo = $this->NbLines($anchoTipo,$tipoTotal);
-        $hTitulo=$h*$nbTitulo;
-
+        
         //Save the current position
         $x1=$this->GetX();
         $y=$this->GetY();
-        $tam1 = $this->GetStringWidth("Stock de ");
-
-        $fraccionado = false;
-        $parteTipo = stripos($tipoTotal, ": ");
-        if ($parteTipo !== false){
-          $parte2 = explode(": ", $tipoTotal);
-          $ultimaParte = utf8_decode(" al día: ".$parte2[1]);
-          $fraccionado = true;
-          $tamUlitmaParte = $this->GetStringWidth($ultimaParte);
-        }
+        $this->SetX($xInicio);
 
         if ($tipo) {
           ///Si es Total de stock en bóveda, le agrego itálica a todo el título:
           $this->SetFont('Courier', 'BI', 12);
           $this->SetTextColor(0);
           $this->SetX($xTipo);
-          $this->MultiCell($anchoTipo, $h, utf8_decode($tipoConsulta), 0, 'C', 0);
+          $this->MultiCell($anchoTipo, $h, utf8_decode($tipoConsulta."al: ".$fecha), 0, 'C', 0);
         }
         else {
           if ($nbTitulo > 1) {
             $this->SetTextColor(0);
-            $this->Cell($tam1,$h, "Stock de ",0, 0, 'R', 0);
+            $this->Cell($tamPrimPart,$h, $primPart,0, 0, 'R', 0);
             $this->SetTextColor(255, 0, 0);
             $this->SetFont('Courier', 'BI', 12);
             $tamNombre1 = $this->GetStringWidth($entidad);
@@ -401,7 +404,7 @@ class PDF extends PDF_MC_Table
           }
           else {
             $this->SetTextColor(0);
-            $this->Cell($tam1,$hTitulo, "Stock de",0, 0,'R', 0);
+            $this->Cell($tamPrimPart,$hTitulo, $primPart,0, 0,'R', 0);
             $this->SetTextColor(255, 0, 0);
             $this->SetFont('Courier', 'BI', 12);
             $tamNombre1 = $this->GetStringWidth($entidad);
@@ -410,40 +413,9 @@ class PDF extends PDF_MC_Table
             if ($fraccionado){
               $this->Cell($tamUlitmaParte,$hTitulo, $ultimaParte,0, 0, 'L', 0);
             }
-          }  
+          } 
         }
-
-
-        ////*****************************************************************************************************************************************************
-        /*
-//Defino tipo de letra y tamaño para el Título:
-        $this->SetFont('Courier', 'B', 12);
-        $this->SetTextColor(0);
-        $this->SetY(25);
-        $this->SetX($xInicio);
-
-        if ($tipo) {
-          ///Si es Total de stock en bóveda, le agrego itálica a todo el título:
-        $this->SetFont('Courier', 'BI', 12);
-        $this->SetTextColor(0);
-        $this->SetX($xTipo);
-        $this->MultiCell($anchoTipo, $h, utf8_decode($tipoConsulta), 0, 'C', 0);
-        }
-        else {
-          if ($nbTitulo > 1) {
-            $this->Cell($tam1,$h, "Stock de:",0, 0, 'R', 0);
-            $this->SetTextColor(255, 0, 0);
-            $this->Cell($tamEntidad,$h, $entidad."(cont.)",0, 0,'L', 0);
-            $this->SetTextColor(0);
-          }
-          else {
-            $this->Cell($tam1,$hTitulo, "Stock de:",0, 0,'R', 0);
-            $this->SetTextColor(255, 0, 0);
-            $this->Cell($tamEntidad,$hTitulo, $entidad."(cont.)",0, 0,'L', 0);
-            $this->SetTextColor(0);
-          }  
-        }
-        */
+        
         $this->Ln(10);
         $y = $this->GetY();
         ///************************************************************** FIN TITULO ************************************************************
@@ -485,6 +457,7 @@ class PDF extends PDF_MC_Table
         //$this->SetFont('Courier', '', 9); 
       }
       ///********************************************** FIN ENCABEZADO DE PÁGINA ************************************************************
+
       $this->setFillColor(colorFondoRegistro[0], colorFondoRegistro[1], colorFondoRegistro[2]);
 
       ///Escribo las celdas con los datos para la fila:
@@ -837,10 +810,10 @@ class PDF extends PDF_MC_Table
     $nbSubTitulo = $this->NbLines($anchoSubTitulo,$subTitulo);
     $hSubTitulo=$h*$nbSubTitulo;
     
-//    if ($tam1 < $anchoTipo){
-//      $xTipo = round((($anchoPagina - $tam1)/2), 2);
-//      $anchoSubTitulo = 1.05*$tam1;
-//    }
+    //if ($tam1 < $anchoTipo){
+    //  $xTipo = round((($anchoPagina - $tam1)/2), 2);
+    //  $anchoSubTitulo = 1.05*$tam1;
+    //}
     $this->SetX($xTipo);
 
     $this->SetFillColor(colorSubtitulo[0], colorSubtitulo[1], colorSubtitulo[2]);
@@ -848,27 +821,27 @@ class PDF extends PDF_MC_Table
       $this->MultiCell($anchoSubTitulo,$h, $subTitulo,0,'C', 1);
       $this->Ln(2);
 
-//      $y = $this->GetY();
-//      $this->MultiCell($tamPrimeraParte,$h, $primeraParte,0, 'C', 0);
-//      $this->SetTextColor(255, 0, 0);
-//      $xProd = $xTipo+$tamPrimeraParte;
-//      $this->SetX($xProd);
-//      $this->SetY($y);
-//      $this->MultiCell($tamProdu,$h, $produ,0, 'C', 0);
-//      $this->SetTextColor(0);
-//      $xSegundaParte = $xTipo+$tamPrimeraParte+$tamProdu;
-//      $this->SetX($xSegundaParte);
-//      $this->SetY($y);
-//      $this->MultiCell($tamSegundaParte,$h, $segundaParte,0, 'C', 0);
+      //$y = $this->GetY();
+      //$this->MultiCell($tamPrimeraParte,$h, $primeraParte,0, 'C', 0);
+      //$this->SetTextColor(255, 0, 0);
+      //$xProd = $xTipo+$tamPrimeraParte;
+      //$this->SetX($xProd);
+      //$this->SetY($y);
+      //$this->MultiCell($tamProdu,$h, $produ,0, 'C', 0);
+      //$this->SetTextColor(0);
+      //$xSegundaParte = $xTipo+$tamPrimeraParte+$tamProdu;
+      //$this->SetX($xSegundaParte);
+      //$this->SetY($y);
+      //$this->MultiCell($tamSegundaParte,$h, $segundaParte,0, 'C', 0);
     }
     else {
       $this->Cell($anchoSubTitulo,$hSubTitulo, $subTitulo,0, 0,'C', 1);
       $this->Ln(8);
-//      $this->Cell($tamPrimeraParte,$hSubTitulo, $primeraParte, 0, 0, 'R', 0);
-//      $this->SetTextColor(255, 0, 0);
-//      $this->Cell($tamProdu,$hSubTitulo, $produ, 0, 0, 'L', 0);
-//      $this->SetTextColor(0);
-//      $this->Cell($tamSegundaParte,$h, $segundaParte, 0, 0, 'L', 0);
+      //$this->Cell($tamPrimeraParte,$hSubTitulo, $primeraParte, 0, 0, 'R', 0);
+      //$this->SetTextColor(255, 0, 0);
+      //$this->Cell($tamProdu,$hSubTitulo, $produ, 0, 0, 'L', 0);
+      //$this->SetTextColor(0);
+      //$this->Cell($tamSegundaParte,$h, $segundaParte, 0, 0, 'L', 0);
     }
     ///*********************** FIN TEST para resaltar el nombre ******************************
     ///************************************************************ FIN TITULO **************************************************************
@@ -1035,6 +1008,18 @@ class PDF extends PDF_MC_Table
       $this->SetX($x);
       ///************************************************************ FIN CAMPO CODIGO ORIGEN ***********************************************
       
+      ///********************************************************** CAMPO ESTADO PRODUCTO *******************************************************
+      $estadoProducto = $registros[0][15];
+      $this->SetTextColor(255, 255, 255);
+      $this->SetFont('Courier', 'B', 10);
+      $this->Cell($cCampo, $h, utf8_decode("Estado:"), 'LRBT', 0, 'L', true);
+      $this->SetFont('Courier', '', 9);
+      $this->SetTextColor(0);
+      $this->Cell($cResto, $h, ucfirst($estadoProducto), 'LRBT', 0, 'C', false);
+      $this->Ln();
+      $this->SetX($x);
+      ///********************************************************** FIN CAMPO ESTADO PRODUCTO ***************************************************
+
       ///*********************************************************** CAMPO FECHA CREACION ***************************************************
       $fechaCreacion = $registros[0][14];
       if (($fechaCreacion === '')||($fechaCreacion === null)) {
@@ -1232,7 +1217,7 @@ class PDF extends PDF_MC_Table
     $tamTabla = $largoCampos[$totalCampos];
     //$tamNombre = $this->GetStringWidth($nombreProducto); 
     $x = round((($anchoPagina-$tamTabla)/2), 2);
-  //echo "tabla: $tamTabla<br>anchoPagina: $anchoPagina<br>x: $x<br>";
+    //echo "tabla: $tamTabla<br>anchoPagina: $anchoPagina<br>x: $x<br>";
     //Defino color para los bordes:
     $this->SetDrawColor(0, 0, 0);
     //Defino grosor de los bordes:
@@ -1285,6 +1270,8 @@ class PDF extends PDF_MC_Table
                           break;
         case "Comentarios": $indComentarios = $i;
                             break;
+        case "EstadoProd":  $indEstadoProducto = $i;
+                            break;                    
         case "BIN": $indBin = $i;
                     break;
         case utf8_decode("Fecha Creación"): $indFechaCreacion = $i;
@@ -1332,9 +1319,12 @@ class PDF extends PDF_MC_Table
     if ($mostrar[$indNombre]) {
       $this->Cell($largoCampos[$indNombre], $h, $campos[$indNombre], 'LRBT', 0, 'C', true);
     }
+    if ($mostrar[$indEstadoProducto]) {
+      $this->Cell($largoCampos[$indEstadoProducto], $h, "Est. Prod.", 'LRBT', 0, 'C', true);
+    }
     if ($mostrar[$indBin]) {
       $this->Cell($largoCampos[$indBin], $h, $campos[$indBin], 'LRBT', 0, 'C', true);
-    }
+    }  
     if ($mostrar[$indFechaCreacion]) {
       $this->Cell($largoCampos[$indFechaCreacion], $h, $campos[$indFechaCreacion], 'LRBT', 0, 'C', true);
     }
@@ -1448,8 +1438,7 @@ class PDF extends PDF_MC_Table
         
         ///Solo si la consulta es de TODOS los TIPOS muestro el detalle:
         if ($mostrarResumenProducto){
-          
-          
+  
           $totalRenglonesResumen = 0;
           if ($subtotalRetiro > 0) {
             $totalRenglonesResumen++;
@@ -1688,6 +1677,8 @@ class PDF extends PDF_MC_Table
                              break;
               case "Fecha": $indFecha = $i;
                             break;
+              case "EstadoProd":  $indEstadoProducto = $i;
+                                  break;               
               case "Hora": $indHora = $i;
                            break;
               case "Tipo": $indTipo = $i;
@@ -1755,6 +1746,10 @@ class PDF extends PDF_MC_Table
           }
           if ($mostrar[$indNombre]) {
             $this->Cell($largoCampos[$indNombre], $h, $campos[$indNombre], 'LRBT', 0, 'C', true);
+          }
+          if ($mostrar[$indEstadoProducto]) {
+            //$this->Cell($largoCampos[$indEstadoProducto], $h, $campos[$indEstadoProducto], 'LRBT', 0, 'C', true);
+            $this->Cell($largoCampos[$indEstadoProducto], $h, "Est. Prod.", 'LRBT', 0, 'C', true);
           }
           if ($mostrar[$indBin]) {
             $this->Cell($largoCampos[$indBin], $h, $campos[$indBin], 'LRBT', 0, 'C', true);
@@ -1906,6 +1901,8 @@ class PDF extends PDF_MC_Table
                             break;
             case "Nombre": $indNombre = $i;
                            break;
+            case "EstadoProd":  $indEstadoProducto = $i;
+                                break;               
             case "Fecha": $indFecha = $i;
                           break;
             case "Hora": $indHora = $i;
@@ -1963,6 +1960,10 @@ class PDF extends PDF_MC_Table
         }
         if ($mostrar[$indNombre]) {
           $this->Cell($largoCampos[$indNombre], $h, $campos[$indNombre], 'LRBT', 0, 'C', true);
+        }
+        if ($mostrar[$indEstadoProducto]) {
+          //$this->Cell($largoCampos[$indEstadoProducto], $h, $campos[$indEstadoProducto], 'LRBT', 0, 'C', true);
+          $this->Cell($largoCampos[$indEstadoProducto], $h, "Est. Prod.", 'LRBT', 0, 'C', true);
         }
         if ($mostrar[$indBin]) {
           $this->Cell($largoCampos[$indBin], $h, $campos[$indBin], 'LRBT', 0, 'C', true);
@@ -2221,6 +2222,40 @@ class PDF extends PDF_MC_Table
       }
       ///*********************************************************** FIN CAMPO NOMBRE *******************************************************
       
+      ///********************************************************** CAMPO ESTADO PRODUCTO ***************************************************
+      /// Chequeo si se tiene que mostrar el campo EstadoProducto, y de ser así lo muestro:
+      if ($mostrar[$indEstadoProducto]) 
+        {      
+        $w = $largoCampos[$indEstadoProducto];
+        $estadoProd = ucfirst(trim(utf8_decode($dato[$indEstadoProducto])));
+        $nb1 = $this->NbLines($w, $estadoProd);
+
+        //Save the current position
+        $x1=$this->GetX();
+        $y=$this->GetY();
+        
+        if ($fill) {
+          $f = 'F';
+        }
+        else {
+          $f = '';
+        }
+        //Draw the border
+        $this->Rect($x1,$y,$w,$h0, $f);
+        $h1 = $h0/$nb1;
+        //Print the text
+        if ($nb1 > 1) {
+          $this->MultiCell($w,$h1, $estadoProd,1,'C', $fill);
+          }
+        else {
+          $this->MultiCell($w,$h0, $estadoProd,1,'C', $fill);
+          }  
+        //Put the position to the right of the cell
+        $this->SetXY($x1+$w,$y);
+      
+      }
+      ///****************************************************** FIN CAMPO ESTADO PRODUCTO ***************************************************
+
       ///************************************************************** CAMPO BIN ***********************************************************
       /// Chequeo si se tiene que mostrar el campo Bin, y de ser así lo muestro:
       if ($mostrar[$indBin]) 
@@ -3029,6 +3064,7 @@ class PDF extends PDF_MC_Table
     $ultimoMovimiento = trim(utf8_decode($registros[0][9]));
     $fechaCreacion = $registros[0][14];
     $idprod = $registros[0][1];
+    $estadoProducto = $registros[0][15];
     
     if (!isset($subtotales[$idprod])){
       $stock = $registros[0][10];  
@@ -3049,7 +3085,7 @@ class PDF extends PDF_MC_Table
     
     $tamTabla = $cCampo + $cResto;
     $anchoPagina = $this->GetPageWidth();
-    $anchoTipo = 0.8*$anchoPagina;
+    $anchoTipo = 0.80*$anchoPagina;
     
     $x = ($anchoPagina-$tamTabla)/2;
     $xTipo = ($anchoPagina - $anchoTipo)/2;
@@ -3068,19 +3104,24 @@ class PDF extends PDF_MC_Table
     //$tipoTotal = "Stock del producto $nombre";
     $tipoTotal = $tipoConsulta;
     $tam = $this->GetStringWidth($tipoTotal);
-    $xInicio = $xTipo + (($anchoTipo-$tam)/2);
+    if ($anchoTipo > $tam){
+      $xInicio = $xTipo + (($anchoTipo-$tam)/2);
+    }
+    else {
+      $xInicio = $xTipo;
+    }
     $this->SetX($xInicio);
-    
+
     $nbTitulo = $this->NbLines($anchoTipo,$tipoTotal);
     $hTitulo=$h*$nbTitulo;
     
     //Save the current position
     $x1=$this->GetX();
     $y=$this->GetY();
-    
+
     $tam1 = $this->GetStringWidth("Stock del producto ");
     $fraccionado = false;
-    $parteTipo = stripos($tipoTotal, ": ");
+    $parteTipo = stripos($tipoTotal, " al día: ");
     if ($parteTipo !== false){
       $parte2 = explode(": ", $tipoTotal);
       $ultimaParte = utf8_decode(" al día: ".$parte2[1]);
@@ -3094,7 +3135,7 @@ class PDF extends PDF_MC_Table
       $this->Cell($tam1,$h, "Stock del producto",0, 0, 'R', 0);
       $this->SetTextColor(255, 0, 0);
       $this->SetFont('Courier', 'BI', 12);
-      $tamNombre1 = $this->GetStringWidth($nombre);
+      $tamNombre1 = $this->GetStringWidth($nombreProducto);escribirLog("nombre: ".$nombre." - tamNombre: ".$tamNombre1);
       $this->Cell($tamNombre1,$h, utf8_decode($nombreProducto),0, 0,'L', 0);
       $this->SetTextColor(0);
       if ($fraccionado){
@@ -3231,6 +3272,17 @@ class PDF extends PDF_MC_Table
     $this->SetX($x);
     ///************************************************************ FIN CAMPO CODIGO ORIGEN ***************************************************
     
+    ///********************************************************** CAMPO ESTADO PRODUCTO *******************************************************
+    $this->SetTextColor(255, 255, 255);
+    $this->SetFont('Courier', 'B', 10);
+    $this->Cell($cCampo, $h, utf8_decode("Estado:"), 'LRBT', 0, 'L', true);
+    $this->SetFont('Courier', '', 9);
+    $this->SetTextColor(0);
+    $this->Cell($cResto, $h, ucfirst($estadoProducto), 'LRBT', 0, 'C', false);
+    $this->Ln();
+    $this->SetX($x);
+    ///********************************************************** FIN CAMPO ESTADO PRODUCTO ***************************************************
+
     ///*********************************************************** CAMPO FECHA CREACION *******************************************************
     if (($fechaCreacion === '')||($fechaCreacion === null)) {
       $fechaCreacion = 'No Ingresada';

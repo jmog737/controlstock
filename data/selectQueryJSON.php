@@ -1,5 +1,6 @@
 <?php
 require_once('pdo.php');
+require_once('escribirLog.php');
 
 $tamPage = $_SESSION["tamPagina"];
 
@@ -9,7 +10,7 @@ $query = array();
 $query = (array)json_decode($_GET["query"],true);
 
 ///Comento escritura en el log para evitar sobrecargar el archivo.
-//escribirLog($query);
+//escribirLog("selectQueryJSON: ".$query[0]);
 $limite = $tamPage;
 
 $datos = array();
@@ -22,7 +23,9 @@ for ($i = 0; $i < count($query); $i++){
   $datos["$i"]['ingresos'] = null;
   $datos["$i"]['ajusteRetiros'] = null;
   $datos["$i"]['ajusteIngresos'] = null;
-  //escribirLog($query[$i]);
+  
+  //escribirLog("selectQueryJSON: ".$query[$i]);
+
   if ($tipo === 'entidadStock'){
     $temp = explode("where", $query[$i]);
     $test = stripos($temp[1], " and (fecha >");
@@ -44,7 +47,9 @@ for ($i = 0; $i < count($query); $i++){
   }
   
   if ($tipo === 'totalStock'){
-    $consultaSuma = "select sum(stock) as total from productos where estado='activo'";
+    $t1 = explode(" group by", $query[$i]);
+    $t2 = explode(" where ", $t1[0]);
+    $consultaSuma = "select sum(stock) as total from productos where ".$t2[1];
     $result0 = $pdo->query($consultaSuma);
     while (($fila0 = $result0->fetch(PDO::FETCH_ASSOC)) != NULL) { 
       $datos["$i"]['suma'] = $fila0["total"];
@@ -288,13 +293,18 @@ for ($i = 0; $i < count($query); $i++){
   $test4 = stripos($query[$i], "from");
   if ($test4 !== false){
     $temp = explode("from", $query[$i]);
-    $totalConsulta[$i] = "select count(*) as total from ".$temp[1];
+    $totalConsulta[$i] = "select * from".$temp[1];
   }
-  $result1 = $pdo->query($totalConsulta[$i]);
-  while (($fila1 = $result1->fetch(PDO::FETCH_ASSOC)) != NULL) { 
-    $datos["$i"]['totalRows'] = $fila1["total"];
-  }
-    
+  
+  //$start = microtime(true);
+  //escribirLog("consulta total: ".$totalConsulta[$i]);
+  $result1 = $pdo->query($totalConsulta[$i])->fetchAll();
+  //$end = microtime(true);
+  $datos["$i"]['totalRows'] = count($result1);
+  //$tiempo = $end - $start;
+  //escribirLog("total rows: ".$datos["$i"]['totalRows']);
+  //escribirLog("Duracion: ".$tiempo);
+
   ///Recupero primera página para mostrar:
   $query[$i] = $query[$i]." limit ".$limite;
   $result = $pdo->query($query[$i]);
@@ -302,7 +312,6 @@ for ($i = 0; $i < count($query); $i++){
   while (($fila = $result->fetch(PDO::FETCH_ASSOC)) != NULL) { 
     $datos["$i"]['resultado'][] = $fila;
   }
-  
 }
 
 ///Devuelvo total de registros y datos SOLO de la primera página:

@@ -11,6 +11,7 @@
 require 'vendor/autoload.php';
 require_once("data/config.php");
 require_once("css/colores.php");
+require_once("data/escribirLog.php");
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -18,8 +19,10 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 ///*********************************************************************** FIN SETEO DE CARPETAS **************************************************************
 $textoLegalExcel = "EMSA S.A. informa y hace de conocimiento de nuestros clientes, la exclusión de responsabilidades frente a casos de daño, robo, incendio o catástrofe que pudiesen estropear el stock de tarjetas de vuestra propiedad que se encuentran resguardadas en nuestra bóveda. \nEsto no afectará en absoluto la calidad y prestancia de nuestra operativa diaria y de los protocolos administrativos y de seguridad que se cumplen actualmente. \nEl alcance ofrecido en nuestro servicio es pura y exclusivamente para la reserva y utilización del espacio físico y el control diario en la producción de embosados a través de los informes respectivos, coordinados previamente con el cliente. \nEsta comunicación es a modo informativo y las cláusulas respectivas serán anexadas a los contratos existentes o futuros. \nAgradecemos en forma insistente la comprensión y preferencia que ante todo siguen teniendo para con nuestros servicios.";
 
+$limiteNombre = 24;
+
 function generarExcelStock($reg) {
-  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta, $textoLegalExcel;
+  global $nombreReporte, $limiteNombre, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta, $textoLegalExcel;
   //include_once("css/colores.php");
   //global $colorFondoCampos, $colorFondoTextoLegal, $colorTotal, $colorFondoTotal, $colorStock, $colorFondoStockRegular, $colorFondoStockAlarma1, $colorFondoStockAlarma2;
   //global $colorBordeRegular, $colorComRegular, $colorTabStock, $colorBordeTitulo, $colorFondoTitulo, $colorComStock, $colorComDiff, $colorComPlastico;
@@ -52,20 +55,25 @@ function generarExcelStock($reg) {
   $test = stripos($nombreReporte, "_al_");
   if ($test !== false){
     $nombreReporteTemp = explode("_al_", $nombreReporte);
-    $parte1 = $nombreReporteTemp[0];
-    if (strlen($parte1) >= 26){
-      $parte1Nuevo = substr($parte1, 0, 25);
-    }
-    else {
-      $parte1Nuevo = $parte1;
-    }
+    $nombreReporte1 = $nombreReporteTemp[0];
     $fecha = $nombreReporteTemp[1];
-    $nombreReporte1 = $parte1Nuevo."_".$fecha;
   }
   else {
-    $nombreReporte1 = $nombreReporte."_".$timestampCorto;
+    $fecha = $timestampCorto;
+    $nombreReporte1 = $nombreReporte;
   }
-  $hoja->setTitle($nombreReporte1);
+
+  if (strlen($nombreReporte1) > $limiteNombre){
+    $nombreReporte2 = substr($nombreReporte1, 0, $limiteNombre);
+  }
+  else {
+    $nombreReporte2 = $nombreReporte1;
+  }
+  //$nombreReporte1 = $nombreReporte1."_".$timestampCorto;
+  $nombreReporte2 = $nombreReporte2."_".$fecha;
+  
+  //$hoja->setTitle($nombreReporte1);
+  $hoja->setTitle($nombreReporte2);
   $hoja->getTabColor()->setRGB($GLOBALS["colorTabStock"]);
   
   $buscar = stripos($tipoConsulta, 'producto');
@@ -98,8 +106,6 @@ function generarExcelStock($reg) {
     $colAl2 = chr(ord($colId)+8); 
     $colFechaCreacion = chr(ord($colId)+9);
   }
-  
-  
   
   $filaEncabezado = '3';
   $filaUnoDatos = $filaEncabezado + 1;
@@ -179,7 +185,8 @@ function generarExcelStock($reg) {
 
   /// Datos de los campos:
   foreach ($reg as $i => $dato) {
-    $fechaCreacion = array_pop($dato);
+    $estadoProducto = ucfirst(array_pop($dato));//escribirLog("estado: ".$estadoProducto);
+    $fechaCreacion = array_pop($dato);//escribirLog("fecha: ".$fechaCreacion);
     if (($fechaCreacion === '')||($fechaCreacion === null)){
       $fechaCreacion = 'NO Ingresada';
     }
@@ -188,24 +195,27 @@ function generarExcelStock($reg) {
       $fechaCreacion = $fechaTemp[2].'/'.$fechaTemp[1].'/'.$fechaTemp[0];
     }
     
-    $al2 = array_pop($dato);
-    $al1 = array_pop($dato);
-    $stock = (integer)array_pop($dato);
+    $al2 = array_pop($dato);//escribirLog("a2: ".$al2);
+    $al1 = array_pop($dato);//escribirLog("a1: ".$al1);
+    $stock = (integer)array_pop($dato);//escribirLog("stock: ".$stock);
 
-    $codOrigen = array_pop($dato);
+    $codOrigen = array_pop($dato);//escribirLog("cod_origen: ".$codOrigen);
     if (($codOrigen === null)||($codOrigen === '')){
       $codOrigen = 'NO ingresado';
     }
-    $codEMSA = array_pop($dato);
+    $codEMSA = array_pop($dato);//escribirLog("cod_emsa: ".$codEMSA);
     if (($codEMSA === null)||($codEMSA === '')){
       $codEMSA = 'NO ingresado';
     }
-    $codBin = array_pop($dato);
+    $codBin = array_pop($dato);//escribirLog("codBin: ".$codBin);
     if (($codBin === null)||($codBin === '')){
       $codBin = 'ND o NC';
     }
     
+    //prueba: cambio codBin por estadoProducto:
+    //array_push($dato, $estadoProducto);
     array_push($dato, $codBin);
+    
     if ($tipoProducto){
       array_push($dato, $fechaCreacion);
     }
@@ -428,7 +438,7 @@ function generarExcelStock($reg) {
       }
     } 
   }  
-*/
+ */
 
   /// Defino el rango de celdas con datos para poder darle formato a todas juntas:
   $rango = $colId.$filaEncabezado.":".$colStock.$j;
@@ -485,7 +495,7 @@ function generarExcelStock($reg) {
 
 function generarExcelBoveda($registros) {
   global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta, $textoLegalExcel;
-//  global $colorBordeTitulo, $colorFondoTitulo, $colorTabBoveda, $colorFondoCampos, $colorFondoTextoLegal, $colorTotal, $colorFondoTotal, $colorBordeRegular, $colorStockBoveda, $colorFondoStockBoveda;
+  //global $colorBordeTitulo, $colorFondoTitulo, $colorTabBoveda, $colorFondoCampos, $colorFondoTextoLegal, $colorTotal, $colorFondoTotal, $colorBordeRegular, $colorStockBoveda, $colorFondoStockBoveda;
   $spreadsheet = new Spreadsheet();
 
   $locale = 'es_UY'; 
@@ -743,13 +753,13 @@ function generarExcelBoveda($registros) {
 }
 
 function generarExcelMovimientos($registros, $mostrarEstado) {
-  global $nombreReporte, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta, $textoLegalExcel;
+  global $nombreReporte, $limiteNombre, $zipSeguridad, $planilla, $pwdPlanillaManual, $pwdZip, $tipoConsulta, $textoLegalExcel;
   include_once('css/colores.php');
-//  global $colorTabMovimientos, $colorBordeTitulo, $colorFondoTitulo, $colorFondoCampos, $colorFondoTextoLegal, $colorBordeRegular; 
-//  global $colorBordeResumen, $colorFondoCamposResumen, $colorCategorias, $colorFondoConsumos, $colorFondoIngresos, $colorFondoTotalConsumos, $colorFondoTotalIngresos;
-//  global $colorFondoFecha, $colorFondoStockRegular, $colorStock, $colorTotalesCategoria, $colorTextoTotalesCategoria, $colorFondoTotalesCategoria;
-//  global $colorConsumos, $colorIngresos, $colorConsumosTotal, $colorIngresosTotal;
-//  global $colorAjustesRetiros, $colorAjustesIngresos, $colorFondoAjustesRetiros, $colorFondoAjustesIngresos, $colorAjustesRetirosTotal, $colorAjustesIngresosTotal, $colorFondoAjustesRetirosTotal, $colorFondoAjustesIngresosTotal;
+  //global $colorTabMovimientos, $colorBordeTitulo, $colorFondoTitulo, $colorFondoCampos, $colorFondoTextoLegal, $colorBordeRegular; 
+  //global $colorBordeResumen, $colorFondoCamposResumen, $colorCategorias, $colorFondoConsumos, $colorFondoIngresos, $colorFondoTotalConsumos, $colorFondoTotalIngresos;
+  //global $colorFondoFecha, $colorFondoStockRegular, $colorStock, $colorTotalesCategoria, $colorTextoTotalesCategoria, $colorFondoTotalesCategoria;
+  //global $colorConsumos, $colorIngresos, $colorConsumosTotal, $colorIngresosTotal;
+  //global $colorAjustesRetiros, $colorAjustesIngresos, $colorFondoAjustesRetiros, $colorFondoAjustesIngresos, $colorAjustesRetirosTotal, $colorAjustesIngresosTotal, $colorFondoAjustesRetirosTotal, $colorFondoAjustesIngresosTotal;
   $spreadsheet = new Spreadsheet();
 
   $locale = 'es_UY'; 
@@ -774,7 +784,15 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   $timestamp = date('dmy_His');
   $timestampCorto = date('dmy');
   
-  $hoja->setTitle($nombreReporte."_".$timestampCorto);
+  //Chequeo largo del nombre del reporte para ver que no exceda el largo permitido para la hoja:
+  if (strlen($nombreReporte) > $limiteNombre){
+    $nombreReporte1 = substr($nombreReporte, 0, $limiteNombre);
+  }
+  else {
+    $nombreReporte1 = $nombreReporte;
+  }
+
+  $hoja->setTitle($nombreReporte1."_".$timestampCorto);
   $hoja->getTabColor()->setRGB($GLOBALS["colorTabMovimientos"]);
   ///************************************ FIN PARAMETROS BASICOS ***************************************
 
@@ -820,8 +838,7 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
       $colCantidad = chr(ord($colId)+9);
     }
   }
-  
-  
+    
   //$colComent = chr(ord($colId)+10);
   $colVacia1 = chr(ord($colCantidad)+1);
   
@@ -984,6 +1001,7 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   
   ///*************************************** ESCRIBO DATOS *********************************************
   //var_dump($registros);
+  //escribirLog("inicia recorrida de datos");
   /// Datos de los campos:
   foreach ($registros as $i => $dato) {
     ///Elimino el primer elemento del array dado que se agregó idprod como primer elemento para no tener
@@ -992,7 +1010,8 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
 
     $estado = array_pop($dato);
     $cantidad = array_pop($dato);
-    $tipo = array_pop($dato);
+    $tipo = array_pop($dato);//escribirLog("tipo: ".$tipo);
+    $estadoProd = ucfirst(array_pop($dato));//escribirLog("estadoProd: ".$estadoProd);
     $fechaCreacion1 = array_pop($dato);
     if (($fechaCreacion1 === '')||($fechaCreacion1 === null)) {
       $fechaCreacion = 'No Ingresada';
@@ -1001,7 +1020,7 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
       $fechaTemp = explode('-', $fechaCreacion1);
       $fechaCreacion = $fechaTemp[2].'/'.$fechaTemp[1].'/'.$fechaTemp[0];
     }
-    
+    //escribirLog("fechaCreacion: ".$fechaCreacion1);
     $codOrigen = array_pop($dato);
     if (($codOrigen === null)||($codOrigen === '')){
       $codOrigen = 'NO ingresado';
@@ -1017,7 +1036,10 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
       $bin = 'ND o NC';
     }
     
+    //Prueba para ver si llega correctamente el estado del producto. Se pone reemplazando el BIN:
+    //array_push($dato, $estadoProd);
     array_push($dato, $bin);
+
     if ($tipoProducto){
       array_push($dato, $fechaCreacion);
     }
@@ -1035,7 +1057,7 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   }
   $j = $i+1;
   ///*************************************** FIN ESCRIBO DATOS *****************************************
-  
+  //escribirLog("fin recorrida de datos");
   ///*********************************************** TEST TEXTO LEGAL **************************************** 
   /// Agrego línea con el texto legal:
   $k = $i+3;
@@ -1097,9 +1119,11 @@ function generarExcelMovimientos($registros, $mostrarEstado) {
   foreach ($registros as $datito){
     $idprod = $datito[0];
     $nombre = $datito[5];
-    $tipo = $datito[10];
-    $cantidad = $datito[11];
+    //sumo 1 a tipo y cantidad para compensar campo extra agregado: est. producto
+    $tipo = $datito[11];
+    $cantidad = $datito[12];
     //echo "idprod: $idprod - nombre: $nombre - tipo: $tipo - cantidad: $cantidad<br>";
+    //escribirLog("idprod: ".$idprod." - nombre: ".$nombre." - tipo: ".$tipo." - cantidad: ".$cantidad."<br>");
     if (!(isset($resumen["$idprod"]['retiros']))){
       $resumen["$idprod"]['retiros'] = 0;
     }

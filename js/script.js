@@ -209,7 +209,7 @@ function showHint(str, id, seleccionado) {
   } 
   else {
     var url = "data/selectQuery.php";
-    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2, comentarios, ultimoMovimiento from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%' or productos.idprod like '%"+str+"%') and estado='activo' order by productos.entidad asc, productos.nombre_plastico asc";
+    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2, comentarios, ultimoMovimiento from productos where estado='activo' and (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%' or productos.idprod like '%"+str+"%') order by productos.entidad asc, productos.nombre_plastico asc";
     if (seleccionado !== ''){
       var produsTemp = seleccionado.split(',');
     }
@@ -463,7 +463,7 @@ function showHintProd(str, id, seleccionado) {
   } 
   else {
     var url = "data/selectQuery.php";
-    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2, ultimoMovimiento from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%' or productos.idprod like '%"+str+"%') and estado='activo' order by productos.nombre_plastico asc";
+    var query = "select idprod, entidad, nombre_plastico, codigo_emsa, codigo_origen, bin, snapshot, stock, alarma1, alarma2, ultimoMovimiento from productos where (productos.nombre_plastico like '%"+str+"%' or productos.codigo_emsa like '%"+str+"%' or productos.codigo_origen like '%"+str+"%' or productos.bin like '%"+str+"%' or productos.entidad like '%"+str+"%' or productos.idprod like '%"+str+"%') order by productos.nombre_plastico asc";
     //alert(query);
     $.getJSON(url, {query: ""+query+""}).done(function(request) {
       var sugerencias = request.resultado;
@@ -955,7 +955,7 @@ function agregarMovimiento(agregarRepetido){
       })  
       .fail(function(d, textStatus, error) {
         //alert('error: '+error+'\n'+textStatus+'\n'+d["resultado"]);
-        alert("Hubo un ERROR en la respuesta del servidor.\nPor favor VERIFICAR si el movimiento Y la actualización del STOCK correspondiente se lograron completar!.\nDe lo contrario avise." );
+        alert("Hubo un ERROR en la respuesta del servidor.\nPor favor VERIFICAR si el movimiento Y la actualización del STOCK correspondiente se lograron completar!.\nDe lo contrario avise.");
       })
       .always(function() {
         //alert( "complete" );
@@ -2019,26 +2019,28 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
   var camposResumen = '';
   var totalCamposProd = '';
   var camposResumenProd = '';
+  //se agrega el campo Estado Producto por lo que totalCampos y camposResumen se inctementó en 1 en ambos casos:
   if (mostrarEstado)
     {
-    totalCampos = 13;
-    camposResumen = 12;
+    totalCampos = 14;
+    camposResumen = 13;
     totalCamposProd = 7;
     camposResumenProd = 6;
   }
   else {
-    totalCampos = 12;
-    camposResumen = 11;
+    totalCampos = 13;
+    camposResumen = 12;
     totalCamposProd = 6;
     camposResumenProd = 5;
   }
   
   switch(radio) {
-    case 'entidadStock':  tabla += '<tr><th class="tituloTabla" colspan="10">CONSULTA DE STOCK</th></tr>';
+    case 'entidadStock':  tabla += '<tr><th class="tituloTabla" colspan="11">CONSULTA DE STOCK</th></tr>';
                           tabla += '<tr>\n\
                                       <th>Item</th>\n\
                                       <th>Entidad</th>\n\
                                       <th>Nombre</th>\n\
+                                      <th>Estado</th>\n\
                                       <th>BIN</th>\n\
                                       <th>Cód. EMSA</th>\n\
                                       <th>Cód. Origen</th>\n\
@@ -2067,6 +2069,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                 {
                                 codigo_emsa = 'NO Ingresado';
                               } 
+                            var estadoProd = datos[i]['estado'].charAt(0).toUpperCase() + datos[i]['estado'].slice(1);  
                             var stock = parseInt(datos[i]['stock'], 10);
                             var alarma1 = parseInt(datos[i]['alarma1'], 10);
                             var alarma2 = parseInt(datos[i]['alarma2'], 10);
@@ -2127,13 +2130,14 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                         <td>'+offset+'</td>\n\
                                         <td style="text-align: left">'+entidad+'</td>\n\
                                         <td nowrap>'+nombre+'</td>\n\
+                                        <td nowrap>'+estadoProd+'</td>\n\
                                         <td nowrap>'+bin+'</td>\n\
                                         <td>'+codigo_emsa+'</td>\n\
                                         <td>'+codigo_origen+'</td>\n\
                                         <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="76" width="120"></img></td>\n\
                                         <td>'+ultimoMovimiento+'</td>\n\
                                         <td class="'+claseComentario+'" >'+mensaje+'</td>\n\
-                                        <td class="'+claseResaltado+'" style="text-align: right">'+stock.toLocaleString()+'</td>\n\
+                                        <td class="'+claseResaltado+'" style="text-align: right">'+stock.toLocaleString('es-UY')+'</td>\n\
                                       </tr>';
                             offset++;
                             total += stock;
@@ -2154,12 +2158,12 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                           else {
                             subtitulo = 'TOTAL';
                             totalPlasticos1 = parseInt(totalPlasticos, 10);
-                            tabla += '<tr><th colspan="9" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos1, 10).toLocaleString()+'</td></tr>';
+                            tabla += '<tr><th colspan="10" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos1, 10).toLocaleString()+'</td></tr>';
                           }  
 
                           //var subtotalesJson = JSON.stringify(subtotales);
                           tabla += '<tr>\n\
-                                      <td class="pieTabla" colspan="10">\n\
+                                      <td class="pieTabla" colspan="11">\n\
                                         <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                       </td>\n\
                                     </tr>';
@@ -2184,6 +2188,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                               {
                               codigo_emsa = 'NO Ingresado';
                             }   
+                          var estadoProd = datos[0]['estado'].charAt(0).toUpperCase() + datos[0]['estado'].slice(1);  
                           var fechaCreacion = datos[0]['fechaCreacion'];
                           if ((fechaCreacion === '')||(fechaCreacion === null)) 
                             {
@@ -2263,6 +2268,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                           tabla += '<tr><th style="text-align:left">Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
                           tabla += '<tr><th style="text-align:left">C&oacute;digo EMSA:</th><td>'+codigo_emsa+'</td></tr>';
                           tabla += '<tr><th style="text-align:left">C&oacute;digo Origen:</th><td>'+codigo_origen+'</td></tr>';
+                          tabla += '<tr><th style="text-align:left">Estado:</th><td>'+estadoProd+'</td></tr>';
                           tabla += '<tr><th style="text-align:left">Fecha de Creaci&oacute;n:</th><td>'+fechaCreacion+'</td></tr>';
                           tabla += '<tr><th style="text-align:left">BIN:</th><td nowrap>'+bin+'</td></tr>';
                           tabla += '<tr><th style="text-align:left">Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
@@ -2277,315 +2283,903 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     </tr>\n\
                                   </table>';
                           break;
-      case 'productoStockViejo':  var bin = datos[0]['bin'];
-                                  var produ = datos[0]['idprod'];
-                                  if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
-                                      {
-                                      bin = 'N/D o N/C';
-                                    }
-                                  var codigo_origen = datos[0]['codigo_origen'];
-                                  if ((codigo_origen === '')||(codigo_origen === null)) 
-                                      {
-                                      codigo_origen = 'NO Ingresado';
-                                    }
-                                  var codigo_emsa = datos[0]['codigo_emsa'];
-                                  if ((codigo_emsa === '')||(codigo_emsa === null)) 
-                                      {
-                                      codigo_emsa = 'NO Ingresado';
-                                    }  
-                                  var fechaCreacion = datos[0]['fechaCreacion'];
-                                  if ((fechaCreacion === '')||(fechaCreacion === null)) 
-                                    {
-                                    fechaCreacion = 'NO Ingresada';
-                                  }
-                                  else {
-                                    var fechaTemp = fechaCreacion.split('-');
-                                    fechaCreacion = fechaTemp[2]+'/'+fechaTemp[1]+'/'+fechaTemp[0];
-                                  }  
-                                  var alarma1 = parseInt(datos[0]['alarma1'], 10);
-                                  var alarma2 = parseInt(datos[0]['alarma2'], 10);
-                                  var stock = parseInt(subtotales["stockViejo"][produ], 10);
-                                  var snapshot = datos[0]['snapshot'];
-                                  if ((snapshot === '')||(snapshot === undefined)||(snapshot === null)){
-                                    snapshot = 'noDisponible1.png';
-                                  }
-                                  var ultimoMovimiento = datos[0]['ultimoMovimiento'];
-                                  if (ultimoMovimiento === null) {
-                                      ultimoMovimiento = '';
-                                    }
-                                  var contacto = datos[0]['contacto'];
-                                  if (contacto === null) 
-                                      {
-                                      contacto = '';
-                                    }
-                                  var prodcom = datos[0]['prodcom'];
-                                  var claseComentario = "";
-                                  if ((prodcom === "undefined")||(prodcom === null)||(prodcom === "")) 
-                                    {
-                                    prodcom = "";
-                                  }
-                                  else {
-                                    var patron = "dif";
-                                    var buscar = prodcom.search(new RegExp(patron, "i"));
-                                    if (buscar !== -1){
-                                      claseComentario = "resaltarDiferencia";
-                                    }
-                                    else {
-                                      var patron = "stock";
-                                      var buscar = prodcom.search(new RegExp(patron, "i"));
-                                      if (buscar !== -1){
-                                        claseComentario = "resaltarStock";
-                                      }
-                                      else {
-                                        var patron = "plastico";
-                                        var buscar = prodcom.search(new RegExp(patron, "i"));
-                                        var patron1 = "plástico";
-                                        var buscar1 = prodcom.search(new RegExp(patron1, "i"));
-                                        if ((buscar !== -1)||(buscar1 !== -1)){
-                                          claseComentario = "resaltarPlastico";
-                                        }
-                                        else {
-                                          claseComentario = "resaltarComentario";
-                                        }
-                                      }
-                                    }
-                                  }  
-
-                                  var claseResaltado = "italica";
-                                  if ((stock < alarma1) && (stock > alarma2)){
-                                    claseResaltado = "alarma1";
-                                  }
-                                  else {
-                                    if (stock < alarma2) {
-                                      claseResaltado = "alarma2";
-                                    }
-                                    else {
-                                      claseResaltado = "resaltado italica";
-                                    }
-                                  }
-                                  tabla += '<caption>'+tipoConsulta+'</caption>';
-                                  tabla += '<tr>\n\
-                                              <th colspan="2" class="tituloTabla">DETALLES</th>\n\
-                                           </tr>';                       
-                                  tabla += '<tr><th style="text-align:left">Nombre:</th><td>'+datos[0]['nombre_plastico']+'</td></tr>';
-                                  tabla += '<tr><th style="text-align:left">Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
-                                  tabla += '<tr><th style="text-align:left">C&oacute;digo EMSA:</th><td>'+codigo_emsa+'</td></tr>';
-                                  tabla += '<tr><th style="text-align:left">C&oacute;digo Origen:</th><td>'+codigo_origen+'</td></tr>';
-                                  tabla += '<tr><th style="text-align:left">Fecha de Creaci&oacute;n:</th><td>'+fechaCreacion+'</td></tr>';
-                                  tabla += '<tr><th style="text-align:left">BIN:</th><td nowrap>'+bin+'</td></tr>';
-                                  tabla += '<tr><th style="text-align:left">Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
-                                  tabla += '<tr><th style="text-align:left">Contacto:</th><td>'+contacto+'</td></tr>';
-                                  tabla += '<tr><th style="text-align:left">Comentarios:</th><td class="'+claseComentario+'">'+prodcom+'</td></tr>';
-                                  tabla += '<tr><th style="text-align:left">&Uacute;ltimo Movimiento:</th><td>'+ultimoMovimiento+'</td></tr>';
-                                  tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
-                                  tabla += '<tr>\n\
-                                              <td class="pieTabla" colspan="2">\n\
-                                                <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
-                                              </td>\n\
-                                            </tr>\n\
-                                          </table>';
-                                  break;                    
-      case 'totalStock':  tabla += '<caption><b><i>Stock total en b&oacute;veda.</i></b></caption>';
-                          tabla += '<tr>\n\
-                                      <th colspan="3" class="tituloTabla">DETALLES</th>\n\
-                                    </tr>';
-                          tabla += '<tr>\n\
-                                        <th>Item</th>\n\
-                                        <th>Entidad</th>\n\
-                                        <th>Stock</th>\n\
-                                     </tr>';          
-                          var total = 0;
-                          for (var k in datos) { 
-                            //var produ = datos[i]["idProd"];
-                            var entidad = datos[k]["entidad"];
-                            //var nombre = datos[i]['nombre_plastico'];
-                            var bin = datos[k]['bin'];
-                            var codigo_emsa = datos[k]['codigo_emsa'];
-                            var stock = datos[k]['stock'];
-                            var subtotal = parseInt(datos[k]['subtotal'], 10);
-                            if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
-                              {
-                              bin = 'N/D o N/C';
-                            }
-                            tabla += '<tr>\n\
-                                        <td>'+offset+'</td>\n\
-                                        <td style="text-align: left">'+entidad+'</td>\n\
-                                        <td class="resaltado italica" style="text-align: right">'+subtotal.toLocaleString()+'</td>\n\
-                                      </tr>';
-                            offset++;  
-                            total += subtotal;
-                          }
-                          if (!fin){
-                            subtitulo = 'TOTAL';
-                            tabla += '<tr><th colspan="2" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos, 10).toLocaleString()+'</td></tr>';
-                          }
-                          var subtotalesJson = JSON.stringify(subtotales);
-//                          tabla += "<tr>\n\
-//                                      <td style='display:none'><input type='text' id='subtotales_"+j+"' value="+subtotalesJson+"></td>\n\
-//                                    </tr>";
-                          tabla += '<tr>\n\
-                                      <td class="pieTabla" colspan="3">\n\
-                                        <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
-                                      </td>\n\
-                                    </tr>\n\
-                                  </table>';              
-                          break;
-      case 'entidadStockViejo': tabla += '<tr><th class="tituloTabla" colspan="10">CONSULTA DE STOCK</th></tr>';
-                                tabla += '<tr>\n\
-                                            <th>Item</th>\n\
-                                            <th>Entidad</th>\n\
-                                            <th>Nombre</th>\n\
-                                            <th>BIN</th>\n\
-                                            <th>Cód. EMSA</th>\n\
-                                            <th>Cód. Origen</th>\n\
-                                            <th>Snapshot</th>\n\
-                                            <th>&Uacute;ltimo Movimiento</th>\n\
-                                            <th>Mensaje</th>\n\
-                                            <th>Stock</th>\n\
-                                         </tr>';
-                                //var total = 0;
-                                //alert('en el radio: '+totalPlasticos);
-                                for (var i=0; i<max; i++) {
-                                  ///************************* INICIO RECUPERACIÓN DATOS ******************************************************************
-                                  var produ = parseInt(datos[i]["idprod"], 10);
-                                  var entidad = datos[i]["entidad"];
-                                  var nombre = datos[i]['nombre_plastico'].trim();
-                                  var bin = datos[i]['bin'];
-                                  var codigo_emsa = datos[i]['codigo_emsa'];
-                                  if ((codigo_emsa === '')||(codigo_emsa === null)) 
-                                      {
-                                      codigo_emsa = 'NO Ingresado';
-                                    }
-                                  var codigo_origen = datos[i]['codigo_origen'];
-                                  if ((codigo_origen === '')||(codigo_origen === null)) 
-                                    {
-                                    codigo_origen = 'NO Ingresado';
-                                  }
-                                  var snapshot = datos[i]['snapshot'];
-                                  if ((snapshot === '')||(snapshot === undefined)||(snapshot === null)){
-                                    snapshot = 'noDisponible1.png';
-                                  }
-                                  var ultimoMovimiento = datos[i]['ultimoMovimiento'];
-                                  if (ultimoMovimiento === null) {
-                                      ultimoMovimiento = '';
-                                    }
-                                  var alarma1 = parseInt(datos[i]['alarma1'], 10);
-                                  var alarma2 = parseInt(datos[i]['alarma2'], 10);//alert(alarma1);
-                                  var stock = parseInt(subtotales['stockViejo'][produ], 10);//alert('offset: '+offset+' - produ: '+produ+' : '+stock);
-                                  //total += stock;
-                                  //var stock = parseInt(datos[i]['stock'], 10);
-                                  var claseResaltado = '';
-                                  if ((stock < alarma1) && (stock > alarma2)){
-                                    claseResaltado = "alarma1";
-                                  }
-                                  else {
-                                    if (stock < alarma2) {
-                                      claseResaltado = "alarma2";
-                                    }
-                                    else {
-                                      claseResaltado = "resaltado";
-                                    }
-                                  }
-                                  var comentarios = datos[i]['comentarios'];
-                                  var claseComentario = "";
-                                  if ((comentarios === "undefined")||(comentarios === null)||(comentarios === "")) 
-                                    {
-                                    comentarios = "";
-                                    claseComentario = "";
-                                  }
-                                  else {
-                                    var patron = "dif";
-                                    var buscar = comentarios.search(new RegExp(patron, "i"));
-                                    if (buscar !== -1){
-                                      claseComentario = "resaltarDiferencia";
-                                    }
-                                    else {
-                                      var patron = "stock";
-                                      var buscar = comentarios.search(new RegExp(patron, "i"));
-                                      if (buscar !== -1){
-                                        claseComentario = "resaltarStock";
-                                      }
-                                      else {
-                                        var patron = "plastico";
-                                        var buscar = comentarios.search(new RegExp(patron, "i"));
-                                        var patron1 = "plástico";
-                                        var buscar1 = comentarios.search(new RegExp(patron1, "i"));
-                                        if ((buscar !== -1)||(buscar1 !== -1)){
-                                          claseComentario = "resaltarPlastico";
-                                        }
-                                        else {
-                                          claseComentario = "resaltarComentario";
-                                        }
-                                      }
-                                    }
-                                  }  
-                                  if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
+    case 'productoStockViejo':  var bin = datos[0]['bin'];
+                                var produ = datos[0]['idprod'];
+                                if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
                                     {
                                     bin = 'N/D o N/C';
                                   }
-                                  ///************************* FIN RECUPERACIÓN DATOS *********************************************************************
-                                  
-                                  ///Muestro el renglón con los datos del movimiento:
-                                  tabla += '<tr>\n\
-                                              <td>'+offset+'</td>\n\
-                                              <td>'+entidad+'</td>\n\
-                                              <td nowrap>'+nombre+'</td>\n\
-                                              <td nowrap>'+bin+'</td>\n\
-                                              <td nowrap>'+codigo_emsa+'</td>\n\
-                                              <td nowrap>'+codigo_origen+'</td>\n\
-                                              <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="75" width="120"></img></td>\n\
-                                              <td>'+ultimoMovimiento+'</td>\n\
-                                              <td class="'+claseComentario+'">'+comentarios+'</td>\n\
-                                              <td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td>\n\
-                                            </tr>'; 
-                                  offset++;  
-                                }/// FIN DEL FOR ********************************************************
-                               
-                                ///************************ CAPTION segun si es TODOS o alguna ENTIDAD *******************************************
-                                tabla += '<caption>'+tipoConsulta+'</caption>';
-                                ///************************ FIN CAPTION segun si es TODOS o alguna ENTIDAD ***************************************
-                                var subtitulo = '';
-                                var totalPlasticos2 = 0;
-                                if (fin){
-                                  //subtitulo = 'SUB-TOTAL';
-                                  //totalPlasticos1 = total;
-                                } 
+                                var codigo_origen = datos[0]['codigo_origen'];
+                                if ((codigo_origen === '')||(codigo_origen === null)) 
+                                    {
+                                    codigo_origen = 'NO Ingresado';
+                                  }
+                                var codigo_emsa = datos[0]['codigo_emsa'];
+                                if ((codigo_emsa === '')||(codigo_emsa === null)) 
+                                    {
+                                    codigo_emsa = 'NO Ingresado';
+                                  }  
+                                var estadoProd = datos[0]['estado'].charAt(0).toUpperCase() + datos[0]['estado'].slice(1);     
+                                var fechaCreacion = datos[0]['fechaCreacion'];
+                                if ((fechaCreacion === '')||(fechaCreacion === null)) 
+                                  {
+                                  fechaCreacion = 'NO Ingresada';
+                                }
                                 else {
-                                  subtitulo = 'TOTAL';
-                                  totalPlasticos2 = parseInt(totalPlasticos, 10);
-                                  tabla += '<tr><th colspan="9" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+totalPlasticos2.toLocaleString()+'</td></tr>';
-                                } 
-                          
-                                var subtotalesJson = JSON.stringify(subtotales);
+                                  var fechaTemp = fechaCreacion.split('-');
+                                  fechaCreacion = fechaTemp[2]+'/'+fechaTemp[1]+'/'+fechaTemp[0];
+                                }  
+                                var alarma1 = parseInt(datos[0]['alarma1'], 10);
+                                var alarma2 = parseInt(datos[0]['alarma2'], 10);
+                                var stock = parseInt(subtotales["stockViejo"][produ], 10);
+                                var snapshot = datos[0]['snapshot'];
+                                if ((snapshot === '')||(snapshot === undefined)||(snapshot === null)){
+                                  snapshot = 'noDisponible1.png';
+                                }
+                                var ultimoMovimiento = datos[0]['ultimoMovimiento'];
+                                if (ultimoMovimiento === null) {
+                                    ultimoMovimiento = '';
+                                  }
+                                var contacto = datos[0]['contacto'];
+                                if (contacto === null) 
+                                    {
+                                    contacto = '';
+                                  }
+                                var prodcom = datos[0]['prodcom'];
+                                var claseComentario = "";
+                                if ((prodcom === "undefined")||(prodcom === null)||(prodcom === "")) 
+                                  {
+                                  prodcom = "";
+                                }
+                                else {
+                                  var patron = "dif";
+                                  var buscar = prodcom.search(new RegExp(patron, "i"));
+                                  if (buscar !== -1){
+                                    claseComentario = "resaltarDiferencia";
+                                  }
+                                  else {
+                                    var patron = "stock";
+                                    var buscar = prodcom.search(new RegExp(patron, "i"));
+                                    if (buscar !== -1){
+                                      claseComentario = "resaltarStock";
+                                    }
+                                    else {
+                                      var patron = "plastico";
+                                      var buscar = prodcom.search(new RegExp(patron, "i"));
+                                      var patron1 = "plástico";
+                                      var buscar1 = prodcom.search(new RegExp(patron1, "i"));
+                                      if ((buscar !== -1)||(buscar1 !== -1)){
+                                        claseComentario = "resaltarPlastico";
+                                      }
+                                      else {
+                                        claseComentario = "resaltarComentario";
+                                      }
+                                    }
+                                  }
+                                }  
+
+                                var claseResaltado = "italica";
+                                if ((stock < alarma1) && (stock > alarma2)){
+                                  claseResaltado = "alarma1";
+                                }
+                                else {
+                                  if (stock < alarma2) {
+                                    claseResaltado = "alarma2";
+                                  }
+                                  else {
+                                    claseResaltado = "resaltado italica";
+                                  }
+                                }
+                                tabla += '<caption>'+tipoConsulta+'</caption>';
                                 tabla += '<tr>\n\
-                                            <td class="pieTabla" colspan="10">\n\
+                                            <th colspan="2" class="tituloTabla">DETALLES</th>\n\
+                                          </tr>';                       
+                                tabla += '<tr><th style="text-align:left">Nombre:</th><td>'+datos[0]['nombre_plastico']+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">C&oacute;digo EMSA:</th><td>'+codigo_emsa+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">C&oacute;digo Origen:</th><td>'+codigo_origen+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">Estado:</th><td>'+estadoProd+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">Fecha de Creaci&oacute;n:</th><td>'+fechaCreacion+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">BIN:</th><td nowrap>'+bin+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
+                                tabla += '<tr><th style="text-align:left">Contacto:</th><td>'+contacto+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">Comentarios:</th><td class="'+claseComentario+'">'+prodcom+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">&Uacute;ltimo Movimiento:</th><td>'+ultimoMovimiento+'</td></tr>';
+                                tabla += '<tr><th style="text-align:left">Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
+                                tabla += '<tr>\n\
+                                            <td class="pieTabla" colspan="2">\n\
                                               <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
                                             </td>\n\
-                                          </tr>';
+                                          </tr>\n\
+                                        </table>';
+                                break;                    
+    case 'totalStock':  tabla += '<caption><b><i>Stock total en b&oacute;veda.</i></b></caption>';
+                        tabla += '<tr>\n\
+                                    <th colspan="3" class="tituloTabla">DETALLES</th>\n\
+                                  </tr>';
+                        tabla += '<tr>\n\
+                                      <th>Item</th>\n\
+                                      <th>Entidad</th>\n\
+                                      <th>Stock</th>\n\
+                                    </tr>';          
+                        var total = 0;
+                        for (var k in datos) { 
+                          //var produ = datos[i]["idProd"];
+                          var entidad = datos[k]["entidad"];
+                          //var nombre = datos[i]['nombre_plastico'];
+                          var bin = datos[k]['bin'];
+                          var codigo_emsa = datos[k]['codigo_emsa'];
+                          var stock = datos[k]['stock'];
+                          var subtotal = parseInt(datos[k]['subtotal'], 10);
+                          if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
+                            {
+                            bin = 'N/D o N/C';
+                          }
+                          tabla += '<tr>\n\
+                                      <td>'+offset+'</td>\n\
+                                      <td style="text-align: left">'+entidad+'</td>\n\
+                                      <td class="resaltado italica" style="text-align: right">'+subtotal.toLocaleString()+'</td>\n\
+                                    </tr>';
+                          offset++;  
+                          total += subtotal;
+                        }
+                        if (!fin){
+                          subtitulo = 'TOTAL';
+                          tabla += '<tr><th colspan="2" class="centrado">TOTAL:</th><td class="resaltado1 italica" style="text-align: right">'+parseInt(totalPlasticos, 10).toLocaleString()+'</td></tr>';
+                        }
+                        var subtotalesJson = JSON.stringify(subtotales);
+//                          tabla += "<tr>\n\
+//                                      <td style='display:none'><input type='text' id='subtotales_"+j+"' value="+subtotalesJson+"></td>\n\
+//                                    </tr>";
+                        tabla += '<tr>\n\
+                                    <td class="pieTabla" colspan="3">\n\
+                                      <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                    </td>\n\
+                                  </tr>\n\
+                                </table>';              
+                        break;
+    case 'entidadStockViejo': tabla += '<tr><th class="tituloTabla" colspan="12">CONSULTA DE STOCK</th></tr>';
+                              tabla += '<tr>\n\
+                                          <th>Item</th>\n\
+                                          <th>Entidad</th>\n\
+                                          <th>Nombre</th>\n\
+                                          <th>Estado</th>\n\
+                                          <th>BIN</th>\n\
+                                          <th>Cód. EMSA</th>\n\
+                                          <th>Cód. Origen</th>\n\
+                                          <th>Snapshot</th>\n\
+                                          <th>&Uacute;ltimo Movimiento</th>\n\
+                                          <th>Mensaje</th>\n\
+                                          <th>Stock</th>\n\
+                                        </tr>';
+                              //var total = 0;
+                              //alert('en el radio: '+totalPlasticos);
+                              for (var i=0; i<max; i++) {
+                                ///************************* INICIO RECUPERACIÓN DATOS ******************************************************************
+                                var produ = parseInt(datos[i]["idprod"], 10);
+                                var entidad = datos[i]["entidad"];
+                                var nombre = datos[i]['nombre_plastico'].trim();
+                                var bin = datos[i]['bin'];
+                                var codigo_emsa = datos[i]['codigo_emsa'];
+                                if ((codigo_emsa === '')||(codigo_emsa === null)) 
+                                    {
+                                    codigo_emsa = 'NO Ingresado';
+                                  }
+                                var codigo_origen = datos[i]['codigo_origen'];
+                                if ((codigo_origen === '')||(codigo_origen === null)) 
+                                  {
+                                  codigo_origen = 'NO Ingresado';
+                                }
+                                var estadoProd = datos[i]['estado'].charAt(0).toUpperCase() + datos[i]['estado'].slice(1);
+                                var snapshot = datos[i]['snapshot'];
+                                if ((snapshot === '')||(snapshot === undefined)||(snapshot === null)){
+                                  snapshot = 'noDisponible1.png';
+                                }
+                                var ultimoMovimiento = datos[i]['ultimoMovimiento'];
+                                if (ultimoMovimiento === null) {
+                                    ultimoMovimiento = '';
+                                  }
+                                var alarma1 = parseInt(datos[i]['alarma1'], 10);
+                                var alarma2 = parseInt(datos[i]['alarma2'], 10);//alert(alarma1);
+                                var stock = parseInt(subtotales['stockViejo'][produ], 10);//alert('offset: '+offset+' - produ: '+produ+' : '+stock);
+                                //total += stock;
+                                //var stock = parseInt(datos[i]['stock'], 10);
+                                var claseResaltado = '';
+                                if ((stock < alarma1) && (stock > alarma2)){
+                                  claseResaltado = "alarma1";
+                                }
+                                else {
+                                  if (stock < alarma2) {
+                                    claseResaltado = "alarma2";
+                                  }
+                                  else {
+                                    claseResaltado = "resaltado";
+                                  }
+                                }
+                                var comentarios = datos[i]['comentarios'];
+                                var claseComentario = "";
+                                if ((comentarios === "undefined")||(comentarios === null)||(comentarios === "")) 
+                                  {
+                                  comentarios = "";
+                                  claseComentario = "";
+                                }
+                                else {
+                                  var patron = "dif";
+                                  var buscar = comentarios.search(new RegExp(patron, "i"));
+                                  if (buscar !== -1){
+                                    claseComentario = "resaltarDiferencia";
+                                  }
+                                  else {
+                                    var patron = "stock";
+                                    var buscar = comentarios.search(new RegExp(patron, "i"));
+                                    if (buscar !== -1){
+                                      claseComentario = "resaltarStock";
+                                    }
+                                    else {
+                                      var patron = "plastico";
+                                      var buscar = comentarios.search(new RegExp(patron, "i"));
+                                      var patron1 = "plástico";
+                                      var buscar1 = comentarios.search(new RegExp(patron1, "i"));
+                                      if ((buscar !== -1)||(buscar1 !== -1)){
+                                        claseComentario = "resaltarPlastico";
+                                      }
+                                      else {
+                                        claseComentario = "resaltarComentario";
+                                      }
+                                    }
+                                  }
+                                }  
+                                if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
+                                  {
+                                  bin = 'N/D o N/C';
+                                }
+                                ///************************* FIN RECUPERACIÓN DATOS *********************************************************************
+                                
+                                ///Muestro el renglón con los datos del movimiento:
+                                tabla += '<tr>\n\
+                                            <td>'+offset+'</td>\n\
+                                            <td>'+entidad+'</td>\n\
+                                            <td nowrap>'+nombre+'</td>\n\
+                                            <td nowrap>'+estadoProd+'</td>\n\
+                                            <td nowrap>'+bin+'</td>\n\
+                                            <td nowrap>'+codigo_emsa+'</td>\n\
+                                            <td nowrap>'+codigo_origen+'</td>\n\
+                                            <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="75" width="120"></img></td>\n\
+                                            <td>'+ultimoMovimiento+'</td>\n\
+                                            <td class="'+claseComentario+'">'+comentarios+'</td>\n\
+                                            <td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td>\n\
+                                          </tr>'; 
+                                offset++;  
+                              }/// FIN DEL FOR ********************************************************
+                              
+                              ///************************ CAPTION segun si es TODOS o alguna ENTIDAD *******************************************
+                              tabla += '<caption>'+tipoConsulta+'</caption>';
+                              ///************************ FIN CAPTION segun si es TODOS o alguna ENTIDAD ***************************************
+                              var subtitulo = '';
+                              var totalPlasticos2 = 0;
+                              if (fin){
+                                //subtitulo = 'SUB-TOTAL';
+                                //totalPlasticos1 = total;
+                              } 
+                              else {
+                                subtitulo = 'TOTAL';
+                                totalPlasticos2 = parseInt(totalPlasticos, 10);
+                                tabla += '<tr><th colspan="10" class="centrado">'+subtitulo+':</th><td class="resaltado1 italica" style="text-align: right">'+totalPlasticos2.toLocaleString()+'</td></tr>';
+                              } 
+                        
+                              var subtotalesJson = JSON.stringify(subtotales);
+                              tabla += '<tr>\n\
+                                          <td class="pieTabla" colspan="11">\n\
+                                            <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                          </td>\n\
+                                        </tr>';
 //                                tabla += "<tr>\n\
 //                                            <td style='display:none'><input type='text' id='subtotales_"+j+"' value="+subtotalesJson+"></td>\n\
 //                                          </tr>";
-                                tabla += "</table>";
-                                break;                   
-      case 'entidadMovimiento': tabla += '<tr><th class="tituloTabla" colspan="'+totalCampos+'">MOVIMIENTOS</th></tr>';
+                              tabla += "</table>";
+                              break;                   
+    case 'entidadMovimiento': tabla += '<tr><th class="tituloTabla" colspan="'+totalCampos+'">MOVIMIENTOS</th></tr>';
+                              tabla += '<tr>\n\
+                                          <th>Item</th>\n\
+                                          <th>Fecha</th>\n\
+                                          <th>Hora</th>\n\
+                                          <th>Entidad</th>\n\
+                                          <th>Nombre</th>\n\
+                                          <th>Est. Prod.</th>\n\
+                                          <th>BIN</th>\n\
+                                          <th>Cód. EMSA</th>\n\
+                                          <th>Cód. Origen</th>\n\
+                                          <th>Snapshot</th>\n\
+                                          <th>Tipo</th>';
+                              if (mostrarEstado){
+                                tabla += '<th>Est. Mov.</th>';
+                              } 
+                              tabla += '  <th>Comentarios</th>\n\
+                                          <th>Cantidad</th>\n\
+                                  </tr>';
+
+                              ///Defino variable tipoMov para detectar el tipo de movimiento filtrado, a saber:
+                              ///Todos -> "de todos los tipos (inc. AJUSTES)": usado para consultar TODOS los movimientos 
+                              ///Clientes -> "de todos los tipos": usado para consultar todos los movimientos, menos los de AJUSTES
+                              ///Ajustes -> "del tipo AJUSTE": usado para consultar los movimientos por ajustes (tanto ingresos como egresos)
+                              ///AJUSTE Retiro -> "del tipo AJUSTE Retiro": usado para consultar los movimientos por ajustes de retiros
+                              ///AJUSTE Ingreso -> "del tipo AJUSTE Ingreso": usado para consultar los movimientos por ajustes de ingresos
+                              var tipoMov = '';
+                              ///Veo si contiene la palabra AJUSTE; de tenerla hay 4 opciones
+                              if (tipoConsulta.indexOf("AJUSTE") > -1){
+                                if (tipoConsulta.indexOf("Retiro") > -1){
+                                  tipoMov = 'AJUSTE Retiros';
+                                }
+                                else {
+                                  if (tipoConsulta.indexOf("Ingreso") > -1){
+                                    tipoMov = 'AJUSTE Ingresos';
+                                  }
+                                  else {
+                                    if (tipoConsulta.indexOf("todos") > -1){
+                                      tipoMov = "Todos";
+                                    }
+                                    else {
+                                      tipoMov = "Ajustes";
+                                    }
+                                  }
+                                }
+                              }
+                              else {
+                                if (tipoConsulta.indexOf("todos") > -1){
+                                  tipoMov = "Clientes";
+                                }
+                                else {
+                                  if (tipoConsulta.indexOf("Retiro") > -1){
+                                    tipoMov = 'retiros';
+                                  }
+                                  else {
+                                    if (tipoConsulta.indexOf("Ingreso") > -1){
+                                      tipoMov = 'ingresos';
+                                    }
+                                    else {
+                                      if (tipoConsulta.indexOf("Renovación") > -1){
+                                        tipoMov = 'renovaciones';
+                                      }
+                                      else {
+                                        tipoMov = 'destrucciones';
+                                      }
+                                    }
+                                  }
+                                }  
+                              }
+                              //alert(tipoMov);
+                              var productoViejo = parseInt(datos[0]['idprod'], 10);
+
+                              for (var i=0; i<max; i++) {
+                                ///************************* INICIO RECUPERACIÓN DATOS ************************************************************
+                                var produ = parseInt(datos[i]["idprod"], 10);
+                                var idmov = datos[i]["idmov"];
+                                var entidad = datos[i]["entidad"];
+                                var nombre = datos[i]['nombre_plastico'].trim();
+                                var cantidad = parseInt(datos[i]['cantidad'], 10);
+                                var bin = datos[i]['bin'];
+                                var codigo_emsa = datos[i]['codigo_emsa'];
+                                if ((codigo_emsa === '')||(codigo_emsa === null)) 
+                                    {
+                                    codigo_emsa = 'NO Ingresado';
+                                  }
+                                var codigo_origen = datos[i]['codigo_origen'];
+                                if ((codigo_origen === '')||(codigo_origen === null)) 
+                                  {
+                                  codigo_origen = 'NO Ingresado';
+                                }
+                                var estadoProd = datos[i]['prodest'].charAt(0).toUpperCase() + datos[i]['prodest'].slice(1);
+                                var tipo1 = datos[i]['tipo'];
+                                var estadoMov = datos[i]['estado'];
+                                var snapshot = datos[i]['snapshot'];
+                                if ((snapshot === '')||(snapshot === undefined)||(snapshot === null)){
+                                  snapshot = 'noDisponible1.png';
+                                }
+                                var fecha = datos[i]['fecha'];
+                                var hora = datos[i]["hora"];    
+
+                                var alarma1 = parseInt(datos[i]['alarma1'], 10);
+                                var alarma2 = parseInt(datos[i]['alarma2'], 10);
+                                var stock = parseInt(datos[i]['stock'], 10);
+                                var claseResaltado = '';
+                                if ((stock < alarma1) && (stock > alarma2)){
+                                  claseResaltado = "alarma1";
+                                }
+                                else {
+                                  if (stock < alarma2) {
+                                    claseResaltado = "alarma2";
+                                  }
+                                  else {
+                                    claseResaltado = "resaltado";
+                                  }
+                                }  
+                                var comentarios = datos[i]['comentarios'];
+                                if ((comentarios === "undefined")||(comentarios === null)) {
+                                    comentarios = "";
+                                  }
+                                if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
+                                  {
+                                  bin = 'N/D o N/C';
+                                }
+                                ///************************* FIN RECUPERACIÓN DATOS ***************************************************************
+                                var mostrarResumenProducto;
+                                /// Chequeo si es una consulta de UN solo tipo de movimientos o de todos:
+                                if (tipoConsulta.indexOf("todos los tipos") > -1){
+                                  mostrarResumenProducto = true;
+                                }
+                                else {
+                                  mostrarResumenProducto = false;
+                                }  
+                                
+                                /// En caso de ser de UN solo tipo, NO agrego el resumen del producto a pedido de Diego:
+                                if (mostrarResumenProducto){
+                                  ///Si hay un cambio de producto, ANTES de poner el primer movimiento del nuevo producto, muestro el resumen del producto viejo:
+                                  if (productoViejo !== produ) {
+                                    var totalConsumos = 0;
+                                    var retiros1 = 0;
+                                    var ajusteRetiros1 = 0;
+                                    var renos1 = 0;
+                                    var destrucciones1 = 0;
+                                    var ingresos1 = 0;
+                                    var ajusteIngresos1 = 0;
+                                    
+                                    if (subtotales["retiros"] !== null){
+                                      if (subtotales["retiros"][productoViejo] !== undefined) {
+                                        retiros1 = parseInt(subtotales["retiros"][productoViejo], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="'+camposResumen+'" class="negrita">Total Retiros:</td>\n\
+                                                    <td class="subtotal" colspan="1">'+retiros1.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        totalConsumos += retiros1;
+                                      }
+                                    }
+                                    if (subtotales["renovaciones"] !== null){
+                                      if (subtotales["renovaciones"][productoViejo] !== undefined) {
+                                        renos1 = parseInt(subtotales["renovaciones"][productoViejo], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="'+camposResumen+'" class="negrita">Total Renovaciones:</td>\n\
+                                                    <td class="subtotal" colspan="1">'+renos1.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        totalConsumos += renos1;
+                                      } 
+                                    }
+                                    if (subtotales["destrucciones"] !== null){
+                                      if (subtotales["destrucciones"][productoViejo] !== undefined) {
+                                        destrucciones1 = parseInt(subtotales["destrucciones"][productoViejo], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="'+camposResumen+'" class="negrita">Total Destrucciones:</td>\n\
+                                                    <td class="subtotal" colspan="1">'+destrucciones1.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        totalConsumos += destrucciones1;
+                                      }
+                                    }
+                                    if (totalConsumos > 0) {
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumen+'" class="negrita">Total de Consumos:</td>\n\
+                                                  <td class="totalConsumos" colspan="1">'+totalConsumos.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                    }
+                                    if (subtotales["ingresos"] !== null) {
+                                      if (subtotales["ingresos"][productoViejo] !== undefined) {
+                                        ingresos1 = parseInt(subtotales["ingresos"][productoViejo], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="'+camposResumen+'" class="negrita">Total de Ingresos:</td>\n\
+                                                    <td class="totalIngresos" colspan="1">'+ingresos1.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                      }         
+                                    }
+                                    
+                                    if ((tipoMov === 'Todos')||(tipoMov === 'Ajustes')||(tipoMov === 'AJUSTE Retiros')||(tipoMov === 'AJUSTE Ingresos'))
+                                      {
+                                      if (subtotales["AJUSTE Retiros"] !== null){
+                                        if (subtotales["AJUSTE Retiros"][productoViejo] !== undefined) {
+                                          ajusteRetiros1 = parseInt(subtotales["AJUSTE Retiros"][productoViejo], 10);
+                                          tabla += '<tr>\n\
+                                                      <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Retiros:</td>\n\
+                                                      <td class="totalAjusteRetiros" colspan="1">'+ajusteRetiros1.toLocaleString()+'</td>\n\
+                                                    </tr>';
+                                          //totalConsumos += retiros1;
+                                        }
+                                      }
+                                      if (subtotales["AJUSTE Ingresos"] !== null) {
+                                        if (subtotales["AJUSTE Ingresos"][productoViejo] !== undefined) {
+                                          ajusteIngresos1 = parseInt(subtotales["AJUSTE Ingresos"][productoViejo], 10);
+                                          tabla += '<tr>\n\
+                                                      <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Ingresos:</td>\n\
+                                                      <td class="totalAjusteIngresos" colspan="1">'+ajusteIngresos1.toLocaleString()+'</td>\n\
+                                                    </tr>';
+                                        }         
+                                      }
+                                    }
+                                    
+                                    productoViejo = produ;
+                                    tabla += '<th colspan="'+totalCampos+'">&nbsp;\n\
+                                              </th>';
+                                  }
+                                }
+                                ///Muestro el renglón con los datos del movimiento:
+                                tabla += '<tr>\n\
+                                            <td>'+offset+'</td>\n\
+                                            <td>'+fecha+'</td>\n\
+                                            <td>'+hora+'</td>\n\
+                                            <td>'+entidad+'</td>\n\
+                                            <td nowrap>'+nombre+'</td>\n\
+                                            <td nowrap>'+estadoProd+'</td>\n\
+                                            <td nowrap>'+bin+'</td>\n\
+                                            <td nowrap>'+codigo_emsa+'</td>\n\
+                                            <td nowrap>'+codigo_origen+'</td>\n\
+                                            <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="75" width="120"></img></td>\n\
+                                            <td>'+tipo1+'</td>';
+                                if (mostrarEstado){
+                                  tabla += '<td>'+estadoMov+'</td>';
+                                }            
+                                tabla += '  <td>'+comentarios+'</td>\n\
+                                            <td class="'+claseResaltado+'"><a href="editarMovimiento.php?id='+idmov+'" target="_blank">'+cantidad.toLocaleString()+'</a></td>\n\
+                                          </tr>'; 
+                                if ((fin) && (parseInt(i, 10) === parseInt(tamPagina-1, 10))){
+                                  var totalConsumos = 0;
+                                  var retiros2 = 0;
+                                  var renos2 = 0;
+                                  var destrucciones2 = 0;
+                                  var ingresos2 = 0;
+                                  var ajusteRetiros2 = 0;
+                                  var ajusteIngresos2 = 0;
+                                  if (subtotales["retiros"] !== null){
+                                    if (subtotales["retiros"][productoViejo] !== undefined) {
+                                      retiros2 = parseInt(subtotales["retiros"][productoViejo], 10);
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumen+'" class="negrita">Total Retiros:</td>\n\
+                                                  <td class="subtotal" colspan="1">'+retiros2.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                      totalConsumos += retiros2;
+                                    }
+                                  }
+                                  if (subtotales["renovaciones"] !== null){
+                                    if (subtotales["renovaciones"][productoViejo] !== undefined) {
+                                      renos2 = parseInt(subtotales["renovaciones"][productoViejo], 10);
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumen+'" class="negrita">Total Renovaciones:</td>\n\
+                                                  <td class="subtotal" colspan="1">'+renos2.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                      totalConsumos += renos2;
+                                    } 
+                                  }
+                                  if (subtotales["destrucciones"] !== null){
+                                    if (subtotales["destrucciones"][productoViejo] !== undefined) {
+                                      destrucciones2 = parseInt(subtotales["destrucciones"][productoViejo], 10);
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumen+'" class="negrita">Total Destrucciones:</td>\n\
+                                                  <td class="subtotal" colspan="1">'+destrucciones2.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                      totalConsumos += destrucciones2;
+                                    }
+                                  }
+                                  if (totalConsumos > 0) {
+                                    tabla += '<tr>\n\
+                                                <td colspan="'+camposResumen+'" class="negrita">Total de Consumos:</td>\n\
+                                                <td class="totalConsumos" colspan="1">'+totalConsumos.toLocaleString()+'</td>\n\
+                                              </tr>';
+                                  }
+                                  if (subtotales["ingresos"] !== null) {
+                                    if (subtotales["ingresos"][productoViejo] !== undefined) {
+                                      ingresos2 = parseInt(subtotales["ingresos"][productoViejo], 10);
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumen+'" class="negrita">Total de Ingresos:</td>\n\
+                                                  <td class="totalIngresos" colspan="1">'+ingresos2.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                    }         
+                                  }
+                                  if (subtotales["AJUSTE Retiros"] !== null){
+                                    if (subtotales["AJUSTE Retiros"][productoViejo] !== undefined) {
+                                      ajusteRetiros2 = parseInt(subtotales["AJUSTE Retiros"][productoViejo], 10);
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Retiros:</td>\n\
+                                                  <td class="totalAjusteRetiros" colspan="1">'+ajusteRetiros2.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                      //totalConsumos += retiros2;
+                                    }
+                                  }
+                                  if (subtotales["AJUSTE Ingresos"] !== null) {
+                                    if (subtotales["AJUSTE Ingresos"][productoViejo] !== undefined) {
+                                      ajusteIngresos2 = parseInt(subtotales["AJUSTE Ingresos"][productoViejo], 10);
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Ingresos:</td>\n\
+                                                  <td class="totalAjusteIngresos" colspan="1">'+ajusteIngresos2.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                    }         
+                                  }
+                                  
+                                  productoViejo = produ;
+                                  tabla += '<th colspan="'+totalCampos+'">&nbsp;\n\
+                                        </th>';
+                                }
+                                offset++;  
+                              }/// FIN DEL FOR ****************************************************************************************************
+                              
+                              
+                                          
+                              //alert(tipoConsulta+'\n'+tipoMov);
+                              ///****************** RESUMEN último producto ó RESUMEN GENERAL *****************************************************
+                              if ((subtotales[""+tipoMov+""] !== null)&&(subtotales[""+tipoMov+""] !== undefined)){
+                                var subtotal = 0;
+                                for(var i in subtotales[""+tipoMov+""]){
+                                  subtotal += parseInt(subtotales[tipoMov][i], 10);
+                                } 
+                              }
+                              else {
+                                if (tipoMov === 'Ajustes'){
+                                  var subtotalAjuRetiros = 0;
+                                  var subtotalAjuIngresos = 0;
+                                  for (var i in subtotales['AJUSTE Retiros']){
+                                    subtotalAjuRetiros += parseInt(subtotales["AJUSTE Retiros"][i], 10);
+                                  }
+                                  for (var i in subtotales['AJUSTE Ingresos']){
+                                    subtotalAjuIngresos += parseInt(subtotales["AJUSTE Ingresos"][i], 10);
+                                  }
+                                }
+                                else {
+                                  ///Acá solo llegan los casos de 'TODOS para Clientes' y de TODOS, pero en ninguno de los casos es necesario 
+                                  ///sumar el subtotal puesto que en ambos casos se muestra el resumen por producto.
+                                }
+                              }
+                              
+                              ///Detecto si es o no la primer página.
+                              ///En caso de serlo seteo el total de Páginas a 0 para que NO muestre el resumen para el último producto
+                              var pagActual = parseInt($(".nav-link.active").attr("activepage"), 10);
+
+                              if (offset === tamPagina+1){
+                                totalPaginas = 0;
+                              }
+                              if (pagActual === totalPaginas){
+                                /// En caso de ser de UN solo tipo, NO agrego el resumen del producto a pedido de Diego:
+                                if (mostrarResumenProducto){
+                                  ///Resumen para el último producto: 
+                                  var totalConsumos = 0;
+                                  if (subtotales["retiros"] !== null){
+                                    if (subtotales["retiros"][productoViejo] !== undefined) {
+                                      var retiros3 = parseInt(subtotales["retiros"][productoViejo], 10);
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumen+'" class="negrita">Total Retiros:</td>\n\
+                                                  <td class="subtotal" colspan="1">'+retiros3.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                      totalConsumos += retiros3;
+                                    }
+                                  }
+                                  if (subtotales["renovaciones"] !== null){
+                                    if (subtotales["renovaciones"][productoViejo] !== undefined) {
+                                      var renos3 = parseInt(subtotales["renovaciones"][productoViejo], 10);
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumen+'" class="negrita">Total Renovaciones:</td>\n\
+                                                  <td class="subtotal" colspan="1">'+renos3.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                      totalConsumos += renos3;
+                                    } 
+                                  }
+                                  if (subtotales["destrucciones"] !== null){
+                                    if (subtotales["destrucciones"][productoViejo] !== undefined) {
+                                      var destrucciones3 = parseInt(subtotales["destrucciones"][productoViejo], 10);
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumen+'" class="negrita">Total Destrucciones:</td>\n\
+                                                  <td class="subtotal" colspan="1">'+destrucciones3.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                      totalConsumos += destrucciones3;
+                                    }
+                                  }
+                                  if (totalConsumos > 0) {
+                                    tabla += '<tr>\n\
+                                                <td colspan="'+camposResumen+'" class="negrita">Total de Consumos:</td>\n\
+                                                <td class="totalConsumos" colspan="1">'+totalConsumos.toLocaleString()+'</td>\n\
+                                              </tr>';
+                                  }
+                                  if (subtotales["ingresos"] !== null) {
+                                    if (subtotales["ingresos"][productoViejo] !== undefined) {
+                                      var ingresos3 = parseInt(subtotales["ingresos"][productoViejo], 10);
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumen+'" class="negrita">Total de Ingresos:</td>\n\
+                                                  <td class="totalIngresos" colspan="1">'+ingresos3.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                    }         
+                                  }
+                                  
+                                  if ((tipoMov === 'Todos')||(tipoMov === 'Ajustes')||(tipoMov === 'AJUSTE Retiros')||(tipoMov === 'AJUSTE Ingresos'))
+                                    {
+                                    if (subtotales["AJUSTE Retiros"] !== null){
+                                      if (subtotales["AJUSTE Retiros"][productoViejo] !== undefined) {
+                                        ajusteRetiros1 = parseInt(subtotales["AJUSTE Retiros"][productoViejo], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Retiros:</td>\n\
+                                                    <td class="totalAjusteRetiros" colspan="1">'+ajusteRetiros1.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                        //totalConsumos += retiros1;
+                                      }
+                                    }
+                                    if (subtotales["AJUSTE Ingresos"] !== null) {
+                                      if (subtotales["AJUSTE Ingresos"][productoViejo] !== undefined) {
+                                        ajusteIngresos1 = parseInt(subtotales["AJUSTE Ingresos"][productoViejo], 10);
+                                        tabla += '<tr>\n\
+                                                    <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Ingresos:</td>\n\
+                                                    <td class="totalAjusteIngresos" colspan="1">'+ajusteIngresos1.toLocaleString()+'</td>\n\
+                                                  </tr>';
+                                      }         
+                                    }
+                                  }
+
+                                  productoViejo = produ;
+                                  tabla += '<th colspan="'+totalCampos+'">&nbsp;\n\
+                                          </th>';
+                                }
+                                else {
+                                  if ((tipoMov === 'Ajustes')){
+                                    if (subtotales["AJUSTE Retiros"] !== null){
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Retiros:</td>\n\
+                                                  <td class="totalAjusteRetiros" colspan="1">'+subtotalAjuRetiros.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                    }
+                                    if (subtotales["AJUSTE Ingresos"] !== null) {
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Ingresos:</td>\n\
+                                                  <td class="totalAjusteIngresos" colspan="1">'+subtotalAjuIngresos.toLocaleString()+'</td>\n\
+                                                </tr>';                 
+                                    }
+                                  }
+                                  else {
+                                    tabla += '<tr>\n\
+                                              <td colspan="'+camposResumen+'" class="negrita">Total '+tipoMov+':</td>\n\
+                                              <td class="subtotal" colspan="1">'+subtotal.toLocaleString()+'</td>\n\
+                                            </tr>';
+                                  }               
+                                }
+                              }  
+                              ///****************** FIN RESUMEN último producto ó RESUMEN GENERAL *************************************************
+                              
+                              ///************************ CAPTION segun si es TODOS o alguna ENTIDAD **********************************************
+                              if (!todos){
+                                tabla += '<caption>Movimientos de <b><i>'+entidad+'</i></b></caption>';
+                              }
+                              else {
+                                tabla += '<caption>Movimientos de <b><i>todas las entidades</i></b></caption>';
+                              }
+                              ///************************ FIN CAPTION segun si es TODOS o alguna ENTIDAD ******************************************
+                              
+                              var subtotalesJson = JSON.stringify(subtotales);
+                              tabla += "<tr>\n\
+                                          <td style='display:none'><input type='text' id='subtotales_"+j+"' value='"+subtotalesJson+"'></td>\n\
+                                        </tr>";
+                              tabla += '<tr>\n\
+                                          <td class="pieTabla" colspan="'+totalCampos+'">\n\
+                                            <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                          </td>\n\
+                                        </tr>\n\
+                                      </table>';
+                              break;
+    case 'productoMovimiento':  ///************************* INICIO RECUPERACIÓN DATOS ******************************************************************
+                                var bin = datos[0]['bin'];
+                                var ultimoMovimiento = datos[0]['ultimoMovimiento'];
+                                if (ultimoMovimiento === null) {
+                                  ultimoMovimiento = '';
+                                }
+                                var contacto = datos[0]['contacto'];
+                                if (contacto === null) 
+                                    {
+                                    contacto = '';
+                                  }
+                                var codigo_emsa = datos[0]['codigo_emsa'];
+                                if ((codigo_emsa === '')||(codigo_emsa === null)) 
+                                    {
+                                    codigo_emsa = 'NO Ingresado';
+                                  }
+                                var codigo_origen = datos[0]['codigo_origen'];
+                                if ((codigo_origen === '')||(codigo_origen === null)) 
+                                  {
+                                  codigo_origen = 'NO Ingresado';
+                                }  
+                                var estadoProd = datos[0]['prodest'].charAt(0).toUpperCase() + datos[0]['prodest'].slice(1); 
+                                var fechaCreacion = datos[0]['fechaCreacion'];
+                                if ((fechaCreacion === '')||(fechaCreacion === null)) 
+                                  {
+                                  fechaCreacion = 'NO Ingresada';
+                                }
+                                else {
+                                  var fechaTemp = fechaCreacion.split('-');
+                                  fechaCreacion = fechaTemp[2]+'/'+fechaTemp[1]+'/'+fechaTemp[0];
+                                }
+                                var comentarios = datos[0]['prodcom'];
+                                var claseComentario = "";
+                                if ((comentarios === "undefined")||(comentarios === null)||(comentarios === "")) 
+                                  {
+                                  comentarios = "";
+                                }
+                                else {
+                                  var patron = "dif";
+                                  var buscar = comentarios.search(new RegExp(patron, "i"));
+                                  if (buscar !== -1){
+                                    claseComentario = "resaltarDiferencia";
+                                  }
+                                  else {
+                                    var patron = "stock";
+                                    var buscar = comentarios.search(new RegExp(patron, "i"));
+                                    if (buscar !== -1){
+                                      claseComentario = "resaltarStock";
+                                    }
+                                    else {
+                                      var patron = "plastico";
+                                      var buscar = comentarios.search(new RegExp(patron, "i"));
+                                      var patron1 = "plástico";
+                                      var buscar1 = comentarios.search(new RegExp(patron1, "i"));
+                                      if ((buscar !== -1)||(buscar1 !== -1)){
+                                        claseComentario = "resaltarPlastico";
+                                      }
+                                      else {
+                                        claseComentario = "resaltarComentario";
+                                      }
+                                    }
+                                  }
+                                }
+                                  
+                                if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
+                                    {
+                                    bin = 'N/D o N/C';
+                                  }
+                                var snapshot = datos[0]['snapshot'];
+                                if ((snapshot === '')||(snapshot === undefined)||(snapshot === null)){
+                                  snapshot = 'noDisponible1.png';
+                                }
+                                var alarma1 = parseInt(datos[0]['alarma1'], 10);
+                                var alarma2 = parseInt(datos[0]['alarma2'], 10);
+                                var stock = parseInt(datos[0]['stock'],10);
+                                if ((stock < alarma1) && (stock > alarma2)){
+                                  claseResaltado = "alarma1";
+                                }
+                                else {
+                                  if (stock < alarma2) {
+                                    claseResaltado = "alarma2";
+                                  }
+                                  else {
+                                    claseResaltado = "resaltado italica";
+                                  }
+                                }
+                                ///************************* FIN RECUPERACIÓN DATOS *********************************************************************
+                                
+                                ///********************************************* TABLA DEL PRODUCTO *****************************************************
+                                var tabla = '<table name="detallesProducto" id="detallesProducto_'+j+'" class="tabla2">';
+                                tabla += '<caption>Detalles del producto <b><i>'+datos[0]['nombre_plastico']+'</i></b></caption>';
+                                tabla += '<tr>\n\
+                                            <th colspan="2" class="tituloTabla">PRODUCTO</th>\n\
+                                          </tr>';                       
+                                tabla += '<tr><th>Nombre:</th><td>'+datos[0]['nombre_plastico']+'</td></tr>';
+                                tabla += '<tr><th>Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
+                                tabla += '<tr><th>C&oacute;d. EMSA:</th><td>'+codigo_emsa+'</td></tr>';
+                                tabla += '<tr><th>C&oacute;d. Origen:</th><td>'+codigo_origen+'</td></tr>';
+                                tabla += '<tr><th>Estado:</th><td>'+estadoProd+'</td></tr>';
+                                tabla += '<tr><th>Fecha de Creaci&oacute;n:</th><td>'+fechaCreacion+'</td></tr>';
+                                tabla += '<tr><th>BIN:</th><td nowrap>'+bin+'</td></tr>';
+                                tabla += '<tr><th>Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
+                                tabla += '<tr><th>Contacto:</th><td>'+contacto+'</td></tr>';
+                                tabla += '<tr><th>Comentarios:</th><td class="'+claseComentario+'">'+comentarios+'</td></tr>';
+                                tabla += '<tr><th>&Uacute;ltimo Moviemiento:</th><td>'+ultimoMovimiento+'</td></tr>';
+                                tabla += '<tr><th>Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
+                                tabla += '<tr><th colspan="2" class="pieTabla centrado">FIN</th></tr>';
+                                tabla += '</table>';
+                                ///********************************************* TABLA DEL PRODUCTO *****************************************************
+                                
+                                tabla += '<br>';
+                                
+                                ///********************************************* TABLA MOVIMIENTOS ******************************************************
+                                tabla += '<table name="movimientos" id="resultados_'+j+'" class="tabla2">';
+                                tabla += '<caption>Movimientos del producto <b><i>'+datos[0]['nombre_plastico']+'</i></b></caption>';
+                                tabla += '<tr><th class="tituloTabla" colspan="'+totalCamposProd+'">MOVIMIENTOS</th></tr>';
                                 tabla += '<tr>\n\
                                             <th>Item</th>\n\
                                             <th>Fecha</th>\n\
                                             <th>Hora</th>\n\
-                                            <th>Entidad</th>\n\
-                                            <th>Nombre</th>\n\
-                                            <th>BIN</th>\n\
-                                            <th>Cód. EMSA</th>\n\
-                                            <th>Cód. Origen</th>\n\
-                                            <th>Snapshot</th>\n\
                                             <th>Tipo</th>';
                                 if (mostrarEstado){
                                   tabla += '<th>Estado</th>';
-                                } 
+                                }
                                 tabla += '  <th>Comentarios</th>\n\
                                             <th>Cantidad</th>\n\
-                                    </tr>';
-
+                                          </tr>';
                                 ///Defino variable tipoMov para detectar el tipo de movimiento filtrado, a saber:
                                 ///Todos -> "de todos los tipos (inc. AJUSTES)": usado para consultar TODOS los movimientos 
                                 ///Clientes -> "de todos los tipos": usado para consultar todos los movimientos, menos los de AJUSTES
@@ -2618,53 +3212,34 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                   }
                                   else {
                                     if (tipoConsulta.indexOf("Retiro") > -1){
-                                      tipoMov = 'retiros';
+                                      tipoMov = 'Retiros';
                                     }
                                     else {
                                       if (tipoConsulta.indexOf("Ingreso") > -1){
-                                        tipoMov = 'ingresos';
+                                        tipoMov = 'Ingresos';
                                       }
                                       else {
                                         if (tipoConsulta.indexOf("Renovación") > -1){
-                                          tipoMov = 'renovaciones';
+                                          tipoMov = 'Renovaciones';
                                         }
                                         else {
-                                          tipoMov = 'destrucciones';
+                                          tipoMov = 'Destrucciones';
                                         }
                                       }
                                     }
                                   }  
                                 }
-                                //alert(tipoMov);
-                                var productoViejo = parseInt(datos[0]['idprod'], 10);
-
+                                
+                                ///****************************** COMIENZO A RECORRER ARRAY CON LOS DATOS ***********************************************
                                 for (var i=0; i<max; i++) {
-                                  ///************************* INICIO RECUPERACIÓN DATOS ************************************************************
-                                  var produ = parseInt(datos[i]["idprod"], 10);
-                                  var idmov = datos[i]["idmov"];
-                                  var entidad = datos[i]["entidad"];
-                                  var nombre = datos[i]['nombre_plastico'].trim();
-                                  var cantidad = parseInt(datos[i]['cantidad'], 10);
-                                  var bin = datos[i]['bin'];
-                                  var codigo_emsa = datos[i]['codigo_emsa'];
-                                  if ((codigo_emsa === '')||(codigo_emsa === null)) 
-                                      {
-                                      codigo_emsa = 'NO Ingresado';
-                                    }
-                                  var codigo_origen = datos[i]['codigo_origen'];
-                                  if ((codigo_origen === '')||(codigo_origen === null)) 
-                                    {
-                                    codigo_origen = 'NO Ingresado';
-                                  }
-                                  var tipo1 = datos[i]['tipo'];
-                                  var estadoMov = datos[i]['estado'];
-                                  var snapshot = datos[i]['snapshot'];
-                                  if ((snapshot === '')||(snapshot === undefined)||(snapshot === null)){
-                                    snapshot = 'noDisponible1.png';
-                                  }
+                                  ///*********************************** RECUPERO DATOS DEL MOVIMIENTO **************************************************
+                                  var tipo2 = datos[i]['tipo'];
                                   var fecha = datos[i]['fecha'];
-                                  var hora = datos[i]["hora"];    
-
+                                  var hora = datos[i]["hora"];
+                                  var idmov = datos[i]["idmov"];
+                                  var produ = datos[i]['idprod'];
+                                  var estadoMov = datos[i]['estado'];
+                                  var cantidad = parseInt(datos[i]['cantidad'], 10);
                                   var alarma1 = parseInt(datos[i]['alarma1'], 10);
                                   var alarma2 = parseInt(datos[i]['alarma2'], 10);
                                   var stock = parseInt(datos[i]['stock'], 10);
@@ -2679,592 +3254,33 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
                                     else {
                                       claseResaltado = "resaltado";
                                     }
-                                  }  
+                                  } 
                                   var comentarios = datos[i]['comentarios'];
                                   if ((comentarios === "undefined")||(comentarios === null)) {
-                                      comentarios = "";
-                                    }
-                                  if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
-                                    {
-                                    bin = 'N/D o N/C';
+                                    comentarios = "";
                                   }
-                                  ///************************* FIN RECUPERACIÓN DATOS ***************************************************************
-                                  var mostrarResumenProducto;
-                                  /// Chequeo si es una consulta de UN solo tipo de movimientos o de todos:
-                                  if (tipoConsulta.indexOf("todos los tipos") > -1){
-                                    mostrarResumenProducto = true;
-                                  }
-                                  else {
-                                    mostrarResumenProducto = false;
-                                  }  
+                                  ///*********************************** FIN RECUPERO DATOS DEL MOVIMIENTO **********************************************
                                   
-                                  /// En caso de ser de UN solo tipo, NO agrego el resumen del producto a pedido de Diego:
-                                  if (mostrarResumenProducto){
-                                    ///Si hay un cambio de producto, ANTES de poner el primer movimiento del nuevo producto, muestro el resumen del producto viejo:
-                                    if (productoViejo !== produ) {
-                                      var totalConsumos = 0;
-                                      var retiros1 = 0;
-                                      var ajusteRetiros1 = 0;
-                                      var renos1 = 0;
-                                      var destrucciones1 = 0;
-                                      var ingresos1 = 0;
-                                      var ajusteIngresos1 = 0;
-                                      
-                                      if (subtotales["retiros"] !== null){
-                                        if (subtotales["retiros"][productoViejo] !== undefined) {
-                                          retiros1 = parseInt(subtotales["retiros"][productoViejo], 10);
-                                          tabla += '<tr>\n\
-                                                      <td colspan="'+camposResumen+'" class="negrita">Total Retiros:</td>\n\
-                                                      <td class="subtotal" colspan="1">'+retiros1.toLocaleString()+'</td>\n\
-                                                    </tr>';
-                                          totalConsumos += retiros1;
-                                        }
-                                      }
-                                      if (subtotales["renovaciones"] !== null){
-                                        if (subtotales["renovaciones"][productoViejo] !== undefined) {
-                                          renos1 = parseInt(subtotales["renovaciones"][productoViejo], 10);
-                                          tabla += '<tr>\n\
-                                                      <td colspan="'+camposResumen+'" class="negrita">Total Renovaciones:</td>\n\
-                                                      <td class="subtotal" colspan="1">'+renos1.toLocaleString()+'</td>\n\
-                                                    </tr>';
-                                          totalConsumos += renos1;
-                                        } 
-                                      }
-                                      if (subtotales["destrucciones"] !== null){
-                                        if (subtotales["destrucciones"][productoViejo] !== undefined) {
-                                          destrucciones1 = parseInt(subtotales["destrucciones"][productoViejo], 10);
-                                          tabla += '<tr>\n\
-                                                      <td colspan="'+camposResumen+'" class="negrita">Total Destrucciones:</td>\n\
-                                                      <td class="subtotal" colspan="1">'+destrucciones1.toLocaleString()+'</td>\n\
-                                                    </tr>';
-                                          totalConsumos += destrucciones1;
-                                        }
-                                      }
-                                      if (totalConsumos > 0) {
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumen+'" class="negrita">Total de Consumos:</td>\n\
-                                                    <td class="totalConsumos" colspan="1">'+totalConsumos.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                      }
-                                      if (subtotales["ingresos"] !== null) {
-                                        if (subtotales["ingresos"][productoViejo] !== undefined) {
-                                          ingresos1 = parseInt(subtotales["ingresos"][productoViejo], 10);
-                                          tabla += '<tr>\n\
-                                                      <td colspan="'+camposResumen+'" class="negrita">Total de Ingresos:</td>\n\
-                                                      <td class="totalIngresos" colspan="1">'+ingresos1.toLocaleString()+'</td>\n\
-                                                    </tr>';
-                                        }         
-                                      }
-                                      
-                                      if ((tipoMov === 'Todos')||(tipoMov === 'Ajustes')||(tipoMov === 'AJUSTE Retiros')||(tipoMov === 'AJUSTE Ingresos'))
-                                        {
-                                        if (subtotales["AJUSTE Retiros"] !== null){
-                                          if (subtotales["AJUSTE Retiros"][productoViejo] !== undefined) {
-                                            ajusteRetiros1 = parseInt(subtotales["AJUSTE Retiros"][productoViejo], 10);
-                                            tabla += '<tr>\n\
-                                                        <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Retiros:</td>\n\
-                                                        <td class="totalAjusteRetiros" colspan="1">'+ajusteRetiros1.toLocaleString()+'</td>\n\
-                                                      </tr>';
-                                            //totalConsumos += retiros1;
-                                          }
-                                        }
-                                        if (subtotales["AJUSTE Ingresos"] !== null) {
-                                          if (subtotales["AJUSTE Ingresos"][productoViejo] !== undefined) {
-                                            ajusteIngresos1 = parseInt(subtotales["AJUSTE Ingresos"][productoViejo], 10);
-                                            tabla += '<tr>\n\
-                                                        <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Ingresos:</td>\n\
-                                                        <td class="totalAjusteIngresos" colspan="1">'+ajusteIngresos1.toLocaleString()+'</td>\n\
-                                                      </tr>';
-                                          }         
-                                        }
-                                      }
-                                      
-                                      productoViejo = produ;
-                                      tabla += '<th colspan="'+totalCampos+'">&nbsp;\n\
-                                                </th>';
-                                    }
-                                  }
-                                  ///Muestro el renglón con los datos del movimiento:
+                                  ///*************************************** Muestro Datos del Movimiento ***********************************************
                                   tabla += '<tr>\n\
                                               <td>'+offset+'</td>\n\
                                               <td>'+fecha+'</td>\n\
                                               <td>'+hora+'</td>\n\
-                                              <td>'+entidad+'</td>\n\
-                                              <td nowrap>'+nombre+'</td>\n\
-                                              <td nowrap>'+bin+'</td>\n\
-                                              <td nowrap>'+codigo_emsa+'</td>\n\
-                                              <td nowrap>'+codigo_origen+'</td>\n\
-                                              <td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="75" width="120"></img></td>\n\
-                                              <td>'+tipo1+'</td>';
+                                              <td>'+tipo2+'</td>';
                                   if (mostrarEstado){
                                     tabla += '<td>'+estadoMov+'</td>';
-                                  }            
+                                  }
                                   tabla += '  <td>'+comentarios+'</td>\n\
-                                              <td class="'+claseResaltado+'"><a href="editarMovimiento.php?id='+idmov+'" target="_blank">'+cantidad.toLocaleString()+'</a></td>\n\
-                                            </tr>'; 
-                                  if ((fin) && (parseInt(i, 10) === parseInt(tamPagina-1, 10))){
-                                    var totalConsumos = 0;
-                                    var retiros2 = 0;
-                                    var renos2 = 0;
-                                    var destrucciones2 = 0;
-                                    var ingresos2 = 0;
-                                    var ajusteRetiros2 = 0;
-                                    var ajusteIngresos2 = 0;
-                                    if (subtotales["retiros"] !== null){
-                                      if (subtotales["retiros"][productoViejo] !== undefined) {
-                                        retiros2 = parseInt(subtotales["retiros"][productoViejo], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumen+'" class="negrita">Total Retiros:</td>\n\
-                                                    <td class="subtotal" colspan="1">'+retiros2.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                        totalConsumos += retiros2;
-                                      }
-                                    }
-                                    if (subtotales["renovaciones"] !== null){
-                                      if (subtotales["renovaciones"][productoViejo] !== undefined) {
-                                        renos2 = parseInt(subtotales["renovaciones"][productoViejo], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumen+'" class="negrita">Total Renovaciones:</td>\n\
-                                                    <td class="subtotal" colspan="1">'+renos2.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                        totalConsumos += renos2;
-                                      } 
-                                    }
-                                    if (subtotales["destrucciones"] !== null){
-                                      if (subtotales["destrucciones"][productoViejo] !== undefined) {
-                                        destrucciones2 = parseInt(subtotales["destrucciones"][productoViejo], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumen+'" class="negrita">Total Destrucciones:</td>\n\
-                                                    <td class="subtotal" colspan="1">'+destrucciones2.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                        totalConsumos += destrucciones2;
-                                      }
-                                    }
-                                    if (totalConsumos > 0) {
-                                      tabla += '<tr>\n\
-                                                  <td colspan="'+camposResumen+'" class="negrita">Total de Consumos:</td>\n\
-                                                  <td class="totalConsumos" colspan="1">'+totalConsumos.toLocaleString()+'</td>\n\
-                                                </tr>';
-                                    }
-                                    if (subtotales["ingresos"] !== null) {
-                                      if (subtotales["ingresos"][productoViejo] !== undefined) {
-                                        ingresos2 = parseInt(subtotales["ingresos"][productoViejo], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumen+'" class="negrita">Total de Ingresos:</td>\n\
-                                                    <td class="totalIngresos" colspan="1">'+ingresos2.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                      }         
-                                    }
-                                    if (subtotales["AJUSTE Retiros"] !== null){
-                                      if (subtotales["AJUSTE Retiros"][productoViejo] !== undefined) {
-                                        ajusteRetiros2 = parseInt(subtotales["AJUSTE Retiros"][productoViejo], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Retiros:</td>\n\
-                                                    <td class="totalAjusteRetiros" colspan="1">'+ajusteRetiros2.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                        //totalConsumos += retiros2;
-                                      }
-                                    }
-                                    if (subtotales["AJUSTE Ingresos"] !== null) {
-                                      if (subtotales["AJUSTE Ingresos"][productoViejo] !== undefined) {
-                                        ajusteIngresos2 = parseInt(subtotales["AJUSTE Ingresos"][productoViejo], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Ingresos:</td>\n\
-                                                    <td class="totalAjusteIngresos" colspan="1">'+ajusteIngresos2.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                      }         
-                                    }
-                                    
-                                    productoViejo = produ;
-                                    tabla += '<th colspan="'+totalCampos+'">&nbsp;\n\
-                                          </th>';
-                                  }
+                                              <td class="'+claseResaltado+'"><a href="editarMovimiento.php?id='+idmov+'">'+cantidad.toLocaleString()+'</a></td>\n\
+                                            </tr>';
+                                  ///*************************************** FIN Muestro Datos del Movimiento ********************************************          
                                   offset++;  
-                                }/// FIN DEL FOR ****************************************************************************************************
-                                
-                                
-                                            
-                                //alert(tipoConsulta+'\n'+tipoMov);
-                                ///****************** RESUMEN último producto ó RESUMEN GENERAL *****************************************************
-                                if ((subtotales[""+tipoMov+""] !== null)&&(subtotales[""+tipoMov+""] !== undefined)){
-                                  var subtotal = 0;
-                                  for(var i in subtotales[""+tipoMov+""]){
-                                    subtotal += parseInt(subtotales[tipoMov][i], 10);
-                                  } 
                                 }
-                                else {
-                                  if (tipoMov === 'Ajustes'){
-                                    var subtotalAjuRetiros = 0;
-                                    var subtotalAjuIngresos = 0;
-                                    for (var i in subtotales['AJUSTE Retiros']){
-                                      subtotalAjuRetiros += parseInt(subtotales["AJUSTE Retiros"][i], 10);
-                                    }
-                                    for (var i in subtotales['AJUSTE Ingresos']){
-                                      subtotalAjuIngresos += parseInt(subtotales["AJUSTE Ingresos"][i], 10);
-                                    }
-                                  }
-                                  else {
-                                    ///Acá solo llegan los casos de 'TODOS para Clientes' y de TODOS, pero en ninguno de los casos es necesario 
-                                    ///sumar el subtotal puesto que en ambos casos se muestra el resumen por producto.
-                                  }
-                                }
-                                
-                                ///Detecto si es o no la primer página.
-                                ///En caso de serlo seteo el total de Páginas a 0 para que NO muestre el resumen para el último producto
+                                ///************************************ COMIENZO RESUMEN DEL PRODUCTO ***************************************************
                                 var pagActual = parseInt($(".nav-link.active").attr("activepage"), 10);
-
-                                if (offset === tamPagina+1){
-                                  totalPaginas = 0;
-                                }
-                                if (pagActual === totalPaginas){
-                                  /// En caso de ser de UN solo tipo, NO agrego el resumen del producto a pedido de Diego:
-                                  if (mostrarResumenProducto){
-                                    ///Resumen para el último producto: 
-                                    var totalConsumos = 0;
-                                    if (subtotales["retiros"] !== null){
-                                      if (subtotales["retiros"][productoViejo] !== undefined) {
-                                        var retiros3 = parseInt(subtotales["retiros"][productoViejo], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumen+'" class="negrita">Total Retiros:</td>\n\
-                                                    <td class="subtotal" colspan="1">'+retiros3.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                        totalConsumos += retiros3;
-                                      }
-                                    }
-                                    if (subtotales["renovaciones"] !== null){
-                                      if (subtotales["renovaciones"][productoViejo] !== undefined) {
-                                        var renos3 = parseInt(subtotales["renovaciones"][productoViejo], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumen+'" class="negrita">Total Renovaciones:</td>\n\
-                                                    <td class="subtotal" colspan="1">'+renos3.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                        totalConsumos += renos3;
-                                      } 
-                                    }
-                                    if (subtotales["destrucciones"] !== null){
-                                      if (subtotales["destrucciones"][productoViejo] !== undefined) {
-                                        var destrucciones3 = parseInt(subtotales["destrucciones"][productoViejo], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumen+'" class="negrita">Total Destrucciones:</td>\n\
-                                                    <td class="subtotal" colspan="1">'+destrucciones3.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                        totalConsumos += destrucciones3;
-                                      }
-                                    }
-                                    if (totalConsumos > 0) {
-                                      tabla += '<tr>\n\
-                                                  <td colspan="'+camposResumen+'" class="negrita">Total de Consumos:</td>\n\
-                                                  <td class="totalConsumos" colspan="1">'+totalConsumos.toLocaleString()+'</td>\n\
-                                                </tr>';
-                                    }
-                                    if (subtotales["ingresos"] !== null) {
-                                      if (subtotales["ingresos"][productoViejo] !== undefined) {
-                                        var ingresos3 = parseInt(subtotales["ingresos"][productoViejo], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumen+'" class="negrita">Total de Ingresos:</td>\n\
-                                                    <td class="totalIngresos" colspan="1">'+ingresos3.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                      }         
-                                    }
-                                    
-                                    if ((tipoMov === 'Todos')||(tipoMov === 'Ajustes')||(tipoMov === 'AJUSTE Retiros')||(tipoMov === 'AJUSTE Ingresos'))
-                                      {
-                                      if (subtotales["AJUSTE Retiros"] !== null){
-                                        if (subtotales["AJUSTE Retiros"][productoViejo] !== undefined) {
-                                          ajusteRetiros1 = parseInt(subtotales["AJUSTE Retiros"][productoViejo], 10);
-                                          tabla += '<tr>\n\
-                                                      <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Retiros:</td>\n\
-                                                      <td class="totalAjusteRetiros" colspan="1">'+ajusteRetiros1.toLocaleString()+'</td>\n\
-                                                    </tr>';
-                                          //totalConsumos += retiros1;
-                                        }
-                                      }
-                                      if (subtotales["AJUSTE Ingresos"] !== null) {
-                                        if (subtotales["AJUSTE Ingresos"][productoViejo] !== undefined) {
-                                          ajusteIngresos1 = parseInt(subtotales["AJUSTE Ingresos"][productoViejo], 10);
-                                          tabla += '<tr>\n\
-                                                      <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Ingresos:</td>\n\
-                                                      <td class="totalAjusteIngresos" colspan="1">'+ajusteIngresos1.toLocaleString()+'</td>\n\
-                                                    </tr>';
-                                        }         
-                                      }
-                                    }
-
-                                    productoViejo = produ;
-                                    tabla += '<th colspan="'+totalCampos+'">&nbsp;\n\
-                                            </th>';
-                                  }
-                                  else {
-                                    if ((tipoMov === 'Ajustes')){
-                                      if (subtotales["AJUSTE Retiros"] !== null){
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Retiros:</td>\n\
-                                                    <td class="totalAjusteRetiros" colspan="1">'+subtotalAjuRetiros.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                      }
-                                      if (subtotales["AJUSTE Ingresos"] !== null) {
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumen+'" class="negrita">Total AJUSTE Ingresos:</td>\n\
-                                                    <td class="totalAjusteIngresos" colspan="1">'+subtotalAjuIngresos.toLocaleString()+'</td>\n\
-                                                  </tr>';                 
-                                      }
-                                    }
-                                    else {
-                                      tabla += '<tr>\n\
-                                                <td colspan="'+camposResumen+'" class="negrita">Total '+tipoMov+':</td>\n\
-                                                <td class="subtotal" colspan="1">'+subtotal.toLocaleString()+'</td>\n\
-                                              </tr>';
-                                    }               
-                                  }
-                                }  
-                                ///****************** FIN RESUMEN último producto ó RESUMEN GENERAL *************************************************
-                                
-                                ///************************ CAPTION segun si es TODOS o alguna ENTIDAD **********************************************
-                                if (!todos){
-                                  tabla += '<caption>Movimientos de <b><i>'+entidad+'</i></b></caption>';
-                                }
-                                else {
-                                  tabla += '<caption>Movimientos de <b><i>todas las entidades</i></b></caption>';
-                                }
-                                ///************************ FIN CAPTION segun si es TODOS o alguna ENTIDAD ******************************************
-                                
-                                var subtotalesJson = JSON.stringify(subtotales);
-                                tabla += "<tr>\n\
-                                            <td style='display:none'><input type='text' id='subtotales_"+j+"' value='"+subtotalesJson+"'></td>\n\
-                                          </tr>";
-                                tabla += '<tr>\n\
-                                            <td class="pieTabla" colspan="'+totalCampos+'">\n\
-                                              <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
-                                            </td>\n\
-                                          </tr>\n\
-                                        </table>';
-                                break;
-      case 'productoMovimiento':  ///************************* INICIO RECUPERACIÓN DATOS ******************************************************************
-                                  var bin = datos[0]['bin'];
-                                  var ultimoMovimiento = datos[0]['ultimoMovimiento'];
-                                  if (ultimoMovimiento === null) {
-                                    ultimoMovimiento = '';
-                                  }
-                                  var contacto = datos[0]['contacto'];
-                                  if (contacto === null) 
-                                      {
-                                      contacto = '';
-                                    }
-                                  var codigo_emsa = datos[0]['codigo_emsa'];
-                                  if ((codigo_emsa === '')||(codigo_emsa === null)) 
-                                      {
-                                      codigo_emsa = 'NO Ingresado';
-                                    }
-                                  var codigo_origen = datos[0]['codigo_origen'];
-                                  if ((codigo_origen === '')||(codigo_origen === null)) 
-                                    {
-                                    codigo_origen = 'NO Ingresado';
-                                  }  
-                                  var fechaCreacion = datos[0]['fechaCreacion'];
-                                  if ((fechaCreacion === '')||(fechaCreacion === null)) 
-                                    {
-                                    fechaCreacion = 'NO Ingresada';
-                                  }
-                                  else {
-                                    var fechaTemp = fechaCreacion.split('-');
-                                    fechaCreacion = fechaTemp[2]+'/'+fechaTemp[1]+'/'+fechaTemp[0];
-                                  }
-                                  var comentarios = datos[0]['prodcom'];
-                                  var claseComentario = "";
-                                  if ((comentarios === "undefined")||(comentarios === null)||(comentarios === "")) 
-                                    {
-                                    comentarios = "";
-                                  }
-                                  else {
-                                    var patron = "dif";
-                                    var buscar = comentarios.search(new RegExp(patron, "i"));
-                                    if (buscar !== -1){
-                                      claseComentario = "resaltarDiferencia";
-                                    }
-                                    else {
-                                      var patron = "stock";
-                                      var buscar = comentarios.search(new RegExp(patron, "i"));
-                                      if (buscar !== -1){
-                                        claseComentario = "resaltarStock";
-                                      }
-                                      else {
-                                        var patron = "plastico";
-                                        var buscar = comentarios.search(new RegExp(patron, "i"));
-                                        var patron1 = "plástico";
-                                        var buscar1 = comentarios.search(new RegExp(patron1, "i"));
-                                        if ((buscar !== -1)||(buscar1 !== -1)){
-                                          claseComentario = "resaltarPlastico";
-                                        }
-                                        else {
-                                          claseComentario = "resaltarComentario";
-                                        }
-                                      }
-                                    }
-                                  }
-                                    
-                                  if ((bin === 'SIN BIN')||(bin === null)||(bin === '')) 
-                                      {
-                                      bin = 'N/D o N/C';
-                                    }
-                                  var snapshot = datos[0]['snapshot'];
-                                  if ((snapshot === '')||(snapshot === undefined)||(snapshot === null)){
-                                    snapshot = 'noDisponible1.png';
-                                  }
-                                  var alarma1 = parseInt(datos[0]['alarma1'], 10);
-                                  var alarma2 = parseInt(datos[0]['alarma2'], 10);
-                                  var stock = parseInt(datos[0]['stock'],10);
-                                  if ((stock < alarma1) && (stock > alarma2)){
-                                    claseResaltado = "alarma1";
-                                  }
-                                  else {
-                                    if (stock < alarma2) {
-                                      claseResaltado = "alarma2";
-                                    }
-                                    else {
-                                      claseResaltado = "resaltado italica";
-                                    }
-                                  }
-                                  ///************************* FIN RECUPERACIÓN DATOS *********************************************************************
-                                  
-                                  ///********************************************* TABLA DEL PRODUCTO *****************************************************
-                                  var tabla = '<table name="detallesProducto" id="detallesProducto_'+j+'" class="tabla2">';
-                                  tabla += '<caption>Detalles del producto <b><i>'+datos[0]['nombre_plastico']+'</i></b></caption>';
-                                  tabla += '<tr>\n\
-                                              <th colspan="2" class="tituloTabla">PRODUCTO</th>\n\
-                                           </tr>';                       
-                                  tabla += '<tr><th>Nombre:</th><td>'+datos[0]['nombre_plastico']+'</td></tr>';
-                                  tabla += '<tr><th>Entidad:</th><td>'+datos[0]['entidad']+'</td></tr>';
-                                  tabla += '<tr><th>C&oacute;d. EMSA:</th><td>'+codigo_emsa+'</td></tr>';
-                                  tabla += '<tr><th>C&oacute;d. Origen:</th><td>'+codigo_origen+'</td></tr>';
-                                  tabla += '<tr><th>Fecha de Creaci&oacute;n:</th><td>'+fechaCreacion+'</td></tr>';
-                                  tabla += '<tr><th>BIN:</th><td nowrap>'+bin+'</td></tr>';
-                                  tabla += '<tr><th>Snapshot:</th><td><img id="snapshot" name="hint" src="'+rutaFoto+snapshot+'" alt="No se cargó aún." height="125" width="200"></img></td></tr>';
-                                  tabla += '<tr><th>Contacto:</th><td>'+contacto+'</td></tr>';
-                                  tabla += '<tr><th>Comentarios:</th><td class="'+claseComentario+'">'+comentarios+'</td></tr>';
-                                  tabla += '<tr><th>&Uacute;ltimo Moviemiento:</th><td>'+ultimoMovimiento+'</td></tr>';
-                                  tabla += '<tr><th>Stock:</th><td class="'+claseResaltado+'">'+stock.toLocaleString()+'</td></tr>';
-                                  tabla += '<tr><th colspan="2" class="pieTabla centrado">FIN</th></tr>';
-                                  tabla += '</table>';
-                                  ///********************************************* TABLA DEL PRODUCTO *****************************************************
-                                  
-                                  tabla += '<br>';
-                                  
-                                  ///********************************************* TABLA MOVIMIENTOS ******************************************************
-                                  tabla += '<table name="movimientos" id="resultados_'+j+'" class="tabla2">';
-                                  tabla += '<caption>Movimientos del producto <b><i>'+datos[0]['nombre_plastico']+'</i></b></caption>';
-                                  tabla += '<tr><th class="tituloTabla" colspan="'+totalCamposProd+'">MOVIMIENTOS</th></tr>';
-                                  tabla += '<tr>\n\
-                                              <th>Item</th>\n\
-                                              <th>Fecha</th>\n\
-                                              <th>Hora</th>\n\
-                                              <th>Tipo</th>';
-                                  if (mostrarEstado){
-                                    tabla += '<th>Estado</th>';
-                                  }
-                                  tabla += '  <th>Comentarios</th>\n\
-                                              <th>Cantidad</th>\n\
-                                           </tr>';
-                                  ///Defino variable tipoMov para detectar el tipo de movimiento filtrado, a saber:
-                                  ///Todos -> "de todos los tipos (inc. AJUSTES)": usado para consultar TODOS los movimientos 
-                                  ///Clientes -> "de todos los tipos": usado para consultar todos los movimientos, menos los de AJUSTES
-                                  ///Ajustes -> "del tipo AJUSTE": usado para consultar los movimientos por ajustes (tanto ingresos como egresos)
-                                  ///AJUSTE Retiro -> "del tipo AJUSTE Retiro": usado para consultar los movimientos por ajustes de retiros
-                                  ///AJUSTE Ingreso -> "del tipo AJUSTE Ingreso": usado para consultar los movimientos por ajustes de ingresos
-                                  var tipoMov = '';
-                                  ///Veo si contiene la palabra AJUSTE; de tenerla hay 4 opciones
-                                  if (tipoConsulta.indexOf("AJUSTE") > -1){
-                                    if (tipoConsulta.indexOf("Retiro") > -1){
-                                      tipoMov = 'AJUSTE Retiros';
-                                    }
-                                    else {
-                                      if (tipoConsulta.indexOf("Ingreso") > -1){
-                                        tipoMov = 'AJUSTE Ingresos';
-                                      }
-                                      else {
-                                        if (tipoConsulta.indexOf("todos") > -1){
-                                          tipoMov = "Todos";
-                                        }
-                                        else {
-                                          tipoMov = "Ajustes";
-                                        }
-                                      }
-                                    }
-                                  }
-                                  else {
-                                    if (tipoConsulta.indexOf("todos") > -1){
-                                      tipoMov = "Clientes";
-                                    }
-                                    else {
-                                      if (tipoConsulta.indexOf("Retiro") > -1){
-                                        tipoMov = 'Retiros';
-                                      }
-                                      else {
-                                        if (tipoConsulta.indexOf("Ingreso") > -1){
-                                          tipoMov = 'Ingresos';
-                                        }
-                                        else {
-                                          if (tipoConsulta.indexOf("Renovación") > -1){
-                                            tipoMov = 'Renovaciones';
-                                          }
-                                          else {
-                                            tipoMov = 'Destrucciones';
-                                          }
-                                        }
-                                      }
-                                    }  
-                                  }
-                                  
-                                  ///****************************** COMIENZO A RECORRER ARRAY CON LOS DATOS ***********************************************
-                                  for (var i=0; i<max; i++) {
-                                    ///*********************************** RECUPERO DATOS DEL MOVIMIENTO **************************************************
-                                    var tipo2 = datos[i]['tipo'];
-                                    var fecha = datos[i]['fecha'];
-                                    var hora = datos[i]["hora"];
-                                    var idmov = datos[i]["idmov"];
-                                    var produ = datos[i]['idprod'];
-                                    var estadoMov = datos[i]['estado'];
-                                    var cantidad = parseInt(datos[i]['cantidad'], 10);
-                                    var alarma1 = parseInt(datos[i]['alarma1'], 10);
-                                    var alarma2 = parseInt(datos[i]['alarma2'], 10);
-                                    var stock = parseInt(datos[i]['stock'], 10);
-                                    var claseResaltado = '';
-                                    if ((stock < alarma1) && (stock > alarma2)){
-                                      claseResaltado = "alarma1";
-                                    }
-                                    else {
-                                      if (stock < alarma2) {
-                                        claseResaltado = "alarma2";
-                                      }
-                                      else {
-                                        claseResaltado = "resaltado";
-                                      }
-                                    } 
-                                    var comentarios = datos[i]['comentarios'];
-                                    if ((comentarios === "undefined")||(comentarios === null)) {
-                                      comentarios = "";
-                                    }
-                                    ///*********************************** FIN RECUPERO DATOS DEL MOVIMIENTO **********************************************
-                                    
-                                    ///*************************************** Muestro Datos del Movimiento ***********************************************
-                                    tabla += '<tr>\n\
-                                                <td>'+offset+'</td>\n\
-                                                <td>'+fecha+'</td>\n\
-                                                <td>'+hora+'</td>\n\
-                                                <td>'+tipo2+'</td>';
-                                    if (mostrarEstado){
-                                      tabla += '<td>'+estadoMov+'</td>';
-                                    }
-                                    tabla += '  <td>'+comentarios+'</td>\n\
-                                                <td class="'+claseResaltado+'"><a href="editarMovimiento.php?id='+idmov+'">'+cantidad.toLocaleString()+'</a></td>\n\
-                                              </tr>';
-                                    ///*************************************** FIN Muestro Datos del Movimiento ********************************************          
-                                    offset++;  
-                                  }
-                                  ///************************************ COMIENZO RESUMEN DEL PRODUCTO ***************************************************
-                                  var pagActual = parseInt($(".nav-link.active").attr("activepage"), 10);
-                                  /// SE COMENTA PUES totalPaginas ahora se pasa como parámetro
-                                  ///Agrego if para saber si la variable con el total de páginas existe o no pues solo existirá si el total de datos 
-                                  ///es mayor al tamaño de página elegida (de lo contrario no se crea el div con los datosOcultos
+                                /// SE COMENTA PUES totalPaginas ahora se pasa como parámetro
+                                ///Agrego if para saber si la variable con el total de páginas existe o no pues solo existirá si el total de datos 
+                                ///es mayor al tamaño de página elegida (de lo contrario no se crea el div con los datosOcultos
 //                                  if (parseInt($("#totalPaginas_"+j).length, 10) > 0){
 //                                    totalPaginas = parseInt($("#totalPaginas_"+j).val(), 10);alert('en el if');
 //                                  }
@@ -3272,104 +3288,104 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
 //                                    totalPaginas = 1;
 //                                  }
 
-                                  if (pagActual === totalPaginas){
-                                    var totalConsumos = 0;
-                                    var retiros1 = 0;
-                                    var ajusteRetiros1 = 0;
-                                    var renos1 = 0;
-                                    var destrucciones1 = 0;
-                                    var ingresos1 = 0;
-                                    var ajusteIngresos1 = 0;
-                                    if (subtotales["retiros"] !== null){
-                                      if (subtotales["retiros"][produ] !== undefined) {
-                                        retiros1 = parseInt(subtotales["retiros"][produ], 10);
+                                if (pagActual === totalPaginas){
+                                  var totalConsumos = 0;
+                                  var retiros1 = 0;
+                                  var ajusteRetiros1 = 0;
+                                  var renos1 = 0;
+                                  var destrucciones1 = 0;
+                                  var ingresos1 = 0;
+                                  var ajusteIngresos1 = 0;
+                                  if (subtotales["retiros"] !== null){
+                                    if (subtotales["retiros"][produ] !== undefined) {
+                                      retiros1 = parseInt(subtotales["retiros"][produ], 10);
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumenProd+'" class="negrita">Total Retiros:</td>\n\
+                                                  <td class="subtotal" colspan="1">'+retiros1.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                      totalConsumos += retiros1;
+                                    }
+                                  }
+                                  if (subtotales["renovaciones"] !== null){
+                                    if (subtotales["renovaciones"][produ] !== undefined) {
+                                      renos1 = parseInt(subtotales["renovaciones"][produ], 10);
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumenProd+'" class="negrita">Total Renovaciones:</td>\n\
+                                                  <td class="subtotal" colspan="1">'+renos1.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                      totalConsumos += renos1;
+                                    } 
+                                  }
+                                  if (subtotales["destrucciones"] !== null){
+                                    if (subtotales["destrucciones"][produ] !== undefined) {
+                                      destrucciones1 = parseInt(subtotales["destrucciones"][produ], 10);
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumenProd+'" class="negrita">Total Destrucciones:</td>\n\
+                                                  <td class="subtotal" colspan="1">'+destrucciones1.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                      totalConsumos += destrucciones1;
+                                    }
+                                  }
+                                  
+                                  if ((tipoMov === 'Clientes')||(tipoMov === 'Todos')){
+                                    if (totalConsumos > 0) {
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumenProd+'" class="negrita">Total de Consumos:</td>\n\
+                                                  <td class="totalConsumos" colspan="1">'+totalConsumos.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                    }
+                                  }
+                                  
+                                  if (subtotales["ingresos"] !== null) {
+                                    if (subtotales["ingresos"][produ] !== undefined) {
+                                      ingresos1 = parseInt(subtotales["ingresos"][produ], 10);
+                                      tabla += '<tr>\n\
+                                                  <td colspan="'+camposResumenProd+'" class="negrita">Total de Ingresos:</td>\n\
+                                                  <td class="totalIngresos" colspan="1">'+ingresos1.toLocaleString()+'</td>\n\
+                                                </tr>';
+                                    }         
+                                  }
+                                  
+                                  if ((tipoMov === 'Todos')||(tipoMov === 'Ajustes')||(tipoMov === 'AJUSTE Retiros')||(tipoMov === 'AJUSTE Ingresos'))
+                                    {
+                                    if (subtotales["AJUSTE Retiros"] !== null){
+                                      if (subtotales["AJUSTE Retiros"][produ] !== undefined) {
+                                        ajusteRetiros1 = parseInt(subtotales["AJUSTE Retiros"][produ], 10);
                                         tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumenProd+'" class="negrita">Total Retiros:</td>\n\
-                                                    <td class="subtotal" colspan="1">'+retiros1.toLocaleString()+'</td>\n\
+                                                    <td colspan="'+camposResumenProd+'" class="negrita">Total AJUSTE Retiros:</td>\n\
+                                                    <td class="totalAjusteRetiros" colspan="1">'+ajusteRetiros1.toLocaleString()+'</td>\n\
                                                   </tr>';
-                                        totalConsumos += retiros1;
+                                        //totalConsumos += retiros1;
                                       }
                                     }
-                                    if (subtotales["renovaciones"] !== null){
-                                      if (subtotales["renovaciones"][produ] !== undefined) {
-                                        renos1 = parseInt(subtotales["renovaciones"][produ], 10);
+                                    if (subtotales["AJUSTE Ingresos"] !== null) {
+                                      if (subtotales["AJUSTE Ingresos"][produ] !== undefined) {
+                                        ajusteIngresos1 = parseInt(subtotales["AJUSTE Ingresos"][produ], 10);
                                         tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumenProd+'" class="negrita">Total Renovaciones:</td>\n\
-                                                    <td class="subtotal" colspan="1">'+renos1.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                        totalConsumos += renos1;
-                                      } 
-                                    }
-                                    if (subtotales["destrucciones"] !== null){
-                                      if (subtotales["destrucciones"][produ] !== undefined) {
-                                        destrucciones1 = parseInt(subtotales["destrucciones"][produ], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumenProd+'" class="negrita">Total Destrucciones:</td>\n\
-                                                    <td class="subtotal" colspan="1">'+destrucciones1.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                        totalConsumos += destrucciones1;
-                                      }
-                                    }
-                                    
-                                    if ((tipoMov === 'Clientes')||(tipoMov === 'Todos')){
-                                      if (totalConsumos > 0) {
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumenProd+'" class="negrita">Total de Consumos:</td>\n\
-                                                    <td class="totalConsumos" colspan="1">'+totalConsumos.toLocaleString()+'</td>\n\
-                                                  </tr>';
-                                      }
-                                    }
-                                    
-                                    if (subtotales["ingresos"] !== null) {
-                                      if (subtotales["ingresos"][produ] !== undefined) {
-                                        ingresos1 = parseInt(subtotales["ingresos"][produ], 10);
-                                        tabla += '<tr>\n\
-                                                    <td colspan="'+camposResumenProd+'" class="negrita">Total de Ingresos:</td>\n\
-                                                    <td class="totalIngresos" colspan="1">'+ingresos1.toLocaleString()+'</td>\n\
+                                                    <td colspan="'+camposResumenProd+'" class="negrita">Total AJUSTE Ingresos:</td>\n\
+                                                    <td class="totalAjusteIngresos" colspan="1">'+ajusteIngresos1.toLocaleString()+'</td>\n\
                                                   </tr>';
                                       }         
                                     }
-                                    
-                                    if ((tipoMov === 'Todos')||(tipoMov === 'Ajustes')||(tipoMov === 'AJUSTE Retiros')||(tipoMov === 'AJUSTE Ingresos'))
-                                      {
-                                      if (subtotales["AJUSTE Retiros"] !== null){
-                                        if (subtotales["AJUSTE Retiros"][produ] !== undefined) {
-                                          ajusteRetiros1 = parseInt(subtotales["AJUSTE Retiros"][produ], 10);
-                                          tabla += '<tr>\n\
-                                                      <td colspan="'+camposResumenProd+'" class="negrita">Total AJUSTE Retiros:</td>\n\
-                                                      <td class="totalAjusteRetiros" colspan="1">'+ajusteRetiros1.toLocaleString()+'</td>\n\
-                                                    </tr>';
-                                          //totalConsumos += retiros1;
-                                        }
-                                      }
-                                      if (subtotales["AJUSTE Ingresos"] !== null) {
-                                        if (subtotales["AJUSTE Ingresos"][produ] !== undefined) {
-                                          ajusteIngresos1 = parseInt(subtotales["AJUSTE Ingresos"][produ], 10);
-                                          tabla += '<tr>\n\
-                                                      <td colspan="'+camposResumenProd+'" class="negrita">Total AJUSTE Ingresos:</td>\n\
-                                                      <td class="totalAjusteIngresos" colspan="1">'+ajusteIngresos1.toLocaleString()+'</td>\n\
-                                                    </tr>';
-                                        }         
-                                      }
-                                    }
-                                    ///**************************************** FIN RESUMEN DEL PRODUCTO ****************************************************
+                                  }
+                                  ///**************************************** FIN RESUMEN DEL PRODUCTO ****************************************************
 
-                                    tabla += '<th colspan="'+totalCamposProd+'">&nbsp;\n\
-                                              </th>';
-                                  }      
-                                  var subtotalesJson = JSON.stringify(subtotales);
-                                  tabla += "<tr>\n\
-                                              <td style='display:none'><input type='text' id='subtotales_"+j+"' value='"+subtotalesJson+"'></td>\n\
-                                            </tr>";
-                                  tabla += '<tr>\n\
-                                              <td class="pieTabla" colspan="'+totalCamposProd+'">\n\
-                                                <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
-                                              </td>\n\
-                                            </tr>\n\
-                                          </table>'; 
-                                  break;
-      default: break;
-    }
+                                  tabla += '<th colspan="'+totalCamposProd+'">&nbsp;\n\
+                                            </th>';
+                                }      
+                                var subtotalesJson = JSON.stringify(subtotales);
+                                tabla += "<tr>\n\
+                                            <td style='display:none'><input type='text' id='subtotales_"+j+"' value='"+subtotalesJson+"'></td>\n\
+                                          </tr>";
+                                tabla += '<tr>\n\
+                                            <td class="pieTabla" colspan="'+totalCamposProd+'">\n\
+                                              <input type="button" indice="'+j+'" name="exportarBusqueda" value="EXPORTAR" class="btn btn-primary exportar">\n\
+                                            </td>\n\
+                                          </tr>\n\
+                                        </table>'; 
+                                break;
+    default: break;
+  }
     
   $('html, body').animate({scrollTop:136}, '100');
   
@@ -3407,7 +3423,7 @@ function mostrarTabla(radio, datos, j, todos, offset, fin, subtotales, max, tota
  * @param {String} mostrarEstado String que indica si se debe mostrar o no el estado de los movimientos en los reportes.
  * @returns {String} String con el HTML que contiene los títulos y la tabla a mostrar. La tabla la generará mostrarTabla a la cual se llama desde acá.
  */
-function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, p, d1, d2, tipo, user, estadoMov, mostrarEstado){
+function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, p, d1, d2, tipo, user, estadoMov, mostrarEstado, estadoProducto){
   var url = '';
   var tipoUrl = encodeURI(tipo);
   var entUrl = encodeURIComponent(ent);
@@ -3520,7 +3536,8 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                 }
                                 mensajeTotalDatos = "<h3>Total de productos: <font class='naranja'>"+totalDatos+"</font></h3>";
                                 break;
-          case 'productoStock': break;
+          case 'productoStock': estadoProducto = datos[0]['estado'];
+                                break;
           case 'totalStock':  mensajeTotalDatos = "<h3>Total de entidades: <font class='naranja'>"+totalDatos+"</font></h3>";
                               break;
           case 'entidadStockViejo': if (entidadesStock[0] === 'todos'){
@@ -3533,8 +3550,10 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                     }
                                     mensajeTotalDatos = "<h3>Total de movimientos: <font class='naranja'>"+totalDatos+"</font></h3>";
                                     break;
-          case 'productoStockViejo':  break;
-          case 'productoMovimiento':  mensajeTotalDatos = "<h3>Total de movimientos: <font class='naranja'>"+totalDatos+"</font></h3>";
+          case 'productoStockViejo':  estadoProducto = datos[0]['estado'];
+                                      break;
+          case 'productoMovimiento':  estadoProducto = datos[0]['prodest'];
+                                      mensajeTotalDatos = "<h3>Total de movimientos: <font class='naranja'>"+totalDatos+"</font></h3>";
                                       break;
           default: break;
         }
@@ -3555,12 +3574,12 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
           parcial = false;
         }
         var totalPaginas = Math.ceil(totalDatos/tamPagina);
-        //                                            <td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
-        //                                            <td style="display:none"><input type="text" id="d1" name="d1" value="'+d1+'"></td>\n\
-        //                                            <td style="display:none"><input type="text" id="d2" name="d2" value="'+d2+'"></td>\n\
-        //                                            <td style="display:none"><input type="text" id="p" name="p" value="'+p+'"></td>\n\
-        //                                            <td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
-        //                                            <td style="display:none"><input type="text" id="user" name="user" value="'+user+'"></td>\n\
+        //<td style="display:none"><input type="text" id="param" name="param" value=""></td>\n\
+        //<td style="display:none"><input type="text" id="d1" name="d1" value="'+d1+'"></td>\n\
+        //<td style="display:none"><input type="text" id="d2" name="d2" value="'+d2+'"></td>\n\
+        //<td style="display:none"><input type="text" id="p" name="p" value="'+p+'"></td>\n\
+        //<td style="display:none"><input type="text" id="tipo" name="tipo" value="'+tipo+'"></td>\n\
+        //<td style="display:none"><input type="text" id="user" name="user" value="'+user+'"></td>\n\
         var mostrarEstadoBinario = '0';
         if (mostrarEstado === false){
           mostrarEstadoBinario = '0';
@@ -3572,12 +3591,13 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         var datosOcultos = '<table id="datosOcultos_'+j+'" name="datosOcultos" class="tabla2" style="display:none">';
         switch (radio){
           case 'entidadStockViejo':
-          case 'entidadStock':  campos = "Id-IdProd-Entidad-Nombre-BIN-C&oacute;d. EMSA-C&oacute;d. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje-Fecha Creaci&oacute;n";
-                                largos = "0.8-0.5-1.2-2.5-0.8-1.9-1.5-1-1-1.2-1.6-1-2-1.7-1.5";
-                                mostrarCamposQuery = "1-0-1-1-0-1-1-0-0-1-1-0-0-0-0";
+          case 'entidadStock':  campos = "Id-IdProd-Entidad-Nombre-BIN-C&oacute;d. EMSA-C&oacute;d. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje-Fecha Creaci&oacute;n-EstadoProd";
+                                largos = "0.8-0.5-1.2-2.5-0.8-1.9-1.5-1-1-1.2-1.6-1-2-1.7-1.5-1.1";
+                                mostrarCamposQuery = "1-0-1-1-0-1-1-0-0-1-1-0-0-0-0-0";
                                 x = 20;
                                 tipMov = 'entStock';
                                 datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
+                                <td style="display:none"><input type="text" id="estadoProd_'+j+'" name="estadoProd_'+j+'" value="'+estadoProducto+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="subtotales_'+j+'" name="subtotales_'+j+'" value='+jsonStockViejo+'></td>\n\
                                                     <td style="display:none"><input type="text" id="radio_'+j+'" name="radio_'+j+'" value="'+radio+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="idTipo_'+j+'" name="idTipo_'+j+'" value="1"></td>\n\
@@ -3597,12 +3617,13 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                   </tr>';
                                 break;
           case 'productoStockViejo':                      
-          case 'productoStock': campos = "Id-IdProd-Entidad-Nombre-BIN-C&oacute;d. EMSA-C&oacute;d. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje-Fecha Creaci&oacute;n";
-                                largos = "0.8-0.5-1.2-2.5-0.8-2-1.5-1-1-1.2-1.4-1-2-1.7-1.5";
-                                mostrarCamposQuery = "1-0-1-1-0-1-1-0-0-1-1-0-0-0-0";
+          case 'productoStock': campos = "Id-IdProd-Entidad-Nombre-BIN-C&oacute;d. EMSA-C&oacute;d. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-Mensaje-Fecha Creaci&oacute;n-EstadoProd";
+                                largos = "0.8-0.5-1.2-2.5-0.8-2-1.5-1-1-1.2-1.4-1-2-1.7-1.5-1.1";
+                                mostrarCamposQuery = "1-0-1-1-0-1-1-0-0-1-1-0-0-0-0-1";
                                 x = 22;
                                 tipMov = 'prodStock';
                                 datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
+                                <td style="display:none"><input type="text" id="estadoProd_'+j+'" name="estadoProd_'+j+'" value="'+estadoProducto+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="subtotales_'+j+'" name="subtotales_'+j+'" value='+jsonStockViejo+'></td>\n\
                                                     <td style="display:none"><input type="text" id="radio_'+j+'" name="radio_'+j+'" value="'+radio+'"></td>\n\
                                                     <td style="display:none"><input type="text" id="idTipo_'+j+'" name="idTipo_'+j+'" value="2"></td>\n\
@@ -3628,6 +3649,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                               x = 60;
                               tipMov = 'totalStock';
                               datosOcultos += '<tr><td style="display:none"><input type="text" id="query_0" name="query_0" value="'+queries[j]+'"></td>\n\
+                              <td style="display:none"><input type="text" id="estadoProd_'+j+'" name="estadoProd_'+j+'" value="'+estadoProducto+'"></td>\n\
                                                 <td style="display:none"><input type="text" id="idTipo_'+j+'" name="idTipo_'+j+'" value="3"></td>\n\
                                                 <td style="display:none"><input type="text" id="indice_'+j+'" name="indice" value=""></td>\n\
                                                 <td style="display:none"><input type="text" id="radio_'+j+'" name="radio_'+j+'" value="'+radio+'"></td>\n\
@@ -3644,13 +3666,14 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                 <td style="display:none"><input type="text" id="marcaAgua_'+j+'" name="marcaAgua_'+j+'" value="'+marcaAgua+'"></td>\n\
                                               </tr>';
                              break;
-          case 'entidadMovimiento': campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha Creaci&oacute;n-Fecha-Hora-Cantidad-Tipo-Comentarios-Estado-IdMov';
-                                    //Orden de la consulta: idprod - entidad - nombre - bin - cod emsa - cod origen - contacto - snapshot - ult.Mov - stock - alarma1 - alarma2 - prodcom - fechaCreacion - fecha - hora - cantidad - tipo - comentarios - estado - idmov
-                                    largos = '0.75-0.5-1.6-1.9-1-2.0-1.5-1-1-1-1-1-1.1-1.5-1.85-1.25-0.8-1.2-1.3-2-1-0.5';
-                                    mostrarCamposQuery = '1-0-1-1-0-1-1-0-0-0-0-0-0-0-0-1-1-1-1-1-'+mostrarEstadoBinario+'-0';
+          case 'entidadMovimiento': campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha Creaci&oacute;n-EstadoProd-Fecha-Hora-Cantidad-Tipo-Comentarios-Estado-IdMov';
+                                    //Orden de la consulta: idprod - entidad - nombre - bin - cod emsa - cod origen - contacto - snapshot - ult.Mov - stock - alarma1 - alarma2 - prodcom - fechaCreacion - estadoProd - fecha - hora - cantidad - tipo - comentarios - estado - idmov
+                                    largos = '0.75-0.5-1.6-1.9-1-2.0-1.5-1-1-1-1-1-1.1-1.5-1.85-1.25-1.35-0.8-1.2-1.3-2-1-0.5';
+                                    mostrarCamposQuery = '1-0-1-1-0-1-1-0-0-0-0-0-0-0-0-0-1-1-1-1-1-'+mostrarEstadoBinario+'-0';
                                     x = 40;
                                     tipMov = 'entMov';
                                     datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
+                                                        <td style="display:none"><input type="text" id="estadoProd_'+j+'" name="estadoProd_'+j+'" value="'+estadoProducto+'"></td>\n\
                                                         <td style="display:none"><input type="text" id="radio_'+j+'" name="radio_'+j+'" value="'+radio+'"></td>\n\
                                                         <td style="display:none"><input type="text" id="idTipo_'+j+'" name="idTipo_'+j+'" value="4"></td>\n\
                                                         <td style="display:none"><input type="text" id="indice_'+j+'" name="indice" value=""></td>\n\
@@ -3668,13 +3691,14 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
                                                         <td style="display:none"><input type="text" id="marcaAgua_'+j+'" name="marcaAgua_'+j+'" value="'+marcaAgua+'"></td>\n\
                                                       </tr>';
                                     break;
-          case 'productoMovimiento':  campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha Creaci&oacute;n-Fecha-Hora-Cantidad-Tipo-Comentarios-Estado-IdMov';
-                                      //Orden de la consulta: idprod - entidad - nombre - bin - cod emsa - cod origen - contacto - snapshot - ult.Mov - stock - alarma1 - alarma2 - prodcom - fechaCreacion - fecha - hora - cantidad - tipo - comentarios - estado - idmov
-                                      largos = '0.65-0.5-1.5-1.8-1-1-1-1-1-1-1-1-1.1-1.5-1.85-1.25-0.8-1.2-1.4-2-1-0.8';
-                                      mostrarCamposQuery = '1-0-0-0-0-0-0-0-0-0-0-0-0-0-0-1-1-1-1-1-'+mostrarEstadoBinario+'-0';
+          case 'productoMovimiento':  campos = 'Id-IdProd-Entidad-Nombre-BIN-Cód. EMSA-Cód. Origen-Contacto-Snapshot-&Uacute;lt. Mov.-Stock-Alarma1-Alarma2-ComentariosProd-Fecha Creaci&oacute;n-EstadoProd-Fecha-Hora-Cantidad-Tipo-Comentarios-Estado-IdMov';
+                                      //Orden de la consulta: idprod - entidad - nombre - bin - cod emsa - cod origen - contacto - snapshot - ult.Mov - stock - alarma1 - alarma2 - prodcom - fechaCreacion - estadoProd - fecha - hora - cantidad - tipo - comentarios - estado - idmov
+                                      largos = '0.65-0.5-1.5-1.8-1-1-1-1-1-1-1-1-1.1-1.5-1.85-1.1-1.35-0.8-1.2-1.4-2-1-0.8';
+                                      mostrarCamposQuery = '1-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-1-1-1-1-1-'+mostrarEstadoBinario+'-0';
                                       x = 40;
                                       tipMov = 'prodMov';
                                       datosOcultos += '<tr><td style="display:none"><input type="text" id="query_'+j+'" name="query_'+j+'" value="'+queries[j]+'"></td>\n\
+                                                          <td style="display:none"><input type="text" id="estadoProd_'+j+'" name="estadoProd_'+j+'" value="'+estadoProducto+'"></td>\n\
                                                           <td style="display:none"><input type="text" id="radio_'+j+'" name="radio_'+j+'" value="'+radio+'"></td>\n\
                                                           <td style="display:none"><input type="text" id="idTipo_'+j+'" name="idTipo_'+j+'" value="5"></td>\n\
                                                           <td style="display:none"><input type="text" id="indice_'+j+'" name="indice" value=""></td>\n\
@@ -3697,7 +3721,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
         }
         datosOcultos += '</table>';
         formu += datosOcultos;
-
+        
         var tabla = mostrarTabla(radio, datos, j, todos, 1, parcial, subtotales, max, totalPlasticos, mensajeConsulta, totalPaginas, mostrarEstado);
         formu += tabla;
         
@@ -3772,7 +3796,7 @@ function mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas,
   mostrarGlobal += '</div>';
   $("#main-content").append(mostrarGlobal);
 }
-/********** fin mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, p, d1, d2, tipo, user) **********/
+/********** fin mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, p, d1, d2, tipo, user, estadoMov, mostrarEstado, estadoProducto) **********/
 
 /**
  * \brief Función que ejecuta la búsqueda y muestra el resultado.
@@ -3814,6 +3838,7 @@ function realizarBusqueda(){
     var tipo = $("#tipo").find('option:selected').val( );
     var estadoMov = $("#estadoMov").find('option:selected').val( );
     var mostrarEstado = $("#mostrarEstado").prop("checked");
+    var estadoProducto = $("#estadoProducto").find('option:selected').val( );
     var idUser = $("#usuario").val();
     var nombreUsuario = $("#usuario").find('option:selected').text( );
     var radioFecha = $('input:radio[name=criterioFecha]:checked').val();
@@ -3903,18 +3928,37 @@ function realizarBusqueda(){
                               delete (consultaCSV);
                               delete (tipoConsulta);
                               var tipoConsulta = '';
-                              var query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion';
-                              var consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios, productos.fechaCreacion';
+                              var mensajeEstado = '';
+                              var query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion, productos.estado';
+                              var consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios, productos.fechaCreacion, productos.estado';
                               if (entidadesStock[i] !== 'todos') {
                                 ent.push(entidadesStock[i]);
-                                query += " from productos where entidad='"+entidadesStock[i]+"' and estado='activo'";
-                                consultaCSV += " from productos where entidad='"+entidadesStock[i]+"' and estado='activo'";
-                                tipoConsulta = 'Stock de <b><i>'+entidadesStock[i]+'</i></b> al d&iacute;a: '+hoyMostrar+' ('+horaMostrar+')';
+                                query += " from productos where entidad='"+entidadesStock[i]+"'";
+                                consultaCSV += " from productos where entidad='"+entidadesStock[i]+"'";
+                                if (estadoProducto !== 'todos'){
+                                  query += " and estado='"+estadoProducto+"'";
+                                  consultaCSV += " and estado='"+estadoProducto+"'";
+                                  mensajeEstado = 'de '+estadoProducto+'s ';
+                                }
+                                else {
+                                  query += " and estado is not null";
+                                  consultaCSV += " and estado is not null";
+                                }
+                                tipoConsulta = 'Stock '+mensajeEstado+'de <b><i>'+entidadesStock[i]+'</i></b> al d&iacute;a: '+hoyMostrar+' ('+horaMostrar+')';
                               } 
                               else {
-                                query += " from productos where estado='activo'";
-                                consultaCSV += " from productos where estado='activo'";
-                                tipoConsulta = 'Stock de <b><i>todas las entidades</i></b> al d&iacute;a: '+hoyMostrar+' ('+horaMostrar+')';
+                                query += " from productos";
+                                consultaCSV += " from productos";
+                                if (estadoProducto !== 'todos'){
+                                  query += " where estado='"+estadoProducto+"'";
+                                  consultaCSV += " where estado='"+estadoProducto+"'";
+                                  mensajeEstado = 'de '+estadoProducto+'s ';
+                                }
+                                else {
+                                  query += " where estado is not null";
+                                  consultaCSV += " where estado is not null";
+                                }
+                                tipoConsulta = 'Stock '+mensajeEstado+'de <b><i>todas las entidades</i></b> al d&iacute;a: '+hoyMostrar+' ('+horaMostrar+')';
                                 todos = true;
                                 ent.push('todos');
                               }
@@ -3949,9 +3993,9 @@ function realizarBusqueda(){
                                   return false;
                                 }
                                 else {
-                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion';
+                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion, productos.estado';
                                   query += " from productos where idProd="+idProds[i];
-                                  consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios, productos.fechaCreacion';
+                                  consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios, productos.fechaCreacion, productos.estado';
                                   consultaCSV += " from productos where idProd="+idProds[i];
                                   tipoConsulta = 'Stock del producto <b><i>'+nombres[i]+'</i></b> al d&iacute;a: '+hoyMostrar+' ('+horaMostrar+')';
                                   queries.push(query);
@@ -3970,11 +4014,23 @@ function realizarBusqueda(){
                               validado = false;
                             } 
                             break;
-      case 'totalStock':  query = "select entidad, sum(stock) as subtotal from productos where estado='activo' group by entidad";
+      case 'totalStock':  query = "select entidad, sum(stock) as subtotal from productos";
+                          consultaCSV = "select entidad as Entidad, sum(stock) as Subtotal from productos";
+                          var mensajeEstado = '';
+                          if (estadoProducto !== 'todos'){
+                            query += " where estado='"+estadoProducto+"'";
+                            consultaCSV += " where estado='"+estadoProducto+"'";
+                            mensajeEstado = ' (prod. '+estadoProducto+'s)';
+                          }
+                          else {
+                            query += " where estado is not null";
+                            consultaCSV += " where estado is not null";
+                          }
+                          query += " group by entidad";
+                          consultaCSV += " group by entidad";
                           queries[0] = query;
-                          consultaCSV = "select entidad as Entidad, sum(stock) as Subtotal from productos where estado='activo' group by entidad";
                           consultasCSV[0] = consultaCSV;
-                          tipoConsulta = '<b><i>Total de plásticos en bóveda</i></b>';
+                          tipoConsulta = '<b><i>Total de plásticos en bóveda'+mensajeEstado+'</i></b>';
                           tipoConsultas[0] = tipoConsulta;
                           idProds[0] = 1;
                           delete nombres;
@@ -3984,17 +4040,39 @@ function realizarBusqueda(){
       case 'entidadStockViejo': delete nombres;
                                 var nombres = new Array();
                                 for (var i in entidadesStock){
-                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion';
-                                  query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.estado, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
-                                  var consultaCSV = "select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios, productos.fechaCreacion from productos where productos.estado='activo' ";
+                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion, productos.estado';
+                                  query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.estado, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto";
+                                  var consultaCSV = "select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios, productos.fechaCreacion, productos.estado from productos";
+                                  var mensajeEstado = '';                                 
                                   if (entidadesStock[i] !== 'todos') {
-                                    ent.push(entidadesStock[i]);
+                                    ent.push(entidadesStock[i]);   
+                                    if (estadoProducto !== 'todos'){
+                                      query += " where productos.estado='"+estadoProducto+"' ";
+                                      consultaCSV += " where productos.estado='"+estadoProducto+"' ";
+                                      mensajeEstado = 'de '+estadoProducto+'s ';
+                                    }
+                                    else {
+                                      query += " where productos.estado is not null ";
+                                      consultaCSV += " where productos.estado is not null ";
+                                    }
                                     query += "and productos.entidad='"+entidadesStock[i]+"'";
                                     consultaCSV += "and productos.entidad='"+entidadesStock[i]+"'";
-                                    tipoConsulta = 'Stock de <b><i>'+entidadesStock[i]+"</i></b>";
+                                    tipoConsulta = 'Stock '+mensajeEstado+'de <b><i>'+entidadesStock[i]+"</i></b>"; 
                                   } 
-                                  else {
-                                    tipoConsulta = 'Stock de <b><i>todas las entidades</i></b>';
+                                  else {  
+                                    if (estadoProducto !== 'todos'){
+                                      query += " where productos.estado='"+estadoProducto+"' ";
+                                      consultaCSV += " where productos.estado='"+estadoProducto+"' ";
+                                      mensajeEstado = 'de '+estadoProducto+'s ';
+                                    }
+                                    else {
+                                      query += " where productos.estado is not null ";
+                                      consultaCSV += " where productos.estado is not null ";
+                                    }
+
+                                    tipoConsulta = 'Stock '+mensajeEstado+'de <b><i>todas las entidades</i></b>';
+
+                                    //tipoConsulta = 'Stock de <b><i>todas las entidades</i></b>';
                                     todos = true;
                                     ent.push('todos');
                                   }
@@ -4023,28 +4101,28 @@ function realizarBusqueda(){
                                 break;
       case 'productoStockViejo':  if (idProds.length > 0){
                                     for (var k in idProds){
-                                    query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion';
-                                    query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.estado, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where idprod="+idProds[k];
-                                    consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios, productos.fechaCreacion';
-                                    consultaCSV += " from productos where idProd="+idProds[k];
-                                    if ((idProds[k] === 'NADA') || (nombresProductos[k] === '')){
-                                      alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
-                                      document.getElementById("productoStock").focus();
-                                      validado = false;
-                                      return false;
+                                      query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion, productos.estado';
+                                      query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios, movimientos.estado, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where idprod="+idProds[k];
+                                      consultaCSV = 'select productos.idprod, productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.codigo_emsa, codigo_origen, productos.stock as stock, productos.alarma1, productos.alarma2, productos.comentarios, productos.fechaCreacion, productos.estado';
+                                      consultaCSV += " from productos where idProd="+idProds[k];
+                                      if ((idProds[k] === 'NADA') || (nombresProductos[k] === '')){
+                                        alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
+                                        document.getElementById("productoStock").focus();
+                                        validado = false;
+                                        return false;
+                                      }
+                                      else {
+                                        queries.push(query);
+                                        consultasCSV.push(consultaCSV);
+                                        validarFecha = true;
+                                        validarTipo = false;
+                                        validarUser = false;
+                                        ordenFecha = true;
+                                      }
+                                      tipoConsulta = 'Stock del producto <b><i>'+nombres[k]+"</i></b>";
+                                      tipoConsultas.push(tipoConsulta);
+                                      prodHint = $("#productoStock").val();
                                     }
-                                    else {
-                                      queries.push(query);
-                                      consultasCSV.push(consultaCSV);
-                                      validarFecha = true;
-                                      validarTipo = false;
-                                      validarUser = false;
-                                      ordenFecha = true;
-                                    }
-                                    tipoConsulta = 'Stock del producto <b><i>'+nombres[k]+"</i></b>";
-                                    tipoConsultas.push(tipoConsulta);
-                                    prodHint = $("#productoStock").val();
-                                  }
                                   }
                                   else {
                                     alert('Para realizar una consulta de stock por producto hay que elegir al menos un producto.\n¡Por favor verifique!.');
@@ -4055,17 +4133,27 @@ function realizarBusqueda(){
       case 'entidadMovimiento': delete nombres;
                                 var nombres = new Array();
                                 for (var i in entidadesMovimiento){
-                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion';
-                                  query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios,  movimientos.estado, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
-                                  consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.fechaCreacion, movimientos.tipo, movimientos.cantidad, movimientos.comentarios, movimientos.estado from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";
+                                  query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion, productos.estado as prodest';
+                                  query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios,  movimientos.estado, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto";
+                                  consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.fechaCreacion, productos.estado as estadoProd, movimientos.tipo, movimientos.cantidad, movimientos.comentarios, movimientos.estado from productos inner join movimientos on productos.idprod=movimientos.producto";
+                                  var mensajeEstado = '';
+                                  if (estadoProducto !== 'todos'){
+                                    query += " where productos.estado='"+estadoProducto+"' ";
+                                    consultaCSV += " where productos.estado='"+estadoProducto+"' ";
+                                    mensajeEstado = ' (prod. '+estadoProducto+'s)';
+                                  }
+                                  else {
+                                    query += " where productos.estado is not null ";
+                                    consultaCSV += " where productos.estado is not null ";
+                                  }
                                   if (entidadesMovimiento[i] !== 'todos') {
                                     ent.push(entidadesMovimiento[i]);
                                     query += "and productos.entidad='"+entidadesMovimiento[i]+"'";
                                     consultaCSV += "and productos.entidad='"+entidadesMovimiento[i]+"'";
-                                    tipoConsulta = 'Movimientos de <b><i>'+entidadesMovimiento[i]+"</i></b>";
+                                    tipoConsulta = 'Movimientos de <b><i>'+entidadesMovimiento[i]+mensajeEstado+"</i></b>";
                                   } 
                                   else {
-                                    tipoConsulta = 'Movimientos de <b><i>todas las entidades</i></b>';
+                                    tipoConsulta = 'Movimientos de <b><i>todas las entidades'+mensajeEstado+'</i></b>';
                                     todos = true;
                                     ent.push('todos');
                                   }
@@ -4108,31 +4196,31 @@ function realizarBusqueda(){
                                 ordenFecha = true;
                                 break;
       case 'productoMovimiento':  if (idProds.length > 0){
-                                  for (var k in idProds){
-                                    query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion';
-                                    query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios,  movimientos.estado, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto where ";
-                                    //consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
-                                    consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.fechaCreacion, movimientos.tipo, movimientos.cantidad, movimientos.comentarios, movimientos.estado from productos inner join movimientos on productos.idprod=movimientos.producto where productos.estado='activo' ";                                 
-                                    if ((idProds[k] === 'NADA') || (nombresProductos[k] === '')){
-                                      alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
-                                      document.getElementById("productoMovimiento").focus();
-                                      validado = false;
-                                      return false;
+                                    for (var k in idProds){
+                                      query = 'select productos.idprod, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.contacto, productos.snapshot, productos.ultimoMovimiento, productos.stock, productos.alarma1, productos.alarma2, productos.comentarios as prodcom, productos.fechaCreacion, productos.estado as prodest';
+                                      query += ", DATE_FORMAT(movimientos.fecha, '%d/%m/%Y') as fecha, DATE_FORMAT(movimientos.hora, '%H:%i') as hora, movimientos.cantidad, movimientos.tipo, movimientos.comentarios,  movimientos.estado, movimientos.idmov from productos inner join movimientos on productos.idprod=movimientos.producto";
+                                      //consultaCSV = 'select productos.entidad as entidad, productos.nombre_plastico as nombre, productos.bin as BIN, productos.stock as stock, productos.alarma1, productos.alarma2';
+                                      consultaCSV = "select productos.idprod, DATE_FORMAT(movimientos.fecha, '%d/%m/%Y'), DATE_FORMAT(movimientos.hora, '%H:%i') as hora, productos.entidad, productos.nombre_plastico, productos.bin, productos.codigo_emsa, productos.codigo_origen, productos.fechaCreacion, productos.estado as estadoProd, movimientos.tipo, movimientos.cantidad, movimientos.comentarios, movimientos.estado from productos inner join movimientos on productos.idprod=movimientos.producto";                           
+                                      if ((idProds[k] === 'NADA') || (nombresProductos[k] === '')){
+                                        alert('Debe seleccionar al menos un producto ó seleccionar no debe de estar marcado. Por favor verifique.');
+                                        document.getElementById("productoMovimiento").focus();
+                                        validado = false;
+                                        return false;
+                                      }
+                                      else {
+                                        query += " where idprod="+idProds[k];
+                                        consultaCSV += " where idprod="+idProds[k];
+                                        queries.push(query);
+                                        consultasCSV.push(consultaCSV);
+                                        validarFecha = true;
+                                        validarTipo = true;
+                                        validarUser = true;
+                                        ordenFecha = true;
+                                      }
+                                      tipoConsulta = 'Movimientos del producto <b><i>'+nombres[k]+"</i></b>";
+                                      tipoConsultas.push(tipoConsulta);
+                                      prodHint = $("#productoMovimiento").val();
                                     }
-                                    else {
-                                      query += "idprod="+idProds[k];
-                                      consultaCSV += "and idprod="+idProds[k];
-                                      queries.push(query);
-                                      consultasCSV.push(consultaCSV);
-                                      validarFecha = true;
-                                      validarTipo = true;
-                                      validarUser = true;
-                                      ordenFecha = true;
-                                    }
-                                    tipoConsulta = 'Movimientos del producto <b><i>'+nombres[k]+"</i></b>";
-                                    tipoConsultas.push(tipoConsulta);
-                                    prodHint = $("#productoMovimiento").val();
-                                  }
                                   }
                                   else {
                                     alert('Para realizar una consulta de movimientos por producto hay que elegir al menos un producto.\n¡Por favor verifique!.');
@@ -4353,12 +4441,11 @@ function realizarBusqueda(){
         else {
           queries[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";
           consultasCSV[n] += " order by entidad asc, codigo_emsa asc, nombre_plastico asc, idprod asc";
-        }
-        
+        }      
         //alert(queries[n]);
       }
             
-      mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, radioFecha, d1, d2, tipo, idUser, estadoMov, mostrarEstado);
+      mostrarResultados(radio, queries, consultasCSV, idProds, tipoConsultas, entidadesStock, entidadesMovimiento, nombresProductos, nombres, ent, prodHint, mensajeTipo, mensajeUsuario, mensajeFecha, zip, planilla, marcaAgua, zipManual, planillaManual, radioFecha, d1, d2, tipo, idUser, estadoMov, mostrarEstado, estadoProducto);
     }/// Fin del IF de validado
     else {
       //alert('NO validado');//Igualmente no llega a esta etapa dado que al no ser válida retorna falso y sale.    
@@ -4450,7 +4537,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
                 </td>\n\
                 <th>Producto:</th>\n\
                 <td align="center" colspan="3">\n\
-                  <input type="text" id="productoStock" name="producto" placeholder="Producto" title="Ingresar el producto" class="agrandar size="9" tabindex="2" onkeyup=\'showHint(this.value, "#productoStock", "")\'>\n\
+                  <input type="text" id="productoStock" name="producto" placeholder="Producto" title="Ingresar el producto" class="agrandar" size="9" tabindex="2" onkeyup=\'showHint(this.value, "#productoStock", "")\'>\n\
                 </td>\n\
               </tr>';
         tr += '<tr>\n\
@@ -4575,7 +4662,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
                 </td>\n\
               </tr>';
         tr += '<tr>\n\
-                <th colspan="5" class="subTituloTabla2">USUARIO</th>\n\
+                <th colspan="5" class="subTituloTabla2">USUARIO/PRODUCTOS</th>\n\
               </tr>';
         tr += '<tr>\n\
                 <th>Usuario:</th>\n\
@@ -4586,15 +4673,20 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
             tr += '<option value="'+idusers[j]+'">'+nombresUsuarios[j]+' '+apellidosUsuarios[j]+'</option>';
           }      
         tr += '   </select>\n\
-                </td>\n\
-              </tr>';
+                <th>Productos:</th>\n\
+                <td>\n\
+                  <select name="estadoProducto" id="estadoProducto" title="Elegir estado del producto" tabindex="13" style="width: 100%">\n\
+                    <option value="todos" selected="yes">---TODOS---</option>\n\
+                    <option value="activo">Activos</option>\n\
+                    <option value="inactivo">Inactivos</option>\n\
+                    </tr>';
         tr += '<tr>\n\
                 <th colspan="5">SEGURIDAD</th>\n\
               </tr>';
         tr += '<tr>\n\
                 <th>ZIP:</th>\n\
                 <td colspan="2">\n\
-                  <select id="zip" name="zip" title="Elegir el tipo de seguridad para abrir el ZIP" tabindex="13" style="width:100%">\n\
+                  <select id="zip" name="zip" title="Elegir el tipo de seguridad para abrir el ZIP" tabindex="14" style="width:100%">\n\
                     <option value="nada" selected="yes">--- SIN SEGURIDAD ---</option>\n\
                     <option value="fecha">Seg&uacute;n Fecha</option>\n\
                     <option value="random">Rand&oacute;mico</option>\n\
@@ -4608,7 +4700,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
         tr += '<tr>\n\
                 <th>Planilla:</th>\n\
                 <td colspan="2">\n\
-                  <select id="planilla" name="planilla" title="Elegir el tipo de seguridad para modificar los datos de la planilla" tabindex="14" style="width:100%">\n\
+                  <select id="planilla" name="planilla" title="Elegir el tipo de seguridad para modificar los datos de la planilla" tabindex="15" style="width:100%">\n\
                     <option value="misma" selected="yes">--- MISMA QUE EL ZIP ---</option>\n\
                     <option value="nada">SIN SEGURIDAD</option>\n\
                     <option value="fecha">Seg&uacute;n Fecha</option>\n\
@@ -4623,12 +4715,12 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
         tr += '<tr>\n\
                 <th>Marca de Agua</th>\n\
                 <td>\n\
-                  <input type="checkbox" name="marcaAgua" id="marcaAgua" title="Seleccionar si se quiere o no que aparezca la marca de agua." tabindex="15" checked="checked">\n\
+                  <input type="checkbox" name="marcaAgua" id="marcaAgua" title="Seleccionar si se quiere o no que aparezca la marca de agua." tabindex="16" checked="checked">\n\
                 </td>\n\
               </tr>';
         tr += '<tr>\n\
                 <td colspan="5" class="pieTabla">\n\
-                  <input type="button" class="btn btn-success" name="consultar" id="realizarBusqueda" title="Ejecutar la consulta" tabindex="16" value="Consultar" align="center">\n\
+                  <input type="button" class="btn btn-success" name="consultar" id="realizarBusqueda" title="Ejecutar la consulta" tabindex="17" value="Consultar" align="center">\n\
                 </td>\n\
               </tr>';
         tabla += tr;
@@ -4813,7 +4905,7 @@ function cargarFormBusqueda(selector, hint, tipo, idProdus, entidadSeleccionada,
 */
 function cargarProducto(idProd, selector){
   var url = "data/selectQuery.php";
-  var query = 'select idprod, nombre_plastico, entidad, fechaCreacion, codigo_emsa, bin, codigo_origen, contacto, snapshot, stock, alarma1, alarma2, ultimoMovimiento, comentarios from productos where idprod='+idProd+' limit 1';
+  var query = 'select idprod, nombre_plastico, entidad, estado, fechaCreacion, codigo_emsa, bin, codigo_origen, contacto, snapshot, stock, alarma1, alarma2, ultimoMovimiento, comentarios from productos where idprod='+idProd+' limit 1';
   
   $.getJSON(url, {query: ""+query+""}).done(function(request) {
     var resultado = request["resultado"];
@@ -4851,12 +4943,16 @@ function cargarProducto(idProd, selector){
               <td align="center" colspan="2"><input type="text" name="nombre" id="nombre" title="Ingresar el nombre del producto" placeholder="Nombre" tabindex="5" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
+            <th align="left"><font class="negra">Estado:</font></th>\n\
+            <td align="center" colspan="2"><input type="text" name="estado" id="estado" title="Estado del producto" placeholder="Estado" tabindex="6" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+          </tr>';              
+    tr += '<tr>\n\
               <th align="left"><font class="negra">Código EMSA:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" name="codigo_emsa" id="codigo_emsa" title="Ingresar el código de EMSA" placeholder="C&oacute;digo EMSA" tabindex="6" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+              <td align="center" colspan="2"><input type="text" name="codigo_emsa" id="codigo_emsa" title="Ingresar el código de EMSA" placeholder="C&oacute;digo EMSA" tabindex="7" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Código Origen:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" name="codigo_origen" id="codigo_origen" title="Ingresar el código de origen" placeholder="C&oacute;digo Origen" tabindex="7" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+              <td align="center" colspan="2"><input type="text" name="codigo_origen" id="codigo_origen" title="Ingresar el código de origen" placeholder="C&oacute;digo Origen" tabindex="8" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Fecha de Creación:</font></th>\n\
@@ -4864,15 +4960,15 @@ function cargarProducto(idProd, selector){
           </tr>';  
     tr += '<tr>\n\
               <th align="left"><font class="negra">Contacto:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="contacto" name="contacto2" title="Ingresar el contacto" placeholder="Contacto" tabindex="8" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="text" id="contacto" name="contacto2" title="Ingresar el contacto" placeholder="Contacto" tabindex="9" class="agrandar" maxlength="35" size="9"></td>\n\
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Foto:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="nombreFoto" name="nombreFoto" title="Ingresar el nombre de la foto" placeholder="Nombre de la foto" tabindex="9" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="text" id="nombreFoto" name="nombreFoto" title="Ingresar el nombre de la foto" placeholder="Nombre de la foto" tabindex="10" class="agrandar" maxlength="35" size="9"></td>\n\
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">BIN:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" name="bin" id="bin" title="Ingresar el BIN del producto" placeholder="BIN" tabindex="10" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
+              <td align="center" colspan="2"><input type="text" name="bin" id="bin" title="Ingresar el BIN del producto" placeholder="BIN" tabindex="11" class="agrandar" maxlength="35" style="width:100%; text-align: center"></td>\n\
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Stock:</font></th>\n\
@@ -4880,11 +4976,11 @@ function cargarProducto(idProd, selector){
           </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Alarma 1:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="alarma1" name="alarma1" title="Cantidad de plásticos para disparar el primer nivel de alarma" placeholder="Nivel de advertencia" tabindex="11" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="text" id="alarma1" name="alarma1" title="Cantidad de plásticos para disparar el primer nivel de alarma" placeholder="Nivel de advertencia" tabindex="12" class="agrandar" maxlength="35" size="9"></td>\n\
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Alarma 2:</font></th>\n\
-              <td align="center" colspan="2"><input type="text" id="alarma2" name="alarma2" title="Cantidad de plásticos para disparar el nivel crítico de alarma" placeholder="Nivel Crítico" tabindex="12" class="agrandar" maxlength="35" size="9"></td>\n\
+              <td align="center" colspan="2"><input type="text" id="alarma2" name="alarma2" title="Cantidad de plásticos para disparar el nivel crítico de alarma" placeholder="Nivel Crítico" tabindex="13" class="agrandar" maxlength="35" size="9"></td>\n\
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Último Movimiento:</font></th>\n\
@@ -4892,12 +4988,12 @@ function cargarProducto(idProd, selector){
            </tr>';
     tr += '<tr>\n\
               <th align="left"><font class="negra">Comentarios:</font></th>\n\
-              <td align="center" colspan="2"><textarea id="comentarios" name="comProd"  title="Ingresar un comentario" placeholder="Comentarios" tabindex="13" class="agrandar" maxlength="250" rows="5" cols="30"></textarea></td>\n\
+              <td align="center" colspan="2"><textarea id="comentarios" name="comProd"  title="Ingresar un comentario" placeholder="Comentarios" tabindex="14" class="agrandar" maxlength="250" rows="5" cols="30"></textarea></td>\n\
           </tr>';
     tr += '<tr>\n\
               <td style="width: 33%;border-right: 0px;"><input type="button" value="EDITAR" id="editarProducto" name="editarProducto" title="Habilitar la edición del producto" tabindex="3" class="btn btn-primary" align="center"/></td>\n\
               <td style="width: 33%;border-left: 0px;border-right: 0px;"><input type="button" value="ACTUALIZAR" id="actualizarProducto" name="actualizarProducto" title="Realizar la actualización" tabindex="14" class="btn btn-warning" align="center"/></td>\n\
-              <td style="width: 33%;border-left: 0px;"><input type="button" value="ELIMINAR" id="eliminarProducto" name="eliminarProducto" title="Dar de baja el producto" class="btn btn-danger" align="center"/></td>\n\
+              <td style="width: 33%;border-left: 0px;"><input type="button" value="INACTIVAR" id="eliminarProducto" name="eliminarProducto" title="Cambiar estado del producto" class="btn btn-dark" align="center"/></td>\n\
           </tr>';
     tr += '<tr>\n\
              <td style="display:none"><input type="text" id="idprod" value='+idProd+'></td>\n\
@@ -4913,33 +5009,44 @@ function cargarProducto(idProd, selector){
     $(selector).html(mostrar);
   
     if (total >=1) {
-    $("#entidad").val(resultado[0]['entidad']);
-    $("#nombre").val(resultado[0]['nombre_plastico']);
-    $("#codigo_emsa").val(resultado[0]['codigo_emsa']);
-    $("#codigo_origen").val(resultado[0]['codigo_origen']);
-    $("#fechaCreacion").val(fechaCreacion);
-    $("#contacto").val(resultado[0]['contacto']);
-    $("#nombreFoto").val(resultado[0]['snapshot']);
-    $("#stockProducto").val(stock.toLocaleString());
-    $("#alarma1").val(alarma1);
-    $("#alarma2").val(alarma2);
-    $("#comentarios").val(resultado[0]['comentarios']);
-    $("#ultimoMovimiento").val(ultimoMovimiento);
-    $("#bin").val(resultado[0]['bin']); 
-    
-    //$(selector).html(mostrar);
-
-    if ((stock < alarma1) && (stock > alarma2)) {
-      $("#stockProducto").addClass('alarma1');
-    }
-    else {
-      if (stock < alarma2) {
-        $("#stockProducto").addClass('alarma2');
+      $("#entidad").val(resultado[0]['entidad']);
+      $("#nombre").val(resultado[0]['nombre_plastico']);
+      $("#estado").val(resultado[0]['estado']);
+      $("#codigo_emsa").val(resultado[0]['codigo_emsa']);
+      $("#codigo_origen").val(resultado[0]['codigo_origen']);
+      $("#fechaCreacion").val(fechaCreacion);
+      $("#contacto").val(resultado[0]['contacto']);
+      $("#nombreFoto").val(resultado[0]['snapshot']);
+      $("#stockProducto").val(stock.toLocaleString());
+      $("#alarma1").val(alarma1);
+      $("#alarma2").val(alarma2);
+      $("#comentarios").val(resultado[0]['comentarios']);
+      $("#ultimoMovimiento").val(ultimoMovimiento);
+      $("#bin").val(resultado[0]['bin']); 
+      
+      if ($("#estado").val() === 'activo'){
+        $("#eliminarProducto").val('INACTIVAR');
+        $("#eliminarProducto").removeClass('btn-danger');
+        $("#eliminarProducto").addClass('btn-dark');
       }
       else {
-        $("#stockProducto").addClass('resaltado');
+        $("#eliminarProducto").val('ACTIVAR');
+        $("#eliminarProducto").removeClass('btn-dark');
+        $("#eliminarProducto").addClass('btn-danger');
       }
-    }
+      //$(selector).html(mostrar);
+
+      if ((stock < alarma1) && (stock > alarma2)) {
+        $("#stockProducto").addClass('alarma1');
+      }
+      else {
+        if (stock < alarma2) {
+          $("#stockProducto").addClass('alarma2');
+        }
+        else {
+          $("#stockProducto").addClass('resaltado');
+        }
+      }
     }
     inhabilitarProducto();
   }); 
@@ -5091,6 +5198,7 @@ function validarProducto(nuevo) {
 */
 function inhabilitarProducto(){
   document.getElementById("nombre").disabled = true;
+  document.getElementById("estado").disabled = true;
   document.getElementById("entidad").disabled = true;
   document.getElementById("codigo_origen").disabled = true;
   document.getElementById("codigo_emsa").disabled = true;
@@ -5113,6 +5221,7 @@ function inhabilitarProducto(){
 */
 function habilitarProducto(){
   document.getElementById("nombre").disabled = false;
+  //document.getElementById("estado").disabled = false;
   document.getElementById("entidad").disabled = false;
   document.getElementById("codigo_origen").disabled = false;
   document.getElementById("codigo_emsa").disabled = false;
@@ -5988,7 +6097,7 @@ $(document).on("focus", ".agrandar", function (){
   $(this).css("background-color", "#e7f128");
   $(this).css("font-weight", "bolder");
   $(this).css("color", "red");
-  $(this).css("height", "100%");
+  /*$(this).css("height", "100%");*/
   //$(this).css("max-width", "100%");
   //$(this).parent().prev().prev().children().prop("checked", true);
 });
@@ -6681,49 +6790,68 @@ $(document).on("keypress", "#productUpdate input", function(e) {
 });
 /********** fin on("keypress", "#productUpdate input", function(e) **********/
 
-///Dispara función que da de baja el producto. NO lo borra, sino que le cambia su estado a INACTIVO.
+///Dispara función que da de baja o alta el producto. NO lo borra, sino que le cambia su estado a INACTIVO o ACTIVO según cual sea el que ya tenga.
 $(document).on("click", "#eliminarProducto", function (){
   verificarSesion('', 's');
   var nombre = $("#nombre").val();
   var idProducto = $("#hintProd").val();
+  var nuevoEstado = $(this).val();
+  var estado = '';
 
   if ((idProducto === 'NADA')||(parseInt($("#hintProd").length, 10) === 0)) {
-    alert('Se debe seleccionar un producto para poder eliminar. Por favor verifique.');
+    alert('Se debe seleccionar un producto para poder dejarlo INACTIVO. Por favor verifique.');
     $("#producto").focus();
   }
   else {
-    var confirmar = confirm('¿Seguro que desea dar de baja el producto: \n\n'+nombre+" ?");
+    if (nuevoEstado === 'ACTIVAR'){
+      var confirmar = confirm('¿Desea ACTIVAR el producto: \n\n'+nombre+" ?");
+      estado = 'activo';
+    }
+    else {
+      var confirmar = confirm('¿Seguro que desea dejar INACTIVO el producto: \n\n'+nombre+" ?");
+      estado = 'inactivo';
+    }
+    
     if (confirmar) {
       var url = "data/updateQuery.php";
-      var query = "update productos set estado = 'inactivo' where idprod = "+idProducto;
+      var query = "update productos set estado = '"+estado+"' where idprod = "+idProducto;
       var log = "SI";
       var jsonQuery = JSON.stringify(query);
       
       $.getJSON(url, {query: ""+jsonQuery+"", log: log}).done(function(request) {
         var resultado = request["resultado"];
         if (resultado === "OK") {
-          alert('El producto '+nombre+' se dió de baja correctamente!.');
-          $("#entidad").val('');
-          $("#nombre").val('');
-          $("#codigo_emsa").val('');
-          $("#codigo_origen").val('');
-          $("#stockProducto").val('');
-          $("#comentarios").val('');
-          $("#alarma1").val('');
-          $("#alarma2").val('');
-          $("#ultimoMovimiento").val('');
-          $("#bin").val('');
+          if (nuevoEstado === 'ACTIVAR'){
+            alert('El producto '+nombre+' quedó ACTIVO!.');
+          }
+          else {
+            alert('El producto '+nombre+' quedó INACTIVO!.');
+            $("#entidad").val('');
+            $("#nombre").val('');
+            $("#estado").val('');
+            $("#codigo_emsa").val('');
+            $("#codigo_origen").val('');
+            $("#stockProducto").val('');
+            $("#comentarios").val('');
+            $("#alarma1").val('');
+            $("#alarma2").val('');
+            $("#ultimoMovimiento").val('');
+            $("#bin").val('');
+          }  
           
           var productoBusqueda = $("#productoBusqueda").val();
-          showHintProd(productoBusqueda, "#productoBusqueda", -1);     
+          //se quita:
+          //showHintProd(productoBusqueda, "#productoBusqueda", -1);
+          //se agrega:
+          cargarProducto(idProducto, "#content");    
         }
         else {
-          alert('Hubo un problema en la eliminación. Por favor verifique.');
+          alert('Hubo un problema al cambiar de estado el producto. Por favor verifique.');
         }
       });
     }
     else {
-      alert('Se optó por NO dar de baja el producto: \n\n'+nombre);
+      alert('Se optó por NO cambiar el estado del producto: \n\n'+nombre);
     }
   }
   
