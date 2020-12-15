@@ -4011,3 +4011,6 @@ vendor/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Writer/Xlsx/Workbook.php
 vendor/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Writer/Xlsx/Worksheet.php
 vendor/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Writer/Xlsx/WriterPart.php
 vendor/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Writer/Xlsx/Xlfn.php
+vendor/composer/installed.php
+vendor/composer/InstalledVersions.php
+vendor/composer/platform_check.php
