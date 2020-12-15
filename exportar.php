@@ -588,13 +588,14 @@ else {
 ///Guardo el archivo en el disco, y además lo muestro en pantalla:
 $pdfResumen->Output($salida, 'F');
 
-/* $nuevaDir = "//192.168.0.106/tests-pc/";
+
+$nuevaDir = "//JMPP-PC/Reportes/";
 if(copy($salida, $nuevaDir."test.pdf")){
   escribirLog("El archivo: ".$nombreArchivo." se copió con éxito a: ".$nuevaDir);
 }
 else {
-  escribirLog("Falló la copia del archivo: ".$nombreArchivo);
-} */
+  escribirLog("Falló la copia del archivo: ".$nombreArchivo." en: ".$nuevaDir);
+}
 
 $end = microtime(true);
 $tiempoPDFile = round(($end - $start), 4);
